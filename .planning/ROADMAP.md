@@ -18,7 +18,7 @@
 
 ---
 
-### Phase 2: Public Storefront — Epic-Style Dark UI
+### ✅ Phase 2: Public Storefront (Complete — 2026-06-24) — Epic-Style Dark UI
 **Goal:** Build React frontend with Epic Games Store-inspired dark theme, game grid, carousel, detail pages, preorder display.
 **Mode:** mvp
 **Success Criteria:**
@@ -90,5 +90,6 @@
 
 ---
 *Roadmap created: 2026-06-23*
+
 
 

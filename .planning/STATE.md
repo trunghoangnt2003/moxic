@@ -1,14 +1,13 @@
 ﻿# Plan State: Moxic GameStore
 
 ## Current Phase
-**Phase 1: Backend Core — Code First Database & API** — ✅ Complete
-**Next:** Phase 2 — Public Storefront
+**Phase 2: Public Storefront — Epic-Style Dark UI** — ✅ Complete
+**Next:** Phase 3 — Cart, Checkout & Payment
 
 ## Project Reference
 See: .planning/PROJECT.md (updated 2026-06-23)
 
-**Core value:** Khách hàng mua được game Xbox chính hãng giá rẻ hơn 30% so với Store với quy trình đặt niềm tin thông qua cài đặt thủ công uy tín.
-**Current focus:** Phase 2 — Public Storefront
+**Current focus:** Phase 3 — Cart, Checkout & Payment
 
 ## Phase History
 
@@ -16,6 +15,7 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 |-------|--------|------|
 | 0 — Project Init | ✓ Complete | 2026-06-23 |
 | 1 — Backend Core | ✅ Complete | 2026-06-23 |
+| 2 — Public Storefront | ✅ Complete | 2026-06-24 |
 
 ## Active Decisions
 
@@ -23,15 +23,10 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 |----------|--------|
 | .NET 10 + EF Core Code First | ✅ Validated |
 | Static QR payment (no gateway) | ✅ Validated |
-| Manual fulfillment | ✅ Validated |
 | MinIO presigned URLs | ✅ Validated |
-| Dark mode Epic-style UI | Pending (Phase 2) |
-| Vertical MVP mode | Committed |
-| AES-256 encryption for XboxPassword | ✅ Validated |
-| PaymentConfig QR storage | ✅ Validated |
-| GameMedia table (multiple images per game) | ✅ Validated |
-| Order + OrderDetail (1:N normalized) | ✅ Validated |
-| IsClientConfirmed for manual payment | ✅ Validated |
+| Dark mode Epic-style UI | ✅ Complete |
+| Russo One + Chakra Petch fonts | ✅ Implemented |
+| Vertical MVP mode | ✅ Validated |
 
 ---
-*State updated: 2026-06-23*
+*State updated: 2026-06-24*

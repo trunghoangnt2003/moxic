@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 
 export default function Login({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState("");
@@ -9,22 +9,14 @@ export default function Login({ onLogin }: { onLogin: (email: string) => void })
     e.preventDefault();
     setError("");
 
-    // Identity Razor Pages login — POST to /Identity/Account/Login
-    const formData = new URLSearchParams({
-      Input_Email: email,
-      Input_Password: password,
-      __RequestVerificationToken: "",
-    });
-
     try {
-      const res = await fetch("/Identity/Account/Login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData,
-        redirect: "manual",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
       });
 
-      if (res.ok || res.type === "opaqueredirect") {
+      if (res.ok) {
         onLogin(email);
       } else {
         setError("Login failed. Check credentials.");

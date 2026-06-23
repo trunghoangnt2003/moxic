@@ -1,0 +1,24 @@
+﻿# Visual Studio
+.vs/
+*.slnx.vsidx
+
+# Node
+node_modules/
+dist/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data Protection
+.keys/
