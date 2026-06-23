@@ -1,7 +1,7 @@
 ﻿# Plan State: Moxic GameStore
 
 ## Current Phase
-**Phase 0: Project Initialization** — Complete ✓
+**Phase 1: Backend Core — Code First Database & API** — Planned ✓
 
 ## Project Reference
 See: .planning/PROJECT.md (updated 2026-06-23)
@@ -14,6 +14,7 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 | Phase | Status | Date |
 |-------|--------|------|
 | 0 — Project Init | ✓ Complete | 2026-06-23 |
+| 1 — Backend Core | ✓ Planned | 2026-06-23 |
 
 ## Active Decisions
 
@@ -25,6 +26,8 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 | MinIO presigned URLs | Committed |
 | Dark mode Epic-style UI | Committed |
 | Vertical MVP mode | Committed |
+| AES-256 encryption for XboxPassword | Locked |
+| PaymentConfig QR storage | Locked |
 
 ---
 *State updated: 2026-06-23*
