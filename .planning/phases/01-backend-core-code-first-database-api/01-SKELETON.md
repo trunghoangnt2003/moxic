@@ -2,10 +2,11 @@
 
 **Phase:** 1
 **Generated:** 2026-06-23
+**Revised:** 2026-06-23
 
 ## Capability Proven End-to-End
 
-An admin can log in, create a game with a cover image uploaded to MinIO, view the game in a list with presigned image URL, and configure payment QR codes — all running locally via Docker Compose + .NET 10 API + React admin page.
+An admin can log in, create a game with multiple images uploaded to MinIO, set a primary cover image, view the game in a list with presigned image URL, and configure payment QR codes — all running locally via Docker Compose + .NET 10 API + React admin page.
 
 ## Architectural Decisions
 
@@ -21,15 +22,26 @@ An admin can log in, create a game with a cover image uploaded to MinIO, view th
 | Frontend (admin) | React 19 + Vite + Tailwind CSS 4 Dark | Epic-style dark theme, fast dev, minimal overhead |
 | ORM mapping | Value Conversion for enums (Npgsql) | Store enums as strings in PostgreSQL for readability |
 | ID generation | Guid (UUID v4) | Safe for exposed IDs, no sequential guessing |
-| Migrations | EF Core migrations in CI | Version-controlled, repeatable, rollback-able |
+| Game images | GameMedia table (one-to-many) | Multiple images per game, primary flag, MinIO object keys |
+| Orders | Order header + OrderDetail lines | Normalized: one order can have multiple games |
+| Payment config | Single-row PaymentConfig table | Bank QR + Crypto QR stored as MinIO object keys |
+| Client confirmation | IsClientConfirmed + ClientConfirmedAt | Customer self-reports payment for manual verification flow |
+
+## Database Tables (5)
+
+- **Game** — game catalog with pricing, genre, tags, status
+- **GameMedia** — multiple images per game (MinIO object keys, primary flag)
+- **Order** — order header with customer info, encrypted Xbox password, client confirmation
+- **OrderDetail** — line items per order (game snapshot with price)
+- **PaymentConfig** — single-row QR config (bank + crypto, transfer template)
 
 ## Stack Touched in Phase 1
 
 - [x] Project scaffold (.NET 10 solution, React Vite app, Docker Compose)
-- [x] Routing — game CRUD API routes, admin login, admin pages
-- [x] Database — Game + Order + PaymentConfig tables via Code First migration
+- [x] Routing — game CRUD + media API routes, admin login, admin pages
+- [x] Database — 5 tables via Code First migration
 - [x] Object storage — MinIO image upload + presigned URL retrieval
-- [x] UI — minimal React admin page: game list, game form, payment config form
+- [x] UI — admin pages: game list, game form with image manager, payment config form
 - [x] Deployment — `docker-compose up` starts all services, documented run commands
 
 ## Out of Scope (Deferred to Later Slices)

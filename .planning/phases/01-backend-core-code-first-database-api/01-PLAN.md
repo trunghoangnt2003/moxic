@@ -6,11 +6,12 @@ skeleton: true
 requirements_addressed: [GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, PAY-01, PAY-02, PAY-03, PAY-04]
 waves: 3
 generated: 2026-06-23
+revised: 2026-06-23
 ---
 
 # Plan: Phase 1 — Backend Core
 
-**Goal:** Thiết lập .NET 10 solution với Code First database, MinIO integration, game CRUD API, payment config API, và admin page tối thiểu để mockup ảnh.
+**Goal:** Thiết lập .NET 10 solution với Code First database (Game, GameMedia, Order, OrderDetail, PaymentConfig), MinIO integration, game CRUD API, image management, payment config API, và admin page tối thiểu.
 
 ## Wave 1: Foundation — Scaffold & Database
 
@@ -33,96 +34,140 @@ generated: 2026-06-23
 - Init script for MinIO bucket creation (`moxic-games`, `moxic-config`)
 
 **W1.3: Define domain models**
-- Game entity (Id, Name, Description, OriginalPrice, SalePrice, Genre, Status, ReleaseDate, CoverImagePath, CreatedAt, UpdatedAt)
-- Order entity (Id, OrderCode, CustomerPhone, CustomerXboxEmail, CustomerXboxPasswordEncrypted, CustomerZalo, TotalAmount, Status, PaymentMethod, Notes, GameId, GameName, GamePrice, CreatedAt, UpdatedAt)
-- PaymentConfig entity (Id, Type, ImageUrl, WalletAddress, TransferContentTemplate, IsActive, UpdatedAt)
-- Enums: GameStatus (Available, Preorder), OrderStatus (Pending, Verifying, Installing, Completed, Cancelled), PaymentMethod (Bank, Crypto), PaymentConfigType (Bank, Crypto)
+
+*Game entity:*
+- Id (Guid PK), Name (string 200), Description (text)
+- OriginalPrice (decimal 18,2), SalePrice (decimal 18,2)
+- Genre (string 100)
+- Tags (string 500) — comma-separated: "Hot", "Sắp ra mắt"
+- Status (enum: Available, Preorder)
+- ReleaseDate (DateTime?, nullable)
+- CreatedAt, UpdatedAt (shadow properties)
+- Navigation: ICollection<GameMedia>
+
+*GameMedia entity:*
+- Id (Guid PK), GameId (Guid FK → Game)
+- ObjectKey (string 500) — MinIO key: `games/{game-id}/{filename}`
+- IsPrimary (bool) — flag for avatar/banner
+- DisplayOrder (int) — sorting
+- CreatedAt (DateTime)
+
+*Order entity:*
+- Id (Guid PK)
+- OrderCode (string 50) — unique, format: "MOXIC-YYYYMMDD-XXXXX"
+- CustomerPhone (string 20), CustomerXboxEmail (string 200)
+- CustomerXboxPasswordEncrypted (string 500) — AES-256 encrypted
+- CustomerZalo (string 100, nullable)
+- TotalAmount (decimal 18,2)
+- Status (enum: Pending, Verifying, Installing, Completed, Cancelled)
+- PaymentMethod (enum: Bank, Crypto)
+- IsClientConfirmed (bool) — client clicked "Đã chuyển khoản"
+- ClientConfirmedAt (DateTime?, nullable)
+- Notes (text?, nullable)
+- CreatedAt, UpdatedAt
+- Navigation: ICollection<OrderDetail>
+
+*OrderDetail entity:*
+- Id (Guid PK), OrderId (Guid FK → Order), GameId (Guid FK → Game)
+- GameName (string 200) — snapshot
+- Price (decimal 18,2) — snapshot price at purchase
+
+*PaymentConfig entity:*
+- Id (int PK) — single row
+- BankBucketName (string 100) — default "moxic-config"
+- BankQrObjectKey (string 500) — MinIO key for bank QR
+- CryptoBucketName (string 100?, nullable)
+- CryptoQrObjectKey (string 500?, nullable)
+- TransferSyntaxTemplate (string 256) — "MOXIC {OrderCode}"
+- UpdatedAt (DateTime)
+- NotMapped: BankQrPresignedUrl, CryptoQrPresignedUrl
+
+*Enums:* GameStatus, OrderStatus, PaymentMethod
 
 **W1.4: EF Core DbContext + Configuration**
-- `MoxicDbContext` with DbSet<Game>, DbSet<Order>, DbSet<PaymentConfig>
-- Fluent API configurations:
-  - Game: Name max 200, SalePrice decimal(18,2), index on Status+Genre
-  - Order: OrderCode unique index, encrypted column for XboxPassword
-  - PaymentConfig: Type+IsActive composite check
+- `MoxicDbContext` with DbSet<Game>, DbSet<GameMedia>, DbSet<Order>, DbSet<OrderDetail>, DbSet<PaymentConfig>
+- Fluent API:
+  - Game: Name max 200, SalePrice decimal(18,2), index on Status+Genre+Tags
+  - GameMedia: composite index on GameId+IsPrimary, cascade delete with Game
+  - Order: OrderCode unique index, encrypted column config
+  - OrderDetail: composite unique on OrderId+GameId
+  - PaymentConfig: single-row enforce (check constraint or app-level)
 - Shadow properties for audit (CreatedAt, UpdatedAt)
-- Seed data: default PaymentConfig row (placeholder)
+- Seed data: default PaymentConfig row with placeholder values
 
 **W1.5: Generate EF Core migration**
-- `Add-Migration InitialCreate` → initial schema
-- Script for `dotnet ef migrations add`
+- `Add-Migration InitialCreate` → initial schema with all 5 tables
 - Verify migration SQL targets PostgreSQL (Npgsql)
 
 **W1.6: ASP.NET Core Identity for Admin auth**
-- Add Identity with UI (default Razor Pages or simple login)
-- Seed admin user (config from appsettings)
-- Cookie authentication for admin endpoints
+- Add Identity with UI (default Razor Pages)
+- Seed admin user (credentials from appsettings)
+- Cookie authentication for admin razor pages + API
 
 ### Success Criteria
 - [ ] Solution compiles with `dotnet build`
 - [ ] Docker Compose starts PostgreSQL + MinIO successfully
-- [ ] `dotnet ef database update` creates all 3 tables
+- [ ] `dotnet ef database update` creates all 5 tables
 - [ ] Admin can log in with seeded credentials
 - [ ] Swagger UI loads at `/swagger`
 
-### Dependencies
-Dotnet SDK 10.0, Docker Desktop
-
 ---
 
-## Wave 2: Game Management — CRUD API + MinIO
+## Wave 2: Game Management — CRUD API + MinIO Media
 
 ### Tasks
 
-**W2.1: Game service layer**
+**W2.1: Service layer**
 - `IGameService` / `GameService` in Infrastructure
 - Methods: GetList, GetById, Create, Update, Delete
+- GetList filters: genre, status, tags, search keyword
 - AutoMapper or manual mapping to DTOs
-- Pagination + filtering (genre, status) + sorting
+- `IGameMediaService` / `GameMediaService`
+- Methods: AddMedia, DeleteMedia, SetPrimary, GetMediaByGameId
 
-**W2.2: Game API endpoints (public)**
-- `GET /api/games` — paginated list with presigned cover URLs
-- `GET /api/games/{id:guid}` — detail with presigned cover URL
-- DTOs: GameListItemDto, GameDetailDto (exclude sensitive fields)
+**W2.2: MinIO service integration**
+- `MinioService` wrapping `MinioClient` SDK
+- Methods: UploadObject(bucket, objectKey, stream, contentType), GetPresignedUrl(bucket, objectKey, expiry), DeleteObject(bucket, objectKey)
+- Configuration: endpoint, access key, secret key from appsettings/ENV
+- Bucket constants: `moxic-games`, `moxic-config`
+- Default presigned URL expiry: 1 hour
 
-**W2.3: Game API endpoints (admin)**
+**W2.3: Game API endpoints (public)**
+- `GET /api/games` — paginated list, each item includes primary image presigned URL
+- `GET /api/games/{id:guid}` — detail with all media presigned URLs
+- `GET /api/games/{id:guid}/media` — list media files for game
+- DTOs filter sensitive fields, include computed presigned URLs
+
+**W2.4: Game API endpoints (admin)**
 - `POST /api/admin/games` — create game
 - `PUT /api/admin/games/{id:guid}` — update game
-- `DELETE /api/admin/games/{id:guid}` — soft delete, mark inactive
-- `GET /api/admin/games` — admin list (all games including inactive)
+- `DELETE /api/admin/games/{id:guid}` — soft delete
+- `GET /api/admin/games` — admin list (all games)
+- `POST /api/admin/games/{id:guid}/media` — upload image → MinIO → create GameMedia record
+- `DELETE /api/admin/games/{id:guid}/media/{mediaId:guid}` — delete media from MinIO + DB
+- `PUT /api/admin/games/{id:guid}/media/{mediaId:guid}/primary` — set as primary (unset others)
 - Protected by `[Authorize]`
 
-**W2.4: MinIO service integration**
-- `MinioService` wrapping `MinioClient` SDK
-- Methods: UploadImage(bucket, objectName, stream), GetPresignedUrl(bucket, objectName, expiry)
-- Configuration: endpoint, access key, secret key from appsettings/ENV
-- Bucket name constants: `moxic-games`, `moxic-config`
-- Default expiry: 1 hour
-
-**W2.5: Game image upload endpoint**
-- `POST /api/admin/games/{id:guid}/image`
-- Accept multipart form file
-- Validate file type (jpg, png, webp) and size (max 5MB)
-- Upload to MinIO: `games/{game-id}/cover.{ext}`
-- Update Game.CoverImagePath in DB
-- Return presigned URL
-
-**W2.6: Admin game list page (minimal React)**
+**W2.5: Admin game management page (minimal React)**
 - Basic React app (Vite + Tailwind dark theme)
 - Game list table with search and filter
-- Create/Edit game form (all fields)
-- Image upload with preview
+- Create/Edit game form: name, desc, original/sale price, genre, tags, status, release date
+- Image gallery manager: upload multiple, set primary, reorder, delete
+- Image preview with presigned URLs
 - Dark theme CSS variables matching Epic-style
 
-### Success Criteria
-- [ ] `GET /api/games` returns paginated list with presigned image URLs
-- [ ] Admin can create game via API → stored in DB
-- [ ] Admin can upload image → stored in MinIO → presigned URL returned
-- [ ] Admin can view/edit/delete games
-- [ ] Admin page shows game list with cover images loaded from presigned URLs
-- [ ] Image upload validates file type and size
+**W2.6: Image validation**
+- Accept formats: jpg, png, webp
+- Max file size: 5MB per image
+- Auto-generate object key: `games/{game-id}/{guid}.{ext}`
 
-### Dependencies
-Wave 1 complete (DB, Docker, MinIO running)
+### Success Criteria
+- [ ] `GET /api/games` returns paginated list with primary image presigned URL
+- [ ] Admin can create game → game + media saved to DB + MinIO
+- [ ] Admin can upload multiple images per game → GameMedia records created
+- [ ] Admin can set primary image → frontend loads correct avatar/banner
+- [ ] Admin can delete media → object removed from MinIO + DB
+- [ ] Admin page shows game list with cover images loaded from presigned URLs
 
 ---
 
@@ -132,49 +177,41 @@ Wave 1 complete (DB, Docker, MinIO running)
 
 **W3.1: PaymentConfig service**
 - `IPaymentConfigService` / `PaymentConfigService`
-- Methods: GetActive, Upsert
-- Single-row or two-row pattern (Bank + Crypto)
+- Methods: GetActive (single row), Upsert (update text fields)
+- Presigned URL generation appended to NotMapped properties
 
 **W3.2: PaymentConfig API endpoints (admin)**
-- `GET /api/admin/payment-config` — get both Bank + Crypto configs
-- `PUT /api/admin/payment-config` — upsert config values (text fields)
-- `POST /api/admin/payment-config/bank-qr` — upload bank QR image to MinIO (`config/bank-qr.{ext}`)
-- `POST /api/admin/payment-config/crypto-qr` — upload crypto QR image to MinIO (`config/crypto-qr.{ext}`)
+- `GET /api/admin/payment-config` — get config with presigned QR URLs
+- `PUT /api/admin/payment-config` — update TransferSyntaxTemplate only (text)
+- `POST /api/admin/payment-config/bank-qr` — upload bank QR to MinIO (`config/bank-qr.{ext}`), update BankQrObjectKey
+- `POST /api/admin/payment-config/crypto-qr` — upload crypto QR to MinIO (`config/crypto-qr.{ext}`), update CryptoQrObjectKey
 
 **W3.3: Public payment config endpoint**
-- `GET /api/payment-config/active` — trả về ảnh QR + template nội dung chuyển khoản (cho Frontend gọi tại trang checkout)
-- Không trả về wallet address public (chỉ trả QR image)
+- `GET /api/payment-config/active` — returns TransferSyntaxTemplate + bank QR presigned URL + crypto QR presigned URL
+- No wallet addresses exposed publicly
 
 **W3.4: Admin payment config page (minimal React)**
-- Form to upload Bank QR image + preview
-- Form to upload Crypto QR image + preview
-- Input for wallet address
-- Input for transfer content template (with {OrderCode} variable hint)
+- Image upload zones for Bank QR + Crypto QR with preview
+- Text input for transfer syntax template (with {OrderCode} hint)
 - Save button → PUT API
+- Visual indicator showing last updated time
 
 ### Success Criteria
-- [ ] Admin can upload Bank QR → stored in MinIO → path saved
-- [ ] Admin can upload Crypto QR → stored in MinIO → path saved
-- [ ] Admin can configure transfer content template
-- [ ] `GET /api/payment-config/active` returns active configs with presigned QR URLs
-- [ ] Admin page shows QR preview before saving
-
-### Dependencies
-Wave 1 complete (DB, Docker, MinIO), Wave 2 complete (MinIO service)
+- [ ] Admin can upload Bank QR → MinIO → BankQrObjectKey saved
+- [ ] Admin can upload Crypto QR → MinIO → CryptoQrObjectKey saved
+- [ ] Admin can configure transfer template
+- [ ] `GET /api/payment-config/active` returns QRs with presigned URLs + template
+- [ ] Admin page shows QR previews before saving
 
 ---
 
 ## Cross-cutting Constraints
 
-- All passwords (Xbox) encrypted with AES-256 via Data Protection — decryptable in Admin
+- All Xbox passwords encrypted with AES-256 via Data Protection (IDataProtector) — decryptable in Admin
 - All image responses use presigned URLs with 1h expiry
 - API responses use camelCase JSON
 - All endpoints return proper HTTP status codes (200, 201, 400, 404, 401)
 - Swagger/OpenAPI documented for all endpoints
 - Vietnamese content supported (UTF-8)
-
-## Post-Planning Gaps
-
-To be run after plan creation:
-- Verify all 9 requirements (GAME-01..05, PAY-01..04) are covered
-- Verify 3 technical mandates (AES-256 encryption, PaymentConfig QR storage, MinIO presigned URLs) appear in task descriptions
+- OrderCode format: "MOXIC-YYYYMMDD-XXXXX" (date + random/sequential suffix)
+- IsClientConfirmed records customer self-confirmation timestamp
