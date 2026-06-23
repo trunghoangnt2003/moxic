@@ -88,26 +88,26 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAT-01 | Phase 1 | Pending |
-| CAT-02 | Phase 1 | Pending |
-| CAT-03 | Phase 1 | Pending |
-| CAT-04 | Phase 1 | Pending |
-| CAT-05 | Phase 1 | Pending |
-| CAT-06 | Phase 1 | Pending |
-| CART-01 | Phase 1 | Pending |
-| CART-02 | Phase 1 | Pending |
-| CART-03 | Phase 1 | Pending |
-| CART-04 | Phase 1 | Pending |
-| CART-05 | Phase 1 | Pending |
-| CART-06 | Phase 1 | Pending |
-| ORDR-01 | Phase 1 | Pending |
-| ORDR-02 | Phase 1 | Pending |
-| ORDR-03 | Phase 1 | Pending |
-| ORDR-04 | Phase 1 | Pending |
-| ORDR-05 | Phase 1 | Pending |
-| ORDR-06 | Phase 1 | Pending |
-| ORDR-07 | Phase 1 | Pending |
-| ORDR-08 | Phase 1 | Pending |
+| CAT-01 | Phase 2 | Pending |
+| CAT-02 | Phase 2 | Pending |
+| CAT-03 | Phase 2 | Pending |
+| CAT-04 | Phase 2 | Pending |
+| CAT-05 | Phase 2 | Pending |
+| CAT-06 | Phase 2 | Pending |
+| CART-01 | Phase 3 | Pending |
+| CART-02 | Phase 3 | Pending |
+| CART-03 | Phase 3 | Pending |
+| CART-04 | Phase 3 | Pending |
+| CART-05 | Phase 3 | Pending |
+| CART-06 | Phase 3 | Pending |
+| ORDR-01 | Phase 4 | Pending |
+| ORDR-02 | Phase 4 | Pending |
+| ORDR-03 | Phase 4 | Pending |
+| ORDR-04 | Phase 4 | Pending |
+| ORDR-05 | Phase 4 | Pending |
+| ORDR-06 | Phase 4 | Pending |
+| ORDR-07 | Phase 4 | Pending |
+| ORDR-08 | Phase 4 | Pending |
 | GAME-01 | Phase 1 | Pending |
 | GAME-02 | Phase 1 | Pending |
 | GAME-03 | Phase 1 | Pending |
@@ -117,13 +117,13 @@
 | PAY-02 | Phase 1 | Pending |
 | PAY-03 | Phase 1 | Pending |
 | PAY-04 | Phase 1 | Pending |
-| NOTF-01 | Phase 1 | Pending |
-| NOTF-02 | Phase 1 | Pending |
-| NOTF-03 | Phase 1 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
-| UI-03 | Phase 1 | Pending |
-| UI-04 | Phase 1 | Pending |
+| NOTF-01 | Phase 5 | Pending |
+| NOTF-02 | Phase 5 | Pending |
+| NOTF-03 | Phase 5 | Pending |
+| UI-01 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 3 | Pending |
+| UI-04 | Phase 2 | Pending |
 
 **Coverage:**
 - v1 requirements: 36 total
@@ -132,4 +132,4 @@
 
 ---
 *Requirements defined: 2026-06-23*
-*Last updated: 2026-06-23 after initial definition*
+*Last updated: 2026-06-23 after roadmap creation*
