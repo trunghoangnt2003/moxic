@@ -1,0 +1,6 @@
+@Moxic.Api_HostAddress = http://localhost:5234
+
+GET {{Moxic.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

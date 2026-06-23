@@ -1,0 +1,11 @@
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\bin\Debug\net10.0\Moxic.Shared.deps.json
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\bin\Debug\net10.0\Moxic.Shared.dll
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\bin\Debug\net10.0\Moxic.Shared.pdb
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.AssemblyInfoInputs.cache
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.AssemblyInfo.cs
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.csproj.CoreCompileInputs.cache
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.dll
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\refint\Moxic.Shared.dll
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\Moxic.Shared.pdb
+C:\Users\trung\OneDrive\Documents\project-moxic\Moxic.Shared\obj\Debug\net10.0\ref\Moxic.Shared.dll

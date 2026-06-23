@@ -1,7 +1,7 @@
 ﻿# Plan State: Moxic GameStore
 
 ## Current Phase
-**Phase 1: Backend Core — Code First Database & API** — Planned ✓
+**Phase 1: Backend Core — Code First Database & API** — In Progress
 
 ## Project Reference
 See: .planning/PROJECT.md (updated 2026-06-23)
@@ -14,7 +14,7 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 | Phase | Status | Date |
 |-------|--------|------|
 | 0 — Project Init | ✓ Complete | 2026-06-23 |
-| 1 — Backend Core | ✓ Planned | 2026-06-23 |
+| 1 — Backend Core | 🔄 In Progress | 2026-06-23 |
 
 ## Active Decisions
 

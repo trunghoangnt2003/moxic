@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Moxic.Api/Moxic.Api.csproj" />
+  <Project Path="Moxic.Core/Moxic.Core.csproj" />
+  <Project Path="Moxic.Infrastructure/Moxic.Infrastructure.csproj" />
+  <Project Path="Moxic.Shared/Moxic.Shared.csproj" />
+</Solution>
