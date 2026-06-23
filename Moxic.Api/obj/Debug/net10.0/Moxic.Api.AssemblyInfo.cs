@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Moxic.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5b4d18ee29394e3726128a3351848c38af4e3d93")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+163a88b5d5adfec0dfd03a244e2a0d80379159e0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Moxic.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Moxic.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
