@@ -38,7 +38,19 @@ public class MinioService : IMinioService
             .WithObject(objectKey)
             .WithExpiry(expiryHours * 3600);
 
-        return await _minioClient.PresignedGetObjectAsync(args);
+        var url = await _minioClient.PresignedGetObjectAsync(args);
+        // Replace internal Docker hostname with public endpoint
+        var internalEndpoint = $"{_settings.Endpoint}";
+        if (!string.IsNullOrEmpty(internalEndpoint) && url.Contains(internalEndpoint))
+        {
+            url = url.Replace(internalEndpoint, _settings.PublicEndpoint);
+        }
+        // Also handle protocol mismatch (internal http, public https)
+        if (_settings.WithSSL && url.StartsWith("http://"))
+        {
+            url = url.Replace("http://", "https://");
+        }
+        return url;
     }
 
     public async Task DeleteObjectAsync(string bucket, string objectKey)
@@ -60,4 +72,5 @@ public class MinioSettings
     public string GamesBucket { get; set; } = "moxic-games";
     public string ConfigBucket { get; set; } = "moxic-config";
     public int PresignedUrlExpiryHours { get; set; } = 1;
+    public string PublicEndpoint { get; set; } = "localhost:9000";
 }

@@ -54,12 +54,15 @@
       Minio__Endpoint: minio:9000
       Minio__AccessKey: ${MINIO_USER:-moxicadmin}
       Minio__SecretKey: ${MINIO_PASSWORD:-moxic123456}
+      Minio__PublicEndpoint: minio.moxic.co
+      Minio__WithSSL: true
       Minio__GamesBucket: ${MINIO_GAMES_BUCKET:-moxic-games}
       Minio__ConfigBucket: ${MINIO_CONFIG_BUCKET:-moxic-config}
       Smtp__Host: ${SMTP_HOST:-smtp.gmail.com}
       Smtp__Port: ${SMTP_PORT:-587}
       Smtp__Username: ${SMTP_USERNAME:-}
       Smtp__Password: ${SMTP_PASSWORD:-}
+      Cors__Origins: ${CORS_ORIGINS:-https://moxic.co,https://admin.moxic.co}
       Smtp__AdminEmail: ${SMTP_ADMIN_EMAIL:-}
     depends_on:
       postgres:
