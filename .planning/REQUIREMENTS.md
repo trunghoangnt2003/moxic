@@ -51,9 +51,9 @@
 
 ### Notifications
 
-- [ ] **NOTF-01**: System sends email notification to customer when order status changes to "Verifying" (payment received)
-- [ ] **NOTF-02**: System sends email notification when order is "Completed" (game installed)
-- [ ] **NOTF-03**: Admin receives notification (email/dashboard) for new orders
+- [x] **NOTF-01**: System sends email notification to customer when order status changes to "Verifying" (payment received)
+- [x] **NOTF-02**: System sends email notification when order is "Completed" (game installed)
+- [x] **NOTF-03**: Admin receives notification (email/dashboard) for new orders
 
 ### UI/UX
 
@@ -117,15 +117,16 @@
 | PAY-02 | Phase 1 | Pending |
 | PAY-03 | Phase 1 | Pending |
 | PAY-04 | Phase 1 | Pending |
-| NOTF-01 | Phase 5 | Pending |
-| NOTF-02 | Phase 5 | Pending |
-| NOTF-03 | Phase 5 | Pending |
+| NOTF-01 | Phase 5 | Complete |
+| NOTF-02 | Phase 5 | Complete |
+| NOTF-03 | Phase 5 | Complete |
 | UI-01 | Phase 2 | Pending |
 | UI-02 | Phase 2 | Pending |
 | UI-03 | Phase 3 | Pending |
 | UI-04 | Phase 2 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 36 total
 - Mapped to phases: 36
 - Unmapped: 0 ✓
