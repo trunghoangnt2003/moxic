@@ -10,6 +10,9 @@ interface PaymentConfigData {
   cryptoBucketName: string | null;
   cryptoQrObjectKey: string | null;
   transferSyntaxTemplate: string;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountHolder: string;
   updatedAt: string;
   bankQrPresignedUrl?: string | null;
   cryptoQrPresignedUrl?: string | null;
@@ -18,6 +21,9 @@ interface PaymentConfigData {
 export default function PaymentConfig() {
   const [config, setConfig] = useState<PaymentConfigData | null>(null);
   const [template, setTemplate] = useState("MOXIC {OrderCode}");
+  const [bankName, setBankName] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankAccountHolder, setBankAccountHolder] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingBank, setUploadingBank] = useState(false);
@@ -30,6 +36,9 @@ export default function PaymentConfig() {
         if (d.id) {
           setConfig(d);
           setTemplate(d.transferSyntaxTemplate);
+          setBankName(d.bankName || "");
+          setBankAccountNumber(d.bankAccountNumber || "");
+          setBankAccountHolder(d.bankAccountHolder || "");
         }
       });
   }, []);
@@ -40,7 +49,12 @@ export default function PaymentConfig() {
     await fetch("/api/admin/payment-config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transferSyntaxTemplate: template }),
+      body: JSON.stringify({
+        transferSyntaxTemplate: template,
+        bankName: bankName,
+        bankAccountNumber: bankAccountNumber,
+        bankAccountHolder: bankAccountHolder,
+      }),
     });
     setSaving(false);
     setSaved(true);
@@ -75,7 +89,7 @@ export default function PaymentConfig() {
     <div className="space-y-5">
       <div>
         <h1 className="text-lg font-bold text-white font-mono tracking-tight">Payment</h1>
-        <p className="text-xs text-steam-muted mt-0.5">QR codes &amp; transfer template</p>
+        <p className="text-xs text-steam-muted mt-0.5">QR codes, bank info &amp; transfer template</p>
       </div>
 
       {/* QR Cards */}
@@ -151,6 +165,42 @@ export default function PaymentConfig() {
         </div>
       </div>
 
+      {/* Bank Account Info */}
+      <div className="bg-steam-surface border border-steam-border rounded-sm p-5 max-w-xl">
+        <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">
+          Bank Account Info
+        </h2>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Bank Name</label>
+            <input
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              className="w-full steam-input"
+              placeholder="e.g. Vietcombank"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Account Number</label>
+            <input
+              value={bankAccountNumber}
+              onChange={(e) => setBankAccountNumber(e.target.value)}
+              className="w-full steam-input font-mono"
+              placeholder="e.g. 0123456789"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Account Holder</label>
+            <input
+              value={bankAccountHolder}
+              onChange={(e) => setBankAccountHolder(e.target.value)}
+              className="w-full steam-input"
+              placeholder="e.g. NGUYEN VAN A"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Template */}
       <div className="bg-steam-surface border border-steam-border rounded-sm p-5 max-w-xl">
         <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">
@@ -176,7 +226,7 @@ export default function PaymentConfig() {
           ) : (
             <Save size={14} />
           )}
-          {saved ? "Saved!" : saving ? "Saving..." : "Save Template"}
+          {saved ? "Saved!" : saving ? "Saving..." : "Save All"}
         </button>
       </div>
     </div>

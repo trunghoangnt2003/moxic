@@ -152,7 +152,8 @@ export default function OrderList() {
           >
             <option value="">All Status</option>
             <option value="Pending">Pending</option>
-            <option value="Verifying">Verifying</option>
+            <option value="AwaitingConfirmation">Awaiting Confirmation</option>
+          <option value="Verifying">Verifying</option>
             <option value="Installing">Installing</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
@@ -277,3 +278,4 @@ export default function OrderList() {
     </div>
   );
 }
+

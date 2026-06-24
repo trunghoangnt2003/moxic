@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import type { GamesResponse, GameDetail, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
 const api = axios.create({
@@ -38,5 +38,16 @@ export async function createOrder(request: OrderCreateRequest) {
 
 export async function getOrder(orderCode: string) {
   const { data } = await api.get<OrderConfirmationData>(`/orders/${orderCode}`);
+  return data;
+}
+
+export async function uploadPaymentProof(orderCode: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await api.post<{ orderCode: string; status: string }>(
+    `/orders/${orderCode}/proof`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
   return data;
 }

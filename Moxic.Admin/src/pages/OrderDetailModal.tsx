@@ -6,6 +6,7 @@ import {
   Loader2,
   ArrowRight,
   Ban,
+  CheckCircle2,
 } from "lucide-react";
 
 interface OrderDetailItem {
@@ -25,6 +26,8 @@ interface OrderDetail {
   paymentMethod: string;
   notes?: string;
   items: OrderDetailItem[];
+  paymentProofUrl?: string | null;
+  cancellationReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +37,7 @@ const formatPrice = (n: number) => n.toLocaleString() + "₫";
 const statusBadge = (status: string, large = false) => {
   const styles: Record<string, string> = {
     Pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    AwaitingConfirmation: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     Verifying: "bg-steam-blue/10 text-steam-blue border-steam-blue/20",
     Installing: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Completed: "bg-steam-green/10 text-steam-green border-steam-green/20",
@@ -60,6 +64,8 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [transitioning, setTransitioning] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [showRejectInput, setShowRejectInput] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -75,13 +81,22 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
   }, [orderId]);
 
   const handleStatusTransition = async (newStatus: string) => {
-    if (!window.confirm(`Change status to "${newStatus}"?`)) return;
+    if (newStatus === "Cancelled" && !rejectReason) {
+      setShowRejectInput(true);
+      return;
+    }
+    const msg = newStatus === "Cancelled"
+      ? `Reject order "${order?.orderCode}"? Reason: ${rejectReason}`
+      : `Change status to "${newStatus}"?`;
+    if (!window.confirm(msg)) return;
     setTransitioning(newStatus);
     try {
+      const body: any = { status: newStatus };
+      if (newStatus === "Cancelled" && rejectReason) body.reason = rejectReason;
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -101,6 +116,11 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
         return [
           { label: "Received Payment", status: "Verifying", color: "bg-steam-blue text-black hover:bg-steam-blue-hover", icon: ArrowRight },
           { label: "Cancel", status: "Cancelled", color: "bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20", icon: Ban },
+        ];
+      case "AwaitingConfirmation":
+        return [
+          { label: "Verify", status: "Verifying", color: "bg-steam-blue text-black hover:bg-steam-blue-hover", icon: CheckCircle2 },
+          { label: "Reject", status: "Cancelled", color: "bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20", icon: Ban },
         ];
       case "Verifying":
         return [
@@ -134,7 +154,6 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
           </div>
         ) : order ? (
           <>
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-steam-border">
               <div className="flex items-center gap-3">
                 <h2 className="text-base font-bold text-white font-mono">{order.orderCode}</h2>
@@ -207,6 +226,26 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
                 </div>
               </div>
 
+              {/* Payment Proof */}
+              {order.paymentProofUrl && (
+                <div>
+                  <h3 className="text-xs font-semibold text-steam-muted uppercase tracking-wider mb-2">Payment Proof</h3>
+                  <img
+                    src={order.paymentProofUrl}
+                    alt="Payment proof"
+                    className="max-w-md w-full rounded border border-steam-border bg-white"
+                  />
+                </div>
+              )}
+
+              {/* Cancellation Reason */}
+              {order.cancellationReason && (
+                <div>
+                  <h3 className="text-xs font-semibold text-steam-muted uppercase tracking-wider mb-2">Cancellation Reason</h3>
+                  <p className="text-sm text-red-400 bg-red-500/10 rounded p-3 border border-red-500/20">{order.cancellationReason}</p>
+                </div>
+              )}
+
               {/* Notes */}
               {order.notes && (
                 <div>
@@ -214,26 +253,57 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
                   <p className="text-sm text-steam-text bg-steam-surface-3 rounded p-3 border border-steam-border">{order.notes}</p>
                 </div>
               )}
+
+              {/* Reject reason input */}
+              {showRejectInput && (
+                <div>
+                  <h3 className="text-xs font-semibold text-steam-muted uppercase tracking-wider mb-2">Rejection Reason</h3>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="w-full steam-input h-20 resize-none"
+                    placeholder="Enter reason for rejection..."
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => handleStatusTransition("Cancelled")}
+                      disabled={!rejectReason || transitioning !== null}
+                      className="steam-btn bg-red-500 text-white disabled:opacity-50"
+                    >
+                      {transitioning === "Cancelled" ? <Loader2 size={12} className="animate-spin" /> : null}
+                      Confirm Reject
+                    </button>
+                    <button
+                      onClick={() => { setShowRejectInput(false); setRejectReason(""); }}
+                      className="steam-btn bg-steam-surface-3 text-steam-muted"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-steam-border bg-steam-bg/30">
-              {getActions().map((action) => (
-                <button
-                  key={action.status}
-                  onClick={() => handleStatusTransition(action.status)}
-                  disabled={transitioning !== null}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${action.color} disabled:opacity-50`}
-                >
-                  {transitioning === action.status ? (
-                    <Loader2 size={12} className="animate-spin" />
-                  ) : (
-                    <action.icon size={12} />
-                  )}
-                  {action.label}
-                </button>
-              ))}
-            </div>
+            {!showRejectInput && (
+              <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-steam-border bg-steam-bg/30">
+                {getActions().map((action) => (
+                  <button
+                    key={action.status}
+                    onClick={() => handleStatusTransition(action.status)}
+                    disabled={transitioning !== null}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${action.color} disabled:opacity-50`}
+                  >
+                    {transitioning === action.status ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <action.icon size={12} />
+                    )}
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </>
         ) : null}
       </div>

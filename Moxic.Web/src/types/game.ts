@@ -1,4 +1,4 @@
-export interface GameMedia {
+﻿export interface GameMedia {
   id: string;
   objectKey: string;
   isPrimary: boolean;
@@ -73,6 +73,9 @@ export interface ActivePaymentConfig {
   transferSyntaxTemplate: string;
   bankQrUrl?: string;
   cryptoQrUrl?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
 }
 
 export interface OrderCreateRequest {
@@ -96,15 +99,21 @@ export interface OrderConfirmationItem {
   price: number;
 }
 
+export interface PaymentConfigInfo {
+  transferSyntaxTemplate: string;
+  bankQrUrl?: string;
+  cryptoQrUrl?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
+}
+
 export interface OrderConfirmationData {
   orderCode: string;
   items: OrderConfirmationItem[];
   totalAmount: number;
   status: string;
   createdAt: string;
-  paymentConfig?: {
-    transferSyntaxTemplate: string;
-    bankQrUrl?: string;
-    cryptoQrUrl?: string;
-  } | null;
+  paymentProofUrl?: string | null;
+  paymentConfig?: PaymentConfigInfo | null;
 }
