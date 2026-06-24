@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Minio;
-using Resend;
 using Moxic.Api.Endpoints;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
@@ -70,9 +69,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Email (Resend + Polly) ? sent via background queue
-builder.Services.AddResend(builder.Configuration["Resend:ApiKey"]!);
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+// Email (SMTP via MailKit) ? sent via background queue
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IBackgroundEmailQueue, Moxic.Api.Services.BackgroundEmailQueue>();
 builder.Services.AddHostedService<Moxic.Api.Services.EmailProcessingService>();
