@@ -315,6 +315,9 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("ClientConfirmedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -355,6 +358,9 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
+
+                    b.Property<string>("PaymentProofObjectKey")
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -413,10 +419,22 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BankAccountHolder")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("BankBucketName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("BankQrObjectKey")
                         .IsRequired()
