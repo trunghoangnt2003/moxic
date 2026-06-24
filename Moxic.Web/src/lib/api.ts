@@ -1,8 +1,9 @@
 ﻿import axios from "axios";
 import type { GamesResponse, GameDetail, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_URL,
 });
 
 export async function getGames(params?: {

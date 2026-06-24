@@ -12,6 +12,9 @@ import {
   Check,
   Monitor,
   AlertCircle,
+  Clock,
+  X,
+  ChevronDown,
 } from "lucide-react";
 
 interface MediaItem {
@@ -37,8 +40,87 @@ interface Rating {
   label: string;
 }
 
+interface QueuedFile {
+  file: File;
+  previewUrl: string;
+}
+
+interface SelectOption {
+  id: string;
+  name: string;
+}
+
 const emptyReq = (): SysReq => ({ os: "", processor: "", memory: "", graphics: "", storage: "" });
 const emptyRating = (): Rating => ({ source: "", score: 0, maxScore: 10, label: "" });
+
+function MultiSelect({ options, selected, onChange, placeholder }: {
+  options: SelectOption[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  const selectedNames = options.filter(o => selected.includes(o.id)).map(o => o.name);
+  const unselected = options.filter(o => !selected.includes(o.id));
+
+  const toggle = (id: string) => {
+    if (selected.includes(id)) {
+      onChange(selected.filter(s => s !== id));
+    } else {
+      onChange([...selected, id]);
+    }
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="steam-input flex items-center flex-wrap gap-1 min-h-[34px] cursor-pointer"
+        onClick={() => setOpen(!open)}
+      >
+        {selectedNames.length === 0 ? (
+          <span className="text-steam-muted/50 text-sm">{placeholder}</span>
+        ) : (
+          selectedNames.map(n => (
+            <span key={n} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-steam-blue/15 text-steam-blue border border-steam-blue/20">
+              {n}
+            </span>
+          ))
+        )}
+        <ChevronDown size={14} className="ml-auto text-steam-muted flex-shrink-0" />
+      </div>
+      {open && (
+        <div className="absolute z-10 mt-1 w-full bg-steam-surface-3 border border-steam-border rounded-sm shadow-lg max-h-48 overflow-auto">
+          {unselected.length === 0 && selected.length === options.length ? (
+            <div className="px-3 py-2 text-xs text-steam-muted">All selected</div>
+          ) : (
+            options.map(o => (
+              <div
+                key={o.id}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors` }
+                onClick={() => toggle(o.id)}
+              >
+                <div className="w-3.5 h-3.5 rounded border flex items-center justify-center">
+                  {selected.includes(o.id) && <Check size={10} className="text-black" />}
+                </div>
+                {o.name}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function GameForm() {
   const { id } = useParams();
@@ -50,8 +132,8 @@ export default function GameForm() {
   const [description, setDescription] = useState("");
   const [originalPrice, setOriginalPrice] = useState(0);
   const [salePrice, setSalePrice] = useState(0);
-  const [genre, setGenre] = useState("");
-  const [tags, setTags] = useState("");
+  const [genreIds, setGenreIds] = useState<string[]>([]);
+  const [tagIds, setTagIds] = useState<string[]>([]);
   const [status, setStatus] = useState("Available");
   const [releaseDate, setReleaseDate] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
@@ -59,10 +141,20 @@ export default function GameForm() {
   const [recReq, setRecReq] = useState<SysReq>(emptyReq());
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [queuedFiles, setQueuedFiles] = useState<QueuedFile[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [created, setCreated] = useState(false);
+
+  // Reference data
+  const [genreOptions, setGenreOptions] = useState<SelectOption[]>([]);
+  const [tagOptions, setTagOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    fetch(apiUrl("/api/admin/genres").then(r => r.json()).then(setGenreOptions);
+    fetch(apiUrl("/api/admin/tags").then(r => r.json()).then(setTagOptions);
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -73,8 +165,8 @@ export default function GameForm() {
           setDescription(g.description);
           setOriginalPrice(g.originalPrice);
           setSalePrice(g.salePrice);
-          setGenre(g.genre);
-          setTags(g.tags);
+          setGenreIds(g.genres?.map((ge: any) => ge.id) || []);
+          setTagIds(g.tags?.map((t: any) => t.id) || []);
           setStatus(g.status);
           setReleaseDate(g.releaseDate?.split("T")[0] || "");
           setIsFeatured(g.isFeatured || false);
@@ -87,16 +179,27 @@ export default function GameForm() {
           setGameId(id);
         });
     }
+    return () => { queuedFiles.forEach((qf) => URL.revokeObjectURL(qf.previewUrl)); };
   }, [id]);
 
   const buildBody = () => ({
     name, description, originalPrice, salePrice,
-    genre, tags, status,
+    genreIds, tagIds, status,
     releaseDate: releaseDate || null,
     isFeatured,
     systemRequirements: { minimum: minReq, recommended: recReq },
     ratings,
   });
+
+  const uploadToGame = async (targetId: string, qf: QueuedFile) => {
+    const formData = new FormData();
+    formData.append("file", qf.file);
+    const res = await fetch(`/api/admin/games/${targetId}/media`, {
+      method: "POST", body: formData,
+    });
+    if (!res.ok) throw new Error((await res.text()) || "Upload failed");
+    return await res.json();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +213,7 @@ export default function GameForm() {
         });
         navigate("/games");
       } else {
-        const res = await fetch("/api/admin/games", {
+        const res = await fetch(apiUrl("/api/admin/games", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
@@ -120,10 +223,18 @@ export default function GameForm() {
           return;
         }
         const data = await res.json();
-        setGameId(data.id);
+        const newId = data.id;
+        setGameId(newId);
         setCreated(true);
-        window.history.replaceState(null, "", `/games/${data.id}/edit`);
-        setMedia([]);
+        window.history.replaceState(null, "", /games//edit);
+
+        for (const qf of queuedFiles) {
+          try {
+            const d = await uploadToGame(newId, qf);
+            setMedia((prev) => [...prev, { ...d, presignedUrl: d.presignedUrl }]);
+          } catch {}
+        }
+        setQueuedFiles([]);
       }
     } finally {
       setSaving(false);
@@ -131,28 +242,33 @@ export default function GameForm() {
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length || !gameId) return;
-    setUploading(true);
+    if (!e.target.files?.length) return;
     setUploadError("");
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+
+    if (!gameId) {
+      const previewUrl = URL.createObjectURL(file);
+      setQueuedFiles((prev) => [...prev, { file, previewUrl }]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setUploading(true);
     try {
-      const res = await fetch(`/api/admin/games/${gameId}/media`, {
-        method: "POST", body: formData,
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Upload failed (${res.status})`);
-      }
-      const data = await res.json();
-      setMedia((prev) => [...prev, { ...data, presignedUrl: data.presignedUrl }]);
+      const d = await uploadToGame(gameId, { file, previewUrl: "" });
+      setMedia((prev) => [...prev, { ...d, presignedUrl: d.presignedUrl }]);
     } catch (err: any) {
       setUploadError(err.message || "Upload failed");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const removeQueued = (i: number) => {
+    const qf = queuedFiles[i];
+    URL.revokeObjectURL(qf.previewUrl);
+    setQueuedFiles((prev) => prev.filter((_, idx) => idx !== i));
   };
 
   const handleDeleteMedia = async (mediaId: string) => {
@@ -171,11 +287,8 @@ export default function GameForm() {
   const removeRating = (i: number) => setRatings((prev) => prev.filter((_, idx) => idx !== i));
   const updateRating = (i: number, field: keyof Rating, value: any) =>
     setRatings((prev) => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r));
-
   const updateReq = (setter: React.Dispatch<React.SetStateAction<SysReq>>, field: keyof SysReq, value: string) =>
     setter((prev) => ({ ...prev, [field]: value }));
-
-  const canUploadMedia = !!gameId;
 
   return (
     <div className="space-y-5">
@@ -218,39 +331,33 @@ export default function GameForm() {
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Pricing & Classification</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label>
-                <input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required />
-              </div>
-              <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label>
-                <input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Genre</label><input placeholder="e.g. Action, RPG" value={genre} onChange={(e) => setGenre(e.target.value)} className="w-full steam-input" /></div>
-              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Tags</label><input placeholder="Hot, Sắp ra mắt" value={tags} onChange={(e) => setTags(e.target.value)} className="w-full steam-input" /></div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label><input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label><input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Status</label>
+                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Genres</label>
+                <MultiSelect options={genreOptions} selected={genreIds} onChange={setGenreIds} placeholder="Select genres..." />
+              </div>
+              <div>
+                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Tags</label>
+                <MultiSelect options={tagOptions} selected={tagIds} onChange={setTagIds} placeholder="Select tags..." />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Status</label>
                 <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full steam-input">
                   <option value="Available">Available</option>
                   <option value="Preorder">Preorder</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Release Date</label>
-                <input type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} className="w-full steam-input" />
-              </div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Release Date</label><input type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} className="w-full steam-input" /></div>
             </div>
           </div>
 
           {/* System Requirements */}
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
-            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2">
-              <Monitor size={14} /> System Requirements
-            </h2>
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2"><Monitor size={14} /> System Requirements</h2>
             {(["Minimum", "Recommended"] as const).map((label) => {
               const req = label === "Minimum" ? minReq : recReq;
               const setter = label === "Minimum" ? setMinReq : setRecReq;
@@ -261,7 +368,7 @@ export default function GameForm() {
                     {([["os", "OS"], ["processor", "CPU"], ["memory", "RAM"], ["graphics", "GPU"], ["storage", "Storage"]] as const).map(([field, fieldLabel]) => (
                       <div key={field} className={field === "storage" || field === "graphics" ? "col-span-2" : ""}>
                         <label className="block text-[11px] text-steam-muted mb-1">{fieldLabel}</label>
-                        <input value={req[field]} onChange={(e) => updateReq(setter, field, e.target.value)} className="w-full steam-input text-xs" placeholder={`e.g. ${field === "os" ? "Windows 10" : field === "processor" ? "Intel i5" : field === "memory" ? "8GB" : field === "graphics" ? "GTX 1060" : "50GB"}`} />
+                        <input value={req[field]} onChange={(e) => updateReq(setter, field, e.target.value)} className="w-full steam-input text-xs" />
                       </div>
                     ))}
                   </div>
@@ -284,8 +391,8 @@ export default function GameForm() {
                   <button onClick={() => removeRating(i)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={12} /></button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[11px] text-steam-muted mb-1">Source</label><input value={r.source} onChange={(e) => updateRating(i, "source", e.target.value)} className="w-full steam-input text-xs" placeholder="e.g. Metacritic" /></div>
-                  <div><label className="block text-[11px] text-steam-muted mb-1">Label</label><input value={r.label} onChange={(e) => updateRating(i, "label", e.target.value)} className="w-full steam-input text-xs" placeholder="e.g. Must Play" /></div>
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Source</label><input value={r.source} onChange={(e) => updateRating(i, "source", e.target.value)} className="w-full steam-input text-xs" /></div>
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Label</label><input value={r.label} onChange={(e) => updateRating(i, "label", e.target.value)} className="w-full steam-input text-xs" /></div>
                   <div><label className="block text-[11px] text-steam-muted mb-1">Score</label><input type="number" min="0" max="100" step="0.1" value={r.score} onChange={(e) => updateRating(i, "score", Number(e.target.value))} className="w-full steam-input text-xs font-mono" /></div>
                   <div><label className="block text-[11px] text-steam-muted mb-1">Max Score</label><input type="number" min="1" max="100" value={r.maxScore} onChange={(e) => updateRating(i, "maxScore", Number(e.target.value))} className="w-full steam-input text-xs font-mono" /></div>
                 </div>
@@ -307,43 +414,50 @@ export default function GameForm() {
         <div className="space-y-4">
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">Media</h2>
-            {canUploadMedia ? (
-              <>
-                <label className="flex flex-col items-center justify-center gap-2 bg-steam-surface-3 border-2 border-dashed border-steam-border rounded-sm p-6 cursor-pointer hover:border-steam-blue/50 hover:bg-steam-blue/5 transition-all">
-                  {uploading ? <Loader2 size={22} className="text-steam-blue animate-spin" /> : (
-                    <><Upload size={22} className="text-steam-muted" /><span className="text-xs text-steam-muted text-center leading-relaxed">Click to upload<br /><span className="text-steam-muted/50">JPG, PNG, WebP — 5MB max</span></span></>
-                  )}
-                  <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleUpload} className="hidden" disabled={uploading} />
-                </label>
-                {uploadError && (
-                  <div className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded bg-red-500/10 border border-red-500/20">
-                    <AlertCircle size={12} className="text-red-400 flex-shrink-0" />
-                    <span className="text-xs text-red-400">{uploadError}</span>
-                  </div>
-                )}
-                <div className="mt-4 space-y-3">
-                  {media.map((m) => (
-                    <div key={m.id} className="bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden card-hover">
-                      {m.presignedUrl && <div className="aspect-video bg-steam-bg"><img src={m.presignedUrl} className="w-full h-full object-cover" alt="" /></div>}
-                      <div className="flex items-center justify-between px-3 py-2">
-                        <button onClick={() => handleSetPrimary(m.id)} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors ${m.isPrimary ? "bg-steam-gold/15 text-steam-gold" : "bg-steam-surface text-steam-muted hover:text-steam-gold border border-steam-border"}`}>
-                          <Star size={11} fill={m.isPrimary ? "currentColor" : "none"} />{m.isPrimary ? "Primary" : "Set"}
-                        </button>
-                        <button onClick={() => handleDeleteMedia(m.id)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={13} /></button>
-                      </div>
-                    </div>
-                  ))}
-                  {media.length === 0 && !uploadError && (
-                    <div className="text-center py-6"><Image size={24} className="mx-auto mb-2 text-steam-border" /><p className="text-xs text-steam-muted">No images yet</p></div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <Plus size={28} className="mx-auto mb-3 text-steam-border" />
-                <p className="text-xs text-steam-muted leading-relaxed">Create the game first<br /><span className="text-steam-muted/50">then add images here</span></p>
+
+            <label className="flex flex-col items-center justify-center gap-2 bg-steam-surface-3 border-2 border-dashed border-steam-border rounded-sm p-6 cursor-pointer hover:border-steam-blue/50 hover:bg-steam-blue/5 transition-all">
+              {uploading ? <Loader2 size={22} className="text-steam-blue animate-spin" /> : (
+                <><Upload size={22} className="text-steam-muted" /><span className="text-xs text-steam-muted text-center leading-relaxed">Click to upload<br /><span className="text-steam-muted/50">JPG, PNG, WebP — 5MB max</span></span></>
+              )}
+              <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleUpload} className="hidden" disabled={uploading} />
+            </label>
+
+            {!gameId && queuedFiles.length === 0 && media.length === 0 && (
+              <p className="text-[11px] text-steam-muted/50 text-center mt-2">Images will upload after game is created</p>
+            )}
+
+            {uploadError && (
+              <div className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded bg-red-500/10 border border-red-500/20">
+                <AlertCircle size={12} className="text-red-400 flex-shrink-0" />
+                <span className="text-xs text-red-400">{uploadError}</span>
               </div>
             )}
+
+            {queuedFiles.map((qf, i) => (
+              <div key={i} className="mt-3 bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden">
+                <div className="aspect-video bg-steam-bg">
+                  <img src={qf.previewUrl} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="inline-flex items-center gap-1 text-xs text-steam-muted"><Clock size={11} /> Pending</span>
+                  <button onClick={() => removeQueued(i)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={13} /></button>
+                </div>
+              </div>
+            ))}
+
+            <div className="mt-3 space-y-3">
+              {media.map((m) => (
+                <div key={m.id} className="bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden card-hover">
+                  {m.presignedUrl && <div className="aspect-video bg-steam-bg"><img src={m.presignedUrl} className="w-full h-full object-cover" alt="" /></div>}
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <button onClick={() => handleSetPrimary(m.id)} className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors">
+                      <Star size={11} fill={m.isPrimary ? "currentColor" : "none"} />{m.isPrimary ? "Primary" : "Set"}
+                    </button>
+                    <button onClick={() => handleDeleteMedia(m.id)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={13} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
