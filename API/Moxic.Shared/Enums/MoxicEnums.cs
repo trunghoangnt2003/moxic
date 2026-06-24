@@ -9,6 +9,7 @@ public enum GameStatus
 public enum OrderStatus
 {
     Pending,
+    AwaitingConfirmation,
     Verifying,
     Installing,
     Completed,

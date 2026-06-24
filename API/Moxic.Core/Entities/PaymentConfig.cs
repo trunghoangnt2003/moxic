@@ -17,6 +17,11 @@ public class PaymentConfig
     // Transfer syntax
     public string TransferSyntaxTemplate { get; set; } = "MOXIC {OrderCode}";
 
+    // Bank account info
+    public string BankName { get; set; } = string.Empty;
+    public string BankAccountNumber { get; set; } = string.Empty;
+    public string BankAccountHolder { get; set; } = string.Empty;
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Not mapped — computed at API layer

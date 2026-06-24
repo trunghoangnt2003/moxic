@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Moxic.Api.Models;
@@ -34,32 +34,27 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
         if (request.Items.Count == 0)
-            return BadRequest(new { error = "Gi\u1ecf h\u00e0ng tr\u1ed1ng" });
+            return BadRequest(new { error = "Giỏ hàng trống" });
         if (string.IsNullOrWhiteSpace(request.CustomerPhone))
-            return BadRequest(new { error = "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng" });
+            return BadRequest(new { error = "Số điện thoại không được để trống" });
         if (string.IsNullOrWhiteSpace(request.CustomerXboxEmail))
-            return BadRequest(new { error = "Email Xbox kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng" });
+            return BadRequest(new { error = "Email Xbox không được để trống" });
         if (string.IsNullOrWhiteSpace(request.CustomerXboxPassword))
-            return BadRequest(new { error = "M\u1eadt kh\u1ea9u Xbox kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng" });
+            return BadRequest(new { error = "Mật khẩu Xbox không được để trống" });
 
-        // Generate order code: MOXIC-YYYYMMDD-XXXXX
         var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
         var randomPart = Guid.NewGuid().ToString("N")[..5].ToUpper();
         var orderCode = $"MOXIC-{datePart}-{randomPart}";
 
-        // Encrypt Xbox password
         var protector = _dataProtection.CreateProtector("XboxPassword");
         var encryptedPassword = Convert.ToBase64String(protector.Protect(
             System.Text.Encoding.UTF8.GetBytes(request.CustomerXboxPassword)));
 
-        // Calculate total
         var totalAmount = request.Items.Sum(i => i.Price);
 
-        // Parse payment method
         if (!Enum.TryParse<PaymentMethod>(request.PaymentMethod, true, out var paymentMethod))
             paymentMethod = PaymentMethod.Bank;
 
-        // Create order
         var order = new Order
         {
             Id = Guid.NewGuid(),
@@ -76,7 +71,6 @@ public class OrdersController : ControllerBase
         };
         _db.Orders.Add(order);
 
-        // Create order details with game name snapshots
         var gameIds = request.Items.Select(i => i.GameId).ToList();
         var games = await _db.Games.Where(g => gameIds.Contains(g.Id)).ToListAsync();
         var gameMap = games.ToDictionary(g => g.Id, g => g.Name);
@@ -95,15 +89,8 @@ public class OrdersController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
-
         return CreatedAtAction(nameof(GetOrder), new { orderCode = order.OrderCode },
-            new CreateOrderResponse
-            {
-                Id = order.Id,
-                OrderCode = order.OrderCode,
-                TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt
-            });
+            new CreateOrderResponse { Id = order.Id, OrderCode = order.OrderCode, TotalAmount = order.TotalAmount, CreatedAt = order.CreatedAt });
     }
 
     [HttpGet("{orderCode}")]
@@ -114,16 +101,21 @@ public class OrdersController : ControllerBase
             .FirstOrDefaultAsync(o => o.OrderCode == orderCode);
 
         if (order == null)
-            return NotFound(new { error = "Kh\u00f4ng t\u00ecm th\u1ea5y \u0111\u01a1n h\u00e0ng" });
+            return NotFound(new { error = "Không tìm thấy đơn hàng" });
 
-        // Get payment config for QR URLs
+        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
+        var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
+
+        // Payment proof URL
+        string? paymentProofUrl = null;
+        if (!string.IsNullOrEmpty(order.PaymentProofObjectKey))
+            paymentProofUrl = await _minio.GetPresignedUrlAsync(gamesBucket, order.PaymentProofObjectKey, expiry);
+
         var paymentConfig = await _db.PaymentConfigs.FirstOrDefaultAsync();
         PaymentConfigInfo? paymentInfo = null;
 
         if (paymentConfig != null)
         {
-            var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
-
             string? bankQrUrl = null;
             string? cryptoQrUrl = null;
 
@@ -140,22 +132,61 @@ public class OrdersController : ControllerBase
             {
                 TransferSyntaxTemplate = paymentConfig.TransferSyntaxTemplate,
                 BankQrUrl = bankQrUrl,
-                CryptoQrUrl = cryptoQrUrl
+                CryptoQrUrl = cryptoQrUrl,
+                BankName = paymentConfig.BankName,
+                BankAccountNumber = paymentConfig.BankAccountNumber,
+                BankAccountHolder = paymentConfig.BankAccountHolder
             };
         }
 
         return Ok(new OrderConfirmationResponse
         {
             OrderCode = order.OrderCode,
-            Items = order.Details.Select(d => new OrderConfirmationItem
-            {
-                GameName = d.GameName,
-                Price = d.Price
-            }).ToList(),
+            Items = order.Details.Select(d => new OrderConfirmationItem { GameName = d.GameName, Price = d.Price }).ToList(),
             TotalAmount = order.TotalAmount,
             Status = order.Status.ToString(),
             CreatedAt = order.CreatedAt,
+            PaymentProofUrl = paymentProofUrl,
             PaymentConfig = paymentInfo
+        });
+    }
+
+    // POST /api/orders/{orderCode}/proof
+    [HttpPost("{orderCode}/proof")]
+    public async Task<IActionResult> UploadProof(string orderCode, IFormFile file)
+    {
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderCode == orderCode);
+        if (order == null)
+            return NotFound(new { error = "Không tìm thấy đơn hàng" });
+
+        if (order.Status != OrderStatus.Pending)
+            return BadRequest(new { error = "Đơn hàng không ở trạng thái chờ thanh toán" });
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { error = "File không được để trống" });
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { error = "File quá lớn (tối đa 5MB)" });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
+            return BadRequest(new { error = "Chỉ chấp nhận file ảnh (jpg, png, webp)" });
+
+        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
+        var objectKey = $"proofs/{orderCode}/{Guid.NewGuid()}{ext}";
+
+        using var stream = file.OpenReadStream();
+        await _minio.UploadImageAsync(gamesBucket, objectKey, stream, file.ContentType);
+
+        order.PaymentProofObjectKey = objectKey;
+        order.Status = OrderStatus.AwaitingConfirmation;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new PaymentProofUploadResponse
+        {
+            OrderCode = order.OrderCode,
+            Status = order.Status.ToString()
         });
     }
 }

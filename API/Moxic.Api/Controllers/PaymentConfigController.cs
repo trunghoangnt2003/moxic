@@ -29,7 +29,6 @@ public class PaymentConfigController : ControllerBase
             return NotFound("Payment config not set up yet");
 
         var configBucket = _config.GetValue<string>("Minio:ConfigBucket")!;
-        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
         var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
 
         string? bankQrUrl = null;
@@ -45,7 +44,10 @@ public class PaymentConfigController : ControllerBase
         {
             config.TransferSyntaxTemplate,
             BankQrUrl = bankQrUrl,
-            CryptoQrUrl = cryptoQrUrl
+            CryptoQrUrl = cryptoQrUrl,
+            config.BankName,
+            config.BankAccountNumber,
+            config.BankAccountHolder
         });
     }
 }

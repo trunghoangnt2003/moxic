@@ -16,6 +16,8 @@ public class Order
     public bool IsClientConfirmed { get; set; }
     public DateTime? ClientConfirmedAt { get; set; }
     public string? Notes { get; set; }
+    public string? PaymentProofObjectKey { get; set; }
+    public string? CancellationReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

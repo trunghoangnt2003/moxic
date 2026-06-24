@@ -58,6 +58,9 @@ public record GameRatingDto
 public record UpdatePaymentConfigDto
 {
     public string? TransferSyntaxTemplate { get; init; }
+    public string? BankName { get; init; }
+    public string? BankAccountNumber { get; init; }
+    public string? BankAccountHolder { get; init; }
 }
 
 public record OrderItemRequest
@@ -97,6 +100,7 @@ public record OrderConfirmationResponse
     public decimal TotalAmount { get; init; }
     public string Status { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
+    public string? PaymentProofUrl { get; init; }
     public PaymentConfigInfo? PaymentConfig { get; init; }
 }
 
@@ -105,6 +109,15 @@ public record PaymentConfigInfo
     public string TransferSyntaxTemplate { get; init; } = string.Empty;
     public string? BankQrUrl { get; init; }
     public string? CryptoQrUrl { get; init; }
+    public string? BankName { get; init; }
+    public string? BankAccountNumber { get; init; }
+    public string? BankAccountHolder { get; init; }
+}
+
+public record PaymentProofUploadResponse
+{
+    public string OrderCode { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
 }
 
 // Admin game list response DTOs
@@ -179,13 +192,15 @@ public record AdminOrderDetailResponse
     public string OrderCode { get; init; } = string.Empty;
     public string CustomerPhone { get; init; } = string.Empty;
     public string CustomerXboxEmail { get; init; } = string.Empty;
-    public string CustomerXboxPassword { get; init; } = string.Empty; // decrypted
+    public string CustomerXboxPassword { get; init; } = string.Empty;
     public string? CustomerZalo { get; init; }
     public decimal TotalAmount { get; init; }
     public string Status { get; init; } = string.Empty;
     public string PaymentMethod { get; init; } = string.Empty;
     public string? Notes { get; init; }
     public List<AdminOrderDetailItem> Items { get; init; } = new();
+    public string? PaymentProofUrl { get; init; }
+    public string? CancellationReason { get; init; }
     public bool IsClientConfirmed { get; init; }
     public DateTime? ClientConfirmedAt { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -195,6 +210,7 @@ public record AdminOrderDetailResponse
 public record UpdateOrderStatusRequest
 {
     public string Status { get; init; } = string.Empty;
+    public string? Reason { get; init; }
 }
 
 public record AdminOrderListResponse

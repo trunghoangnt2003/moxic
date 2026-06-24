@@ -52,6 +52,9 @@ public class AdminPaymentConfigController : ControllerBase
         }
 
         config.TransferSyntaxTemplate = dto.TransferSyntaxTemplate ?? config.TransferSyntaxTemplate;
+        if (dto.BankName != null) config.BankName = dto.BankName;
+        if (dto.BankAccountNumber != null) config.BankAccountNumber = dto.BankAccountNumber;
+        if (dto.BankAccountHolder != null) config.BankAccountHolder = dto.BankAccountHolder;
         config.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(config);
@@ -115,4 +118,3 @@ public class AdminPaymentConfigController : ControllerBase
         return Ok(new { ObjectKey = objectKey, PresignedUrl = presignedUrl });
     }
 }
-

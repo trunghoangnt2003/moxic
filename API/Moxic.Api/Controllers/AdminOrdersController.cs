@@ -32,7 +32,6 @@ public class AdminOrdersController : ControllerBase
         _config = config;
     }
 
-    // GET /api/admin/orders?status=&fromDate=&toDate=&search=&page=&pageSize=
     [HttpGet]
     public async Task<IActionResult> GetOrders(
         [FromQuery] string? status,
@@ -46,31 +45,25 @@ public class AdminOrdersController : ControllerBase
             .Include(o => o.Details)
             .AsQueryable();
 
-        // Filter by status
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<OrderStatus>(status, true, out var statusFilter))
             query = query.Where(o => o.Status == statusFilter);
 
-        // Filter by date range
         if (fromDate.HasValue)
             query = query.Where(o => o.CreatedAt >= fromDate.Value);
         if (toDate.HasValue)
             query = query.Where(o => o.CreatedAt <= toDate.Value);
 
-        // Filter by search (order code or phone)
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(o => o.OrderCode.Contains(search) || o.CustomerPhone.Contains(search));
 
-        // Get total count for pagination
         var totalCount = await query.CountAsync();
 
-        // Get paginated results, newest first
         var orders = await query
             .OrderByDescending(o => o.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        // Map to DTO — check preorder status for each order
         var items = new List<AdminOrderListItem>();
         foreach (var order in orders)
         {
@@ -94,16 +87,9 @@ public class AdminOrdersController : ControllerBase
             });
         }
 
-        return Ok(new AdminOrderListResponse
-        {
-            Items = items,
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize
-        });
+        return Ok(new AdminOrderListResponse { Items = items, TotalCount = totalCount, Page = page, PageSize = pageSize });
     }
 
-    // GET /api/admin/orders/{id}
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetOrderDetail(Guid id)
     {
@@ -114,7 +100,6 @@ public class AdminOrdersController : ControllerBase
         if (order == null)
             return NotFound(new { error = "Không tìm thấy đơn hàng" });
 
-        // Decrypt Xbox password
         var protector = _dataProtection.CreateProtector("XboxPassword");
         string decryptedPassword;
         try
@@ -126,6 +111,13 @@ public class AdminOrdersController : ControllerBase
         {
             decryptedPassword = "*** Lỗi giải mã ***";
         }
+
+        // Payment proof URL
+        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
+        var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
+        string? paymentProofUrl = null;
+        if (!string.IsNullOrEmpty(order.PaymentProofObjectKey))
+            paymentProofUrl = await _minio.GetPresignedUrlAsync(gamesBucket, order.PaymentProofObjectKey, expiry);
 
         return Ok(new AdminOrderDetailResponse
         {
@@ -139,11 +131,9 @@ public class AdminOrdersController : ControllerBase
             Status = order.Status.ToString(),
             PaymentMethod = order.PaymentMethod.ToString(),
             Notes = order.Notes,
-            Items = order.Details.Select(d => new AdminOrderDetailItem
-            {
-                GameName = d.GameName,
-                Price = d.Price
-            }).ToList(),
+            Items = order.Details.Select(d => new AdminOrderDetailItem { GameName = d.GameName, Price = d.Price }).ToList(),
+            PaymentProofUrl = paymentProofUrl,
+            CancellationReason = order.CancellationReason,
             IsClientConfirmed = order.IsClientConfirmed,
             ClientConfirmedAt = order.ClientConfirmedAt,
             CreatedAt = order.CreatedAt,
@@ -151,7 +141,6 @@ public class AdminOrdersController : ControllerBase
         });
     }
 
-    // PUT /api/admin/orders/{id}/status
     [HttpPut("{id:guid}/status")]
     public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
     {
@@ -162,17 +151,17 @@ public class AdminOrdersController : ControllerBase
         if (order == null)
             return NotFound(new { error = "Không tìm thấy đơn hàng" });
 
-        // Parse requested status
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             return BadRequest(new { error = $"Trạng thái không hợp lệ: {request.Status}" });
 
         var currentStatus = order.Status;
 
-        // Validate status transitions
         bool validTransition = (currentStatus, newStatus) switch
         {
             (OrderStatus.Pending, OrderStatus.Verifying) => true,
             (OrderStatus.Pending, OrderStatus.Cancelled) => true,
+            (OrderStatus.AwaitingConfirmation, OrderStatus.Verifying) => true,
+            (OrderStatus.AwaitingConfirmation, OrderStatus.Cancelled) => true,
             (OrderStatus.Verifying, OrderStatus.Installing) => true,
             (OrderStatus.Verifying, OrderStatus.Cancelled) => true,
             (OrderStatus.Installing, OrderStatus.Completed) => true,
@@ -182,22 +171,23 @@ public class AdminOrdersController : ControllerBase
         if (!validTransition)
             return BadRequest(new { error = $"Không thể chuyển từ {currentStatus} sang {newStatus}" });
 
-        // Preorder check: cannot advance past Pending if preorder release date not reached
+        // Preorder check
         if (currentStatus == OrderStatus.Pending && newStatus != OrderStatus.Cancelled)
         {
             var gameIds = order.Details.Select(d => d.GameId).ToList();
             var hasBlockedPreorder = await _db.Games
-                .AnyAsync(g => gameIds.Contains(g.Id)
-                    && g.Status == GameStatus.Preorder
-                    && g.ReleaseDate > DateTime.UtcNow);
+                .AnyAsync(g => gameIds.Contains(g.Id) && g.Status == GameStatus.Preorder && g.ReleaseDate > DateTime.UtcNow);
 
             if (hasBlockedPreorder)
                 return BadRequest(new { error = "Đơn hàng pre-order chưa đến ngày phát hành, không thể xử lý" });
         }
 
-        // Apply transition
         order.Status = newStatus;
         order.UpdatedAt = DateTime.UtcNow;
+
+        // Save rejection reason
+        if (newStatus == OrderStatus.Cancelled && !string.IsNullOrWhiteSpace(request.Reason))
+            order.CancellationReason = request.Reason;
 
         await _db.SaveChangesAsync();
         return NoContent();
