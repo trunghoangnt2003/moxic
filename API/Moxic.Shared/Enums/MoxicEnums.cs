@@ -12,6 +12,7 @@ public enum OrderStatus
     AwaitingConfirmation,
     Verifying,
     Installing,
+    ActionRequired,
     Completed,
     Cancelled
 }

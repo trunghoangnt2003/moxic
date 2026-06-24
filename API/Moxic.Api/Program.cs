@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Minio;
+using Resend;
+using Moxic.Api.Endpoints;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
 using Moxic.Infrastructure.Services;
-using Moxic.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Email (Resend + Polly)
+builder.Services.AddResend(builder.Configuration["Resend:ApiKey"]!);
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 // Controllers + Razor Pages (for Identity UI)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -146,6 +151,7 @@ using (var scope = app.Services.CreateScope())
 
     var dbContext = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
     await dbContext.Database.MigrateAsync();
+    await GenreTagSeeder.SeedAsync(dbContext);
     await GameSeeder.SeedAsync(dbContext);
 }
 
@@ -154,3 +160,8 @@ app.MapGameEndpoints();
 app.Run();
 
 public record LoginRequest(string Email, string Password);
+
+
+
+
+

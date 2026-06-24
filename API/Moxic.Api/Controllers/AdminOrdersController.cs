@@ -18,17 +18,23 @@ public class AdminOrdersController : ControllerBase
     private readonly MoxicDbContext _db;
     private readonly IDataProtectionProvider _dataProtection;
     private readonly IMinioService _minio;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<AdminOrdersController> _logger;
     private readonly IConfiguration _config;
 
     public AdminOrdersController(
         MoxicDbContext db,
         IDataProtectionProvider dataProtection,
         IMinioService minio,
+        IEmailService emailService,
+        ILogger<AdminOrdersController> logger,
         IConfiguration config)
     {
         _db = db;
         _dataProtection = dataProtection;
         _minio = minio;
+        _emailService = emailService;
+        _logger = logger;
         _config = config;
     }
 
@@ -163,8 +169,12 @@ public class AdminOrdersController : ControllerBase
             (OrderStatus.AwaitingConfirmation, OrderStatus.Verifying) => true,
             (OrderStatus.AwaitingConfirmation, OrderStatus.Cancelled) => true,
             (OrderStatus.Verifying, OrderStatus.Installing) => true,
+            (OrderStatus.Verifying, OrderStatus.ActionRequired) => true,
             (OrderStatus.Verifying, OrderStatus.Cancelled) => true,
+            (OrderStatus.ActionRequired, OrderStatus.Verifying) => true,
+            (OrderStatus.ActionRequired, OrderStatus.Cancelled) => true,
             (OrderStatus.Installing, OrderStatus.Completed) => true,
+            (OrderStatus.Installing, OrderStatus.Verifying) => true,
             _ => false
         };
 
@@ -190,6 +200,35 @@ public class AdminOrdersController : ControllerBase
             order.CancellationReason = request.Reason;
 
         await _db.SaveChangesAsync();
+
+        // Send email notifications based on new status
+        try
+        {
+            var customerEmail = order.CustomerXboxEmail;
+            switch (newStatus)
+            {
+                case OrderStatus.Verifying:
+                    await _emailService.SendPaymentConfirmedAsync(customerEmail, order.OrderCode);
+                    break;
+                case OrderStatus.Completed:
+                    var gameName = order.Details.FirstOrDefault()?.GameName ?? "Game";
+                    await _emailService.SendGameInstalledAsync(customerEmail, order.OrderCode, gameName);
+                    break;
+                case OrderStatus.Cancelled:
+                    var reason = request.Reason ?? "Kh?ng c? l? do";
+                    await _emailService.SendOrderCancelledAsync(customerEmail, order.OrderCode, reason);
+                    break;
+                case OrderStatus.ActionRequired:
+                    await _emailService.SendActionRequiredAsync(customerEmail, order.OrderCode,
+                        "Th?ng tin t?i kho?n Xbox kh?ng ch?nh x?c. Vui l?ng c?p nh?t.");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send status notification for order {code}", order.OrderCode);
+        }
+
         return NoContent();
     }
 }

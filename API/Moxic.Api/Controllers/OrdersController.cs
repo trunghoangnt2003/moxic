@@ -16,17 +16,23 @@ public class OrdersController : ControllerBase
     private readonly MoxicDbContext _db;
     private readonly IMinioService _minio;
     private readonly IDataProtectionProvider _dataProtection;
+    private readonly ILogger<OrdersController> _logger;
+    private readonly IEmailService _emailService;
     private readonly IConfiguration _config;
 
     public OrdersController(
         MoxicDbContext db,
         IMinioService minio,
         IDataProtectionProvider dataProtection,
-        IConfiguration config)
+        IConfiguration config,
+        IEmailService emailService,
+        ILogger<OrdersController> logger)
     {
         _db = db;
         _minio = minio;
         _dataProtection = dataProtection;
+        _emailService = emailService;
+        _logger = logger;
         _config = config;
     }
 
