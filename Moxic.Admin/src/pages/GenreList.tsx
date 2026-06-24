@@ -24,7 +24,7 @@ export default function GenreList() {
   const [saving, setSaving] = useState<string | null>(null); // 'new' | id
   const [error, setError] = useState("");
 
-  const load = () => fetch(apiUrl("/api/admin/genres").then(r => r.json()).then(setGenres);
+  const load = () => fetch(apiUrl("/api/admin/genres")).then(r => r.json()).then(setGenres);
   useEffect(() => { load(); }, []);
 
   const handleCreate = async () => {

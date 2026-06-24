@@ -24,7 +24,7 @@ export default function TagList() {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const load = () => fetch(apiUrl("/api/admin/tags").then(r => r.json()).then(setTags);
+  const load = () => fetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTags);
   useEffect(() => { load(); }, []);
 
   const handleCreate = async () => {
