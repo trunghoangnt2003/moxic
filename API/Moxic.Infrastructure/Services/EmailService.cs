@@ -112,7 +112,7 @@ public class EmailService : IEmailService
             {
                 var msg = new EmailMessage
                 {
-                    From = "Moxic GameStore <noreply@moxic.com>",
+                    From = "Moxic GameStore <onboarding@resend.dev>",
                     To = [to],
                     Subject = subject,
                     HtmlBody = html
