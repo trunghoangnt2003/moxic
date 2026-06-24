@@ -6,7 +6,7 @@ WORKDIR /app
 COPY Moxic.Admin/package*.json ./
 RUN npm ci
 COPY Moxic.Admin/src ./src
-COPY Moxic.Admin/index.html Moxic.Admin/tsconfig.json Moxic.Admin/tsconfig.app.json Moxic.Admin/vite.config.ts ./
+COPY Moxic.Admin/index.html Moxic.Admin/tsconfig.json Moxic.Admin/tsconfig.app.json Moxic.Admin/tsconfig.node.json Moxic.Admin/vite.config.ts ./
 RUN npm run build
 
 # Runtime stage
