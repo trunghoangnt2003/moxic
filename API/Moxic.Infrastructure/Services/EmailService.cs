@@ -129,6 +129,6 @@ public class EmailService : IEmailService
 
 public class EmailSettings
 {
-    public string AdminEmail { get; set; } = "moxmoz29@gmail.com";
+    public string AdminEmail { get; set; } = "trungnt260303@gmail.com";
     public string ResendApiKey { get; set; } = string.Empty;
 }

@@ -19,6 +19,7 @@ public class AdminOrdersController : ControllerBase
     private readonly IDataProtectionProvider _dataProtection;
     private readonly IMinioService _minio;
     private readonly IEmailService _emailService;
+    private readonly IBackgroundEmailQueue _emailQueue;
     private readonly ILogger<AdminOrdersController> _logger;
     private readonly IConfiguration _config;
 
@@ -27,6 +28,7 @@ public class AdminOrdersController : ControllerBase
         IDataProtectionProvider dataProtection,
         IMinioService minio,
         IEmailService emailService,
+        IBackgroundEmailQueue emailQueue,
         ILogger<AdminOrdersController> logger,
         IConfiguration config)
     {
@@ -34,6 +36,7 @@ public class AdminOrdersController : ControllerBase
         _dataProtection = dataProtection;
         _minio = minio;
         _emailService = emailService;
+        _emailQueue = emailQueue;
         _logger = logger;
         _config = config;
     }
@@ -201,33 +204,40 @@ public class AdminOrdersController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        // Send email notifications based on new status
-        try
+        // Enqueue email notification ? sent in background
+        var _newStatus = newStatus;
+        var _customerEmail = order.CustomerXboxEmail;
+        var _orderCode = order.OrderCode;
+        var _gameName = order.Details.FirstOrDefault()?.GameName ?? "Game";
+        var _reason = request.Reason;
+        _emailQueue.Enqueue(async (sf, ct) =>
         {
-            var customerEmail = order.CustomerXboxEmail;
-            switch (newStatus)
+            using var scope = sf.CreateScope();
+            var svc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+            try
             {
-                case OrderStatus.Verifying:
-                    await _emailService.SendPaymentConfirmedAsync(customerEmail, order.OrderCode);
-                    break;
-                case OrderStatus.Completed:
-                    var gameName = order.Details.FirstOrDefault()?.GameName ?? "Game";
-                    await _emailService.SendGameInstalledAsync(customerEmail, order.OrderCode, gameName);
-                    break;
-                case OrderStatus.Cancelled:
-                    var reason = request.Reason ?? "Kh?ng c? l? do";
-                    await _emailService.SendOrderCancelledAsync(customerEmail, order.OrderCode, reason);
-                    break;
-                case OrderStatus.ActionRequired:
-                    await _emailService.SendActionRequiredAsync(customerEmail, order.OrderCode,
-                        "Th?ng tin t?i kho?n Xbox kh?ng ch?nh x?c. Vui l?ng c?p nh?t.");
-                    break;
+                switch (_newStatus)
+                {
+                    case OrderStatus.Verifying:
+                        await svc.SendPaymentConfirmedAsync(_customerEmail, _orderCode);
+                        break;
+                    case OrderStatus.Completed:
+                        await svc.SendGameInstalledAsync(_customerEmail, _orderCode, _gameName);
+                        break;
+                    case OrderStatus.Cancelled:
+                        await svc.SendOrderCancelledAsync(_customerEmail, _orderCode, _reason ?? "Kh?ng c? l? do");
+                        break;
+                    case OrderStatus.ActionRequired:
+                        await svc.SendActionRequiredAsync(_customerEmail, _orderCode,
+                            "Th?ng tin t?i kho?n Xbox kh?ng ch?nh x?c. Vui l?ng c?p nh?t.");
+                        break;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to send status notification for order {code}", order.OrderCode);
-        }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send status notification for order {code}", _orderCode);
+            }
+        });
 
         return NoContent();
     }

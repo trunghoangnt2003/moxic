@@ -70,10 +70,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Email (Resend + Polly)
+// Email (Resend + Polly) ? sent via background queue
 builder.Services.AddResend(builder.Configuration["Resend:ApiKey"]!);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IBackgroundEmailQueue, Moxic.Api.Services.BackgroundEmailQueue>();
+builder.Services.AddHostedService<Moxic.Api.Services.EmailProcessingService>();
 builder.Services.AddHostedService<PaymentTimeoutService>();
 // Controllers + Razor Pages (for Identity UI)
 builder.Services.AddControllers()

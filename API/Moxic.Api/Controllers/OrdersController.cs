@@ -18,6 +18,7 @@ public class OrdersController : ControllerBase
     private readonly IDataProtectionProvider _dataProtection;
     private readonly ILogger<OrdersController> _logger;
     private readonly IEmailService _emailService;
+    private readonly IBackgroundEmailQueue _emailQueue;
     private readonly IConfiguration _config;
 
     public OrdersController(
@@ -26,13 +27,15 @@ public class OrdersController : ControllerBase
         IDataProtectionProvider dataProtection,
         IConfiguration config,
         IEmailService emailService,
-        ILogger<OrdersController> logger)
+        ILogger<OrdersController> logger,
+        IBackgroundEmailQueue emailQueue)
     {
         _db = db;
         _minio = minio;
         _dataProtection = dataProtection;
         _emailService = emailService;
         _logger = logger;
+        _emailQueue = emailQueue;
         _config = config;
     }
 
@@ -97,8 +100,15 @@ public class OrdersController : ControllerBase
         await _db.SaveChangesAsync();
 
             // NOTF-03: Notify admin of new order
-            try { await _emailService.SendNewOrderNotificationToAdminAsync(order.OrderCode, order.CustomerPhone, order.TotalAmount); }
-            catch { _logger.LogWarning("Failed to send admin notification for order {code}", order.OrderCode); }
+            var _orderCode = order.OrderCode;
+            var _phone = order.CustomerPhone;
+            var _total = order.TotalAmount;
+            _emailQueue.Enqueue(async (sf, ct) =>
+            {
+                using var scope = sf.CreateScope();
+                var svc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                await svc.SendNewOrderNotificationToAdminAsync(_orderCode, _phone, _total);
+            });
 
         return CreatedAtAction(nameof(GetOrder), new { orderCode = order.OrderCode },
             new CreateOrderResponse { Id = order.Id, OrderCode = order.OrderCode, TotalAmount = order.TotalAmount, CreatedAt = order.CreatedAt });

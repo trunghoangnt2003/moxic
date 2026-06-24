@@ -1,4 +1,12 @@
-﻿namespace Moxic.Core.Interfaces;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Moxic.Core.Interfaces;
+
+public interface IBackgroundEmailQueue
+{
+    void Enqueue(Func<IServiceScopeFactory, CancellationToken, Task> emailTask);
+    Task<Func<IServiceScopeFactory, CancellationToken, Task>> DequeueAsync(CancellationToken ct);
+}
 
 public interface IEmailService
 {
