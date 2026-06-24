@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -69,10 +69,14 @@ builder.Services.AddCors(options =>
 });
 
 // Controllers + Razor Pages (for Identity UI)
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddRazorPages();
 
-// --- CẤU HÌNH SWAGGER TRUYỀN THỐNG THAY CHO OPENAPI ---
+// --- Cáº¤U HÃŒNH SWAGGER TRUYá»€N THá»NG THAY CHO OPENAPI ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -92,7 +96,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// --- KÍCH HOẠT GIAO DIỆN SWAGGER UI KHI CHẠY DEV ---
+// --- KÃCH HOáº T GIAO DIá»†N SWAGGER UI KHI CHáº Y DEV ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -100,7 +104,7 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Moxic API v1");
 
-        // Bỏ comment dòng dưới nếu muốn gõ localhost:xxxx/ là vào thẳng luôn giao diện Swagger
+        // Bá» comment dÃ²ng dÆ°á»›i náº¿u muá»‘n gÃµ localhost:xxxx/ lÃ  vÃ o tháº³ng luÃ´n giao diá»‡n Swagger
         // options.RoutePrefix = string.Empty; 
     });
 }
