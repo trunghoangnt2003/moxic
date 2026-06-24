@@ -8,6 +8,7 @@ using Moxic.Api.Endpoints;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
 using Moxic.Infrastructure.Services;
+using Moxic.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +74,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddResend(builder.Configuration["Resend:ApiKey"]!);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<PaymentTimeoutService>();
 // Controllers + Razor Pages (for Identity UI)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
