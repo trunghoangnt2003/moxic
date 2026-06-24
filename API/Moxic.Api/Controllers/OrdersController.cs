@@ -95,6 +95,11 @@ public class OrdersController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
+
+            // NOTF-03: Notify admin of new order
+            try { await _emailService.SendNewOrderNotificationToAdminAsync(order.OrderCode, order.CustomerPhone, order.TotalAmount); }
+            catch { _logger.LogWarning("Failed to send admin notification for order {code}", order.OrderCode); }
+
         return CreatedAtAction(nameof(GetOrder), new { orderCode = order.OrderCode },
             new CreateOrderResponse { Id = order.Id, OrderCode = order.OrderCode, TotalAmount = order.TotalAmount, CreatedAt = order.CreatedAt });
     }
