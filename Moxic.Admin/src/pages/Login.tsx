@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Gamepad2, Eye, EyeOff, Shield } from "lucide-react";
+import { Gamepad2, Eye, EyeOff } from "lucide-react";
 
 export default function Login({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState("");

@@ -23,8 +23,7 @@ interface MediaItem {
 export default function GameForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = !!id;
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [gameId, setGameId] = useState<string | null>(id || null);
   const [name, setName] = useState("");

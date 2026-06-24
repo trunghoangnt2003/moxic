@@ -1,5 +1,5 @@
 ﻿import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   Gamepad2,
   CreditCard,
@@ -7,6 +7,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -14,8 +15,11 @@ import PaymentConfig from "./pages/PaymentConfig";
 import Login from "./pages/Login";
 import "./App.css";
 
+const OrderList = lazy(() => import("./pages/OrderList"));
+
 const navItems = [
   { to: "/games", label: "Games", icon: Gamepad2 },
+  { to: "/orders", label: "Orders", icon: Package },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
 ];
 
@@ -123,13 +127,16 @@ function App() {
           {/* Content */}
           <main className="flex-1 overflow-auto">
             <div className="p-5 max-w-7xl mx-auto">
-              <Routes>
-                <Route path="/" element={<Navigate to="/games" />} />
-                <Route path="/games" element={<GameList />} />
-                <Route path="/games/new" element={<GameForm />} />
-                <Route path="/games/:id/edit" element={<GameForm />} />
-                <Route path="/payment-config" element={<PaymentConfig />} />
-              </Routes>
+              <Suspense fallback={<div className="text-steam-muted p-8">Loading...</div>}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/games" />} />
+                  <Route path="/games" element={<GameList />} />
+                  <Route path="/games/new" element={<GameForm />} />
+                  <Route path="/games/:id/edit" element={<GameForm />} />
+                  <Route path="/orders" element={<OrderList />} />
+                  <Route path="/payment-config" element={<PaymentConfig />} />
+                </Routes>
+              </Suspense>
             </div>
           </main>
         </div>
