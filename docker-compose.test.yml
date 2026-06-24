@@ -52,7 +52,7 @@
       "
 
   moxic-api:
-    image: ${DOCKER_USER:-yourname}/moxic-api:test
+    image: ${DOCKER_USER:-trungdocker123}/moxic-api:test
     container_name: moxic-api
     restart: unless-stopped
     environment:
@@ -79,14 +79,14 @@
       - "8080:8080"
 
   moxic-web:
-    image: ${DOCKER_USER:-yourname}/moxic-web:test
+    image: ${DOCKER_USER:-trungdocker123}/moxic-web:test
     container_name: moxic-web
     restart: unless-stopped
     ports:
       - "3001:80"
 
   moxic-admin:
-    image: ${DOCKER_USER:-yourname}/moxic-admin:test
+    image: ${DOCKER_USER:-trungdocker123}/moxic-admin:test
     container_name: moxic-admin
     restart: unless-stopped
     ports:
