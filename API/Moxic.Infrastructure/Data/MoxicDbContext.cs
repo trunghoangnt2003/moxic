@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
 using Moxic.Shared.Enums;
@@ -33,6 +33,15 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasConversion<string>()
                 .HasMaxLength(20);
             entity.HasIndex(e => new { e.Status, e.Genre });
+            entity.HasIndex(e => e.IsFeatured);
+            
+            entity.OwnsOne(e => e.SystemRequirements, builder => 
+            {
+                builder.ToJson();
+                builder.OwnsOne(r => r.Minimum);
+                builder.OwnsOne(r => r.Recommended);
+            });
+            entity.OwnsMany(e => e.Ratings, builder => builder.ToJson());
         });
 
         // GameMedia

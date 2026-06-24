@@ -27,7 +27,7 @@ public class AdminGamesController : ControllerBase
 
     // GET /api/admin/games
     [HttpGet]
-    public async Task<IActionResult> GetGames([FromQuery] string? search)
+    public async Task<IActionResult> GetGames([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
         var query = _db.Games.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
@@ -36,15 +36,32 @@ public class AdminGamesController : ControllerBase
         var games = await query
             .OrderByDescending(g => g.CreatedAt)
             .Include(g => g.Media)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return Ok(games.Select(g => new
+        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
+        var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
+
+        var items = new List<AdminGameListItem>();
+        foreach (var g in games)
         {
-            g.Id, g.Name, g.OriginalPrice, g.SalePrice,
-            g.Genre, g.Tags, g.Status, g.ReleaseDate,
-            ImageCount = g.Media.Count,
-            g.CreatedAt, g.UpdatedAt
-        }));
+            var primaryMedia = g.Media.FirstOrDefault(m => m.IsPrimary);
+            string? primaryImage = null;
+            if (primaryMedia != null)
+                primaryImage = await _minio.GetPresignedUrlAsync(gamesBucket, primaryMedia.ObjectKey, expiry);
+
+            items.Add(new AdminGameListItem
+            {
+                Id = g.Id, Name = g.Name, OriginalPrice = g.OriginalPrice,
+                SalePrice = g.SalePrice, Genre = g.Genre, Tags = g.Tags,
+                Status = g.Status.ToString(), ReleaseDate = g.ReleaseDate,
+                ImageCount = g.Media.Count, PrimaryImage = primaryImage,
+                CreatedAt = g.CreatedAt, UpdatedAt = g.UpdatedAt
+            });
+        }
+
+        return Ok(items);
     }
 
     // POST /api/admin/games
@@ -62,9 +79,44 @@ public class AdminGamesController : ControllerBase
             Tags = dto.Tags ?? string.Empty,
             Status = dto.Status,
             ReleaseDate = dto.ReleaseDate,
+            IsFeatured = dto.IsFeatured,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+
+        if (dto.SystemRequirements != null)
+        {
+            game.SystemRequirements = new SystemRequirementData
+            {
+                Minimum = dto.SystemRequirements.Minimum != null ? new SystemRequirement
+                {
+                    Os = dto.SystemRequirements.Minimum.Os ?? string.Empty,
+                    Processor = dto.SystemRequirements.Minimum.Processor ?? string.Empty,
+                    Memory = dto.SystemRequirements.Minimum.Memory ?? string.Empty,
+                    Graphics = dto.SystemRequirements.Minimum.Graphics ?? string.Empty,
+                    Storage = dto.SystemRequirements.Minimum.Storage ?? string.Empty
+                } : new SystemRequirement(),
+                Recommended = dto.SystemRequirements.Recommended != null ? new SystemRequirement
+                {
+                    Os = dto.SystemRequirements.Recommended.Os ?? string.Empty,
+                    Processor = dto.SystemRequirements.Recommended.Processor ?? string.Empty,
+                    Memory = dto.SystemRequirements.Recommended.Memory ?? string.Empty,
+                    Graphics = dto.SystemRequirements.Recommended.Graphics ?? string.Empty,
+                    Storage = dto.SystemRequirements.Recommended.Storage ?? string.Empty
+                } : new SystemRequirement()
+            };
+        }
+
+        if (dto.Ratings.Count > 0)
+        {
+            game.Ratings = dto.Ratings.Select(r => new GameRating
+            {
+                Source = r.Source ?? string.Empty,
+                Score = r.Score,
+                MaxScore = r.MaxScore,
+                Label = r.Label ?? string.Empty
+            }).ToList();
+        }
 
         _db.Games.Add(game);
         await _db.SaveChangesAsync();
@@ -81,7 +133,67 @@ public class AdminGamesController : ControllerBase
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (game == null) return NotFound();
-        return Ok(game);
+
+        var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
+        var expiry = _config.GetValue<int>("Minio:PresignedUrlExpiryHours");
+
+        var mediaItems = new List<AdminGameMediaItem>();
+        foreach (var media in game.Media)
+        {
+            var presignedUrl = await _minio.GetPresignedUrlAsync(gamesBucket, media.ObjectKey, expiry);
+            mediaItems.Add(new AdminGameMediaItem
+            {
+                Id = media.Id,
+                ObjectKey = media.ObjectKey,
+                IsPrimary = media.IsPrimary,
+                DisplayOrder = media.DisplayOrder,
+                PresignedUrl = presignedUrl
+            });
+        }
+
+        return Ok(new AdminGameDetailResponse
+        {
+            Id = game.Id,
+            Name = game.Name,
+            Description = game.Description,
+            OriginalPrice = game.OriginalPrice,
+            SalePrice = game.SalePrice,
+            Genre = game.Genre,
+            Tags = game.Tags,
+            Status = game.Status.ToString(),
+            ReleaseDate = game.ReleaseDate,
+            IsFeatured = game.IsFeatured,
+            SystemRequirements = game.SystemRequirements != null
+                ? new SystemRequirementDataDto
+                {
+                    Minimum = new SystemRequirementDto
+                    {
+                        Os = game.SystemRequirements.Minimum.Os,
+                        Processor = game.SystemRequirements.Minimum.Processor,
+                        Memory = game.SystemRequirements.Minimum.Memory,
+                        Graphics = game.SystemRequirements.Minimum.Graphics,
+                        Storage = game.SystemRequirements.Minimum.Storage
+                    },
+                    Recommended = new SystemRequirementDto
+                    {
+                        Os = game.SystemRequirements.Recommended.Os,
+                        Processor = game.SystemRequirements.Recommended.Processor,
+                        Memory = game.SystemRequirements.Recommended.Memory,
+                        Graphics = game.SystemRequirements.Recommended.Graphics,
+                        Storage = game.SystemRequirements.Recommended.Storage
+                    }
+                } : null,
+            Ratings = game.Ratings.Select(r => new GameRatingDto
+            {
+                Source = r.Source,
+                Score = r.Score,
+                MaxScore = r.MaxScore,
+                Label = r.Label
+            }).ToList(),
+            Media = mediaItems,
+            CreatedAt = game.CreatedAt,
+            UpdatedAt = game.UpdatedAt
+        });
     }
 
     // PUT /api/admin/games/{id}
@@ -99,7 +211,42 @@ public class AdminGamesController : ControllerBase
         game.Tags = dto.Tags ?? string.Empty;
         game.Status = dto.Status;
         game.ReleaseDate = dto.ReleaseDate;
+        game.IsFeatured = dto.IsFeatured;
         game.UpdatedAt = DateTime.UtcNow;
+
+        if (dto.SystemRequirements != null)
+        {
+            game.SystemRequirements = new SystemRequirementData
+            {
+                Minimum = dto.SystemRequirements.Minimum != null ? new SystemRequirement
+                {
+                    Os = dto.SystemRequirements.Minimum.Os ?? string.Empty,
+                    Processor = dto.SystemRequirements.Minimum.Processor ?? string.Empty,
+                    Memory = dto.SystemRequirements.Minimum.Memory ?? string.Empty,
+                    Graphics = dto.SystemRequirements.Minimum.Graphics ?? string.Empty,
+                    Storage = dto.SystemRequirements.Minimum.Storage ?? string.Empty
+                } : new SystemRequirement(),
+                Recommended = dto.SystemRequirements.Recommended != null ? new SystemRequirement
+                {
+                    Os = dto.SystemRequirements.Recommended.Os ?? string.Empty,
+                    Processor = dto.SystemRequirements.Recommended.Processor ?? string.Empty,
+                    Memory = dto.SystemRequirements.Recommended.Memory ?? string.Empty,
+                    Graphics = dto.SystemRequirements.Recommended.Graphics ?? string.Empty,
+                    Storage = dto.SystemRequirements.Recommended.Storage ?? string.Empty
+                } : new SystemRequirement()
+            };
+        }
+
+        if (dto.Ratings.Count > 0)
+        {
+            game.Ratings = dto.Ratings.Select(r => new GameRating
+            {
+                Source = r.Source ?? string.Empty,
+                Score = r.Score,
+                MaxScore = r.MaxScore,
+                Label = r.Label ?? string.Empty
+            }).ToList();
+        }
 
         await _db.SaveChangesAsync();
         return NoContent();
@@ -189,4 +336,3 @@ public class AdminGamesController : ControllerBase
         return NoContent();
     }
 }
-

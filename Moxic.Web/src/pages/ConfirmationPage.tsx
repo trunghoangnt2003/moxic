@@ -19,84 +19,90 @@ export default function ConfirmationPage() {
 
   if (isLoading) {
     return (
-      <Container className="mt-12">
-        <HeroSkeleton />
-        <p className="text-text-muted text-sm text-center mt-4">\u0110ang t\u1ea3i th\u00f4ng tin \u0111\u01a1n h\u00e0ng...</p>
-      </Container>
+      <div className="min-h-screen bg-[#1a1714] py-12">
+        <Container className="mt-12">
+          <HeroSkeleton />
+          <p className="text-[#7a6f63] text-sm text-center mt-4">Đang tải thông tin đơn hàng...</p>
+        </Container>
+      </div>
     );
   }
 
   if (error || !order) {
     return (
-      <Container className="mt-20">
-        <div className="text-center py-24 bg-bg-surface border border-border max-w-[500px] mx-auto">
-          <AlertCircle className="w-16 h-16 text-danger mx-auto mb-4 opacity-60" />
-          <h2 className="font-display text-xl text-text-primary mb-2">Kh\u00f4ng t\u00ecm th\u1ea5y \u0111\u01a1n h\u00e0ng</h2>
-          <p className="text-text-muted text-sm mb-6">
-            M\u00e3 \u0111\u01a1n h\u00e0ng kh\u00f4ng t\u1ed3n t\u1ea1i ho\u1eb7c \u0111\u00e3 b\u1ecb x\u00f3a.
-          </p>
-          <Link
-            to="/games"
-            className="inline-flex items-center gap-1 text-accent hover:text-accent-hover text-sm transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Quay l\u1ea1i c\u1eeda h\u00e0ng
-          </Link>
-        </div>
-      </Container>
+      <div className="min-h-screen bg-[#1a1714] py-12">
+        <Container className="mt-20">
+          <div className="text-center py-24 bg-[#252019] border border-[#3d352a] max-w-[500px] mx-auto">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4 opacity-60" />
+            <h2 className="font-display text-xl text-[#ede6db] mb-2">Không tìm thấy đơn hàng</h2>
+            <p className="text-[#7a6f63] text-sm mb-6">
+              Mã đơn hàng không tồn tại hoặc đã bị xóa.
+            </p>
+            <Link
+              to="/games"
+              className="inline-flex items-center gap-1 text-[#c9a96e] hover:text-[#d4b87a] text-sm transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Quay lại cửa hàng
+            </Link>
+          </div>
+        </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="mt-8 mb-20">
-      <div className="max-w-[600px] mx-auto">
-        {/* Success header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-success/20 rounded-none flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-success" />
-          </div>
-          <h1 className="font-display text-2xl md:text-3xl text-text-primary mb-2">
-            \u0110\u1eb7t h\u00e0ng th\u00e0nh c\u00f4ng!
-          </h1>
-          <p className="text-text-muted text-sm">
-            C\u1ea3m \u01a1n b\u1ea1n \u0111\u00e3 \u0111\u1eb7t h\u00e0ng t\u1ea1i Moxic.
-          </p>
-        </div>
-
-        {/* Order content */}
-        <div className="space-y-5">
-          <ConfirmationContent
-            orderCode={order.orderCode}
-            items={order.items}
-            totalAmount={order.totalAmount}
-            createdAt={order.createdAt}
-          />
-
-          {order.paymentConfig && (
-            <QRDisplay
-              bankQrUrl={order.paymentConfig.bankQrUrl}
-              cryptoQrUrl={order.paymentConfig.cryptoQrUrl}
-              transferContent={order.orderCode}
-            />
-          )}
-
-          {/* Note */}
-          <div className="bg-bg-elevated/50 border border-border/50 px-5 py-4">
-            <p className="text-xs text-text-muted leading-relaxed">
-              Sau khi chuy\u1ec3n kho\u1ea3n, vui l\u00f2ng \u0111\u1ee3i nh\u00e2n vi\u00ean x\u00e1c nh\u1eadn. Th\u1eddi gian c\u00e0i game: 15-30 ph\u00fat t\u1eeb khi x\u00e1c nh\u1eadn.
+    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+      <Container className="mt-8 mb-20">
+        <div className="max-w-[600px] mx-auto">
+          {/* Success header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h1 className="font-display text-2xl md:text-3xl text-[#ede6db] mb-2">
+              Đặt hàng thành công!
+            </h1>
+            <p className="text-[#7a6f63] text-sm">
+              Cảm ơn bạn đã đặt hàng tại Moxic.
             </p>
           </div>
 
-          {/* Continue shopping */}
-          <div className="text-center pt-4">
-            <Link
-              to="/games"
-              className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-bg-base px-8 py-3 text-sm font-semibold transition-colors"
-            >
-              <ShoppingCart className="w-4 h-4" /> Ti\u1ebfp t\u1ee5c mua s\u1eafm
-            </Link>
+          {/* Order content */}
+          <div className="space-y-5">
+            <ConfirmationContent
+              orderCode={order.orderCode}
+              items={order.items}
+              totalAmount={order.totalAmount}
+              createdAt={order.createdAt}
+            />
+
+            {order.paymentConfig && (
+              <QRDisplay
+                bankQrUrl={order.paymentConfig.bankQrUrl}
+                cryptoQrUrl={order.paymentConfig.cryptoQrUrl}
+                transferContent={order.orderCode}
+              />
+            )}
+
+            {/* Note */}
+            <div className="bg-[#2d261e]/50 border border-[#3d352a]/50 px-5 py-4">
+              <p className="text-xs text-[#7a6f63] leading-relaxed">
+                Sau khi chuyển khoản, vui lòng đợi nhân viên xác nhận. Thời gian cài game: 15-30 phút từ khi xác nhận.
+              </p>
+            </div>
+
+            {/* Continue shopping */}
+            <div className="text-center pt-4">
+              <Link
+                to="/games"
+                className="inline-flex items-center gap-2 bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] px-8 py-3 text-sm font-semibold transition-colors"
+              >
+                <ShoppingCart className="w-4 h-4" /> Tiếp tục mua sắm
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </div>
   );
 }

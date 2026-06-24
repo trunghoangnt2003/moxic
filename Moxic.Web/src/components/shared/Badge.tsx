@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface BadgeProps {
   variant: "discount" | "preorder" | "available" | "hot";
@@ -14,7 +14,7 @@ const variants = {
 
 export default function Badge({ variant, children }: BadgeProps) {
   return (
-    <span className={`inline-block px-2 py-0.5 rounded-sm text-[11px] font-semibold ${variants[variant]}`}>
+    <span className={`inline-block px-2 py-0.5  text-[11px] font-semibold ${variants[variant]}`}>
       {children}
     </span>
   );

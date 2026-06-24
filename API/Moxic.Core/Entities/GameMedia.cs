@@ -1,4 +1,6 @@
-﻿namespace Moxic.Core.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Moxic.Core.Entities;
 
 public class GameMedia
 {
@@ -11,4 +13,8 @@ public class GameMedia
 
     // Navigation
     public Game Game { get; set; } = null!;
+
+    // Not mapped — populated at API layer
+    [NotMapped]
+    public string? PresignedUrl { get; set; }
 }

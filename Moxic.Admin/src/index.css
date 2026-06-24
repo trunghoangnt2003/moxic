@@ -1,1 +1,93 @@
 ﻿@import "tailwindcss";
+
+@theme {
+  --color-steam-bg: #0d0d0d;
+  --color-steam-surface: #161616;
+  --color-steam-surface-2: #1f1f1f;
+  --color-steam-surface-3: #2a2a2a;
+  --color-steam-border: #2a2a2a;
+  --color-steam-border-light: #333344;
+  --color-steam-blue: #66c0f4;
+  --color-steam-blue-hover: #8ad0f8;
+  --color-steam-blue-dim: #1a4a6e;
+  --color-steam-accent: #f43f5e;
+  --color-steam-gold: #f5a623;
+  --color-steam-green: #5ba835;
+  --color-steam-text: #c6d4df;
+  --color-steam-muted: #7a8b9e;
+  --color-steam-error: #ef4444;
+  --color-steam-purple: #7c3aed;
+  --font-sans: "Inter", "Fira Sans", system-ui, sans-serif;
+  --font-mono: "Fira Code", monospace;
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a2a #0d0d0d;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: #0d0d0d;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
+  }
+  body {
+    background-color: #0d0d0d;
+    color: #c6d4df;
+  }
+}
+
+@utility glow-blue {
+  box-shadow: 0 0 14px rgba(102, 192, 244, 0.15);
+}
+@utility glow-blue-md {
+  box-shadow: 0 0 28px rgba(102, 192, 244, 0.2);
+}
+@utility card-hover {
+  transition: all 200ms ease;
+  &:hover {
+    border-color: #333344;
+    box-shadow: 0 0 20px rgba(102, 192, 244, 0.08);
+  }
+}
+@utility steam-input {
+  background-color: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #c6d4df;
+  transition: all 150ms ease;
+  &::placeholder {
+    color: #5a6a7a;
+  }
+  &:focus {
+    outline: none;
+    border-color: #66c0f4;
+    box-shadow: 0 0 8px rgba(102, 192, 244, 0.1);
+  }
+}
+@utility steam-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 150ms ease;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

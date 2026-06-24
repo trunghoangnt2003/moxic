@@ -1,10 +1,10 @@
-﻿export function CardSkeleton() {
+export function CardSkeleton() {
   return (
-    <div className="bg-bg-surface rounded-sm border border-border overflow-hidden animate-pulse">
+    <div className="bg-bg-surface  border border-border overflow-hidden animate-pulse">
       <div className="aspect-[3/4] bg-bg-elevated" />
       <div className="p-3 space-y-2">
-        <div className="h-4 bg-bg-elevated rounded w-3/4" />
-        <div className="h-3 bg-bg-elevated rounded w-1/2" />
+        <div className="h-4 bg-bg-elevated  w-3/4" />
+        <div className="h-3 bg-bg-elevated  w-1/2" />
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ export async function getFeaturedGames(limit: number = 5) {
 }
 
 export async function getGameDetail(id: string) {
-  const { data } = await api.get<GameDetail>(/games/);
+  const { data } = await api.get<GameDetail>(`/games/${id}`);
   return data;
 }
 
@@ -37,6 +37,6 @@ export async function createOrder(request: OrderCreateRequest) {
 }
 
 export async function getOrder(orderCode: string) {
-  const { data } = await api.get<OrderConfirmationData>(/orders/);
+  const { data } = await api.get<OrderConfirmationData>(`/orders/${orderCode}`);
   return data;
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
 using Moxic.Core.Interfaces;
@@ -31,6 +31,8 @@ public class MinioService : IMinioService
 
     public async Task<string> GetPresignedUrlAsync(string bucket, string objectKey, int expiryHours = 1)
     {
+        if (objectKey.StartsWith("http")) return objectKey;
+        
         var args = new PresignedGetObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectKey)

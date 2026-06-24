@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
-import { useCartStore } from "../../lib/cartStore";
+import { useCartStore } from "../lib/cartStore";
 import Container from "../components/layout/Container";
 import CartSummary from "../components/checkout/CartSummary";
 import CheckoutForm from "../components/checkout/CheckoutForm";
-import { formatPrice } from "../lib/utils";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -12,53 +11,63 @@ export default function CheckoutPage() {
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   const handleSuccess = (orderCode: string) => {
-    navigate(/confirmation/);
+    navigate(`/confirmation/${orderCode}`);
   };
 
   if (items.length === 0) {
     return (
-      <Container className="mt-20">
-        <div className="text-center py-24 bg-bg-surface border border-border">
-          <ShoppingCart className="w-16 h-16 text-text-muted mx-auto mb-4 opacity-30" />
-          <h2 className="font-display text-xl text-text-primary mb-2">Gi\u1ecf h\u00e0ng tr\u1ed1ng</h2>
-          <p className="text-text-muted text-sm mb-6">B\u1ea1n ch\u01b0a th\u00eam game n\u00e0o v\u00e0o gi\u1ecf h\u00e0ng.</p>
-          <button
-            onClick={() => navigate("/games")}
-            className="bg-accent hover:bg-accent-hover text-bg-base px-8 py-3 text-sm font-semibold transition-colors cursor-pointer"
-          >
-            Ti\u1ebfp t\u1ee5c mua s\u1eafm
-          </button>
-        </div>
-      </Container>
+      <div className="min-h-screen bg-[#1a1714] py-12">
+        <Container>
+          <div className="text-center py-24 bg-[#252019] border border-[#3d352a] max-w-4xl mx-auto">
+            <ShoppingCart className="w-16 h-16 text-[#3d352a] mx-auto mb-4" />
+            <h2 className="font-display text-xl text-[#ede6db] mb-2 uppercase tracking-wider">Giỏ hàng trống</h2>
+            <p className="text-[#7a6f63] text-sm mb-6">Bạn chưa thêm game nào vào giỏ hàng.</p>
+            <button
+              onClick={() => navigate("/games")}
+              className="bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] px-8 py-3 text-sm font-semibold transition-colors cursor-pointer"
+            >
+              Tiếp tục mua sắm
+            </button>
+          </div>
+        </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="mt-8 mb-20">
-      {/* Back */}
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-text-muted hover:text-text-primary text-sm mb-6 transition-colors cursor-pointer"
-      >
-        <ArrowLeft className="w-4 h-4" /> Quay l\u1ea1i
-      </button>
+    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+      <Container>
+        <div className="max-w-5xl mx-auto">
+          {/* Back */}
+          <button
+            onClick={() => navigate("/cart")}
+            className="flex items-center gap-1 text-[#7a6f63] hover:text-[#c9a96e] text-sm mb-6 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> Quay lại giỏ hàng
+          </button>
 
-      <div className="max-w-[600px] mx-auto">
-        <h1 className="font-display text-2xl md:text-3xl text-text-primary mb-8">Thanh to\u00e1n</h1>
+          <h1 className="font-display text-2xl md:text-3xl text-[#ede6db] uppercase tracking-wider mb-8">
+            Thanh toán
+          </h1>
 
-        {/* Cart Summary */}
-        <div className="mb-6">
-          <CartSummary items={items} total={total} />
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left: Form */}
+            <div className="flex-1">
+              <div className="bg-[#252019] border border-[#3d352a] p-6">
+                <h3 className="font-display text-base text-[#ede6db] uppercase tracking-wider mb-6 pb-4 border-b border-[#3d352a]">
+                  Thông tin tài khoản Xbox
+                </h3>
+                <CheckoutForm onSuccess={handleSuccess} />
+              </div>
+            </div>
+
+            {/* Right: Summary */}
+            <div className="w-full lg:w-[360px] flex-shrink-0">
+              <CartSummary items={items} total={total} />
+            </div>
+          </div>
         </div>
-
-        {/* Checkout Form */}
-        <div className="bg-bg-surface border border-border p-5">
-          <h3 className="font-display text-sm text-text-primary uppercase tracking-wider mb-5">
-            Th\u00f4ng tin t\u00e0i kho\u1ea3n Xbox
-          </h3>
-          <CheckoutForm onSuccess={handleSuccess} />
-        </div>
-      </div>
-    </Container>
+      </Container>
+    </div>
   );
 }

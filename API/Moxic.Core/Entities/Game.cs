@@ -1,4 +1,4 @@
-﻿namespace Moxic.Core.Entities;
+namespace Moxic.Core.Entities;
 
 using Moxic.Shared.Enums;
 
@@ -13,6 +13,9 @@ public class Game
     public string Tags { get; set; } = string.Empty; // comma-separated: "Hot", "Sắp ra mắt"
     public GameStatus Status { get; set; } = GameStatus.Available;
     public DateTime? ReleaseDate { get; set; }
+    public bool IsFeatured { get; set; }
+    public SystemRequirementData? SystemRequirements { get; set; }
+    public List<GameRating> Ratings { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

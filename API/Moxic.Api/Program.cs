@@ -6,6 +6,7 @@ using Minio;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
 using Moxic.Infrastructure.Services;
+using Moxic.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,7 +139,13 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
+
+    var dbContext = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
+    await dbContext.Database.MigrateAsync();
+    await GameSeeder.SeedAsync(dbContext);
 }
+
+app.MapGameEndpoints();
 
 app.Run();
 

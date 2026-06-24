@@ -240,6 +240,9 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -268,6 +271,8 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsFeatured");
 
                     b.HasIndex("Status", "Genre");
 
@@ -488,6 +493,118 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.Game", b =>
+                {
+                    b.OwnsMany("Moxic.Core.Entities.GameRating", "Ratings", b1 =>
+                        {
+                            b1.Property<Guid>("GameId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Label")
+                                .IsRequired();
+
+                            b1.Property<double>("MaxScore");
+
+                            b1.Property<double>("Score");
+
+                            b1.Property<string>("Source")
+                                .IsRequired();
+
+                            b1.HasKey("GameId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Games");
+
+                            b1
+                                .ToJson("Ratings")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("Moxic.Core.Entities.SystemRequirementData", "SystemRequirements", b1 =>
+                        {
+                            b1.Property<Guid>("GameId");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1
+                                .ToJson("SystemRequirements")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+
+                            b1.OwnsOne("Moxic.Core.Entities.SystemRequirement", "Minimum", b2 =>
+                                {
+                                    b2.Property<Guid>("SystemRequirementDataGameId");
+
+                                    b2.Property<string>("Graphics")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Memory")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Os")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Processor")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Storage")
+                                        .IsRequired();
+
+                                    b2.HasKey("SystemRequirementDataGameId");
+
+                                    b2.ToTable("Games");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SystemRequirementDataGameId");
+                                });
+
+                            b1.OwnsOne("Moxic.Core.Entities.SystemRequirement", "Recommended", b2 =>
+                                {
+                                    b2.Property<Guid>("SystemRequirementDataGameId");
+
+                                    b2.Property<string>("Graphics")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Memory")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Os")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Processor")
+                                        .IsRequired();
+
+                                    b2.Property<string>("Storage")
+                                        .IsRequired();
+
+                                    b2.HasKey("SystemRequirementDataGameId");
+
+                                    b2.ToTable("Games");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SystemRequirementDataGameId");
+                                });
+
+                            b1.Navigation("Minimum")
+                                .IsRequired();
+
+                            b1.Navigation("Recommended")
+                                .IsRequired();
+                        });
+
+                    b.Navigation("Ratings");
+
+                    b.Navigation("SystemRequirements");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.GameMedia", b =>

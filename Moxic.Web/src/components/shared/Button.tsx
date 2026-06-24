@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface ButtonProps {
   variant?: "primary" | "ghost" | "hero";
@@ -8,7 +8,7 @@ interface ButtonProps {
 }
 
 export default function Button({ variant = "primary", children, onClick, className = "" }: ButtonProps) {
-  const base = "rounded-md text-sm font-semibold transition-all duration-300 cursor-pointer";
+  const base = " text-sm font-semibold transition-all duration-300 cursor-pointer";
   const styles = {
     primary: "bg-accent hover:bg-accent-hover text-white px-6 py-3",
     ghost: "bg-transparent hover:bg-white/10 text-text-secondary hover:text-text-primary px-4 py-2",

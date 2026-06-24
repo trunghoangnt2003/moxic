@@ -6,7 +6,7 @@ import { X, ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
 
 export default function CartDrawer() {
   const navigate = useNavigate();
-  const { items, isOpen, close, removeItem, updateQuantity, clearCart, totalPrice } =
+  const { items, close, removeItem, updateQuantity, clearCart, totalPrice } =
     useCartStore();
 
   const handleCheckout = () => {
@@ -18,13 +18,13 @@ export default function CartDrawer() {
     <>
       {/* Overlay */}
       <div
-        className={ixed inset-0 z-50 bg-black/60 transition-opacity duration-300 }
+        className="fixed inset-0 z-50 bg-black/60 transition-opacity duration-300"
         onClick={close}
       />
 
       {/* Drawer */}
       <div
-        className={ixed top-0 right-0 z-50 h-full w-full max-w-[420px] bg-bg-surface border-l border-border shadow-2xl transform transition-transform duration-300 }
+        className="fixed top-0 right-0 z-50 h-full w-full max-w-[420px] bg-bg-surface border-l border-border shadow-2xl transform transition-transform duration-300"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
@@ -66,7 +66,7 @@ export default function CartDrawer() {
                 />
                 <div className="flex-1 min-w-0">
                   <Link
-                    to={/games/}
+                    to={`/games/${item.gameId}`}
                     onClick={close}
                     className="font-body text-sm text-text-primary font-semibold truncate block hover:text-accent transition-colors"
                   >

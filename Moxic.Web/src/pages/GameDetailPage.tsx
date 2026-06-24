@@ -74,7 +74,6 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { data: game, isLoading, error } = useGameDetail(id!);
   const addItem = useCartStore((s) => s.addItem);
-  const openCart = useCartStore((s) => s.open);
   const [activeMedia, setActiveMedia] = useState(0);
   const [showMinReq, setShowMinReq] = useState(false);
   const [added, setAdded] = useState(false);
@@ -117,7 +116,7 @@ export default function GameDetailPage() {
 
   const handleBuyNow = () => {
     handleAddToCart();
-    setTimeout(() => openCart(), 300);
+    setTimeout(() => navigate("/cart"), 300);
   };
 
   const prevMedia = () => setActiveMedia((p) => (p === 0 ? game.media.length - 1 : p - 1));
