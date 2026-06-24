@@ -3,6 +3,7 @@ import { useGames } from "../hooks/useGames";
 import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
 import { GridSkeleton } from "../components/shared/Skeleton";
+import { EmptySearch } from "../components/shared/EmptyStates";
 import { Search, X, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GamesPage() {

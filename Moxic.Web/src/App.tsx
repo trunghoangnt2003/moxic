@@ -4,6 +4,8 @@ import { lazy, Suspense } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import { HeroSkeleton } from "./components/shared/Skeleton";
 import GlobalLoader from "./components/shared/GlobalLoader";
+import { NotFoundPage } from "./components/shared/EmptyStates";
+import { Toaster } from "react-hot-toast";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GamesPage = lazy(() => import("./pages/GamesPage"));
@@ -25,6 +27,10 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalLoader />
+      <Toaster position="top-right" toastOptions={{
+        style: { background: "#18181b", color: "#f4f4f5", border: "1px solid #3f3f46" },
+        duration: 4000,
+      }} />
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -36,6 +42,7 @@ export default function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
         </Suspense>

@@ -101,6 +101,9 @@ export default function GameDetailPage() {
   const relatedGames = seedGames.filter((g) => game.relatedGameIds.includes(g.id));
 
   const handleAddToCart = () => {
+    toast.success("Đã thêm vào giỏ hàng!", {
+      duration: 3000,
+    });
     addItem({
       gameId: game.id,
       name: game.name,
@@ -124,14 +127,14 @@ export default function GameDetailPage() {
 
   return (
     <div>
-      {/* ═══ HERO BACKGROUND ═══ */}
+      {/* â•â•â• HERO BACKGROUND â•â•â• */}
       <div className="relative w-full h-[300px] md:h-[500px]">
         <img src={backgroundHeroImage} alt={game.name} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/80 to-transparent" />
       </div>
 
       <Container className="-mt-32 md:-mt-48 relative z-10">
-        {/* ═══ TITLE + PRICE ═══ */}
+        {/* â•â•â• TITLE + PRICE â•â•â• */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <h1 className="font-display text-3xl md:text-5xl text-text-primary mb-3">{game.name}</h1>
@@ -139,7 +142,7 @@ export default function GameDetailPage() {
               <Badge variant={isPreorder ? "preorder" : "available"}>
                 {isPreorder ? "Sắp ra mắt" : "Sẵn có"}
               </Badge>
-              <span className="text-xs text-text-muted bg-bg-surface px-2 py-1 ">{game.genre}</span>
+              <span className="text-xs text-text-muted bg-bg-surface px-2 py-1 ">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
               {discount > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-text-muted text-xs line-through">{formatPrice(game.originalPrice)}</span>
@@ -162,7 +165,7 @@ export default function GameDetailPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* ═══ LEFT COL ═══ */}
+          {/* â•â•â• LEFT COL â•â•â• */}
           <div className="flex-1 min-w-0">
             {/* Gallery */}
             {game.media.length > 0 && (
@@ -186,9 +189,8 @@ export default function GameDetailPage() {
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {game.media.map((m, i) => (
                     <button key={m.id} onClick={() => setActiveMedia(i)}
-                      className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video  overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
-                        i === activeMedia ? "border-accent brightness-100" : "border-transparent brightness-50 hover:brightness-75"
-                      }`}
+                      className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video  overflow-hidden border-2 transition-all duration-200 cursor-pointer ${i === activeMedia ? "border-accent brightness-100" : "border-transparent brightness-50 hover:brightness-75"
+                        }`}
                     >
                       <img src={m.presignedUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </button>
@@ -217,21 +219,19 @@ export default function GameDetailPage() {
                 <div className="flex border-b border-border">
                   <button
                     onClick={() => setShowMinReq(false)}
-                    className={`flex-1 py-3 text-sm font-semibold transition-colors cursor-pointer ${
-                      !showMinReq
-                        ? "text-text-primary border-b-2 border-accent bg-accent/5"
-                        : "text-text-muted hover:text-text-secondary"
-                    }`}
+                    className={`flex-1 py-3 text-sm font-semibold transition-colors cursor-pointer ${!showMinReq
+                      ? "text-text-primary border-b-2 border-accent bg-accent/5"
+                      : "text-text-muted hover:text-text-secondary"
+                      }`}
                   >
                     Khuyến nghị
                   </button>
                   <button
                     onClick={() => setShowMinReq(true)}
-                    className={`flex-1 py-3 text-sm font-semibold transition-colors cursor-pointer ${
-                      showMinReq
-                        ? "text-text-primary border-b-2 border-accent bg-accent/5"
-                        : "text-text-muted hover:text-text-secondary"
-                    }`}
+                    className={`flex-1 py-3 text-sm font-semibold transition-colors cursor-pointer ${showMinReq
+                      ? "text-text-primary border-b-2 border-accent bg-accent/5"
+                      : "text-text-muted hover:text-text-secondary"
+                      }`}
                   >
                     Tối thiểu
                   </button>
@@ -260,7 +260,7 @@ export default function GameDetailPage() {
             )}
           </div>
 
-          {/* ═══ RIGHT COL ═══ */}
+          {/* â• â• â•  RIGHT COL â• â• â•  */}
           <div className="w-full lg:w-[340px] flex-shrink-0 space-y-4">
             {/* Price card */}
             <div className="bg-bg-surface border border-border  p-5">
@@ -307,7 +307,7 @@ export default function GameDetailPage() {
               <div className="text-sm space-y-2">
                 <div className="flex justify-between">
                   <span className="text-text-muted">Thể loại</span>
-                  <span className="text-text-primary">{game.genre}</span>
+                  <span className="text-text-primary">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-muted">Trạng thái</span>
@@ -319,10 +319,10 @@ export default function GameDetailPage() {
                     <span className="text-text-primary">{formatDate(game.releaseDate)}</span>
                   </div>
                 )}
-                {game.tags && (
+                {game.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
-                    {game.tags.split(",").map((t) => (
-                      <span key={t} className="text-[11px] bg-bg-elevated text-text-muted px-2 py-0.5 ">{t.trim()}</span>
+                    {game.tags.map((t) => (
+                      <span key={t.id} className="text-[11px] bg-bg-elevated text-text-muted px-2 py-0.5 ">{t.name}</span>
                     ))}
                   </div>
                 )}
@@ -353,7 +353,7 @@ export default function GameDetailPage() {
           </div>
         </div>
 
-        {/* ═══ RELATED GAMES ═══ */}
+        {/* â•â•â• RELATED GAMES â•â•â• */}
         {relatedGames.length > 0 && (
           <div className="mt-12 mb-8">
             <div className="flex items-center justify-between mb-6">
@@ -372,7 +372,7 @@ export default function GameDetailPage() {
           </div>
         )}
 
-        {/* ═══ BACK LINK ═══ */}
+        {/* â•â•â• BACK LINK â•â•â• */}
         <div className="pb-12">
           <Link to="/games" className="inline-flex items-center gap-1 text-text-muted hover:text-text-primary text-sm transition-colors">
             <ChevronLeft className="w-4 h-4" /> Quay lại cửa hàng
@@ -382,4 +382,7 @@ export default function GameDetailPage() {
     </div>
   );
 }
+
+
+
 
