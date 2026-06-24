@@ -1,29 +1,42 @@
-﻿import type { GamesResponse, GameDetail, ActivePaymentConfig } from "../types/game";
+import axios from "axios";
+import type { GamesResponse, GameDetail, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
-const BASE = "/api";
+const api = axios.create({
+  baseURL: "/api",
+});
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(`${BASE}${url}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+export async function getGames(params?: {
+  page?: number;
+  pageSize?: number;
+  genre?: string;
+  status?: string;
+  search?: string;
+}) {
+  const { data } = await api.get<GamesResponse>("/games", { params });
+  return data;
 }
 
-export function getGames(params?: { page?: number; pageSize?: number; genre?: string; status?: string; search?: string; }) {
-  const q = new URLSearchParams();
-  if (params?.page) q.set("page", String(params.page));
-  if (params?.pageSize) q.set("pageSize", String(params.pageSize));
-  if (params?.genre) q.set("genre", params.genre);
-  if (params?.status) q.set("status", params.status);
-  if (params?.search) q.set("search", params.search);
-  const qs = q.toString();
-  return fetchJson<GamesResponse>(`/games${qs ? `?${qs}` : ""}`);
+export async function getFeaturedGames(limit: number = 5) {
+  const { data } = await api.get<GamesResponse["items"]>("/games/featured", { params: { limit } });
+  return data;
 }
 
-export function getGameDetail(id: string) {
-  return fetchJson<GameDetail>(`/games/${id}`);
+export async function getGameDetail(id: string) {
+  const { data } = await api.get<GameDetail>(/games/);
+  return data;
 }
 
-export function getActivePaymentConfig() {
-  return fetchJson<ActivePaymentConfig>("/payment-config/active");
+export async function getActivePaymentConfig() {
+  const { data } = await api.get<ActivePaymentConfig>("/payment-config/active");
+  return data;
 }
 
+export async function createOrder(request: OrderCreateRequest) {
+  const { data } = await api.post<OrderCreateResponse>("/orders", request);
+  return data;
+}
+
+export async function getOrder(orderCode: string) {
+  const { data } = await api.get<OrderConfirmationData>(/orders/);
+  return data;
+}

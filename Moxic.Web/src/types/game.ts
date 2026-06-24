@@ -1,4 +1,4 @@
-﻿export interface GameMedia {
+export interface GameMedia {
   id: string;
   objectKey: string;
   isPrimary: boolean;
@@ -18,6 +18,31 @@ export interface GameListItem {
   coverImageUrl?: string;
 }
 
+export interface GameRating {
+  source: string;
+  score: number;
+  maxScore: number;
+  label: string;
+}
+
+export interface SystemRequirement {
+  os: string;
+  processor: string;
+  memory: string;
+  graphics: string;
+  storage: string;
+}
+
+export interface CartItem {
+  gameId: string;
+  name: string;
+  coverImageUrl: string;
+  price: number;
+  originalPrice: number;
+  status: "Available" | "Preorder";
+  quantity: number;
+}
+
 export interface GameDetail {
   id: string;
   name: string;
@@ -29,6 +54,12 @@ export interface GameDetail {
   status: "Available" | "Preorder";
   releaseDate?: string;
   media: GameMedia[];
+  ratings: GameRating[];
+  systemRequirements: {
+    minimum: SystemRequirement;
+    recommended: SystemRequirement;
+  };
+  relatedGameIds: string[];
 }
 
 export interface GamesResponse {
@@ -42,4 +73,38 @@ export interface ActivePaymentConfig {
   transferSyntaxTemplate: string;
   bankQrUrl?: string;
   cryptoQrUrl?: string;
+}
+
+export interface OrderCreateRequest {
+  items: { gameId: string; price: number }[];
+  customerPhone: string;
+  customerXboxEmail: string;
+  customerXboxPassword: string;
+  customerZalo?: string;
+  paymentMethod: "Bank" | "Crypto";
+}
+
+export interface OrderCreateResponse {
+  id: string;
+  orderCode: string;
+  totalAmount: number;
+  createdAt: string;
+}
+
+export interface OrderConfirmationItem {
+  gameName: string;
+  price: number;
+}
+
+export interface OrderConfirmationData {
+  orderCode: string;
+  items: OrderConfirmationItem[];
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  paymentConfig?: {
+    transferSyntaxTemplate: string;
+    bankQrUrl?: string;
+    cryptoQrUrl?: string;
+  } | null;
 }

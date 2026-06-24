@@ -1,13 +1,16 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import { HeroSkeleton } from "./components/shared/Skeleton";
+import GlobalLoader from "./components/shared/GlobalLoader";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GamesPage = lazy(() => import("./pages/GamesPage"));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage"));
 const PreorderPage = lazy(() => import("./pages/PreorderPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
@@ -20,6 +23,7 @@ function PageLoader() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <GlobalLoader />
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -28,6 +32,8 @@ export default function App() {
               <Route path="/games" element={<GamesPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
             </Route>
           </Routes>
         </Suspense>
