@@ -32,7 +32,7 @@ export default function GenreList() {
     setSaving("new");
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/genres", {
+      const res = await fetch(apiUrl("/api/admin/genres"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim() }),
@@ -53,7 +53,7 @@ export default function GenreList() {
     setSaving(id);
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/genres/", {
+      const res = await fetch(apiUrl("/api/admin/genres/"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName.trim() }),
@@ -72,7 +72,7 @@ export default function GenreList() {
     if (!window.confirm(`Delete genre ${name}?`)) return;
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/genres/", { method: "DELETE" });
+      const res = await fetch(apiUrl("/api/admin/genres/"), { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setError(err.error || "Failed to delete");

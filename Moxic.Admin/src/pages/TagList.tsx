@@ -32,7 +32,7 @@ export default function TagList() {
     setSaving("new");
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags", {
+      const res = await fetch(apiUrl("/api/admin/tags"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim() }),
@@ -53,7 +53,7 @@ export default function TagList() {
     setSaving(id);
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags/", {
+      const res = await fetch(apiUrl("/api/admin/tags/"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName.trim() }),
@@ -72,7 +72,7 @@ export default function TagList() {
     if (!window.confirm(`Delete tag ${name}?`)) return;
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags/", { method: "DELETE" });
+      const res = await fetch(apiUrl("/api/admin/tags/"), { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setError(err.error || "Failed to delete");

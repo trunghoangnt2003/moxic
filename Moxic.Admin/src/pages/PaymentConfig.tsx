@@ -46,7 +46,7 @@ export default function PaymentConfig() {
   const handleSaveTemplate = async () => {
     setSaving(true);
     setSaved(false);
-    await fetch(apiUrl("/api/admin/payment-config", {
+    await fetch(apiUrl("/api/admin/payment-config"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
