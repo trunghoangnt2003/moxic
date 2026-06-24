@@ -10,6 +10,8 @@ import {
   Loader2,
   Plus,
   Check,
+  Monitor,
+  AlertCircle,
 } from "lucide-react";
 
 interface MediaItem {
@@ -20,10 +22,28 @@ interface MediaItem {
   presignedUrl?: string;
 }
 
+interface SysReq {
+  os: string;
+  processor: string;
+  memory: string;
+  graphics: string;
+  storage: string;
+}
+
+interface Rating {
+  source: string;
+  score: number;
+  maxScore: number;
+  label: string;
+}
+
+const emptyReq = (): SysReq => ({ os: "", processor: "", memory: "", graphics: "", storage: "" });
+const emptyRating = (): Rating => ({ source: "", score: 0, maxScore: 10, label: "" });
+
 export default function GameForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [gameId, setGameId] = useState<string | null>(id || null);
   const [name, setName] = useState("");
@@ -34,12 +54,16 @@ export default function GameForm() {
   const [tags, setTags] = useState("");
   const [status, setStatus] = useState("Available");
   const [releaseDate, setReleaseDate] = useState("");
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [minReq, setMinReq] = useState<SysReq>(emptyReq());
+  const [recReq, setRecReq] = useState<SysReq>(emptyReq());
+  const [ratings, setRatings] = useState<Rating[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [created, setCreated] = useState(false);
 
-  // Load game data for edit mode
   useEffect(() => {
     if (id) {
       fetch(`/api/admin/games/${id}`)
@@ -53,43 +77,52 @@ export default function GameForm() {
           setTags(g.tags);
           setStatus(g.status);
           setReleaseDate(g.releaseDate?.split("T")[0] || "");
+          setIsFeatured(g.isFeatured || false);
           setMedia(g.media || []);
+          if (g.systemRequirements) {
+            setMinReq(g.systemRequirements.minimum || emptyReq());
+            setRecReq(g.systemRequirements.recommended || emptyReq());
+          }
+          setRatings(g.ratings || []);
           setGameId(id);
         });
     }
   }, [id]);
 
+  const buildBody = () => ({
+    name, description, originalPrice, salePrice,
+    genre, tags, status,
+    releaseDate: releaseDate || null,
+    isFeatured,
+    systemRequirements: { minimum: minReq, recommended: recReq },
+    ratings,
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const body = {
-      name, description, originalPrice, salePrice,
-      genre, tags, status,
-      releaseDate: releaseDate || null,
-    };
-
+    const body = buildBody();
     try {
       if (gameId) {
-        // Update existing
         await fetch(`/api/admin/games/${gameId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         navigate("/games");
       } else {
-        // Create new
         const res = await fetch("/api/admin/games", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || "Failed to create game");
+          return;
+        }
         const data = await res.json();
         setGameId(data.id);
         setCreated(true);
-        // Update URL silently so refresh works
         window.history.replaceState(null, "", `/games/${data.id}/edit`);
-        // Load empty media list
         setMedia([]);
       }
     } finally {
@@ -100,17 +133,22 @@ export default function GameForm() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length || !gameId) return;
     setUploading(true);
+    setUploadError("");
     const file = e.target.files[0];
     const formData = new FormData();
     formData.append("file", file);
-
     try {
       const res = await fetch(`/api/admin/games/${gameId}/media`, {
-        method: "POST",
-        body: formData,
+        method: "POST", body: formData,
       });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || `Upload failed (${res.status})`);
+      }
       const data = await res.json();
       setMedia((prev) => [...prev, { ...data, presignedUrl: data.presignedUrl }]);
+    } catch (err: any) {
+      setUploadError(err.message || "Upload failed");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -125,255 +163,185 @@ export default function GameForm() {
 
   const handleSetPrimary = async (mediaId: string) => {
     if (!gameId) return;
-    await fetch(`/api/admin/games/${gameId}/media/${mediaId}/primary`, {
-      method: "PUT",
-    });
-    setMedia((prev) =>
-      prev.map((m) => ({ ...m, isPrimary: m.id === mediaId }))
-    );
+    await fetch(`/api/admin/games/${gameId}/media/${mediaId}/primary`, { method: "PUT" });
+    setMedia((prev) => prev.map((m) => ({ ...m, isPrimary: m.id === mediaId })));
   };
+
+  const addRating = () => setRatings((prev) => [...prev, emptyRating()]);
+  const removeRating = (i: number) => setRatings((prev) => prev.filter((_, idx) => idx !== i));
+  const updateRating = (i: number, field: keyof Rating, value: any) =>
+    setRatings((prev) => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r));
+
+  const updateReq = (setter: React.Dispatch<React.SetStateAction<SysReq>>, field: keyof SysReq, value: string) =>
+    setter((prev) => ({ ...prev, [field]: value }));
 
   const canUploadMedia = !!gameId;
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate("/games")}
-          className="p-1.5 rounded text-steam-muted hover:text-steam-text hover:bg-steam-surface-2 transition-colors"
-        >
+        <button onClick={() => navigate("/games")} className="p-1.5 rounded text-steam-muted hover:text-steam-text hover:bg-steam-surface-2 transition-colors">
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-white font-mono tracking-tight">
-            {gameId ? "Edit Game" : "New Game"}
-          </h1>
-          <p className="text-xs text-steam-muted mt-0.5">
-            {gameId ? "Update details and manage media" : "Add a new game to the catalog"}
-          </p>
+          <h1 className="text-lg font-bold text-white font-mono tracking-tight">{gameId ? "Edit Game" : "New Game"}</h1>
+          <p className="text-xs text-steam-muted mt-0.5">{gameId ? "Update details and manage media" : "Add a new game to the catalog"}</p>
         </div>
       </div>
 
-      {/* Success banner */}
       {created && (
         <div className="flex items-center gap-2 bg-steam-green/10 border border-steam-green/30 rounded px-4 py-2.5 text-sm text-steam-green">
-          <Check size={16} />
-          Game created! Now add screenshots and cover art below.
+          <Check size={16} /> Game created! Now add screenshots and cover art below.
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Form fields */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Basic info */}
+          {/* Basic Info */}
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
-            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">
-              Basic Info
-            </h2>
-
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Basic Info</h2>
             <div>
               <label className="block text-xs text-steam-muted mb-1.5 font-medium">Game Name</label>
-              <input
-                placeholder="e.g. Halo Infinite"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full steam-input"
-                required
-              />
+              <input placeholder="e.g. Halo Infinite" value={name} onChange={(e) => setName(e.target.value)} className="w-full steam-input" required />
             </div>
-
             <div>
               <label className="block text-xs text-steam-muted mb-1.5 font-medium">Description</label>
-              <textarea
-                placeholder="Game description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full steam-input h-28 resize-none"
-                required
-              />
+              <textarea placeholder="Game description..." value={description} onChange={(e) => setDescription(e.target.value)} className="w-full steam-input h-28 resize-none" required />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="isFeatured" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="rounded border-steam-border bg-steam-surface-3" />
+              <label htmlFor="isFeatured" className="text-sm text-steam-text cursor-pointer">Featured on homepage carousel</label>
             </div>
           </div>
 
-          {/* Pricing */}
+          {/* Pricing & Classification */}
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
-            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">
-              Pricing & Classification
-            </h2>
-
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Pricing & Classification</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label>
-                <input
-                  type="number" placeholder="0"
-                  value={originalPrice}
-                  onChange={(e) => setOriginalPrice(Number(e.target.value))}
-                  className="w-full steam-input font-mono" required
-                />
+                <input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required />
               </div>
               <div>
                 <label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label>
-                <input
-                  type="number" placeholder="0"
-                  value={salePrice}
-                  onChange={(e) => setSalePrice(Number(e.target.value))}
-                  className="w-full steam-input font-mono" required
-                />
+                <input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Genre</label>
-                <input
-                  placeholder="e.g. Action, RPG"
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
-                  className="w-full steam-input"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Tags</label>
-                <input
-                  placeholder="Hot, Sắp ra mắt"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                  className="w-full steam-input"
-                />
-              </div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Genre</label><input placeholder="e.g. Action, RPG" value={genre} onChange={(e) => setGenre(e.target.value)} className="w-full steam-input" /></div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Tags</label><input placeholder="Hot, Sắp ra mắt" value={tags} onChange={(e) => setTags(e.target.value)} className="w-full steam-input" /></div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-steam-muted mb-1.5 font-medium">Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full steam-input"
-                >
+                <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full steam-input">
                   <option value="Available">Available</option>
                   <option value="Preorder">Preorder</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-steam-muted mb-1.5 font-medium">Release Date</label>
-                <input
-                  type="date"
-                  value={releaseDate}
-                  onChange={(e) => setReleaseDate(e.target.value)}
-                  className="w-full steam-input"
-                />
+                <input type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} className="w-full steam-input" />
               </div>
             </div>
           </div>
 
-          {/* Actions */}
+          {/* System Requirements */}
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2">
+              <Monitor size={14} /> System Requirements
+            </h2>
+            {(["Minimum", "Recommended"] as const).map((label) => {
+              const req = label === "Minimum" ? minReq : recReq;
+              const setter = label === "Minimum" ? setMinReq : setRecReq;
+              return (
+                <div key={label}>
+                  <h3 className="text-xs font-medium text-steam-text mb-2">{label}</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([["os", "OS"], ["processor", "CPU"], ["memory", "RAM"], ["graphics", "GPU"], ["storage", "Storage"]] as const).map(([field, fieldLabel]) => (
+                      <div key={field} className={field === "storage" || field === "graphics" ? "col-span-2" : ""}>
+                        <label className="block text-[11px] text-steam-muted mb-1">{fieldLabel}</label>
+                        <input value={req[field]} onChange={(e) => updateReq(setter, field, e.target.value)} className="w-full steam-input text-xs" placeholder={`e.g. ${field === "os" ? "Windows 10" : field === "processor" ? "Intel i5" : field === "memory" ? "8GB" : field === "graphics" ? "GTX 1060" : "50GB"}`} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Ratings */}
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2"><Star size={14} /> Ratings</h2>
+              <button onClick={addRating} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border text-xs px-2 py-1"><Plus size={12} /> Add Rating</button>
+            </div>
+            {ratings.length === 0 && <p className="text-xs text-steam-muted/50 text-center py-4">No ratings added yet</p>}
+            {ratings.map((r, i) => (
+              <div key={i} className="bg-steam-surface-3 border border-steam-border rounded-sm p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-steam-muted font-medium">Rating #{i + 1}</span>
+                  <button onClick={() => removeRating(i)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={12} /></button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Source</label><input value={r.source} onChange={(e) => updateRating(i, "source", e.target.value)} className="w-full steam-input text-xs" placeholder="e.g. Metacritic" /></div>
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Label</label><input value={r.label} onChange={(e) => updateRating(i, "label", e.target.value)} className="w-full steam-input text-xs" placeholder="e.g. Must Play" /></div>
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Score</label><input type="number" min="0" max="100" step="0.1" value={r.score} onChange={(e) => updateRating(i, "score", Number(e.target.value))} className="w-full steam-input text-xs font-mono" /></div>
+                  <div><label className="block text-[11px] text-steam-muted mb-1">Max Score</label><input type="number" min="1" max="100" value={r.maxScore} onChange={(e) => updateRating(i, "maxScore", Number(e.target.value))} className="w-full steam-input text-xs font-mono" /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Save */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleSubmit}
-              disabled={saving}
-              className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Save size={14} />
-              )}
+            <button onClick={handleSubmit} disabled={saving} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {gameId ? "Update Game" : "Create Game"}
             </button>
-            <button
-              onClick={() => navigate("/games")}
-              className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border"
-            >
-              Cancel
-            </button>
+            <button onClick={() => navigate("/games")} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border">Cancel</button>
           </div>
         </div>
 
-        {/* Media section — visible after game is created or in edit mode */}
+        {/* Media */}
         <div className="space-y-4">
           <div className="bg-steam-surface border border-steam-border rounded-sm p-5">
-            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">
-              Media
-            </h2>
-
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">Media</h2>
             {canUploadMedia ? (
               <>
-                {/* Upload button */}
                 <label className="flex flex-col items-center justify-center gap-2 bg-steam-surface-3 border-2 border-dashed border-steam-border rounded-sm p-6 cursor-pointer hover:border-steam-blue/50 hover:bg-steam-blue/5 transition-all">
-                  {uploading ? (
-                    <Loader2 size={22} className="text-steam-blue animate-spin" />
-                  ) : (
-                    <>
-                      <Upload size={22} className="text-steam-muted" />
-                      <span className="text-xs text-steam-muted text-center leading-relaxed">
-                        Click to upload<br />
-                        <span className="text-steam-muted/50">JPG, PNG, WebP — 5MB max</span>
-                      </span>
-                    </>
+                  {uploading ? <Loader2 size={22} className="text-steam-blue animate-spin" /> : (
+                    <><Upload size={22} className="text-steam-muted" /><span className="text-xs text-steam-muted text-center leading-relaxed">Click to upload<br /><span className="text-steam-muted/50">JPG, PNG, WebP — 5MB max</span></span></>
                   )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
-                    onChange={handleUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
+                  <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleUpload} className="hidden" disabled={uploading} />
                 </label>
-
-                {/* Media grid */}
+                {uploadError && (
+                  <div className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded bg-red-500/10 border border-red-500/20">
+                    <AlertCircle size={12} className="text-red-400 flex-shrink-0" />
+                    <span className="text-xs text-red-400">{uploadError}</span>
+                  </div>
+                )}
                 <div className="mt-4 space-y-3">
                   {media.map((m) => (
-                    <div
-                      key={m.id}
-                      className="bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden card-hover"
-                    >
-                      {m.presignedUrl && (
-                        <div className="aspect-video bg-steam-bg">
-                          <img
-                            src={m.presignedUrl}
-                            className="w-full h-full object-cover"
-                            alt=""
-                          />
-                        </div>
-                      )}
+                    <div key={m.id} className="bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden card-hover">
+                      {m.presignedUrl && <div className="aspect-video bg-steam-bg"><img src={m.presignedUrl} className="w-full h-full object-cover" alt="" /></div>}
                       <div className="flex items-center justify-between px-3 py-2">
-                        <button
-                          onClick={() => handleSetPrimary(m.id)}
-                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                            m.isPrimary
-                              ? "bg-steam-gold/15 text-steam-gold"
-                              : "bg-steam-surface text-steam-muted hover:text-steam-gold border border-steam-border"
-                          }`}
-                        >
-                          <Star size={11} fill={m.isPrimary ? "currentColor" : "none"} />
-                          {m.isPrimary ? "Primary" : "Set"}
+                        <button onClick={() => handleSetPrimary(m.id)} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors ${m.isPrimary ? "bg-steam-gold/15 text-steam-gold" : "bg-steam-surface text-steam-muted hover:text-steam-gold border border-steam-border"}`}>
+                          <Star size={11} fill={m.isPrimary ? "currentColor" : "none"} />{m.isPrimary ? "Primary" : "Set"}
                         </button>
-                        <button
-                          onClick={() => handleDeleteMedia(m.id)}
-                          className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <button onClick={() => handleDeleteMedia(m.id)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={13} /></button>
                       </div>
                     </div>
                   ))}
-                  {media.length === 0 && (
-                    <div className="text-center py-6">
-                      <Image size={24} className="mx-auto mb-2 text-steam-border" />
-                      <p className="text-xs text-steam-muted">No images yet</p>
-                    </div>
+                  {media.length === 0 && !uploadError && (
+                    <div className="text-center py-6"><Image size={24} className="mx-auto mb-2 text-steam-border" /><p className="text-xs text-steam-muted">No images yet</p></div>
                   )}
                 </div>
               </>
             ) : (
               <div className="text-center py-8">
                 <Plus size={28} className="mx-auto mb-3 text-steam-border" />
-                <p className="text-xs text-steam-muted leading-relaxed">
-                  Create the game first<br />
-                  <span className="text-steam-muted/50">then add images here</span>
-                </p>
+                <p className="text-xs text-steam-muted leading-relaxed">Create the game first<br /><span className="text-steam-muted/50">then add images here</span></p>
               </div>
             )}
           </div>
