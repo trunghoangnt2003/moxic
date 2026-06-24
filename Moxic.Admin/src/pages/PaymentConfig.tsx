@@ -30,7 +30,7 @@ export default function PaymentConfig() {
   const [uploadingCrypto, setUploadingCrypto] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/payment-config")
+    fetch(apiUrl("/api/admin/payment-config")
       .then((r) => r.json())
       .then((d) => {
         if (d.id) {
@@ -46,7 +46,7 @@ export default function PaymentConfig() {
   const handleSaveTemplate = async () => {
     setSaving(true);
     setSaved(false);
-    await fetch("/api/admin/payment-config", {
+    await fetch(apiUrl("/api/admin/payment-config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -73,8 +73,8 @@ export default function PaymentConfig() {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        await fetch(`/api/admin/payment-config/${type}`, { method: "POST", body: formData });
-        const res = await fetch("/api/admin/payment-config");
+        await fetch(apiUrl(`/api/admin/payment-config/${type}`)), { method: "POST", body: formData });
+        const res = await fetch(apiUrl("/api/admin/payment-config");
         const d = await res.json();
         setConfig(d);
       } finally {

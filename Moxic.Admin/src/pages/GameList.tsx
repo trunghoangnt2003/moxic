@@ -42,7 +42,7 @@ export default function GameList() {
 
   useEffect(() => {
     const params = search ? "?search=" + encodeURIComponent(search) : "";
-    fetch(apiUrl("/api/admin/games" + params)
+    fetch(apiUrl("/api/admin/games" + params))
       .then((r) => r.json())
       .then(setGames);
   }, [search]);
@@ -51,7 +51,7 @@ export default function GameList() {
     if (!window.confirm("Delete \"" + name + "\"?")) return;
     setDeleting(id);
     try {
-      await fetch(apiUrl("/api/admin/games/" + id, { method: "DELETE" });
+      await fetch(apiUrl("/api/admin/games/" + id), { method: "DELETE" });
       setGames((prev) => prev.filter((g) => g.id !== id));
     } finally {
       setDeleting(null);

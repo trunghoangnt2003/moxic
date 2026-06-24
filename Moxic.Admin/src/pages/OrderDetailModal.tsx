@@ -70,7 +70,7 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
   useEffect(() => {
     setLoading(true);
     setError("");
-    fetch(`/api/admin/orders/${orderId}`)
+    fetch(apiUrl(`/api/admin/orders/${orderId}`)
       .then((r) => {
         if (!r.ok) throw new Error("Failed to load");
         return r.json();
@@ -93,7 +93,7 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
     try {
       const body: any = { status: newStatus };
       if (newStatus === "Cancelled" && rejectReason) body.reason = rejectReason;
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(apiUrl(`/api/admin/orders/${orderId}/status`)), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

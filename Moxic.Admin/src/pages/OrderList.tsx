@@ -73,7 +73,7 @@ export default function OrderList() {
       params.set("page", page.toString());
       params.set("pageSize", pageSize.toString());
 
-      const res = await fetch(`/api/admin/orders?${params}`);
+      const res = await fetch(apiUrl(`/api/admin/orders?${params}`);
       const data: OrderListResponse = await res.json();
       setOrders(data.items);
       setTotalCount(data.totalCount);

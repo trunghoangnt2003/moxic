@@ -152,13 +152,13 @@ export default function GameForm() {
   const [tagOptions, setTagOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
-    fetch(apiUrl("/api/admin/genres").then(r => r.json()).then(setGenreOptions);
-    fetch(apiUrl("/api/admin/tags").then(r => r.json()).then(setTagOptions);
+    fetch(apiUrl("/api/admin/genres")).then(r => r.json()).then(setGenreOptions);
+    fetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTagOptions);
   }, []);
 
   useEffect(() => {
     if (id) {
-      fetch(`/api/admin/games/${id}`)
+      fetch(apiUrl(`/api/admin/games/${id}`))
         .then((r) => r.json())
         .then((g) => {
           setName(g.name);
@@ -194,7 +194,7 @@ export default function GameForm() {
   const uploadToGame = async (targetId: string, qf: QueuedFile) => {
     const formData = new FormData();
     formData.append("file", qf.file);
-    const res = await fetch(`/api/admin/games/${targetId}/media`, {
+    const res = await fetch(apiUrl(`/api/admin/games/${targetId}/media`), {
       method: "POST", body: formData,
     });
     if (!res.ok) throw new Error((await res.text()) || "Upload failed");
@@ -207,13 +207,13 @@ export default function GameForm() {
     const body = buildBody();
     try {
       if (gameId) {
-        await fetch(`/api/admin/games/${gameId}`, {
+        await fetch(apiUrl(`/api/admin/games/${gameId}`), {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         navigate("/games");
       } else {
-        const res = await fetch(apiUrl("/api/admin/games", {
+        const res = await fetch(apiUrl("/api/admin/games"), {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
@@ -273,13 +273,13 @@ export default function GameForm() {
 
   const handleDeleteMedia = async (mediaId: string) => {
     if (!gameId) return;
-    await fetch(`/api/admin/games/${gameId}/media/${mediaId}`, { method: "DELETE" });
+    await fetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}`), { method: "DELETE" });
     setMedia((prev) => prev.filter((m) => m.id !== mediaId));
   };
 
   const handleSetPrimary = async (mediaId: string) => {
     if (!gameId) return;
-    await fetch(`/api/admin/games/${gameId}/media/${mediaId}/primary`, { method: "PUT" });
+    await fetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}/primary`), { method: "PUT" });
     setMedia((prev) => prev.map((m) => ({ ...m, isPrimary: m.id === mediaId })));
   };
 
