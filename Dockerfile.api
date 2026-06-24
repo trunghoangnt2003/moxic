@@ -1,0 +1,23 @@
+﻿# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY API/Moxic.Shared/Moxic.Shared.csproj API/Moxic.Shared/
+COPY API/Moxic.Core/Moxic.Core.csproj API/Moxic.Core/
+COPY API/Moxic.Infrastructure/Moxic.Infrastructure.csproj API/Moxic.Infrastructure/
+COPY API/Moxic.Api/Moxic.Api.csproj API/Moxic.Api/
+RUN dotnet restore API/Moxic.Api/Moxic.Api.csproj
+
+COPY API/ .
+RUN dotnet publish API/Moxic.Api/Moxic.Api.csproj -c Release -o /app --no-restore
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Moxic.Api.dll"]
