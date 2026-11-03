@@ -122,3 +122,21 @@
   }
 }
 
+
+/* Announcement pop-up */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes slowZoom {
+  from { transform: scale(1.12); }
+  to { transform: scale(1.02); }
+}
+@keyframes tick {
+  from { opacity: 0.2; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

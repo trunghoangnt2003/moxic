@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   Menu,
@@ -13,6 +13,7 @@ import {
   LogOut,
   Coins,
   TicketPercent,
+  Gift,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -77,12 +78,29 @@ export default function Navbar() {
               MOXIC
             </Link>
             <div className="hidden md:flex items-center gap-6">
-              <Link
+              <NavLink
                 to="/games"
-                className="text-text-secondary hover:text-text-primary transition-colors text-sm font-semibold"
+                className={({ isActive }) =>
+                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
+                }
               >
                 Store
-              </Link>
+              </NavLink>
+              <NavLink
+                to="/lucky-spin"
+                className={({ isActive }) =>
+                  `group relative inline-flex items-center gap-1.5 text-sm font-semibold transition-colors ${
+                    isActive ? "text-amber-300" : "text-amber-200/90 hover:text-amber-300"
+                  }`
+                }
+              >
+                <Gift className="w-4 h-4 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
+                Mở hòm
+                <span className="absolute -top-1.5 -right-3 flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75 motion-reduce:hidden" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500" />
+                </span>
+              </NavLink>
               <a
                 href="#"
                 className="text-text-secondary hover:text-text-primary transition-colors text-sm"
@@ -231,6 +249,14 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Store
+            </Link>
+            <Link
+              to="/lucky-spin"
+              className="flex items-center gap-2 text-amber-300 py-2 text-sm font-semibold"
+              onClick={() => setMenuOpen(false)}
+            >
+              <Gift className="w-4 h-4" /> Mở hòm may mắn
+              <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">HOT</span>
             </Link>
             <a href="#" className="block text-text-secondary hover:text-text-primary py-2 text-sm">
               Hỗ trợ

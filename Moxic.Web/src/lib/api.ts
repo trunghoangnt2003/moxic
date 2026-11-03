@@ -36,6 +36,29 @@ export async function getGames(query: GameQuery = {}) {
   return data;
 }
 
+export interface Announcement {
+  id: string;
+  kind: "GameLaunch" | "Event" | "News";
+  title: string;
+  subtitle: string | null;
+  body: string | null;
+  imageUrl: string | null;
+  gameId: string | null;
+  gameName: string | null;
+  gamePrice: number | null;
+  gameOriginalPrice: number | null;
+  countdownTo: string | null;
+  countdownLabel: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  updatedAt: string;
+}
+
+export async function getActiveAnnouncements() {
+  const { data } = await api.get<{ items: Announcement[]; serverNow: string }>("/announcements/active");
+  return data;
+}
+
 export async function getGameFacets() {
   const { data } = await api.get<GameFacets>("/games/facets");
   return data;

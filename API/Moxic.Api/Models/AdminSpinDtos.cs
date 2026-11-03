@@ -39,7 +39,18 @@ public record AdminCustomerDto(
     string DisplayName,
     bool EmailVerified,
     int Points,
-    DateTime? CreatedAt);
+    DateTime? CreatedAt,
+    bool IsLocked = false);
+
+public record AdminCustomerUpsertRequest(
+    string? Email,
+    string? DisplayName,
+    string? Password,
+    bool? EmailVerified);
+
+public record AdminSetPasswordRequest(string? Password);
+
+public record AdminLockRequest(bool Locked);
 
 public record AdminPointsTxDto(
     Guid Id,

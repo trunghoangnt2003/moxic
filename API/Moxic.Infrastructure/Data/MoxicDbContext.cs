@@ -29,6 +29,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<SpinMusicTrack> SpinMusicTracks => Set<SpinMusicTrack>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -249,6 +250,21 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<Announcement>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Kind).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Subtitle).HasMaxLength(300);
+            entity.Property(e => e.Body).HasMaxLength(2000);
+            entity.Property(e => e.ImageObjectKey).HasMaxLength(500);
+            entity.Property(e => e.CountdownLabel).HasMaxLength(100);
+            entity.Property(e => e.CtaLabel).HasMaxLength(60);
+            entity.Property(e => e.CtaUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => new { e.IsActive, e.Priority });
+        });
+
         modelBuilder.Entity<SpinCase>(entity =>
         {
             entity.HasKey(e => e.Id);

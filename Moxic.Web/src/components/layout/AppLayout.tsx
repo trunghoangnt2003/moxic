@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import DragonBorder from "./DragonBorder";
 import Footer from "./Footer";
 import FloatingContact from "./FloatingContact";
+import AnnouncementModal from "../shared/AnnouncementModal";
 
 
 export default function AppLayout() {
@@ -15,6 +16,7 @@ export default function AppLayout() {
       </main>
       <Footer />
       <FloatingContact />
+      <AnnouncementModal />
     </div>
   );
 }

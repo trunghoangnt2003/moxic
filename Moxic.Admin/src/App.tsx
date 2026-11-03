@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Users,
   Music,
+  Megaphone,
   TicketPercent,
 } from "lucide-react";
 import GameList from "./pages/GameList";
@@ -33,6 +34,7 @@ const ContactSettings = lazy(() => import("./pages/ContactSettings"));
 const Customers = lazy(() => import("./pages/Customers"));
 const SpinMusic = lazy(() => import("./pages/SpinMusic"));
 const Coupons = lazy(() => import("./pages/Coupons"));
+const Announcements = lazy(() => import("./pages/Announcements"));
 
 const navItems = [
   { to: "/games", label: "Games", icon: Gamepad2 },
@@ -44,6 +46,7 @@ const navItems = [
   { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
   { to: "/customers", label: "Khách hàng", icon: Users },
   { to: "/spin-music", label: "Kho nhạc", icon: Music },
+  { to: "/announcements", label: "Thông báo", icon: Megaphone },
   { to: "/contact-settings", label: "Contact", icon: MessageCircle },
 ];
 
@@ -249,6 +252,7 @@ function App() {
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/spin-music" element={<SpinMusic />} />
                   <Route path="/coupons" element={<Coupons />} />
+                  <Route path="/announcements" element={<Announcements />} />
                 </Routes>
               </Suspense>
             </div>

@@ -181,6 +181,9 @@ public class AccountController : ControllerBase
         // Validates password + lockout WITHOUT issuing any cookie (PasswordSignInAsync would
         // write the admin Identity.Application cookie).
         var check = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
+        if (check.IsLockedOut && user.LockoutEnd > DateTimeOffset.UtcNow.AddYears(1))
+            return StatusCode(StatusCodes.Status423Locked,
+                new { error = "Tài khoản đã bị khóa. Vui lòng liên hệ Moxic để được hỗ trợ." });
         if (check.IsLockedOut)
             return StatusCode(StatusCodes.Status423Locked,
                 new { error = "Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau ít phút." });

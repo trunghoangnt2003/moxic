@@ -6,6 +6,13 @@ import {
   ChevronRight,
   Coins,
   History,
+  KeyRound,
+  Lock,
+  Pencil,
+  ShieldCheck,
+  Trash2,
+  Unlock,
+  UserPlus,
   Loader2,
   Minus,
   Plus,
@@ -24,6 +31,7 @@ interface AdminCustomer {
   emailVerified: boolean;
   points: number;
   createdAt: string | null;
+  isLocked: boolean;
 }
 
 type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust";
@@ -71,6 +79,14 @@ function VerifiedBadge({ verified }: { verified: boolean }) {
       }`}
     >
       {verified ? "Đã xác minh" : "Chưa xác minh"}
+    </span>
+  );
+}
+
+function LockedBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-sm text-[10px] font-semibold border whitespace-nowrap bg-red-500/10 text-red-400 border-red-500/30">
+      <Lock size={9} /> Đã khóa
     </span>
   );
 }
@@ -233,6 +249,214 @@ function AdjustModal({
   );
 }
 
+async function customerAction(path: string, method: string, body?: unknown, fallback = "Thao tác thất bại") {
+  const res = await apiFetch(apiUrl(`/api/admin/customers${path}`), {
+    method,
+    headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await readApiError(res, fallback));
+  return res;
+}
+
+function ErrorBox({ message }: { message: string }) {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2 rounded bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+      <AlertCircle size={12} className="flex-shrink-0" /> {message}
+    </div>
+  );
+}
+
+/** Create (customer = null) or edit a customer, incl. verify / password / lock / delete. */
+function CustomerFormModal({
+  customer,
+  onClose,
+  onDone,
+}: {
+  customer: AdminCustomer | null;
+  onClose: () => void;
+  onDone: (message: string) => void;
+}) {
+  const isNew = customer === null;
+  const [email, setEmail] = useState(customer?.email ?? "");
+  const [displayName, setDisplayName] = useState(customer?.displayName ?? "");
+  const [verified, setVerified] = useState(customer?.emailVerified ?? true);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const run = async (key: string, fn: () => Promise<string>) => {
+    setError("");
+    setBusy(key);
+    try {
+      onDone(await fn());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Thao tác thất bại");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const save = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isNew) {
+      run("save", async () => {
+        await customerAction("", "POST", { email, displayName, password, emailVerified: verified }, "Không tạo được tài khoản");
+        return `Đã tạo tài khoản ${email}.`;
+      });
+    } else {
+      run("save", async () => {
+        await customerAction(`/${encodeURIComponent(customer.userId)}`, "PUT", { email, displayName, emailVerified: verified }, "Không lưu được");
+        return `Đã cập nhật ${email}.`;
+      });
+    }
+  };
+
+  const id = customer ? encodeURIComponent(customer.userId) : "";
+
+  return (
+    <Modal title={isNew ? "Thêm khách hàng" : `Sửa khách hàng · ${customer.email}`} onClose={onClose}>
+      <form onSubmit={save} className="space-y-3">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Email *</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full steam-input" required />
+          </div>
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Tên hiển thị *</label>
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} className="w-full steam-input" required />
+          </div>
+        </div>
+        {isNew && (
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Mật khẩu * (tối thiểu 8 ký tự, có chữ số)</label>
+            <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full steam-input font-mono" required />
+          </div>
+        )}
+        <label className="flex items-center gap-2 text-xs text-steam-text cursor-pointer select-none">
+          <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} />
+          Email đã xác minh (khách đăng nhập được ngay, không cần mã)
+        </label>
+        {error && <ErrorBox message={error} />}
+        <div className="flex gap-2 justify-end">
+          <button type="button" onClick={onClose} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border text-xs md:text-sm">
+            Hủy
+          </button>
+          <button type="submit" disabled={busy !== null} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover text-xs md:text-sm">
+            {busy === "save" ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} {isNew ? "Tạo tài khoản" : "Lưu"}
+          </button>
+        </div>
+      </form>
+
+      {!isNew && (
+        <div className="border-t border-steam-border pt-3 space-y-3">
+          <p className="text-[11px] font-semibold text-steam-muted uppercase tracking-widest">Thao tác tài khoản</p>
+          <div className="flex flex-wrap gap-2">
+            {!customer.emailVerified && (
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() =>
+                  run("verify", async () => {
+                    await customerAction(`/${id}/verify`, "POST", undefined, "Không xác minh được");
+                    return `Đã xác minh email cho ${customer.email}.`;
+                  })
+                }
+                className="steam-btn text-xs bg-steam-green/15 text-steam-green border border-steam-green/30"
+              >
+                {busy === "verify" ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />} Xác minh hộ
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={busy !== null}
+              onClick={() =>
+                run("lock", async () => {
+                  await customerAction(`/${id}/lock`, "POST", { locked: !customer.isLocked }, "Không thực hiện được");
+                  return customer.isLocked ? `Đã mở khóa ${customer.email}.` : `Đã khóa ${customer.email} (đăng xuất khỏi mọi thiết bị).`;
+                })
+              }
+              className={`steam-btn text-xs border ${
+                customer.isLocked ? "bg-steam-green/15 text-steam-green border-steam-green/30" : "bg-steam-gold/10 text-steam-gold border-steam-gold/30"
+              }`}
+            >
+              {busy === "lock" ? <Loader2 size={13} className="animate-spin" /> : customer.isLocked ? <Unlock size={13} /> : <Lock size={13} />}
+              {customer.isLocked ? "Mở khóa" : "Khóa tài khoản"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="steam-btn text-xs bg-steam-surface-3 text-steam-text border border-steam-border"
+            >
+              <KeyRound size={13} /> Đặt mật khẩu mới
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="steam-btn text-xs bg-red-500/10 text-red-400 border border-red-500/30 sm:ml-auto"
+            >
+              <Trash2 size={13} /> Xóa
+            </button>
+          </div>
+
+          {showPassword && (
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                run("password", async () => {
+                  await customerAction(`/${id}/password`, "POST", { password }, "Không đặt được mật khẩu");
+                  return `Đã đặt mật khẩu mới cho ${customer.email}.`;
+                });
+              }}
+            >
+              <input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mật khẩu mới (≥ 8 ký tự, có chữ số)"
+                className="w-full steam-input font-mono"
+                required
+              />
+              <button type="submit" disabled={busy !== null} className="steam-btn bg-steam-blue text-black text-xs whitespace-nowrap">
+                {busy === "password" ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Lưu
+              </button>
+            </form>
+          )}
+
+          {confirmDelete && (
+            <div className="p-3 rounded-sm border border-red-500/30 bg-red-500/5 space-y-2">
+              <p className="text-xs text-red-300">
+                Xóa vĩnh viễn tài khoản <b>{customer.email}</b>? Điểm, ví mã giảm giá và lịch sử điểm sẽ bị xóa. Đơn hàng và lịch sử quay vẫn được giữ lại.
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button type="button" onClick={() => setConfirmDelete(false)} className="steam-btn text-xs bg-steam-surface-3 border border-steam-border text-steam-muted">
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={() =>
+                    run("delete", async () => {
+                      await customerAction(`/${id}`, "DELETE", undefined, "Không xóa được");
+                      return `Đã xóa tài khoản ${customer.email}.`;
+                    })
+                  }
+                  className="steam-btn text-xs bg-red-500 text-white"
+                >
+                  {busy === "delete" ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Xóa vĩnh viễn
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
 function LedgerModal({ customer, onClose }: { customer: AdminCustomer; onClose: () => void }) {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<(Paged<AdminPointsTx> & { balance: number }) | null>(null);
@@ -368,6 +592,21 @@ export default function Customers() {
   const [reloadKey, setReloadKey] = useState(0);
   const [adjusting, setAdjusting] = useState<AdminCustomer | null>(null);
   const [viewing, setViewing] = useState<AdminCustomer | null>(null);
+  const [editing, setEditing] = useState<AdminCustomer | "new" | null>(null);
+  const [quickBusy, setQuickBusy] = useState<string | null>(null);
+
+  const quickVerify = async (c: AdminCustomer) => {
+    setQuickBusy(c.userId);
+    try {
+      await customerAction(`/${encodeURIComponent(c.userId)}/verify`, "POST", undefined, "Không xác minh được");
+      setFlash(`Đã xác minh email cho ${c.email}.`);
+      setReloadKey((k) => k + 1);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không xác minh được");
+    } finally {
+      setQuickBusy(null);
+    }
+  };
   const [flash, setFlash] = useState("");
 
   useEffect(() => {
@@ -411,27 +650,47 @@ export default function Customers() {
   const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE));
 
   const actions = (c: AdminCustomer) => (
-    <div className="flex items-center gap-1 flex-shrink-0">
+    <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
+      {!c.emailVerified && (
+        <button
+          onClick={() => quickVerify(c)}
+          disabled={quickBusy === c.userId}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-semibold bg-steam-green/10 text-steam-green border border-steam-green/30 hover:bg-steam-green/20 whitespace-nowrap"
+        >
+          {quickBusy === c.userId ? <Loader2 size={11} className="animate-spin" /> : <ShieldCheck size={11} />} Xác minh
+        </button>
+      )}
+      <button
+        onClick={() => setEditing(c)}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-semibold text-steam-blue border border-steam-blue/30 hover:bg-steam-blue/10 whitespace-nowrap"
+      >
+        <Pencil size={11} /> Sửa
+      </button>
       <button
         onClick={() => setAdjusting(c)}
         className="inline-flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-semibold bg-steam-gold/10 text-steam-gold border border-steam-gold/30 hover:bg-steam-gold/20 whitespace-nowrap"
       >
-        <Coins size={11} /> Điều chỉnh điểm
+        <Coins size={11} /> Điểm
       </button>
       <button
         onClick={() => setViewing(c)}
         className="inline-flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] text-steam-muted border border-steam-border hover:text-steam-text whitespace-nowrap"
       >
-        <History size={11} /> Lịch sử điểm
+        <History size={11} /> Lịch sử
       </button>
     </div>
   );
 
   return (
     <div className="space-y-4 md:space-y-5">
-      <div className="min-w-0">
-        <h1 className="text-lg font-bold text-white font-mono tracking-tight">Khách hàng</h1>
-        <p className="text-xs text-steam-muted mt-0.5">Tài khoản khách, điểm thưởng và lịch sử điểm</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold text-white font-mono tracking-tight">Khách hàng</h1>
+          <p className="text-xs text-steam-muted mt-0.5">Tài khoản khách, xác minh, khóa/mở, điểm thưởng</p>
+        </div>
+        <button onClick={() => setEditing("new")} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover text-xs md:text-sm flex-shrink-0">
+          <UserPlus size={14} /> Thêm khách
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -496,6 +755,7 @@ export default function Customers() {
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-steam-muted">
                   <VerifiedBadge verified={c.emailVerified} />
+                      {c.isLocked && <LockedBadge />}
                   <span>Tham gia {fmtDay(c.createdAt)}</span>
                 </div>
                 {actions(c)}
@@ -524,6 +784,7 @@ export default function Customers() {
                     <td className="px-3 py-2.5 text-xs text-white max-w-[180px] truncate">{c.displayName || "—"}</td>
                     <td className="px-3 py-2.5">
                       <VerifiedBadge verified={c.emailVerified} />
+                      {c.isLocked && <LockedBadge />}
                     </td>
                     <td className="px-3 py-2.5 font-mono text-sm font-semibold text-steam-gold whitespace-nowrap">
                       {fmtPoints(c.points)}
@@ -576,6 +837,18 @@ export default function Customers() {
         />
       )}
       {viewing && <LedgerModal customer={viewing} onClose={() => setViewing(null)} />}
+      {editing && (
+        <CustomerFormModal
+          customer={editing === "new" ? null : editing}
+          onClose={() => setEditing(null)}
+          onDone={(msg) => {
+            setFlash(msg);
+            setError("");
+            setEditing(null);
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
     </div>
   );
 }
