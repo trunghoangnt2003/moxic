@@ -12,6 +12,7 @@ import {
   User,
   Package,
   LogOut,
+  Coins,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -142,6 +143,10 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4" />
                   <span className="max-w-[120px] truncate">{me.displayName}</span>
+                  <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[11px] font-semibold text-amber-300" title="Điểm thưởng">
+                    <Coins className="w-3 h-3" />
+                    {me.points.toLocaleString("vi-VN")}
+                  </span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${accountOpen ? "rotate-180" : ""}`} />
                 </button>
                 {accountOpen && (
@@ -149,6 +154,9 @@ export default function Navbar() {
                     <div className="px-4 py-3 border-b border-border">
                       <p className="text-sm font-semibold text-text-primary truncate">{me.displayName}</p>
                       <p className="text-xs text-text-muted truncate">{me.email}</p>
+                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-300">
+                        <Coins className="w-3 h-3" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
+                      </p>
                     </div>
                     <Link
                       to="/account/orders"
@@ -158,6 +166,15 @@ export default function Navbar() {
                     >
                       <Package className="w-4 h-4" />
                       Lịch sử mua hàng
+                    </Link>
+                    <Link
+                      to="/account/points"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <Coins className="w-4 h-4" />
+                      Điểm thưởng
                     </Link>
                     <button
                       type="button"
@@ -230,6 +247,9 @@ export default function Navbar() {
                     <User className="inline w-4 h-4 mr-1.5 -mt-0.5" />
                     {me.displayName} <span className="text-text-muted text-xs">({me.email})</span>
                   </p>
+                  <p className="flex items-center gap-1.5 py-1 text-sm text-amber-300">
+                    <Coins className="w-4 h-4" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
+                  </p>
                   <Link
                     to="/account/orders"
                     onClick={() => setMenuOpen(false)}
@@ -237,6 +257,14 @@ export default function Navbar() {
                   >
                     <Package className="w-4 h-4" />
                     Lịch sử mua hàng
+                  </Link>
+                  <Link
+                    to="/account/points"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <Coins className="w-4 h-4" />
+                    Điểm thưởng
                   </Link>
                   <button
                     type="button"

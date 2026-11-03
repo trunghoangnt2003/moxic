@@ -15,7 +15,9 @@ const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
+const LuckySpinGalleryPage = lazy(() => import("./pages/LuckySpinGalleryPage"));
 const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
+const PointsHistoryPage = lazy(() => import("./pages/PointsHistoryPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
@@ -46,7 +48,8 @@ export default function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
-              <Route path="/lucky-spin" element={<LuckySpinPage />} />
+              <Route path="/lucky-spin" element={<LuckySpinGalleryPage />} />
+              <Route path="/lucky-spin/:slug" element={<LuckySpinPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -54,6 +57,7 @@ export default function App() {
               <Route element={<RequireCustomer />}>
                 <Route path="/account/orders" element={<OrderHistoryPage />} />
                 <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
+                <Route path="/account/points" element={<PointsHistoryPage />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Route>

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import { flushSync } from "react-dom";
-import type { PublicPrize, SpinResult } from "../../lib/luckySpinApi";
+import type { PublicPrize } from "../../lib/luckySpinApi";
 import PrizeCard from "./PrizeCard";
+
+/** What the reel needs from the server result (OpenCaseResult satisfies it). */
+export interface ReelSpin {
+  reel: PublicPrize[];
+  winningIndex: number;
+  /** Server-chosen landing point: fraction of a card width from the winning card centre. */
+  stopOffset: number;
+}
 
 export interface CaseReelHandle {
   /** Animate the reel to the server-decided result. Resolves once the reel has stopped. */
-  spin: (result: SpinResult) => Promise<void>;
+  spin: (result: ReelSpin) => Promise<void>;
 }
 
 interface CaseReelProps {
@@ -13,9 +21,11 @@ interface CaseReelProps {
   ref?: Ref<CaseReelHandle>;
 }
 
-const SPIN_DURATION_MS = 6500;
+// Fast start, long dramatic deceleration.
+const SPIN_DURATION_MS = 7600;
 const REDUCED_MOTION_DURATION_MS = 1200;
-const SPIN_EASING = "cubic-bezier(0.08, 0.6, 0.1, 1)";
+const SPIN_EASING = "cubic-bezier(0.05, 0.85, 0.15, 1)";
+const MAX_STOP_OFFSET = 0.48;
 const IDLE_COUNT = 20;
 const IMAGE_PRELOAD_CAP_MS = 1500;
 
@@ -95,7 +105,7 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
   useImperativeHandle(
     ref,
     () => ({
-      spin: async (result: SpinResult) => {
+      spin: async (result: ReelSpin) => {
         const track = trackRef.current;
         if (!track) return;
 
@@ -121,8 +131,10 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
           );
           await preloadImages(urls);
 
-          // Cosmetic in-card landing offset so it does not always stop dead center.
-          const offsetFraction = Math.random() * 0.7 - 0.35;
+          // Landing point inside the winning card comes from the server (near-miss teasing);
+          // the client never invents it.
+          const raw = Number.isFinite(result.stopOffset) ? result.stopOffset : 0;
+          const offsetFraction = Math.max(-MAX_STOP_OFFSET, Math.min(MAX_STOP_OFFSET, raw));
           const targetX = computeTargetX(result.winningIndex, offsetFraction);
           if (targetX == null) return;
 

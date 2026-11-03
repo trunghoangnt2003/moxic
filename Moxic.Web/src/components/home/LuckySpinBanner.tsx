@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { useLuckySpinPrizes } from "../../hooks/useLuckySpin";
+import { useLuckySpinCasesPreview } from "../../hooks/useLuckySpin";
+import type { PublicPrize } from "../../lib/luckySpinApi";
 import PrizeCard, { RARITY_RANK } from "../lucky-spin/PrizeCard";
 
 const CHAMFER = 16;
@@ -8,11 +9,15 @@ const chamferPolygon = (c: number) =>
   `polygon(${c}px 0, calc(100% - ${c}px) 0, 100% ${c}px, 100% calc(100% - ${c}px), calc(100% - ${c}px) 100%, ${c}px 100%, 0 calc(100% - ${c}px), 0 ${c}px)`;
 
 export default function LuckySpinBanner() {
-  const { data } = useLuckySpinPrizes();
-  if (!data?.available || data.prizes.length === 0) return null;
+  const { data } = useLuckySpinCasesPreview();
+  const availableCases = data?.items.filter((c) => c.available) ?? [];
+  if (availableCases.length === 0) return null;
 
-  // Rarest first, unique, up to 5 cards; arranged so the rarest sits in the middle of the fan.
-  const rarest = [...data.prizes].sort((a, b) => RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]).slice(0, 5);
+  // Rarest preview prizes across available cases, unique, up to 5; the rarest sits in the middle of the fan.
+  const unique = new Map<string, PublicPrize>();
+  for (const c of availableCases) for (const p of c.previewPrizes) if (!unique.has(p.id)) unique.set(p.id, p);
+  const rarest = [...unique.values()].sort((a, b) => RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]).slice(0, 5);
+  if (rarest.length === 0) return null;
   const fanOrder = [3, 1, 0, 2, 4].filter((i) => i < rarest.length).map((i) => rarest[i]);
   const mid = (fanOrder.length - 1) / 2;
 
@@ -39,7 +44,7 @@ export default function LuckySpinBanner() {
           </span>
           <h2 className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">Vòng Quay May Mắn</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/70 md:mx-0">
-            Nhập mã quay để mở hòm — cơ hội nhận game Xbox miễn phí và mã giảm giá
+            Mở hòm bằng mã quay, miễn phí theo chu kỳ hoặc bằng điểm thưởng — cơ hội nhận game Xbox miễn phí và mã giảm giá
           </p>
           <Link
             to="/lucky-spin"

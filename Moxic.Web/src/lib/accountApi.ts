@@ -152,3 +152,35 @@ export function safeRedirect(raw: string | null, fallback = "/"): string {
   if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return fallback;
   return raw;
 }
+
+// ───────────────────────── Loyalty points ─────────────────────────
+
+export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust";
+
+export interface PointsTransaction {
+  id: string;
+  delta: number;
+  reason: PointsReason;
+  note: string | null;
+  balanceAfter: number;
+  createdAt: string;
+}
+
+export interface PointsHistoryResponse {
+  balance: number;
+  items: PointsTransaction[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export async function getMyPoints(page: number, pageSize = 20) {
+  const { data } = await api.get<PointsHistoryResponse>("/account/points", { params: { page, pageSize } });
+  return data;
+}
+
+export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
+  OrderCompleted: "Hoàn tất đơn hàng",
+  CaseOpen: "Mở hòm",
+  AdminAdjust: "Điều chỉnh bởi Moxic",
+};

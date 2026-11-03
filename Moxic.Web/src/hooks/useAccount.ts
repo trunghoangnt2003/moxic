@@ -5,6 +5,7 @@ import {
   getMe,
   getMyOrder,
   getMyOrders,
+  getMyPoints,
   loginAccount,
   logoutAccount,
   registerAccount,
@@ -17,6 +18,7 @@ import {
 
 export const ME_QUERY_KEY = ["account", "me"] as const;
 const ORDERS_KEY = ["account", "orders"] as const;
+export const POINTS_QUERY_KEY = ["account", "points"] as const;
 
 export function useMe() {
   return useQuery({
@@ -81,6 +83,7 @@ export function useLogout() {
     onSettled: () => {
       qc.setQueryData(ME_QUERY_KEY, null);
       qc.removeQueries({ queryKey: ORDERS_KEY });
+      qc.removeQueries({ queryKey: POINTS_QUERY_KEY });
     },
   });
 }
@@ -100,6 +103,16 @@ export function useMyOrder(orderCode: string, enabled = true) {
     queryFn: () => getMyOrder(orderCode),
     enabled: enabled && !!orderCode,
     retry: false,
+  });
+}
+
+/** Points balance + ledger page for the logged-in customer. */
+export function useMyPoints(page: number, enabled = true) {
+  return useQuery({
+    queryKey: [...POINTS_QUERY_KEY, page],
+    queryFn: () => getMyPoints(page),
+    enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
