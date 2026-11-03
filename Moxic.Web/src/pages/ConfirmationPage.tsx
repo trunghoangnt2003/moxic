@@ -1,9 +1,9 @@
 ﻿import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { CheckCircle, AlertCircle, ArrowLeft, ShoppingCart, Upload, Loader2, Banknote, X } from "lucide-react";
+import { CheckCircle, AlertCircle, ArrowLeft, ShoppingCart, Upload, Banknote, X } from "lucide-react";
 import Container from "../components/layout/Container";
-import { HeroSkeleton } from "../components/shared/Skeleton";
+import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import ConfirmationContent from "../components/checkout/ConfirmationContent";
 import QRDisplay from "../components/checkout/QRDisplay";
 import { getOrder, uploadPaymentProof } from "../lib/api";
@@ -55,8 +55,7 @@ export default function ConfirmationPage() {
     return (
       <div className="min-h-screen bg-[#1a1714] py-12">
         <Container className="mt-12">
-          <HeroSkeleton />
-          <p className="text-[#7a6f63] text-sm text-center mt-4">Đang tải thông tin đơn hàng...</p>
+          <PageLoader label="Đang tải thông tin đơn hàng..." />
         </Container>
       </div>
     );
@@ -198,7 +197,7 @@ export default function ConfirmationPage() {
                         className="flex-1 bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {uploading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <MoxicLoader size="sm" />
                         ) : (
                           <Upload className="w-4 h-4" />
                         )}

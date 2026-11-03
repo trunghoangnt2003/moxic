@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Check, Copy, Gift, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Copy, Gift, Sparkles, X } from "lucide-react";
 import Container from "../components/layout/Container";
+import { MoxicLoader } from "../components/shared/MoxicLoader";
 import CaseReel, { type CaseReelHandle } from "../components/lucky-spin/CaseReel";
 import PrizeCard, { RARITY_COLORS, RARITY_LABELS } from "../components/lucky-spin/PrizeCard";
 import { getSpinErrorMessage, useContactSettings, useLuckySpinPrizes, useSpin } from "../hooks/useLuckySpin";
@@ -64,7 +65,9 @@ export default function LuckySpinPage() {
       {/* Reel */}
       <div className="-mx-4 sm:mx-0">
         {isLoading ? (
-          <div className="h-[190px] md:h-[258px] animate-pulse bg-[#1a0d33]/60" />
+          <div className="flex h-[190px] md:h-[258px] items-center justify-center bg-[#1a0d33]/60">
+            <MoxicLoader size="md" />
+          </div>
         ) : (
           <CaseReel ref={reelRef} idleItems={prizes} />
         )}
@@ -93,7 +96,7 @@ export default function LuckySpinPage() {
             boxShadow: "0 0 24px rgba(236, 72, 153, 0.35)",
           }}
         >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
+          {busy ? <MoxicLoader size="sm" /> : <Gift className="h-4 w-4" />}
           {animating && !spin.isPending ? "Đang mở..." : "Mở hòm"}
         </button>
       </form>

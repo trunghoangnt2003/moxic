@@ -7,31 +7,14 @@ import Container from "../components/layout/Container";
 import GameCard from "../components/games/GameCard";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { PageLoader } from "../components/shared/MoxicLoader";
 
 export default function HomePage() {
   const { data, isLoading } = useGames({ pageSize: 50 });
   const { data: featured, isLoading: featuredLoading } = useFeaturedGames(5);
 
   if (isLoading || featuredLoading) {
-    return (
-      <div className="animate-pulse">
-        <div className="w-full h-[85vh] bg-bg-surface" />
-        <Container className="mt-12">
-          <div className="h-8 bg-bg-elevated  w-64 mb-6" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-bg-surface  border border-border overflow-hidden">
-                <div className="aspect-[3/4] bg-bg-elevated" />
-                <div className="p-3 space-y-2">
-                  <div className="h-4 bg-bg-elevated  w-3/4" />
-                  <div className="h-3 bg-bg-elevated  w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const games = data?.items || [];

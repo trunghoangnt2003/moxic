@@ -6,7 +6,7 @@ import Button from "../components/shared/Button";
 import Badge from "../components/shared/Badge";
 import GameCard from "../components/games/GameCard";
 import type { GameReview } from "../types/game";
-import { HeroSkeleton } from "../components/shared/Skeleton";
+import { PageLoader } from "../components/shared/MoxicLoader";
 import { formatPrice, formatDate, daysUntil, timeAgo } from "../lib/utils";
 import { useCartStore } from "../lib/cartStore";
 import { useNavigate } from "react-router-dom";
@@ -113,7 +113,7 @@ export default function GameDetailPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (isLoading) return <HeroSkeleton />;
+  if (isLoading) return <PageLoader />;
 
   if (error || !game) {
     return (

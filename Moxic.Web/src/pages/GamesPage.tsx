@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useGames } from "../hooks/useGames";
 import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
-import { GridSkeleton } from "../components/shared/Skeleton";
+import { SectionLoader } from "../components/shared/MoxicLoader";
 
 import { Search, X, Filter, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -152,7 +152,7 @@ export default function GamesPage() {
 
           {/* Grid */}
           {isLoading ? (
-            <GridSkeleton count={12} />
+            <SectionLoader />
           ) : data?.items.length === 0 ? (
             <div className="text-center py-24 bg-black/40 border border-white/5 backdrop-blur-md">
               <p className="text-text-muted mb-4">Không tìm thấy game phù hợp</p>

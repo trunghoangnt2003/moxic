@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { MoxicLoader } from "./MoxicLoader";
 
 export default function GlobalLoader() {
   const [isVisible, setIsVisible] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const text = "moxic.co";
 
   useEffect(() => {
     // Start fading out after 1.5 seconds
@@ -25,31 +25,7 @@ export default function GlobalLoader() {
         isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      <div className="flex space-x-1">
-        {text.split("").map((char, index) => (
-          <span
-            key={index}
-            className="inline-block font-display text-4xl md:text-6xl font-bold text-accent drop-shadow-lg"
-            style={{
-              animation: `bounce-up 0.6s ease-in-out infinite alternate`,
-              animationDelay: `${index * 0.1}s`,
-            }}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-      <style>{`
-        @keyframes bounce-up {
-          0% {
-            transform: translateY(0);
-          }
-          100% {
-            transform: translateY(-20px);
-            color: #fff;
-          }
-        }
-      `}</style>
+      <MoxicLoader size="lg" label="moxic.co" />
     </div>
   );
 }

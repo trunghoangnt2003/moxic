@@ -1,5 +1,6 @@
 ﻿import { useState } from "react";
-import { Star, Send, User, Loader } from "lucide-react";
+import { Star, Send, User } from "lucide-react";
+import { MoxicLoader } from "../shared/MoxicLoader";
 import { createReview } from "../../lib/api";
 
 interface ReviewFormProps {
@@ -158,7 +159,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-accent text-white hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {submitting ? (
-              <><Loader size={14} className="animate-spin" /> Đang gửi...</>
+              <><MoxicLoader size="sm" /> Đang gửi...</>
             ) : (
               <><Send size={14} /> Gửi đánh giá</>
             )}

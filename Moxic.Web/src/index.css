@@ -25,6 +25,9 @@
   --animate-scroll-up: scroll-up 40s linear infinite;
   --animate-scroll-down: scroll-down 40s linear infinite;
     --animate-slide-up: slide-up 300ms ease-out;
+  --animate-moxic-orbit: moxic-orbit 3.2s linear infinite;
+  --animate-moxic-orbit-reverse: moxic-orbit 2.4s linear infinite reverse;
+  --animate-moxic-pulse: moxic-pulse 1.6s ease-in-out infinite;
 }
 
 @layer base {
@@ -86,6 +89,25 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+/* MOXIC branded loader */
+@keyframes moxic-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moxic-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
 }
 

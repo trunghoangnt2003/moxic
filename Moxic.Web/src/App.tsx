@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import AppLayout from "./components/layout/AppLayout";
-import { HeroSkeleton } from "./components/shared/Skeleton";
+import { PageLoader } from "./components/shared/MoxicLoader";
 import GlobalLoader from "./components/shared/GlobalLoader";
 import { NotFoundPage } from "./components/shared/EmptyStates";
 import { Toaster } from "react-hot-toast";
@@ -19,10 +19,6 @@ const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
 });
-
-function PageLoader() {
-  return <div className="mt-8"><HeroSkeleton /></div>;
-}
 
 export default function App() {
   return (
