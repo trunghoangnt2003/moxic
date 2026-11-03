@@ -22,9 +22,11 @@ interface CaseReelProps {
 }
 
 // Fast start, long dramatic deceleration.
-const SPIN_DURATION_MS = 7600;
+// Total spin time is exactly 7s: very fast start (~7x average speed), then a steady,
+// dramatic deceleration to a smooth stop (zero velocity at the end).
+const SPIN_DURATION_MS = 7000;
 const REDUCED_MOTION_DURATION_MS = 1200;
-const SPIN_EASING = "cubic-bezier(0.05, 0.85, 0.15, 1)";
+const SPIN_EASING = "cubic-bezier(0.08, 0.6, 0.1, 1)";
 const MAX_STOP_OFFSET = 0.48;
 const IDLE_COUNT = 20;
 const IMAGE_PRELOAD_CAP_MS = 1500;
