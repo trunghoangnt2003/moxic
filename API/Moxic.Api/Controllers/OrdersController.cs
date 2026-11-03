@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Moxic.Api.Models;
+using Moxic.Api.Services;
 using Moxic.Core.Entities;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
@@ -69,7 +72,7 @@ public class OrdersController : ControllerBase
             Id = Guid.NewGuid(),
             OrderCode = orderCode,
             CustomerPhone = request.CustomerPhone,
-            CustomerXboxEmail = request.CustomerXboxEmail,
+            CustomerXboxEmail = request.CustomerXboxEmail.Trim(),
             CustomerXboxPasswordEncrypted = encryptedPassword,
             CustomerZalo = request.CustomerZalo,
             TotalAmount = totalAmount,
@@ -78,6 +81,13 @@ public class OrdersController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+        // Link the order to the logged-in customer (separate MoxicCustomer scheme); guests stay unlinked.
+        var customerAuth = await HttpContext.AuthenticateAsync(CustomerAuthRules.Scheme);
+        if (customerAuth.Succeeded && customerAuth.Principal != null
+            && customerAuth.Principal.IsInRole(CustomerAuthRules.CustomerRole))
+        {
+            order.CustomerId = customerAuth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
         _db.Orders.Add(order);
 
         var gameIds = request.Items.Select(i => i.GameId).ToList();

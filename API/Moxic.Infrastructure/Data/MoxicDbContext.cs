@@ -21,6 +21,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<SpinCode> SpinCodes => Set<SpinCode>();
     public DbSet<SpinHistory> SpinHistories => Set<SpinHistory>();
     public DbSet<ContactSetting> ContactSettings => Set<ContactSetting>();
+    public DbSet<CustomerProfile> CustomerProfiles => Set<CustomerProfile>();
+    public DbSet<CustomerOtpCode> CustomerOtpCodes => Set<CustomerOtpCode>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -108,6 +110,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.PaymentMethod)
                 .HasConversion<string>()
                 .HasMaxLength(10);
+            // Customer account link (nullable, no FK — history also matches by email)
+            entity.HasIndex(e => e.CustomerId);
         });
 
         // OrderDetail
@@ -207,6 +211,33 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.MessengerUrl).HasMaxLength(500);
             entity.Property(e => e.Zalo).HasMaxLength(500);
             entity.Property(e => e.PhoneNumber).HasMaxLength(30);
+        });
+
+        // CustomerProfile (1:1 with IdentityUser)
+        modelBuilder.Entity<CustomerProfile>(entity =>
+        {
+            entity.HasKey(e => e.UserId);
+            entity.Property(e => e.DisplayName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Points).HasDefaultValue(0);
+            entity.HasOne<IdentityUser>()
+                .WithOne()
+                .HasForeignKey<CustomerProfile>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CustomerOtpCode (hashed email-verification / password-reset codes)
+        modelBuilder.Entity<CustomerOtpCode>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Purpose)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.CodeHash).HasMaxLength(200).IsRequired();
+            entity.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.Purpose });
         });
     }
 }

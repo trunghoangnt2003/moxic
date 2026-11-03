@@ -18,6 +18,9 @@ public class Order
     public string? Notes { get; set; }
     public string? PaymentProofObjectKey { get; set; }
     public string? CancellationReason { get; set; }
+
+    /// <summary>IdentityUser.Id of the logged-in customer who placed the order (null for guest checkout). No DB FK.</summary>
+    public string? CustomerId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

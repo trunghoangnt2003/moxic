@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using System.Net;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Microsoft.Extensions.Logging;
@@ -48,8 +49,65 @@ public class EmailService : IEmailService
             $"<h1 style=\"color:#f97316\">CẦN XỬ LÝ</h1><p>Mã: {orderCode}</p><p>{message}</p>");
     }
 
+    public async Task SendEmailVerificationCodeAsync(string toEmail, string displayName, string code)
+    {
+        const string subject = "Mã xác minh email — Moxic GameStore";
+        if (!IsConfigured)
+        {
+            // Dev fallback: SMTP is not configured, so surface the code in the log instead of crashing.
+            _logger.LogWarning("SMTP chưa được cấu hình — mã xác minh email cho {to}: {code}", toEmail, code);
+            return;
+        }
+
+        var name = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(displayName) ? "bạn" : displayName);
+        await SendAsync(toEmail, subject, BuildCodeEmail(
+            "XÁC MINH EMAIL",
+            $"Xin chào <strong>{name}</strong>,</p><p>Cảm ơn bạn đã đăng ký tài khoản Moxic GameStore. Nhập mã dưới đây để xác minh email của bạn:",
+            code,
+            null));
+    }
+
+    public async Task SendPasswordResetCodeAsync(string toEmail, string code)
+    {
+        const string subject = "Mã đặt lại mật khẩu — Moxic GameStore";
+        if (!IsConfigured)
+        {
+            _logger.LogWarning("SMTP chưa được cấu hình — mã đặt lại mật khẩu cho {to}: {code}", toEmail, code);
+            return;
+        }
+
+        await SendAsync(toEmail, subject, BuildCodeEmail(
+            "ĐẶT LẠI MẬT KHẨU",
+            "Xin chào,</p><p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản Moxic GameStore của bạn. Nhập mã dưới đây để tiếp tục:",
+            code,
+            "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này."));
+    }
+
+    private static string BuildCodeEmail(string heading, string introHtml, string code, string? footerNote)
+    {
+        var footer = footerNote == null ? string.Empty : $"<p style=\"color:#7a6f63;font-size:13px\">{footerNote}</p>";
+        return $"<div style=\"font-family:Arial,sans-serif;background:#1a1714;color:#ede6db;padding:24px\">"
+            + $"<h1 style=\"color:#c9a96e;letter-spacing:2px\">{heading}</h1>"
+            + $"<p>{introHtml}</p>"
+            + $"<p style=\"font-size:32px;font-weight:bold;letter-spacing:10px;color:#c9a96e;margin:24px 0\">{WebUtility.HtmlEncode(code)}</p>"
+            + "<p>Mã có hiệu lực trong 15 phút. Không chia sẻ mã này với bất kỳ ai.</p>"
+            + footer
+            + "</div>";
+    }
+
+    private bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(_settings.Host)
+        && !string.IsNullOrWhiteSpace(_settings.Username)
+        && !string.IsNullOrWhiteSpace(_settings.Password);
+
     private async Task SendAsync(string to, string subject, string htmlBody)
     {
+        if (!IsConfigured)
+        {
+            _logger.LogWarning("SMTP chưa được cấu hình — bỏ qua email {subject} tới {to}", subject, to);
+            return;
+        }
+
         try
         {
             var msg = new MimeMessage();

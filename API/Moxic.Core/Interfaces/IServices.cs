@@ -15,4 +15,6 @@ public interface IEmailService
     Task SendGameInstalledAsync(string toEmail, string orderCode, string gameName);
     Task SendOrderCancelledAsync(string toEmail, string orderCode, string reason);
     Task SendActionRequiredAsync(string toEmail, string orderCode, string message);
+    Task SendEmailVerificationCodeAsync(string toEmail, string displayName, string code);
+    Task SendPasswordResetCodeAsync(string toEmail, string code);
 }

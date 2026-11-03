@@ -24,7 +24,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.User.RequireUniqueEmail = true;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<MoxicDbContext>();
@@ -52,6 +56,33 @@ builder.Services.ConfigureApplicationCookie(options =>
         return Task.CompletedTask;
     };
 });
+
+// Customer (storefront) cookie scheme — separate from the admin Identity.Application cookie.
+// AddAuthentication() without a scheme argument keeps Identity.Application as the default.
+builder.Services.AddAuthentication()
+    .AddCookie(CustomerAuthRules.Scheme, options =>
+    {
+        options.Cookie.Name = CustomerAuthRules.CookieName;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+        options.Events.OnValidatePrincipal = CustomerAuthRules.ValidatePrincipalAsync;
+    });
+builder.Services.AddScoped<CustomerOtpService>();
 
 // MinIO
 builder.Services.Configure<MinioSettings>(builder.Configuration.GetSection("Minio"));
@@ -137,6 +168,16 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+    // Customer auth endpoints (register/login/verify/resend/forgot/reset) + admin login: 10 req / minute / IP
+    options.AddPolicy(CustomerAuthRules.RateLimitPolicy, ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            LuckySpinRules.GetClientIp(ctx),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 var app = builder.Build();
@@ -159,12 +200,18 @@ app.MapControllers();
 app.MapRazorPages();
 
 // Endpoint Auth Login
-app.MapPost("/api/auth/login", async (SignInManager<IdentityUser> signInManager, LoginRequest req) =>
+app.MapPost("/api/auth/login", async (SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, LoginRequest req) =>
 {
-    var result = await signInManager.PasswordSignInAsync(req.Email, req.Password, isPersistent: true, lockoutOnFailure: false);
+    // Admin SPA only: reject non-Admin users (e.g. customers) BEFORE any cookie is issued.
+    var user = string.IsNullOrWhiteSpace(req.Email) ? null : await userManager.FindByEmailAsync(req.Email.Trim());
+    if (user == null || !await userManager.IsInRoleAsync(user, CustomerAuthRules.AdminRole))
+        return Results.Unauthorized();
+
+    var result = await signInManager.PasswordSignInAsync(user, req.Password, isPersistent: true, lockoutOnFailure: false);
     if (result.Succeeded) return Results.Ok();
     return Results.Unauthorized();
-});
+})
+.RequireRateLimiting(CustomerAuthRules.RateLimitPolicy);
 
 // Database Initialization (EnsureCreated & Seed Data)
 using (var scope = app.Services.CreateScope())
@@ -192,12 +239,18 @@ using (var scope = app.Services.CreateScope())
             CREATE INDEX IF NOT EXISTS ""IX_GameReviews_GameId"" ON ""GameReviews"" (""GameId"");
         ");
         await LuckySpinSchemaBootstrap.EnsureAsync(dbContext);
+        await CustomerAccountSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+        // Storefront customer role
+        if (!await roleManager.RoleExistsAsync(CustomerAuthRules.CustomerRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(CustomerAuthRules.CustomerRole));
         }
 
         // Khá»Ÿi táº¡o User Admin máº·c Ä‘á»‹nh
