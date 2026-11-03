@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
+import type { OpenMethod } from "../lib/luckySpinAdmin";
 
 type CodeStatus = "Active" | "UsedUp" | "Expired" | "Disabled";
 
@@ -46,7 +47,13 @@ const STATUS_STYLES: Record<CodeStatus, { label: string; cls: string }> = {
 
 const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleString("vi-VN") : "Không giới hạn");
 
-export default function LuckySpinCodes() {
+interface LuckySpinCodesProps {
+  caseId: string;
+  openMethod: OpenMethod;
+}
+
+export default function LuckySpinCodes({ caseId, openMethod }: LuckySpinCodesProps) {
+  const isCodeCase = openMethod === "Code";
   // Generate panel
   const [count, setCount] = useState("1");
   const [maxUses, setMaxUses] = useState("1");
@@ -80,7 +87,7 @@ export default function LuckySpinCodes() {
     try {
       const qs = new URLSearchParams({ page: String(p), pageSize: String(PAGE_SIZE) });
       if (s) qs.set("search", s);
-      const res = await apiFetch(apiUrl(`/api/admin/lucky-spin/codes?${qs.toString()}`));
+      const res = await apiFetch(apiUrl(`/api/admin/lucky-spin/cases/${caseId}/codes?${qs.toString()}`));
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setError(err.error || "Không tải được danh sách mã");
@@ -127,7 +134,7 @@ export default function LuckySpinCodes() {
 
     setGenerating(true);
     try {
-      const res = await apiFetch(apiUrl("/api/admin/lucky-spin/codes/generate"), {
+      const res = await apiFetch(apiUrl(`/api/admin/lucky-spin/cases/${caseId}/codes/generate`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -211,7 +218,15 @@ export default function LuckySpinCodes() {
 
   return (
     <div className="space-y-4">
+      {!isCodeCase && (
+        <div className="flex items-start gap-1.5 px-3 py-2 rounded-sm bg-steam-gold/5 border border-steam-gold/20 text-xs text-steam-gold">
+          <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
+          Hòm này không mở bằng mã quay — không cần tạo mã.
+        </div>
+      )}
+
       {/* Generate panel */}
+      {isCodeCase && (
       <form onSubmit={handleGenerate} className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-3">
         <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Tạo mã quay</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -267,6 +282,7 @@ export default function LuckySpinCodes() {
           </div>
         )}
       </form>
+      )}
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">

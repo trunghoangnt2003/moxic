@@ -10,11 +10,19 @@ import {
   Search,
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
+import { describeOpenMethod, OPEN_METHOD_LABELS } from "../lib/luckySpinAdmin";
+import type { AdminCase, OpenMethod } from "../lib/luckySpinAdmin";
 
 type SpinPrizeType = "Luck" | "Discount" | "Game";
 
 interface AdminSpin {
   id: string;
+  caseId: string | null;
+  caseName: string | null;
+  openMethod: OpenMethod | null;
+  pointsSpent: number;
+  userEmail: string | null;
+  rarity: string | null;
   codeText: string;
   prizeName: string;
   prizeType: SpinPrizeType;
@@ -51,7 +59,24 @@ const TYPE_BADGE: Record<SpinPrizeType, string> = {
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("vi-VN") : "—");
 
-export default function LuckySpinHistory() {
+const METHOD_CHIP: Record<OpenMethod, string> = {
+  Code: "bg-steam-blue/10 text-steam-blue border-steam-blue/30",
+  FreeInterval: "bg-steam-green/10 text-steam-green border-steam-green/30",
+  Points: "bg-steam-gold/10 text-steam-gold border-steam-gold/30",
+};
+
+function openedWith(s: AdminSpin): string {
+  if (s.openMethod === "FreeInterval") return "Miễn phí";
+  if (s.openMethod === "Points") return `-${s.pointsSpent.toLocaleString("vi-VN")} điểm`;
+  return s.codeText || "—";
+}
+
+interface LuckySpinHistoryProps {
+  cases: AdminCase[];
+}
+
+export default function LuckySpinHistory({ cases }: LuckySpinHistoryProps) {
+  const [caseFilter, setCaseFilter] = useState("");
   const [data, setData] = useState<Paged<AdminSpin>>({ items: [], totalCount: 0, page: 1, pageSize: PAGE_SIZE });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -77,6 +102,7 @@ export default function LuckySpinHistory() {
         const qs = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
         if (debouncedSearch) qs.set("search", debouncedSearch);
         if (claimed !== "all") qs.set("claimed", claimed);
+        if (caseFilter) qs.set("caseId", caseFilter);
         const res = await apiFetch(apiUrl(`/api/admin/lucky-spin/history?${qs.toString()}`));
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -98,7 +124,7 @@ export default function LuckySpinHistory() {
     return () => {
       cancelled = true;
     };
-  }, [page, debouncedSearch, claimed]);
+  }, [page, debouncedSearch, claimed, caseFilter]);
 
   const setClaim = async (s: AdminSpin, value: boolean) => {
     setBusyId(s.id);
@@ -130,11 +156,27 @@ export default function LuckySpinHistory() {
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-steam-muted" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value.toUpperCase())}
-            placeholder="Tìm theo mã quay hoặc mã thưởng"
-            className="w-full steam-input pl-8 font-mono"
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm theo mã quay, mã thưởng hoặc email"
+            className="w-full steam-input pl-8"
           />
         </div>
+        <select
+          value={caseFilter}
+          onChange={(e) => {
+            setCaseFilter(e.target.value);
+            setPage(1);
+          }}
+          className="steam-input sm:w-56"
+          aria-label="Lọc theo hòm"
+        >
+          <option value="">Tất cả hòm</option>
+          {cases.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name} · {describeOpenMethod(c)}
+            </option>
+          ))}
+        </select>
         <select
           value={claimed}
           onChange={(e) => {
@@ -157,10 +199,10 @@ export default function LuckySpinHistory() {
       )}
 
       <div className="bg-steam-surface border border-steam-border rounded-sm overflow-x-auto">
-        <table className="w-full text-sm min-w-[860px]">
+        <table className="w-full text-sm min-w-[1180px]">
           <thead>
             <tr className="border-b border-steam-border bg-steam-bg/30">
-              {["Thời gian", "Mã quay", "Giải thưởng", "Mã thưởng", "IP", "Trao giải", "Lúc trao"].map((h) => (
+              {["Thời gian", "Hòm", "Mở bằng", "Khách", "Giải thưởng", "Mã thưởng", "IP", "Trao giải", "Lúc trao"].map((h) => (
                 <th key={h} className="text-left px-3 py-2.5 text-[11px] font-medium text-steam-muted uppercase tracking-wider whitespace-nowrap">
                   {h}
                 </th>
@@ -171,7 +213,24 @@ export default function LuckySpinHistory() {
             {data.items.map((s) => (
               <tr key={s.id} className="hover:bg-steam-surface-2/50 transition-colors">
                 <td className="px-3 py-2.5 text-xs text-steam-muted whitespace-nowrap">{fmt(s.createdAt)}</td>
-                <td className="px-3 py-2.5 font-mono text-xs text-steam-text tracking-wider">{s.codeText}</td>
+                <td className="px-3 py-2.5">
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="text-xs text-white truncate max-w-[180px]" title={s.caseName ?? ""}>
+                      {s.caseName ?? "—"}
+                    </span>
+                    {s.openMethod && (
+                      <span className={`self-start inline-flex px-1.5 py-0.5 rounded-sm text-[10px] font-semibold border whitespace-nowrap ${METHOD_CHIP[s.openMethod]}`}>
+                        {OPEN_METHOD_LABELS[s.openMethod]}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className={`px-3 py-2.5 text-xs whitespace-nowrap ${s.openMethod === "Code" || !s.openMethod ? "font-mono tracking-wider text-steam-text" : s.openMethod === "Points" ? "text-steam-gold" : "text-steam-green"}`}>
+                  {openedWith(s)}
+                </td>
+                <td className="px-3 py-2.5 text-xs text-steam-muted truncate max-w-[200px]" title={s.userEmail ?? ""}>
+                  {s.userEmail ?? "Khách"}
+                </td>
                 <td className="px-3 py-2.5">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-white text-xs font-medium truncate max-w-[200px]" title={s.prizeName}>
@@ -215,7 +274,7 @@ export default function LuckySpinHistory() {
             ))}
             {!loading && data.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-steam-muted">
+                <td colSpan={9} className="px-4 py-12 text-center text-steam-muted">
                   <History size={28} className="mx-auto mb-2 text-steam-border" />
                   <p className="text-sm">Chưa có lượt quay nào</p>
                 </td>
@@ -223,7 +282,7 @@ export default function LuckySpinHistory() {
             )}
             {loading && data.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-steam-muted">
+                <td colSpan={9} className="px-4 py-10 text-center text-steam-muted">
                   <Loader2 size={18} className="mx-auto animate-spin" />
                 </td>
               </tr>

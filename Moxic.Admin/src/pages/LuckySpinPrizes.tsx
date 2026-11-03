@@ -133,7 +133,13 @@ function TypeBadge({ type }: { type: SpinPrizeType }) {
   );
 }
 
-export default function LuckySpinPrizes() {
+interface LuckySpinPrizesProps {
+  caseId: string;
+  /** Called after a save / delete / toggle so the parent can refresh case validity chips. */
+  onChanged?: () => void;
+}
+
+export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesProps) {
   const [prizes, setPrizes] = useState<AdminPrize[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -151,7 +157,7 @@ export default function LuckySpinPrizes() {
 
   const load = async () => {
     try {
-      const res = await apiFetch(apiUrl("/api/admin/lucky-spin/prizes"));
+      const res = await apiFetch(apiUrl(`/api/admin/lucky-spin/cases/${caseId}/prizes`));
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setError(err.error || "Không tải được danh sách giải thưởng");
@@ -167,7 +173,7 @@ export default function LuckySpinPrizes() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [caseId]);
 
   // Debounced game search (only while the form is open with type Game)
   useEffect(() => {
@@ -260,7 +266,7 @@ export default function LuckySpinPrizes() {
         displayOrder: Number.parseInt(form.displayOrder, 10) || 0,
       };
       const res = await apiFetch(
-        apiUrl(editingId ? `/api/admin/lucky-spin/prizes/${editingId}` : "/api/admin/lucky-spin/prizes"),
+        apiUrl(editingId ? `/api/admin/lucky-spin/prizes/${editingId}` : `/api/admin/lucky-spin/cases/${caseId}/prizes`),
         {
           method: editingId ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -274,6 +280,7 @@ export default function LuckySpinPrizes() {
       }
       closeForm();
       await load();
+      onChanged?.();
     } catch {
       setFormError("Không lưu được giải thưởng");
     } finally {
@@ -303,6 +310,7 @@ export default function LuckySpinPrizes() {
         return;
       }
       await load();
+      onChanged?.();
     } finally {
       setBusyId(null);
     }
@@ -321,6 +329,7 @@ export default function LuckySpinPrizes() {
       }
       if (editingId === p.id) closeForm();
       await load();
+      onChanged?.();
     } finally {
       setBusyId(null);
     }
@@ -341,7 +350,7 @@ export default function LuckySpinPrizes() {
         >
           {totalOk ? <CheckCircle2 size={14} className="flex-shrink-0" /> : <AlertCircle size={14} className="flex-shrink-0" />}
           <span className="font-semibold whitespace-nowrap">
-            Tổng tỉ lệ (giải đang bật): {fmtPct(activeTotalBp)} / 100%
+            Tổng tỉ lệ của hòm (giải đang bật): {fmtPct(activeTotalBp)} / 100%
           </span>
         </div>
         {!formOpen && (
@@ -357,7 +366,7 @@ export default function LuckySpinPrizes() {
       {!totalOk && !loading && (
         <div className="flex items-start gap-1.5 px-3 py-2 rounded-sm bg-steam-gold/5 border border-steam-gold/20 text-xs text-steam-gold">
           <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
-          Tổng tỉ lệ các giải đang bật phải bằng 100%. Vòng quay đang bị khóa cho tới khi chỉnh đúng.
+          Tổng tỉ lệ các giải đang bật của hòm này phải bằng 100%. Hòm đang bị khóa cho tới khi chỉnh đúng.
         </div>
       )}
 

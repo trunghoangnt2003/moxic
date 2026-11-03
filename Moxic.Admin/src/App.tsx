@@ -14,6 +14,8 @@ import {
   X,
   Gift,
   MessageCircle,
+  Users,
+  Music,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -27,6 +29,8 @@ import "./App.css";
 const OrderList = lazy(() => import("./pages/OrderList"));
 const LuckySpin = lazy(() => import("./pages/LuckySpin"));
 const ContactSettings = lazy(() => import("./pages/ContactSettings"));
+const Customers = lazy(() => import("./pages/Customers"));
+const SpinMusic = lazy(() => import("./pages/SpinMusic"));
 
 const navItems = [
   { to: "/games", label: "Games", icon: Gamepad2 },
@@ -35,6 +39,8 @@ const navItems = [
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
+  { to: "/customers", label: "Khách hàng", icon: Users },
+  { to: "/spin-music", label: "Kho nhạc", icon: Music },
   { to: "/contact-settings", label: "Contact", icon: MessageCircle },
 ];
 
@@ -237,6 +243,8 @@ function App() {
                   <Route path="/payment-config" element={<PaymentConfig />} />
                   <Route path="/lucky-spin" element={<LuckySpin />} />
                   <Route path="/contact-settings" element={<ContactSettings />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/spin-music" element={<SpinMusic />} />
                 </Routes>
               </Suspense>
             </div>
@@ -244,14 +252,14 @@ function App() {
         </div>
 
         {/* Bottom Nav — Mobile */}
-        <nav className="fixed bottom-0 left-0 right-0 z-30 bg-steam-surface border-t border-steam-border flex items-center justify-around h-14 md:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-30 bg-steam-surface border-t border-steam-border flex items-center h-14 md:hidden overflow-x-auto overscroll-x-contain">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-0.5 py-1 px-1 min-w-0 flex-1 transition-colors duration-150 ${
+                `flex flex-col items-center justify-center gap-0.5 py-1 px-1 flex-none min-w-[64px] h-full transition-colors duration-150 ${
                   isActive
                     ? "text-steam-blue"
                     : "text-steam-muted hover:text-steam-text"

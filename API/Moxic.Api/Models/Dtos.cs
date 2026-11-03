@@ -4,6 +4,7 @@ namespace Moxic.Api.Models;
 
 public record CreateGameDto
 {
+    public int RewardPoints { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
@@ -19,6 +20,7 @@ public record CreateGameDto
 
 public record UpdateGameDto
 {
+    public int RewardPoints { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
@@ -153,6 +155,7 @@ public record AdminGameMediaItem
 
 public record AdminGameDetailResponse
 {
+    public int RewardPoints { get; init; }
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;

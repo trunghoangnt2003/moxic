@@ -72,6 +72,9 @@ public class AdminGamesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
+        if (dto.RewardPoints < 0 || dto.RewardPoints > 1_000_000)
+            return BadRequest(new { error = "Điểm thưởng phải từ 0 đến 1.000.000." });
+
         var game = new Game
         {
             Id = Guid.NewGuid(),
@@ -84,6 +87,7 @@ public class AdminGamesController : ControllerBase
                 ? DateTime.SpecifyKind(dto.ReleaseDate.Value, DateTimeKind.Utc)
                 : null,
             IsFeatured = dto.IsFeatured,
+            RewardPoints = dto.RewardPoints,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -186,6 +190,7 @@ public class AdminGamesController : ControllerBase
             Status = game.Status.ToString(),
             ReleaseDate = game.ReleaseDate,
             IsFeatured = game.IsFeatured,
+            RewardPoints = game.RewardPoints,
             SystemRequirements = game.SystemRequirements != null
                 ? new SystemRequirementDataDto
                 {
@@ -223,6 +228,9 @@ public class AdminGamesController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateGame(Guid id, [FromBody] UpdateGameDto dto)
     {
+        if (dto.RewardPoints < 0 || dto.RewardPoints > 1_000_000)
+            return BadRequest(new { error = "Điểm thưởng phải từ 0 đến 1.000.000." });
+
         var game = await _db.Games
             .Include(g => g.Genres)
             .Include(g => g.Tags)
@@ -238,6 +246,7 @@ public class AdminGamesController : ControllerBase
             ? DateTime.SpecifyKind(dto.ReleaseDate.Value, DateTimeKind.Utc)
             : null;
         game.IsFeatured = dto.IsFeatured;
+        game.RewardPoints = dto.RewardPoints;
         game.UpdatedAt = DateTime.UtcNow;
 
         // Update genres

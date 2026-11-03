@@ -137,6 +137,7 @@ export default function GameForm() {
   const [status, setStatus] = useState("Available");
   const [releaseDate, setReleaseDate] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [rewardPoints, setRewardPoints] = useState(0);
   const [minReq, setMinReq] = useState<SysReq>(emptyReq());
   const [recReq, setRecReq] = useState<SysReq>(emptyReq());
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -170,6 +171,7 @@ export default function GameForm() {
           setStatus(g.status);
           setReleaseDate(g.releaseDate?.split("T")[0] || "");
           setIsFeatured(g.isFeatured || false);
+          setRewardPoints(g.rewardPoints ?? 0);
           setMedia(g.media || []);
           if (g.systemRequirements) {
             setMinReq(g.systemRequirements.minimum || emptyReq());
@@ -187,6 +189,7 @@ export default function GameForm() {
     genreIds, tagIds, status,
     releaseDate: releaseDate || null,
     isFeatured,
+    rewardPoints: Math.min(1000000, Math.max(0, Math.trunc(rewardPoints) || 0)),
     systemRequirements: { minimum: minReq, recommended: recReq },
     ratings,
   });
@@ -333,6 +336,11 @@ export default function GameForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label><input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
               <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label><input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
+            </div>
+            <div>
+              <label htmlFor="rewardPoints" className="block text-xs text-steam-muted mb-1.5 font-medium">Điểm thưởng (khi đơn hoàn tất)</label>
+              <input id="rewardPoints" type="number" min={0} max={1000000} step={1} placeholder="0" value={rewardPoints} onChange={(e) => setRewardPoints(Number(e.target.value))} className="w-full sm:max-w-[calc(50%-0.5rem)] steam-input font-mono" />
+              <p className="text-[11px] text-steam-muted mt-1">Khách đăng nhập nhận số điểm này khi đơn có game này hoàn tất.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
