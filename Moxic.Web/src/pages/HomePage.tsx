@@ -1,6 +1,7 @@
 import { useGames, useFeaturedGames } from "../hooks/useGames";
 import HeroSplash from "../components/home/HeroSplash";
 import DiscoverySection from "../components/home/DiscoverySection";
+import LuckySpinBanner from "../components/home/LuckySpinBanner";
 import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
 import GameCard from "../components/games/GameCard";
@@ -43,6 +44,11 @@ export default function HomePage() {
     <div>
       {/* ═══ HERO SPLASH ═══ */}
       <HeroSplash featured={featured || []} available={availableGames} />
+
+      {/* ═══ VONG QUAY MAY MAN ═══ */}
+      <Container className="mt-14 empty:hidden">
+        <LuckySpinBanner />
+      </Container>
 
       {/* ═══ KHAM PHA NOI DUNG MOI ═══ */}
       <Container className="mt-14">

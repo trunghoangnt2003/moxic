@@ -14,6 +14,7 @@ const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
+const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
@@ -42,6 +43,7 @@ export default function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
+              <Route path="/lucky-spin" element={<LuckySpinPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>

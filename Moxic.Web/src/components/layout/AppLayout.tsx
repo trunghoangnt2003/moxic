@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import DragonBorder from "./DragonBorder";
 import Footer from "./Footer";
+import FloatingContact from "./FloatingContact";
 
 
 export default function AppLayout() {
@@ -13,6 +14,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <Footer />
+      <FloatingContact />
     </div>
   );
 }
