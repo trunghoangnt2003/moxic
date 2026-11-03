@@ -17,7 +17,7 @@ public static class LuckySpinRules
     public const int WinningIndex = 52;
 
     // Live drops feed
-    public const int LiveDropDelaySeconds = 10;
+    public const int LiveDropDelaySeconds = 14; // > 10s reel spin, so the feed never spoils a reel still spinning
     public const int LiveDropsCacheSeconds = 5;
     public const int LiveFeedSize = 20;
     public const int LiveWowSize = 3;
