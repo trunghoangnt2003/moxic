@@ -94,8 +94,8 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { data: game, isLoading, error } = useGameDetail(id!);
 
-  const firstGenre = game?.genres?.[0]?.name;
-  const { data: relatedGamesData } = useGames({ genre: firstGenre, pageSize: 5 });
+  const firstGenreId = game?.genres?.[0]?.id;
+  const { data: relatedGamesData } = useGames({ genres: firstGenreId ? [firstGenreId] : undefined, pageSize: 5 }, { enabled: !!game });
   const relatedGames = relatedGamesData?.items?.filter(g => g.id !== game?.id).slice(0, 4) || [];
 
   const addItem = useCartStore((s) => s.addItem);

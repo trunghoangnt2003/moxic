@@ -12,14 +12,68 @@ public static class GameEndpoints
     {
         var group = app.MapGroup("/api/games").WithTags("Games");
 
-        group.MapGet("/", async (MoxicDbContext dbContext, IMinioService minioService, int page = 1, int pageSize = 20) =>
+        group.MapGet("/", async (
+            MoxicDbContext dbContext,
+            IMinioService minioService,
+            string? q,
+            string? status,
+            string? genres,
+            string? tags,
+            decimal? minPrice,
+            decimal? maxPrice,
+            bool? onSale,
+            string? sort,
+            int page = 1,
+            int pageSize = 20) =>
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 60);
+
             var query = dbContext.Games.AsNoTracking();
+
+            var term = q?.Trim();
+            if (!string.IsNullOrEmpty(term))
+            {
+                var pattern = $"%{EscapeLike(term)}%";
+                query = query.Where(g => EF.Functions.ILike(g.Name, pattern, "\\")
+                    || g.Tags.Any(t => EF.Functions.ILike(t.Name, pattern, "\\"))
+                    || g.Genres.Any(x => EF.Functions.ILike(x.Name, pattern, "\\")));
+            }
+
+            if (Enum.TryParse<Moxic.Shared.Enums.GameStatus>(status, true, out var parsedStatus))
+                query = query.Where(g => g.Status == parsedStatus);
+
+            var genreIds = ParseIds(genres);
+            if (genreIds.Count > 0)
+                query = query.Where(g => g.Genres.Any(x => genreIds.Contains(x.Id)));
+
+            var tagIds = ParseIds(tags);
+            if (tagIds.Count > 0)
+                query = query.Where(g => g.Tags.Any(t => tagIds.Contains(t.Id)));
+
+            if (minPrice.HasValue) query = query.Where(g => g.SalePrice >= minPrice.Value);
+            if (maxPrice.HasValue) query = query.Where(g => g.SalePrice <= maxPrice.Value);
+            if (onSale == true) query = query.Where(g => g.SalePrice < g.OriginalPrice);
+
+            query = sort switch
+            {
+                "name-asc" => query.OrderBy(g => g.Name),
+                "name-desc" => query.OrderByDescending(g => g.Name),
+                "price-asc" => query.OrderBy(g => g.SalePrice).ThenBy(g => g.Name),
+                "price-desc" => query.OrderByDescending(g => g.SalePrice).ThenBy(g => g.Name),
+                "discount" => query
+                    .OrderByDescending(g => g.OriginalPrice > 0 ? (g.OriginalPrice - g.SalePrice) / g.OriginalPrice : 0)
+                    .ThenBy(g => g.Name),
+                "release" => query.OrderBy(g => g.ReleaseDate == null).ThenByDescending(g => g.ReleaseDate).ThenBy(g => g.Name),
+                _ => query.OrderByDescending(g => g.IsFeatured).ThenByDescending(g => g.CreatedAt),
+            };
+
             var total = await query.CountAsync();
             var items = await query
                 .Include(g => g.Media)
                 .Include(g => g.Genres)
                 .Include(g => g.Tags)
+                .AsSplitQuery()
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -49,6 +103,41 @@ public static class GameEndpoints
             }
 
             return Results.Ok(new { items = dtos, total, page, pageSize });
+        });
+
+        // Filter options for the store page: only genres/tags that are actually used, with counts.
+        group.MapGet("/facets", async (MoxicDbContext dbContext) =>
+        {
+            var genreFacets = await dbContext.Games.AsNoTracking()
+                .SelectMany(g => g.Genres)
+                .GroupBy(x => new { x.Id, x.Name })
+                .Select(grp => new { id = grp.Key.Id, name = grp.Key.Name, count = grp.Count() })
+                .OrderByDescending(x => x.count).ThenBy(x => x.name)
+                .ToListAsync();
+
+            var tagFacets = await dbContext.Games.AsNoTracking()
+                .SelectMany(g => g.Tags)
+                .GroupBy(x => new { x.Id, x.Name })
+                .Select(grp => new { id = grp.Key.Id, name = grp.Key.Name, count = grp.Count() })
+                .OrderByDescending(x => x.count).ThenBy(x => x.name)
+                .ToListAsync();
+
+            var games = dbContext.Games.AsNoTracking();
+            var hasGames = await games.AnyAsync();
+            var minPrice = hasGames ? await games.MinAsync(g => g.SalePrice) : 0;
+            var maxPrice = hasGames ? await games.MaxAsync(g => g.SalePrice) : 0;
+            var available = await games.CountAsync(g => g.Status == Moxic.Shared.Enums.GameStatus.Available);
+            var preorder = await games.CountAsync(g => g.Status == Moxic.Shared.Enums.GameStatus.Preorder);
+            var onSale = await games.CountAsync(g => g.SalePrice < g.OriginalPrice);
+
+            return Results.Ok(new
+            {
+                genres = genreFacets,
+                tags = tagFacets,
+                price = new { min = minPrice, max = maxPrice },
+                status = new { available, preorder },
+                onSale
+            });
         });
 
         group.MapGet("/featured", async (MoxicDbContext dbContext, IMinioService minioService, int limit = 5) =>
@@ -208,6 +297,19 @@ public static class GameEndpoints
             });
         });
     }
+
+    private static List<Guid> ParseIds(string? csv) =>
+        string.IsNullOrWhiteSpace(csv)
+            ? new List<Guid>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(s => Guid.TryParse(s, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .Take(30)
+                .ToList();
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }
 
 public record PublicReviewRequest(string? DisplayName, int Rating, string Content);

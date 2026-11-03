@@ -86,6 +86,20 @@ export interface GamesResponse {
   pageSize: number;
 }
 
+export interface FacetOption {
+  id: string;
+  name: string;
+  count: number;
+}
+
+export interface GameFacets {
+  genres: FacetOption[];
+  tags: FacetOption[];
+  price: { min: number; max: number };
+  status: { available: number; preorder: number };
+  onSale: number;
+}
+
 export interface ActivePaymentConfig {
   transferSyntaxTemplate: string;
   bankQrUrl?: string;

@@ -1,18 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
-import { getGames, getGameDetail, getFeaturedGames } from "../lib/api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getGames, getGameDetail, getFeaturedGames, getGameFacets, type GameQuery } from "../lib/api";
 
-export function useGames(params?: {
-  page?: number;
-  pageSize?: number;
-  genre?: string;
-  status?: string;
-  search?: string;
-  sort?: string;
-}) {
+export function useGames(params: GameQuery = {}, options?: { enabled?: boolean; keepPrevious?: boolean }) {
   return useQuery({
     queryKey: ["games", params],
     queryFn: () => getGames(params),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
+    placeholderData: options?.keepPrevious ? keepPreviousData : undefined,
+  });
+}
+
+export function useGameFacets() {
+  return useQuery({
+    queryKey: ["games", "facets"],
+    queryFn: getGameFacets,
+    staleTime: 10 * 60 * 1000,
   });
 }
 

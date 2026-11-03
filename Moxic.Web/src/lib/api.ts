@@ -1,5 +1,5 @@
 ﻿import axios from "axios";
-import type { GamesResponse, GameDetail, GameReview, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
+import type { GamesResponse, GameFacets, GameDetail, GameReview, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const api = axios.create({
@@ -7,14 +7,37 @@ const api = axios.create({
   withCredentials: true,
 });
 
-export async function getGames(params?: {
+export interface GameQuery {
+  q?: string;
+  status?: string;
+  genres?: string[];
+  tags?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  onSale?: boolean;
+  sort?: string;
   page?: number;
   pageSize?: number;
-  genre?: string;
-  status?: string;
-  search?: string;
-}) {
+}
+
+export async function getGames(query: GameQuery = {}) {
+  const params: Record<string, string | number | boolean> = {};
+  if (query.q) params.q = query.q;
+  if (query.status) params.status = query.status;
+  if (query.genres?.length) params.genres = query.genres.join(",");
+  if (query.tags?.length) params.tags = query.tags.join(",");
+  if (query.minPrice != null) params.minPrice = query.minPrice;
+  if (query.maxPrice != null) params.maxPrice = query.maxPrice;
+  if (query.onSale) params.onSale = true;
+  if (query.sort) params.sort = query.sort;
+  params.page = query.page ?? 1;
+  params.pageSize = query.pageSize ?? 20;
   const { data } = await api.get<GamesResponse>("/games", { params });
+  return data;
+}
+
+export async function getGameFacets() {
+  const { data } = await api.get<GameFacets>("/games/facets");
   return data;
 }
 
