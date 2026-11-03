@@ -75,7 +75,7 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("aspnetroles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -100,7 +100,7 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("aspnetroleclaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
@@ -164,7 +164,7 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("aspnetusers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -189,7 +189,7 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("aspnetuserclaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -213,7 +213,7 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("aspnetuserlogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -228,7 +228,7 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("aspnetuserroles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -249,7 +249,35 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("aspnetusertokens", (string)null);
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.ContactSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("MessengerUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Zalo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContactSettings");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Game", b =>
@@ -327,6 +355,42 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.HasIndex("GameId", "IsPrimary");
 
                     b.ToTable("GameMedias");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.GameReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("GameReviews");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Genre", b =>
@@ -499,6 +563,147 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PaymentConfigs");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxUses")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("SpinCodes");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("CodeText")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsClaimed")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("PrizeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PrizeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PrizeType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("RewardCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid?>("SpinCodeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("PrizeId");
+
+                    b.HasIndex("RewardCode")
+                        .IsUnique();
+
+                    b.HasIndex("SpinCodeId");
+
+                    b.ToTable("SpinHistories");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinPrize", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Probability")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("SpinPrizes");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Tag", b =>
@@ -724,6 +929,17 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Navigation("Game");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.GameReview", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Game", "Game")
+                        .WithMany("Reviews")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.OrderDetail", b =>
                 {
                     b.HasOne("Moxic.Core.Entities.Game", "Game")
@@ -743,9 +959,34 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.SpinHistory", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.SpinPrize", null)
+                        .WithMany()
+                        .HasForeignKey("PrizeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Moxic.Core.Entities.SpinCode", null)
+                        .WithMany()
+                        .HasForeignKey("SpinCodeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinPrize", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Game");
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.Game", b =>
                 {
                     b.Navigation("Media");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Order", b =>

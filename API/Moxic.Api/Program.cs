@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Minio;
@@ -122,6 +124,21 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Rate limiting (lucky-spin public endpoint: 10 req / minute / IP, 429 on rejection)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(LuckySpinRules.RateLimitPolicy, ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            LuckySpinRules.GetClientIp(ctx),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 var app = builder.Build();
 
 // KÃ­ch hoáº¡t Swagger UI
@@ -137,6 +154,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 app.MapRazorPages();
 
@@ -173,6 +191,7 @@ using (var scope = app.Services.CreateScope())
             );
             CREATE INDEX IF NOT EXISTS ""IX_GameReviews_GameId"" ON ""GameReviews"" (""GameId"");
         ");
+        await LuckySpinSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

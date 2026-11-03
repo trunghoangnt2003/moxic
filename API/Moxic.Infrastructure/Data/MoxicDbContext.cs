@@ -17,6 +17,10 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<GameReview> GameReviews => Set<GameReview>();
+    public DbSet<SpinPrize> SpinPrizes => Set<SpinPrize>();
+    public DbSet<SpinCode> SpinCodes => Set<SpinCode>();
+    public DbSet<SpinHistory> SpinHistories => Set<SpinHistory>();
+    public DbSet<ContactSetting> ContactSettings => Set<ContactSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -146,6 +150,63 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.CryptoBucketName).HasMaxLength(100);
             entity.Property(e => e.CryptoQrObjectKey).HasMaxLength(500);
             entity.Property(e => e.TransferSyntaxTemplate).HasMaxLength(256).IsRequired();
+        });
+
+        // SpinPrize (lucky spin prize pool)
+        modelBuilder.Entity<SpinPrize>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.Probability).HasPrecision(5, 2);
+            entity.HasOne(e => e.Game)
+                .WithMany()
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.GameId);
+        });
+
+        // SpinCode
+        modelBuilder.Entity<SpinCode>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(32).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Note).HasMaxLength(200);
+        });
+
+        // SpinHistory
+        modelBuilder.Entity<SpinHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CodeText).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.PrizeName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.PrizeType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.RewardCode).HasMaxLength(32);
+            entity.Property(e => e.ClientIp).HasMaxLength(64);
+            entity.HasOne<SpinCode>()
+                .WithMany()
+                .HasForeignKey(e => e.SpinCodeId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne<SpinPrize>()
+                .WithMany()
+                .HasForeignKey(e => e.PrizeId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.RewardCode).IsUnique();
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // ContactSetting (singleton)
+        modelBuilder.Entity<ContactSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MessengerUrl).HasMaxLength(500);
+            entity.Property(e => e.Zalo).HasMaxLength(500);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(30);
         });
     }
 }
