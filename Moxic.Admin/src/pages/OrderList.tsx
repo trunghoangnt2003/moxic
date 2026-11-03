@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 import OrderDetailModal from "./OrderDetailModal";
 
 interface OrderItem {
@@ -73,7 +74,7 @@ export default function OrderList() {
       params.set("page", page.toString());
       params.set("pageSize", pageSize.toString());
 
-      const res = await fetch(apiUrl(`/api/admin/orders?${params}`);
+      const res = await apiFetch(apiUrl(`/api/admin/orders?${params}`));
       const data: OrderListResponse = await res.json();
       setOrders(data.items);
       setTotalCount(data.totalCount);
@@ -102,30 +103,30 @@ export default function OrderList() {
     { label: "Total", value: totalCount, icon: Package, color: "text-steam-blue bg-steam-blue/10" },
     { label: "Pending", value: orders.filter((o) => o.status === "Pending").length, icon: Clock, color: "text-yellow-400 bg-yellow-500/10" },
     { label: "Verifying", value: orders.filter((o) => o.status === "Verifying").length, icon: Eye, color: "text-steam-blue bg-steam-blue/10" },
-    { label: "Completed", value: orders.filter((o) => o.status === "Completed").length, icon: CheckCircle2, color: "text-steam-green bg-steam-green/10" },
+    { label: "Done", value: orders.filter((o) => o.status === "Completed").length, icon: CheckCircle2, color: "text-steam-green bg-steam-green/10" },
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 md:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-bold text-white font-mono tracking-tight">Orders</h1>
           <p className="text-xs text-steam-muted mt-0.5">{totalCount} orders total</p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
         {stats.map((s) => (
-          <div key={s.label} className="bg-steam-surface border border-steam-border rounded-sm p-3.5 card-hover cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded flex items-center justify-center ${s.color}`}>
-                <s.icon size={15} />
+          <div key={s.label} className="bg-steam-surface border border-steam-border rounded-sm p-2.5 md:p-3.5 card-hover cursor-pointer">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className={`w-7 h-7 md:w-8 md:h-8 rounded flex items-center justify-center flex-shrink-0 ${s.color}`}>
+                <s.icon size={13} />
               </div>
-              <div>
-                <p className="text-base font-bold text-white font-mono tracking-tight">{s.value}</p>
-                <p className="text-[11px] text-steam-muted">{s.label}</p>
+              <div className="min-w-0">
+                <p className="text-sm md:text-base font-bold text-white font-mono tracking-tight">{s.value}</p>
+                <p className="text-[10px] md:text-[11px] text-steam-muted truncate">{s.label}</p>
               </div>
             </div>
           </div>
@@ -134,60 +135,65 @@ export default function OrderList() {
 
       {/* Filter toolbar */}
       <div className="bg-steam-surface border border-steam-border rounded-sm">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-steam-border flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 px-3 md:px-4 py-3 border-b border-steam-border">
+          <div className="relative flex-1 min-w-0">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-steam-muted" />
             <input
               type="text"
-              placeholder="Search order code or phone..."
+              placeholder="Search order/phone..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="w-full bg-steam-surface-3 border border-steam-border rounded pl-8 pr-3 py-1.5 text-sm text-steam-text placeholder-steam-muted/50 focus:outline-none focus:border-steam-blue/50 transition-colors"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="bg-steam-surface-3 border border-steam-border rounded px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50"
-          >
-            <option value="">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="AwaitingConfirmation">Awaiting Confirmation</option>
-          <option value="Verifying">Verifying</option>
-            <option value="Installing">Installing</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
-            className="bg-steam-surface-3 border border-steam-border rounded px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50"
-            placeholder="From date"
-          />
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => { setToDate(e.target.value); setPage(1); }}
-            className="bg-steam-surface-3 border border-steam-border rounded px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50"
-            placeholder="To date"
-          />
-          {hasFilters && (
-            <button onClick={clearFilters} className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-steam-muted hover:text-steam-text hover:bg-steam-surface-3 transition-colors">
-              <X size={12} />
-              Clear
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="bg-steam-surface-3 border border-steam-border rounded px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50 min-w-0"
+            >
+              <option value="">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="AwaitingConfirmation">Awaiting Conf.</option>
+              <option value="Verifying">Verifying</option>
+              <option value="Installing">Installing</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
+              className="bg-steam-surface-3 border border-steam-border rounded px-2 md:px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50 w-full sm:w-auto"
+              placeholder="From"
+            />
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => { setToDate(e.target.value); setPage(1); }}
+              className="bg-steam-surface-3 border border-steam-border rounded px-2 md:px-3 py-1.5 text-sm text-steam-text focus:outline-none focus:border-steam-blue/50 w-full sm:w-auto"
+              placeholder="To"
+            />
+            {hasFilters && (
+              <button onClick={clearFilters} className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-steam-muted hover:text-steam-text hover:bg-steam-surface-3 transition-colors flex-shrink-0">
+                <X size={12} />
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="py-16 text-center">
-              <Loader2 size={28} className="mx-auto mb-3 text-steam-muted animate-spin" />
-              <p className="text-sm text-steam-muted">Loading orders...</p>
-            </div>
-          ) : (
+        {/* Loading */}
+        {loading && (
+          <div className="py-12 md:py-16 text-center">
+            <Loader2 size={28} className="mx-auto mb-3 text-steam-muted animate-spin" />
+            <p className="text-sm text-steam-muted">Loading orders...</p>
+          </div>
+        )}
+
+        {/* Desktop table */}
+        {!loading && (
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-steam-border bg-steam-bg/30">
@@ -223,13 +229,13 @@ export default function OrderList() {
                     <td className="px-4 py-3 text-steam-muted text-xs">{o.paymentMethod}</td>
                     <td className="px-4 py-3 text-steam-muted text-xs">{new Date(o.createdAt).toLocaleDateString("vi-VN")}</td>
                     <td className="px-4 py-3 text-right">
-                      <button className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors">
+                      <button onClick={() => setSelectedOrderId(o.id)} className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors">
                         <Eye size={13} />
                       </button>
                     </td>
                   </tr>
                 ))}
-                {orders.length === 0 && !loading && (
+                {orders.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-4 py-12 text-center text-steam-muted">
                       <Package size={28} className="mx-auto mb-2 text-steam-border" />
@@ -240,14 +246,53 @@ export default function OrderList() {
                 )}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Mobile card list */}
+        {!loading && (
+          <div className="block md:hidden divide-y divide-steam-border">
+            {orders.length > 0 ? orders.map((o) => (
+              <div
+                key={o.id}
+                onClick={() => setSelectedOrderId(o.id)}
+                className="px-3 py-3 space-y-2 cursor-pointer hover:bg-steam-surface-2/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-xs font-medium text-steam-text truncate">{o.orderCode}</span>
+                    {o.isPreorder && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-steam-blue/10 text-steam-blue border border-steam-blue/20 flex-shrink-0">
+                        <Clock size={8} /> Pre
+                      </span>
+                    )}
+                  </div>
+                  {statusBadge(o.status)}
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-steam-muted">{o.customerPhone}</span>
+                  <span className="text-steam-gold font-semibold font-mono text-sm">{formatPrice(o.totalAmount)}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-steam-muted">
+                  <span>{o.paymentMethod} · {o.itemCount} item{(o.itemCount ?? 0) > 1 ? "s" : ""}</span>
+                  <span>{new Date(o.createdAt).toLocaleDateString("vi-VN")}</span>
+                </div>
+              </div>
+            )) : (
+              <div className="py-12 text-center">
+                <Package size={24} className="mx-auto mb-2 text-steam-border" />
+                <p className="text-sm text-steam-muted">No orders found</p>
+                {hasFilters && <p className="text-xs text-steam-muted/60 mt-1">Try adjusting your filters</p>}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-steam-border">
-            <p className="text-xs text-steam-muted">Page {page} of {totalPages} ({totalCount} total)</p>
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 md:px-4 py-3 border-t border-steam-border">
+            <p className="text-xs text-steam-muted order-2 sm:order-1">Page {page} of {totalPages} ({totalCount} total)</p>
+            <div className="flex items-center gap-1 order-1 sm:order-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
@@ -255,6 +300,7 @@ export default function OrderList() {
               >
                 <ChevronLeft size={14} />
               </button>
+              <span className="text-xs text-steam-muted px-2 sm:hidden">{page}/{totalPages}</span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
@@ -278,4 +324,3 @@ export default function OrderList() {
     </div>
   );
 }
-

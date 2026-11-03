@@ -1,18 +1,20 @@
-﻿services:
+version: '3.8'
+
+services:
   postgres:
     image: postgres:16-alpine
     container_name: moxic-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-moxic}
-      POSTGRES_USER: ${DB_USER:-moxic}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-moxic123}
+      POSTGRES_DB: moxic
+      POSTGRES_USER: moxic
+      POSTGRES_PASSWORD: moxic123
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U moxic"]
+      test: ["CMD-SHELL", "pg_isready -U moxic -d moxic"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,8 +25,8 @@
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_USER:-moxicadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-moxic123456}
+      MINIO_ROOT_USER: moxicadmin
+      MINIO_ROOT_PASSWORD: moxic123456
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -43,50 +45,54 @@
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set myminio http://minio:9000 ${MINIO_USER:-moxicadmin} ${MINIO_PASSWORD:-moxic123456} &&
-      mc mb myminio/${MINIO_GAMES_BUCKET:-moxic-games} --ignore-existing &&
-      mc mb myminio/${MINIO_CONFIG_BUCKET:-moxic-config} --ignore-existing &&
-      mc anonymous set private myminio/${MINIO_GAMES_BUCKET:-moxic-games} &&
-      mc anonymous set private myminio/${MINIO_CONFIG_BUCKET:-moxic-config} &&
-      echo 'Buckets ready'
+      mc alias set myminio http://minio:9000 moxicadmin moxic123456 &&
+      mc mb myminio/moxic-games --ignore-existing &&
+      mc mb myminio/moxic-config --ignore-existing &&
+      mc anonymous set download myminio/moxic-games &&
+      mc anonymous set download myminio/moxic-config &&
+      echo 'Buckets ready with Public Read policy'
       "
 
   moxic-api:
-    image: ${DOCKER_USER:-trungdocker123}/moxic-api:test
+    image: trungdocker123/moxic-api:test
     container_name: moxic-api
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${DB_NAME:-moxic};Username=${DB_USER:-moxic};Password=${DB_PASSWORD:-moxic123}
-      Minio__Endpoint: ${SERVER_IP:-localhost}:9000
-      Minio__PublicEndpoint: ${SERVER_IP:-localhost}:9000
-      Minio__AccessKey: ${MINIO_USER:-moxicadmin}
-      Minio__SecretKey: ${MINIO_PASSWORD:-moxic123456}
+      ConnectionStrings__DefaultConnection: Host=moxic-postgres;Port=5432;Database=moxic;Username=moxic;Password=moxic123
+      Minio__Endpoint: moxic-minio:9000 
+      Minio__PublicEndpoint: "34.158.54.48:9000" # Link sinh ?nh d?y ra IP Public c?ng 9000
+      Minio__AccessKey: moxicadmin
+      Minio__SecretKey: moxic123456
       Minio__WithSSL: "false"
-      Minio__GamesBucket: ${MINIO_GAMES_BUCKET:-moxic-games}
-      Minio__ConfigBucket: ${MINIO_CONFIG_BUCKET:-moxic-config}
-      Cors__Origins: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:3002}
-      Smtp__Host: ${SMTP_HOST:-smtp.gmail.com}
-      Smtp__Port: ${SMTP_PORT:-587}
-      Smtp__Username: ${SMTP_USERNAME:-}
-      Smtp__Password: ${SMTP_PASSWORD:-}
-      Smtp__AdminEmail: ${SMTP_ADMIN_EMAIL:-}
+      Minio__GamesBucket: moxic-games
+      Minio__ConfigBucket: moxic-config
+      Cors__Origins: "http://34.158.54.48:3001,http://34.158.54.48:3002"
+      Smtp__Host: smtp.gmail.com
+      Smtp__Port: 587
+      Smtp__Username: "moxmoz29@gmail.com"
+      Smtp__Password: "lecn pmyk zome stdz"
+      Smtp__AdminEmail: "trungnt260303@gmail.com"
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - moxic_keys:/app/.keys
     ports:
       - "8080:8080"
 
   moxic-web:
-    image: ${DOCKER_USER:-trungdocker123}/moxic-web:test
+    image: trungdocker123/moxic-web:test
     container_name: moxic-web
     restart: unless-stopped
     ports:
       - "3001:80"
 
   moxic-admin:
-    image: ${DOCKER_USER:-trungdocker123}/moxic-admin:test
+    image: trungdocker123/moxic-admin:test
     container_name: moxic-admin
     restart: unless-stopped
     ports:
@@ -95,3 +101,4 @@
 volumes:
   postgres_data:
   minio_data:
+  moxic_keys:

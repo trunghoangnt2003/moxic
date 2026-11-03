@@ -1,4 +1,9 @@
-﻿export interface GameMedia {
+﻿export interface GenreTag {
+  id: string;
+  name: string;
+}
+
+export interface GameMedia {
   id: string;
   objectKey: string;
   isPrimary: boolean;
@@ -11,8 +16,8 @@ export interface GameListItem {
   name: string;
   originalPrice: number;
   salePrice: number;
-  genre: string;
-  tags: string;
+  genres: GenreTag[];
+  tags: GenreTag[];
   status: "Available" | "Preorder";
   releaseDate?: string;
   coverImageUrl?: string;
@@ -43,14 +48,23 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface GameReview {
+  id: string;
+  userName: string;
+  avatarUrl: string | null;
+  rating: number;
+  content: string;
+  createdAt: string;
+}
+
 export interface GameDetail {
   id: string;
   name: string;
   description: string;
   originalPrice: number;
   salePrice: number;
-  genre: string;
-  tags: string;
+  genres: GenreTag[];
+  tags: GenreTag[];
   status: "Available" | "Preorder";
   releaseDate?: string;
   media: GameMedia[];
@@ -60,6 +74,9 @@ export interface GameDetail {
     recommended: SystemRequirement;
   };
   relatedGameIds: string[];
+  purchaseCount: number;
+  storeRating: number;
+  reviews: GameReview[];
 }
 
 export interface GamesResponse {

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import type { GameListItem, GameDetail } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
@@ -11,13 +11,13 @@ interface Props {
 
 function Countdown({ date }: { date: string }) {
   const [timeLeft, setTimeLeft] = useState("");
-  
+
   useEffect(() => {
     if (!date) return;
     const tick = () => {
       const diff = new Date(date).getTime() - new Date().getTime();
       if (diff <= 0) {
-        setTimeLeft("ĐÃ RA MẮT");
+        setTimeLeft("ÄÃƒ RA Máº®T");
         return;
       }
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -26,7 +26,7 @@ function Countdown({ date }: { date: string }) {
       const s = Math.floor((diff % (1000 * 60)) / 1000);
       setTimeLeft(`${d}N ${h}G ${m}P ${s}S`);
     };
-    
+
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
@@ -38,7 +38,7 @@ function Countdown({ date }: { date: string }) {
 export default function HeroSplash({ featured, available }: Props) {
   // Get GTA 6
   const hero: GameDetail = featured.find(g => g.id === "gta-vi") || featured[0];
-  
+
   if (!hero) return null;
 
   // IMPORTANT: Split available into two halves FIRST, then duplicate each half 
@@ -54,15 +54,15 @@ export default function HeroSplash({ featured, available }: Props) {
   return (
     <section className="w-full bg-bg-base pt-8 pb-12 overflow-hidden relative">
       <div className="max-w-[1400px] mx-auto px-4 relative z-10">
-        
+
         {/* Unified Container */}
         <div className="relative flex flex-col md:flex-row h-auto md:h-[70vh] min-h-[500px] overflow-hidden shadow-2xl border border-white/5 group">
-          
+
           {/* Global Background Media (Behind both panels) */}
           <div className="absolute inset-0 z-0 bg-black">
-            {hero.id === "gta-vi" || hero.status === "Preorder" ? (
+            {mainImage?.endsWith('.mp4') ? (
               <video
-                src="https://cdn.akamai.steamstatic.com/steam/apps/256658589/movie480.mp4"
+                src={mainImage}
                 autoPlay
                 muted
                 loop
@@ -78,8 +78,8 @@ export default function HeroSplash({ featured, available }: Props) {
             )}
           </div>
 
-          {/* ═══ LEFT: GTA 6 Hero (65%) ═══ */}
-          <div className="relative w-full md:w-[65%] h-[50vh] md:h-full flex flex-col justify-between p-6 md:p-12 z-10">
+          {/* â•â•â• LEFT: GTA 6 Hero (65%) â•â•â• */}
+          <div className="relative w-full md:w-[65%] h-[45vh] md:h-full flex flex-col justify-between p-6 md:p-12 z-10">
             {/* Gradient overlays for left side readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f11] md:from-[#0f0f11]/90 via-[#0f0f11]/60 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f11]/90 via-[#0f0f11]/40 to-transparent pointer-events-none hidden md:block" />
@@ -102,7 +102,7 @@ export default function HeroSplash({ featured, available }: Props) {
               <div className="mt-4 md:mt-auto">
                 <div className="bg-black/80 md:bg-black/60 backdrop-blur-xl p-4 md:p-5 border border-white/10 flex flex-col items-start gap-2 md:gap-3 w-full md:w-max shadow-2xl">
                   <div className="text-white/60 text-xs uppercase tracking-widest font-semibold">Giá Đặt Trước</div>
-                  
+
                   <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-5 w-full">
                     <div className="flex items-baseline gap-2 md:gap-3 flex-wrap">
                       {hero.originalPrice > 0 && hero.salePrice > 0 ? (
@@ -120,7 +120,7 @@ export default function HeroSplash({ featured, available }: Props) {
                         </span>
                       )}
                     </div>
-                    
+
                     <Link
                       to={`/games/${hero.id}`}
                       className="bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-12 md:h-12 transition-all flex items-center justify-center cursor-pointer shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-1 shrink-0 ml-auto md:ml-0"
@@ -139,11 +139,11 @@ export default function HeroSplash({ featured, available }: Props) {
             </div>
           </div>
 
-          {/* ═══ RIGHT: 2-Column Scrolling List (35%) ═══ */}
-          <div className="relative w-full md:w-[35%] h-[40vh] md:h-full z-10 border-t md:border-t-0 md:border-l border-white/10 bg-black/40 backdrop-blur-xl">
+          {/* â•â•â• RIGHT: 2-Column Scrolling List (35%) â•â•â• */}
+          <div className="relative w-full md:w-[35%] h-[30vh] md:h-full z-10 border-t md:border-t-0 md:border-l border-white/10 bg-black/40 backdrop-blur-xl">
             {/* Fade overlay top/bottom to make scroll smooth */}
             <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-b from-[#0f0f11] via-transparent to-[#0f0f11] opacity-90" />
-            
+
             <div className="flex gap-4 h-full p-4">
               {/* Column 1 - Scrolling UP */}
               <div className="flex-1 overflow-hidden relative group/col1">
@@ -198,7 +198,7 @@ export default function HeroSplash({ featured, available }: Props) {
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
     </section>

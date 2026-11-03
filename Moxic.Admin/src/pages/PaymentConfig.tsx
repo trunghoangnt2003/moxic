@@ -2,6 +2,7 @@
 import {
   Upload, Save, QrCode, Banknote, Bitcoin, Loader2, CheckCircle2,
 } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 
 interface PaymentConfigData {
   id?: number;
@@ -30,7 +31,7 @@ export default function PaymentConfig() {
   const [uploadingCrypto, setUploadingCrypto] = useState(false);
 
   useEffect(() => {
-    fetch(apiUrl("/api/admin/payment-config")
+    apiFetch(apiUrl("/api/admin/payment-config"))
       .then((r) => r.json())
       .then((d) => {
         if (d.id) {
@@ -46,7 +47,7 @@ export default function PaymentConfig() {
   const handleSaveTemplate = async () => {
     setSaving(true);
     setSaved(false);
-    await fetch(apiUrl("/api/admin/payment-config"), {
+    await apiFetch(apiUrl("/api/admin/payment-config"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -73,8 +74,8 @@ export default function PaymentConfig() {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        await fetch(apiUrl(`/api/admin/payment-config/${type}`)), { method: "POST", body: formData });
-        const res = await fetch(apiUrl("/api/admin/payment-config");
+        await apiFetch(apiUrl(`/api/admin/payment-config/${type}`), { method: "POST", body: formData });
+        const res = await apiFetch(apiUrl("/api/admin/payment-config"));
         const d = await res.json();
         setConfig(d);
       } finally {
@@ -86,34 +87,34 @@ export default function PaymentConfig() {
   };
 
   return (
-    <div className="space-y-5">
-      <div>
+    <div className="space-y-4 md:space-y-5">
+      <div className="min-w-0">
         <h1 className="text-lg font-bold text-white font-mono tracking-tight">Payment</h1>
         <p className="text-xs text-steam-muted mt-0.5">QR codes, bank info &amp; transfer template</p>
       </div>
 
       {/* QR Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
         {/* Bank */}
-        <div className="bg-steam-surface border border-steam-border rounded-sm p-5 card-hover">
+        <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 card-hover">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded bg-steam-blue/10 flex items-center justify-center">
+            <div className="w-9 h-9 rounded bg-steam-blue/10 flex items-center justify-center flex-shrink-0">
               <Banknote size={16} className="text-steam-blue" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-sm font-semibold text-white">Bank Transfer</h2>
-              <p className="text-xs text-steam-muted">Vietcombank QR</p>
+              <p className="text-xs text-steam-muted truncate">Vietcombank QR</p>
             </div>
           </div>
 
           <div className="flex justify-center mb-4">
             {config?.bankQrPresignedUrl ? (
-              <div className="w-40 h-40 bg-white rounded-sm p-1.5 glow-blue">
+              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-white rounded-sm p-1.5 glow-blue">
                 <img src={config.bankQrPresignedUrl} className="w-full h-full object-contain" alt="Bank QR" />
               </div>
             ) : (
-              <div className="w-40 h-40 bg-steam-surface-3 border border-steam-border rounded-sm flex flex-col items-center justify-center">
-                <QrCode size={28} className="text-steam-border mb-1" />
+              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-steam-surface-3 border border-steam-border rounded-sm flex flex-col items-center justify-center">
+                <QrCode size={24} className="text-steam-border mb-1" />
                 <span className="text-[11px] text-steam-muted/50">No QR</span>
               </div>
             )}
@@ -122,7 +123,7 @@ export default function PaymentConfig() {
           <button
             onClick={() => handleUpload("bank-qr")}
             disabled={uploadingBank}
-            className="w-full steam-btn justify-center bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border hover:border-steam-blue/30"
+            className="w-full steam-btn justify-center bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border hover:border-steam-blue/30 text-xs md:text-sm"
           >
             {uploadingBank ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
             {uploadingBank ? "Uploading..." : "Upload Bank QR"}
@@ -130,25 +131,25 @@ export default function PaymentConfig() {
         </div>
 
         {/* Crypto */}
-        <div className="bg-steam-surface border border-steam-border rounded-sm p-5 card-hover">
+        <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 card-hover">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded bg-steam-gold/10 flex items-center justify-center">
+            <div className="w-9 h-9 rounded bg-steam-gold/10 flex items-center justify-center flex-shrink-0">
               <Bitcoin size={16} className="text-steam-gold" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-sm font-semibold text-white">Crypto</h2>
-              <p className="text-xs text-steam-muted">USDT / BTC / ETH</p>
+              <p className="text-xs text-steam-muted truncate">USDT / BTC / ETH</p>
             </div>
           </div>
 
           <div className="flex justify-center mb-4">
             {config?.cryptoQrPresignedUrl ? (
-              <div className="w-40 h-40 bg-white rounded-sm p-1.5 glow-blue">
+              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-white rounded-sm p-1.5 glow-blue">
                 <img src={config.cryptoQrPresignedUrl} className="w-full h-full object-contain" alt="Crypto QR" />
               </div>
             ) : (
-              <div className="w-40 h-40 bg-steam-surface-3 border border-steam-border rounded-sm flex flex-col items-center justify-center">
-                <QrCode size={28} className="text-steam-border mb-1" />
+              <div className="w-36 h-36 sm:w-40 sm:h-40 bg-steam-surface-3 border border-steam-border rounded-sm flex flex-col items-center justify-center">
+                <QrCode size={24} className="text-steam-border mb-1" />
                 <span className="text-[11px] text-steam-muted/50">No QR</span>
               </div>
             )}
@@ -157,7 +158,7 @@ export default function PaymentConfig() {
           <button
             onClick={() => handleUpload("crypto-qr")}
             disabled={uploadingCrypto}
-            className="w-full steam-btn justify-center bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border hover:border-steam-gold/30"
+            className="w-full steam-btn justify-center bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border hover:border-steam-gold/30 text-xs md:text-sm"
           >
             {uploadingCrypto ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
             {uploadingCrypto ? "Uploading..." : "Upload Crypto QR"}
@@ -166,7 +167,7 @@ export default function PaymentConfig() {
       </div>
 
       {/* Bank Account Info */}
-      <div className="bg-steam-surface border border-steam-border rounded-sm p-5 max-w-xl">
+      <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 max-w-xl">
         <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">
           Bank Account Info
         </h2>
@@ -202,7 +203,7 @@ export default function PaymentConfig() {
       </div>
 
       {/* Template */}
-      <div className="bg-steam-surface border border-steam-border rounded-sm p-5 max-w-xl">
+      <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 max-w-xl">
         <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">
           Transfer Content Template
         </h2>

@@ -22,6 +22,36 @@ namespace Moxic.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GameGenre", b =>
+                {
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GenresId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("GameId", "GenresId");
+
+                    b.HasIndex("GenresId");
+
+                    b.ToTable("GameGenre", (string)null);
+                });
+
+            modelBuilder.Entity("GameTag", b =>
+                {
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("GameId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("GameTag", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -235,11 +265,6 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Genre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
 
@@ -262,11 +287,6 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -274,7 +294,7 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("IsFeatured");
 
-                    b.HasIndex("Status", "Genre");
+                    b.HasIndex("Status");
 
                     b.ToTable("Games");
                 });
@@ -307,6 +327,25 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.HasIndex("GameId", "IsPrimary");
 
                     b.ToTable("GameMedias");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.Genre", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Genres");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Order", b =>
@@ -460,6 +499,55 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PaymentConfigs");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("GameGenre", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Moxic.Core.Entities.Genre", null)
+                        .WithMany()
+                        .HasForeignKey("GenresId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GameTag", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Moxic.Core.Entities.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

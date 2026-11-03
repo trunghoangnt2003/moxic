@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:16-alpine
     container_name: moxic-postgres
@@ -11,6 +11,11 @@
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-moxic} -d ${DB_NAME:-moxic}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio:latest
@@ -25,6 +30,11 @@
       - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio-init:
     image: minio/mc:latest
@@ -42,9 +52,7 @@
       "
 
   moxic-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
+    image: trungdocker123/moxic-api:latest
     container_name: moxic-api
     restart: unless-stopped
     environment:
@@ -55,34 +63,32 @@
       Minio__AccessKey: ${MINIO_USER:-moxicadmin}
       Minio__SecretKey: ${MINIO_PASSWORD:-moxic123456}
       Minio__PublicEndpoint: minio.moxic.co
-      Minio__WithSSL: true
+      Minio__WithSSL: false
       Minio__GamesBucket: ${MINIO_GAMES_BUCKET:-moxic-games}
       Minio__ConfigBucket: ${MINIO_CONFIG_BUCKET:-moxic-config}
       Smtp__Host: ${SMTP_HOST:-smtp.gmail.com}
       Smtp__Port: ${SMTP_PORT:-587}
       Smtp__Username: ${SMTP_USERNAME:-}
       Smtp__Password: ${SMTP_PASSWORD:-}
-      Cors__Origins: ${CORS_ORIGINS:-https://moxic.co,https://admin.moxic.co}
       Smtp__AdminEmail: ${SMTP_ADMIN_EMAIL:-}
+      Cors__Origins: ${CORS_ORIGINS:-https://moxic.co,https://admin.moxic.co}
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
+    volumes:
+      - moxic_keys:/app/.keys
     ports:
       - "127.0.0.1:8080:8080"
 
   moxic-web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
+    image: trungdocker123/moxic-web:latest
     container_name: moxic-web
     restart: unless-stopped
     ports:
       - "127.0.0.1:3001:80"
 
   moxic-admin:
-    build:
-      context: .
-      dockerfile: Dockerfile.admin
+    image: trungdocker123/moxic-admin:latest
     container_name: moxic-admin
     restart: unless-stopped
     ports:
@@ -107,3 +113,4 @@ volumes:
   postgres_data:
   minio_data:
   nginx_certs:
+  moxic_keys:

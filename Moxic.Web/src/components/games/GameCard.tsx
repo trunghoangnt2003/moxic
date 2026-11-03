@@ -18,9 +18,7 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
 
   const priceDisplay = isFree
     ? "Miễn phí"
-    : isPreorder
-      ? formatPrice(game.originalPrice)
-      : formatPrice(game.salePrice);
+    : formatPrice(game.salePrice);
 
   const priceClass = isFree
     ? "text-success font-semibold text-sm"

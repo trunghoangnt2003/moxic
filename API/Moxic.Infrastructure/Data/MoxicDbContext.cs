@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
 using Moxic.Shared.Enums;
@@ -14,10 +14,35 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
+    public DbSet<Genre> Genres => Set<Genre>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<GameReview> GameReviews => Set<GameReview>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityRole>().ToTable("aspnetroles");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUser>().ToTable("aspnetusers");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserRole<string>>().ToTable("aspnetuserroles");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>>().ToTable("aspnetroleclaims");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>().ToTable("aspnetuserclaims");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserLogin<string>>().ToTable("aspnetuserlogins");
+		modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserToken<string>>().ToTable("aspnetusertokens");
+        // Genre
+        modelBuilder.Entity<Genre>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Tag
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
 
         // Game
         modelBuilder.Entity<Game>(entity =>
@@ -27,14 +52,20 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.Description).HasColumnType("text").IsRequired();
             entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18,2)");
-            entity.Property(e => e.Genre).HasMaxLength(100);
-            entity.Property(e => e.Tags).HasMaxLength(500);
             entity.Property(e => e.Status)
                 .HasConversion<string>()
                 .HasMaxLength(20);
-            entity.HasIndex(e => new { e.Status, e.Genre });
             entity.HasIndex(e => e.IsFeatured);
-            
+            entity.HasIndex(e => e.Status);
+
+            entity.HasMany(e => e.Genres)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("GameGenre"));
+
+            entity.HasMany(e => e.Tags)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("GameTag"));
+
             entity.OwnsOne(e => e.SystemRequirements, builder => 
             {
                 builder.ToJson();
@@ -92,6 +123,20 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.HasIndex(e => new { e.OrderId, e.GameId }).IsUnique();
         });
 
+
+        // GameReview
+        modelBuilder.Entity<GameReview>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Content).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.AvatarUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Game)
+                .WithMany(g => g.Reviews)
+                .HasForeignKey(e => e.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.GameId);
+        });
         // PaymentConfig
         modelBuilder.Entity<PaymentConfig>(entity =>
         {
@@ -104,3 +149,5 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
     }
 }
+
+

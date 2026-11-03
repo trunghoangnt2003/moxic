@@ -1,9 +1,10 @@
 ﻿import axios from "axios";
-import type { GamesResponse, GameDetail, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
+import type { GamesResponse, GameDetail, GameReview, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 export async function getGames(params?: {
@@ -52,3 +53,9 @@ export async function uploadPaymentProof(orderCode: string, file: File) {
   );
   return data;
 }
+export async function createReview(gameId: string, data: { displayName?: string; rating: number; content: string }) {
+  const { data: review } = await api.post<GameReview>(`/games/${gameId}/reviews`, data);
+  return review;
+}
+
+

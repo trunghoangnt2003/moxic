@@ -3,14 +3,15 @@ import { useGames } from "../hooks/useGames";
 import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
 import { GridSkeleton } from "../components/shared/Skeleton";
-import { EmptySearch } from "../components/shared/EmptyStates";
-import { Search, X, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+
+import { Search, X, Filter, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GamesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [genreFilter, setGenreFilter] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("name-asc");
+  const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useGames({ 
@@ -48,10 +49,15 @@ export default function GamesPage() {
         
         {/* Sidebar Filters */}
         <div className="w-full md:w-[280px] shrink-0 space-y-6 bg-black/40 border border-white/5 p-5 backdrop-blur-md">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-accent" />
-            <h2 className="font-display text-lg font-bold">Lọc Nâng Cao</h2>
+          <div className="flex items-center justify-between mb-4 cursor-pointer md:cursor-default" onClick={() => setShowFilters(!showFilters)}>
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-accent" />
+              <h2 className="font-display text-lg font-bold">Lọc Nâng Cao</h2>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-text-muted transition-transform md:hidden ${showFilters ? "rotate-180" : ""}`} />
           </div>
+
+          <div className={`space-y-6 ${showFilters ? "block" : "hidden"} md:block`}>
 
           {/* Search */}
           <div className="relative">
@@ -132,7 +138,8 @@ export default function GamesPage() {
               ))}
             </div>
           </div>
-        </div>
+          </div>
+</div>
 
         {/* Main Content */}
         <div className="flex-1 w-full min-w-0">

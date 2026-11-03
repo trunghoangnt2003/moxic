@@ -13,7 +13,9 @@ import {
   Table2,
   Gamepad2,
   BookMarked,
+  MessageCircle,
 } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 
 interface GenreTag {
   id: string;
@@ -42,7 +44,7 @@ export default function GameList() {
 
   useEffect(() => {
     const params = search ? "?search=" + encodeURIComponent(search) : "";
-    fetch(apiUrl("/api/admin/games" + params))
+    apiFetch(apiUrl("/api/admin/games" + params))
       .then((r) => r.json())
       .then(setGames);
   }, [search]);
@@ -51,7 +53,7 @@ export default function GameList() {
     if (!window.confirm("Delete \"" + name + "\"?")) return;
     setDeleting(id);
     try {
-      await fetch(apiUrl("/api/admin/games/" + id), { method: "DELETE" });
+      await apiFetch(apiUrl("/api/admin/games/" + id), { method: "DELETE" });
       setGames((prev) => prev.filter((g) => g.id !== id));
     } finally {
       setDeleting(null);
@@ -69,7 +71,7 @@ export default function GameList() {
         )
       : 0;
 
-  const formatPrice = (n: number) => n.toLocaleString() + "₫";
+  const formatPrice = (n: number) => n.toLocaleString() + "\u0111";
 
   const statusBadge = (status: string) => {
     if (status === "Preorder")
@@ -86,42 +88,97 @@ export default function GameList() {
     );
   };
 
+  const actionButtons = (g: Game) => (
+    <div className="flex items-center gap-0.5">
+      <button
+        onClick={(e) => { e.stopPropagation(); navigate("/games/" + g.id + "/edit"); }}
+        className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"
+        title="Edit"
+      >
+        <Edit3 size={13} />
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); navigate("/games/" + g.id + "/reviews"); }}
+        className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"
+        title="Reviews"
+      >
+        <MessageCircle size={13} />
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); handleDelete(g.id, g.name); }}
+        disabled={deleting === g.id}
+        className="p-1.5 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors disabled:opacity-30"
+        title="Delete"
+      >
+        {deleting === g.id ? <AlertCircle size={13} className="animate-pulse" /> : <Trash2 size={13} />}
+      </button>
+    </div>
+  );
+
+  const actionButtonsSmall = (g: Game) => (
+    <div className="flex items-center gap-0.5">
+      <button
+        onClick={() => navigate("/games/" + g.id + "/edit")}
+        className="p-1 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"
+        title="Edit"
+      >
+        <Edit3 size={11} />
+      </button>
+      <button
+        onClick={() => navigate("/games/" + g.id + "/reviews")}
+        className="p-1 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"
+        title="Reviews"
+      >
+        <MessageCircle size={11} />
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); handleDelete(g.id, g.name); }}
+        disabled={deleting === g.id}
+        className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors disabled:opacity-30"
+        title="Delete"
+      >
+        {deleting === g.id ? <AlertCircle size={11} className="animate-pulse" /> : <Trash2 size={11} />}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 md:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-bold text-white font-mono tracking-tight">Games</h1>
-          <p className="text-xs text-steam-muted mt-0.5">{totalGames} titles in catalog</p>
+          <p className="text-xs text-steam-muted mt-0.5 truncate">{totalGames} titles in catalog</p>
         </div>
         <button
           onClick={() => navigate("/games/new")}
-          className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue"
+          className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue flex-shrink-0 text-xs md:text-sm px-3 md:px-5"
         >
           <Plus size={14} />
-          New Game
+          <span className="hidden sm:inline">New Game</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
         {[
           { label: "Total", value: totalGames, icon: Package, color: "text-steam-blue bg-steam-blue/10" },
-          { label: "Available", value: available, icon: Tag, color: "text-steam-green bg-steam-green/10" },
-          { label: "Pre-orders", value: preorders, icon: Clock, color: "text-steam-blue bg-steam-blue/10" },
-          { label: "Avg Discount", value: discountAvg + "%", icon: Gamepad2, color: "text-steam-gold bg-steam-gold/10" },
+          { label: "Active", value: available, icon: Tag, color: "text-steam-green bg-steam-green/10" },
+          { label: "Pre-order", value: preorders, icon: Clock, color: "text-steam-blue bg-steam-blue/10" },
+          { label: "Avg Disc.", value: discountAvg + "%", icon: Gamepad2, color: "text-steam-gold bg-steam-gold/10" },
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-steam-surface border border-steam-border rounded-sm p-3.5 card-hover cursor-pointer"
+            className="bg-steam-surface border border-steam-border rounded-sm p-2.5 md:p-3.5 card-hover cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <div className={"w-8 h-8 rounded flex items-center justify-center " + s.color}>
-                <s.icon size={15} />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className={"w-7 h-7 md:w-8 md:h-8 rounded flex items-center justify-center flex-shrink-0 " + s.color}>
+                <s.icon size={13} />
               </div>
-              <div>
-                <p className="text-base font-bold text-white font-mono tracking-tight">{s.value}</p>
-                <p className="text-[11px] text-steam-muted">{s.label}</p>
+              <div className="min-w-0">
+                <p className="text-sm md:text-base font-bold text-white font-mono tracking-tight">{s.value}</p>
+                <p className="text-[10px] md:text-[11px] text-steam-muted truncate">{s.label}</p>
               </div>
             </div>
           </div>
@@ -130,18 +187,18 @@ export default function GameList() {
 
       {/* Toolbar */}
       <div className="bg-steam-surface border border-steam-border rounded-sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-steam-border">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 md:px-4 py-3 border-b border-steam-border">
+          <div className="relative w-full sm:max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-steam-muted" />
             <input
               type="text"
-              placeholder="Search games..."
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-steam-surface-3 border border-steam-border rounded pl-8 pr-3 py-1.5 text-sm text-steam-text placeholder-steam-muted/50 focus:outline-none focus:border-steam-blue/50 transition-colors"
             />
           </div>
-          <div className="flex items-center gap-1 bg-steam-surface-3 rounded p-0.5">
+          <div className="flex items-center gap-1 bg-steam-surface-3 rounded p-0.5 self-end sm:self-auto">
             <button
               onClick={() => setViewMode("table")}
               className={"p-1.5 rounded transition-colors " + (viewMode === "table" ? "bg-steam-blue/20 text-steam-blue" : "text-steam-muted hover:text-steam-text")}
@@ -162,7 +219,7 @@ export default function GameList() {
         {/* Grid view */}
         {viewMode === "grid" ? (
           games.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3 p-3 md:p-4">
               {games.map((g) => (
                 <div
                   key={g.id}
@@ -173,28 +230,29 @@ export default function GameList() {
                     {g.primaryImage ? (
                       <img src={g.primaryImage} className="w-full h-full object-cover" alt="" />
                     ) : (
-                      <Gamepad2 size={32} className="text-steam-border" />
+                      <Gamepad2 size={24} className="text-steam-border" />
                     )}
                   </div>
-                  <div className="p-3 space-y-1.5">
-                    <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-steam-blue transition-colors">
+                  <div className="p-2 md:p-3 space-y-1 md:space-y-1.5">
+                    <p className="text-xs md:text-sm font-semibold text-white truncate leading-tight group-hover:text-steam-blue transition-colors">
                       {g.name}
                     </p>
-                    <p className="text-[11px] text-steam-muted truncate">
-                      {g.genres?.length > 0 ? g.genres.map(ge => ge.name).join(", ") : "—"}
+                    <p className="text-[10px] md:text-[11px] text-steam-muted truncate leading-tight">
+                      {g.genres?.length > 0 ? g.genres.map(ge => ge.name).join(", ") : "\u2014"}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-steam-muted line-through">{formatPrice(g.originalPrice)}</span>
-                        <span className="text-sm font-bold text-steam-gold font-mono">{formatPrice(g.salePrice)}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-1">
+                      <div className="flex items-center gap-1 md:gap-1.5">
+                        <span className="text-[10px] md:text-[11px] text-steam-muted line-through">{formatPrice(g.originalPrice)}</span>
+                        <span className="text-xs md:text-sm font-bold text-steam-gold font-mono">{formatPrice(g.salePrice)}</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-0.5">
                       {statusBadge(g.status)}
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={(e) => { e.stopPropagation(); navigate("/games/" + g.id + "/edit"); }} className="p-1 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"><Edit3 size={12} /></button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDelete(g.id, g.name); }} disabled={deleting === g.id} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors">
-                          {deleting === g.id ? <AlertCircle size={12} className="animate-pulse" /> : <Trash2 size={12} />}
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={(e) => { e.stopPropagation(); navigate("/games/" + g.id + "/edit"); }} className="p-1 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors"><Edit3 size={11} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); navigate("/games/" + g.id + "/reviews"); }} className="p-1 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors" title="Reviews"><MessageCircle size={11} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDelete(g.id, g.name); }} disabled={deleting === g.id} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors disabled:opacity-30" title="Delete">
+                          {deleting === g.id ? <AlertCircle size={11} className="animate-pulse" /> : <Trash2 size={11} />}
                         </button>
                       </div>
                     </div>
@@ -203,16 +261,16 @@ export default function GameList() {
               ))}
             </div>
           ) : (
-            <div className="py-16 text-center">
-              <Package size={36} className="mx-auto mb-3 text-steam-border" />
+            <div className="py-12 md:py-16 text-center">
+              <Package size={28} className="mx-auto mb-3 text-steam-border" />
               <p className="text-sm text-steam-muted">No games yet</p>
               <p className="text-xs text-steam-muted/60 mt-1">Create your first game to get started</p>
             </div>
           )
         ) : (
-          /* Table view */
+          /* Table view - desktop */
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm hidden md:table">
               <thead>
                 <tr className="border-b border-steam-border bg-steam-bg/30">
                   {["Name", "Genres", "Price", "Status", "Tags", "Media", ""].map((h) => (
@@ -236,7 +294,7 @@ export default function GameList() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-steam-muted/40">—</span>
+                        <span className="text-steam-muted/40">{"\u2014"}</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -254,18 +312,11 @@ export default function GameList() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-steam-muted/40">—</span>
+                        <span className="text-steam-muted/40">{"\u2014"}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center text-steam-muted text-xs">{g.imageCount}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-0.5">
-                        <button onClick={() => navigate("/games/" + g.id + "/edit")} className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors" title="Edit"><Edit3 size={13} /></button>
-                        <button onClick={() => handleDelete(g.id, g.name)} disabled={deleting === g.id} className={"p-1.5 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors disabled:opacity-30"} title="Delete">
-                          {deleting === g.id ? <AlertCircle size={13} className="animate-pulse" /> : <Trash2 size={13} />}
-                        </button>
-                      </div>
-                    </td>
+                    <td className="px-4 py-3 text-right">{actionButtons(g)}</td>
                   </tr>
                 ))}
                 {games.length === 0 && (
@@ -273,6 +324,44 @@ export default function GameList() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Mobile card list - only shown in table view on small screens */}
+        {viewMode === "table" && (
+          <div className="block md:hidden divide-y divide-steam-border">
+            {games.length > 0 ? games.map((g) => (
+              <div key={g.id} className="px-3 py-3 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <button
+                    onClick={() => navigate("/games/" + g.id + "/edit")}
+                    className="text-sm font-semibold text-steam-text hover:text-steam-blue transition-colors text-left leading-tight flex-1"
+                  >
+                    {g.name}
+                  </button>
+                  {statusBadge(g.status)}
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-steam-muted line-through">{formatPrice(g.originalPrice)}</span>
+                    <span className="text-steam-gold font-semibold font-mono text-sm">{formatPrice(g.salePrice)}</span>
+                  </div>
+                  {actionButtonsSmall(g)}
+                </div>
+                {g.genres?.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {g.genres.map((ge) => (
+                      <span key={ge.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-steam-surface-3 text-steam-muted border border-steam-border"><BookMarked size={9} /> {ge.name}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )) : (
+              <div className="py-12 text-center">
+                <Package size={24} className="mx-auto mb-2 text-steam-border" />
+                <p className="text-sm text-steam-muted">No games yet</p>
+              </div>
+            )}
           </div>
         )}
       </div>

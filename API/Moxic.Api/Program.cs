@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -11,7 +11,9 @@ using Moxic.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
+// Database - KhuyÃªn dÃ¹ng thÃªm .UseSnakeCaseNamingConvention() náº¿u cháº¡y Postgres trÃªn Linux
+AppContext.SetSwitch("Npgsql.EnableDateTimeUtcConversion", true);
+
 builder.Services.AddDbContext<MoxicDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -25,10 +27,18 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<MoxicDbContext>();
 
+// --- Cáº¤U HÃŒNH COOKIE CHUáº¨N Äá»‚ Sá»¬ Dá»¤NG CHÃ‰O Cá»”NG (CORS / DOCKER) ---
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    
+    // Báº¯t buá»™c cáº¥u hÃ¬nh nÃ y Ä‘á»ƒ cookie cÃ³ thá»ƒ bay qua bay láº¡i giá»¯a port 3001/3002 vÃ  port 8080 trÃªn IP Public
+    options.Cookie.SameSite = SameSiteMode.Lax; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // SameSite = None thÃ¬ báº¯t buá»™c pháº£i Ä‘i kÃ¨m Secure (HTTPS/SSL)
+    options.Cookie.HttpOnly = true; 
+    options.Cookie.Name = "MoxicAuthCookie";
+
     options.Events.OnRedirectToLogin = context =>
     {
         if (context.Request.Path.StartsWithSegments("/api"))
@@ -54,7 +64,7 @@ builder.Services.AddSingleton<IMinioClient>(sp =>
 });
 builder.Services.AddScoped<IMinioService, MinioService>();
 
-// Data Protection (AES-256 for Xbox passwords)
+// Data Protection
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, ".keys")));
 
@@ -69,7 +79,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(origins.Split(',').Select(o => o.Trim()).ToArray())
                   .AllowAnyMethod()
                   .AllowAnyHeader()
-                  .AllowCredentials();
+                  .AllowCredentials(); // Báº¯t buá»™c pháº£i cÃ³ Ä‘á»ƒ cho phÃ©p nháº­n/gá»­i kÃ¨m Cookie
         }
         else
         {
@@ -80,13 +90,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Email (SMTP via MailKit) ? sent via background queue
+// Email & Background Services
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddSingleton<IBackgroundEmailQueue, Moxic.Api.Services.BackgroundEmailQueue>();
-builder.Services.AddHostedService<Moxic.Api.Services.EmailProcessingService>();
+builder.Services.AddSingleton<IBackgroundEmailQueue, BackgroundEmailQueue>();
+builder.Services.AddHostedService<EmailProcessingService>();
 builder.Services.AddHostedService<PaymentTimeoutService>();
-// Controllers + Razor Pages (for Identity UI)
+
+// Controllers + Razor Pages
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -94,7 +105,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddRazorPages();
 
-// --- Cáº¤U HÃŒNH SWAGGER TRUYá»€N THá»NG THAY CHO OPENAPI ---
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -110,23 +121,18 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference("bearer", document)] = []
     });
 });
-// -----------------------------------------------------
 
 var app = builder.Build();
 
-// --- KÃCH HOáº T GIAO DIá»†N SWAGGER UI KHI CHáº Y DEV ---
+// KÃ­ch hoáº¡t Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Moxic API v1");
-
-        // Bá» comment dÃ²ng dÆ°á»›i náº¿u muá»‘n gÃµ localhost:xxxx/ lÃ  vÃ o tháº³ng luÃ´n giao diá»‡n Swagger
-        // options.RoutePrefix = string.Empty; 
     });
 }
-// -----------------------------------------------------
 
 app.UseCors();
 app.UseAuthentication();
@@ -134,6 +140,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
 
+// Endpoint Auth Login
 app.MapPost("/api/auth/login", async (SignInManager<IdentityUser> signInManager, LoginRequest req) =>
 {
     var result = await signInManager.PasswordSignInAsync(req.Email, req.Password, isPersistent: true, lockoutOnFailure: false);
@@ -141,40 +148,66 @@ app.MapPost("/api/auth/login", async (SignInManager<IdentityUser> signInManager,
     return Results.Unauthorized();
 });
 
-// Seed roles and admin user
+// Database Initialization (EnsureCreated & Seed Data)
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    if (!await roleManager.RoleExistsAsync("Admin"))
-    {
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-    }
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<MoxicDbContext>();
 
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    var adminEmail = "admin@moxic.com";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    try
     {
-        var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail };
-        var result = await userManager.CreateAsync(admin, "Admin@123");
-        if (result.Succeeded)
+        // Sá»­ dá»¥ng duy nháº¥t EnsureCreatedAsync cho gá»n nháº¹ Ä‘á»‘i vá»›i Code-First khÃ´ng cáº§n Migration lá»‹ch sá»­
+        await dbContext.Database.EnsureCreatedAsync();
+        // Ensure GameReviews table exists (for existing databases where EnsureCreated is no-op)
+        await dbContext.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""GameReviews"" (
+                ""Id"" uuid NOT NULL,
+                ""GameId"" uuid NOT NULL,
+                ""UserName"" text NOT NULL,
+                ""AvatarUrl"" text NULL,
+                ""Rating"" integer NOT NULL,
+                ""Content"" text NOT NULL,
+                ""CreatedAt"" timestamp with time zone NOT NULL,
+                CONSTRAINT ""PK_GameReviews"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_GameReviews_Games_GameId"" FOREIGN KEY (""GameId"") REFERENCES ""Games""(""Id"") ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_GameReviews_GameId"" ON ""GameReviews"" (""GameId"");
+        ");
+        
+        // Khá»Ÿi táº¡o Role Admin
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        if (!await roleManager.RoleExistsAsync("Admin"))
         {
-            await userManager.AddToRoleAsync(admin, "Admin");
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
-    }
 
-    var dbContext = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
-    await dbContext.Database.MigrateAsync();
-    await GenreTagSeeder.SeedAsync(dbContext);
-    await GameSeeder.SeedAsync(dbContext);
+        // Khá»Ÿi táº¡o User Admin máº·c Ä‘á»‹nh
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var adminEmail = "admin@moxic.com";
+        if (await userManager.FindByEmailAsync(adminEmail) == null)
+        {
+            var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+            var result = await userManager.CreateAsync(admin, "Admin@123");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+        }
+
+        // Seed cÃ¡c dá»¯ liá»‡u nghiá»‡p vá»¥
+        await GenreTagSeeder.SeedAsync(dbContext);
+        await GameSeeder.SeedAsync(dbContext);
+        await GameReviewSeeder.SeedAsync(dbContext);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh khá»Ÿi táº¡o Database.");
+    }
 }
 
 app.MapGameEndpoints();
-
 app.Run();
 
 public record LoginRequest(string Email, string Password);
-
-
-
-
 

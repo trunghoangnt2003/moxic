@@ -1,6 +1,4 @@
-using Moxic.Shared.Enums;
-
-namespace Moxic.Core.DTOs;
+﻿namespace Moxic.Core.DTOs;
 
 public class GameListItemDto
 {
@@ -8,8 +6,8 @@ public class GameListItemDto
     public string Name { get; set; } = string.Empty;
     public decimal OriginalPrice { get; set; }
     public decimal SalePrice { get; set; }
-    public string Genre { get; set; } = string.Empty;
-    public string Tags { get; set; } = string.Empty;
+    public List<GenreDto> Genres { get; set; } = new();
+    public List<TagDto> Tags { get; set; } = new();
     public string Status { get; set; } = string.Empty;
     public DateTime? ReleaseDate { get; set; }
     public string? CoverImageUrl { get; set; }

@@ -26,14 +26,11 @@ export default function ConfirmationPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setUploadError("File quá lớn (tối đa 5MB)");
+      if (file.size > 50 * 1024 * 1024) {
+        setUploadError("File quá lớn (tối đa 50MB)");
         return;
       }
-      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        setUploadError("Chỉ chấp nhận file ảnh (jpg, png, webp)");
-        return;
-      }
+      
       setSelectedFile(file);
       setUploadError("");
     }
@@ -177,13 +174,13 @@ export default function ConfirmationPage() {
                         <div>
                           <Upload className="w-8 h-8 text-[#7a6f63] mx-auto mb-2" />
                           <p className="text-sm text-[#7a6f63]">Click để chọn ảnh chuyển khoản</p>
-                          <p className="text-xs text-[#5a4f43] mt-1">Chấp nhận JPG, PNG, WebP (tối đa 5MB)</p>
+                          <p className="text-xs text-[#5a4f43] mt-1">Chấp nhận mọi định dạng ảnh (tối đa 50MB)</p>
                         </div>
                       )}
                       <input
                         id="proof-upload"
                         type="file"
-                        accept=".jpg,.jpeg,.png,.webp"
+                        accept="image/*"
                         className="hidden"
                         onChange={handleFileChange}
                       />
@@ -194,7 +191,7 @@ export default function ConfirmationPage() {
                     )}
 
                     {/* Buttons */}
-                    <div className="flex gap-3 mt-4">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-4">
                       <button
                         onClick={handleUpload}
                         disabled={!selectedFile || uploading}
@@ -261,3 +258,4 @@ export default function ConfirmationPage() {
     </div>
   );
 }
+

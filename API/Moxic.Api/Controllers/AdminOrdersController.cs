@@ -184,15 +184,15 @@ public class AdminOrdersController : ControllerBase
         if (!validTransition)
             return BadRequest(new { error = $"Không thể chuyển từ {currentStatus} sang {newStatus}" });
 
-        // Preorder check
-        if (currentStatus == OrderStatus.Pending && newStatus != OrderStatus.Cancelled)
+        // Preorder check: chỉ chặn đánh dấu hoàn thành nếu game chưa phát hành
+        if (currentStatus == OrderStatus.Installing && newStatus == OrderStatus.Completed)
         {
             var gameIds = order.Details.Select(d => d.GameId).ToList();
-            var hasBlockedPreorder = await _db.Games
+            var hasPreorderNotReleased = await _db.Games
                 .AnyAsync(g => gameIds.Contains(g.Id) && g.Status == GameStatus.Preorder && g.ReleaseDate > DateTime.UtcNow);
 
-            if (hasBlockedPreorder)
-                return BadRequest(new { error = "Đơn hàng pre-order chưa đến ngày phát hành, không thể xử lý" });
+            if (hasPreorderNotReleased)
+                return BadRequest(new { error = "Đơn hàng pre-order chưa đến ngày phát hành, không thể đánh dấu hoàn thành" });
         }
 
         order.Status = newStatus;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import type { GameListItem } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
@@ -53,7 +53,7 @@ export default function HeroCarousel({ games }: Props) {
   const game = games[active];
   const meta = heroMeta[game.id] || {
     title: game.name,
-    subtitle: `${game.genre} — ${formatPrice(game.salePrice)}`,
+    subtitle: `${game.genres?.[0]?.name || ""} — ${formatPrice(game.salePrice)}`,
   };
 
   return (

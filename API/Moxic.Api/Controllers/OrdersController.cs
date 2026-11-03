@@ -185,12 +185,13 @@ public class OrdersController : ControllerBase
 
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "File không được để trống" });
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest(new { error = "File quá lớn (tối đa 5MB)" });
+        if (file.Length > 50 * 1024 * 1024)
+            return BadRequest(new { error = "File quá lớn (tối đa 50MB)" });
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
-            return BadRequest(new { error = "Chỉ chấp nhận file ảnh (jpg, png, webp)" });
+        var allowedTypes = new[] { ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".bmp", ".gif", ".tiff", ".tif" };
+        if (!allowedTypes.Contains(ext))
+            return BadRequest(new { error = "Chỉ chấp nhận file ảnh" });
 
         var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
         var objectKey = $"proofs/{orderCode}/{Guid.NewGuid()}{ext}";

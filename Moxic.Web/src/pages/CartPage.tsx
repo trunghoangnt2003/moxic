@@ -1,11 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import Container from "../components/layout/Container";
 import { useCartStore } from "../lib/cartStore";
 import { formatPrice } from "../lib/utils";
-import { Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
+import { Trash2, ShoppingCart, ArrowLeft, Plus, Minus } from "lucide-react";
 
 export default function CartPage() {
-  const items = useCartStore((s) => s.items);
+  const items = useCartStore((s) => s.items)
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const navigate = useNavigate();
@@ -51,42 +52,68 @@ export default function CartPage() {
                 {items.map((item) => (
                   <div
                     key={item.gameId}
-                    className="flex items-center gap-4 bg-[#252019] border border-[#3d352a] p-4 hover:border-[#c9a96e]/30 transition-colors group"
+                    className="grid grid-cols-[auto_1fr] lg:flex lg:items-center gap-x-3 gap-y-2 lg:gap-4 bg-[#252019] border border-[#3d352a] p-3 lg:p-4 hover:border-[#c9a96e]/30 transition-colors"
                   >
-                    <Link to={`/games/${item.gameId}`} className="flex-shrink-0">
+                    {/* Cover - spans 2 rows on mobile */}
+                    <Link to={`/games/${item.gameId}`} className="flex-shrink-0 row-span-2 lg:row-span-1 self-start lg:self-auto">
                       <img
                         src={item.coverImageUrl}
                         alt={item.name}
-                        className="w-[184px] h-[69px] object-cover"
+                        className="w-[120px] h-[45px] lg:w-[184px] lg:h-[69px] object-cover"
                       />
                     </Link>
-                    <div className="flex-1 min-w-0">
+
+                    {/* Name + status */}
+                    <div className="min-w-0 self-center">
                       <Link
                         to={`/games/${item.gameId}`}
-                        className="text-[#ede6db] hover:text-[#c9a96e] font-semibold block truncate transition-colors text-sm"
+                        className="text-[#ede6db] hover:text-[#c9a96e] font-semibold block truncate transition-colors text-sm lg:text-base"
                       >
                         {item.name}
                       </Link>
-                      <p className="text-xs text-[#7a6f63] mt-1">
+                      <p className="text-xs text-[#7a6f63] mt-0.5">
                         {item.status === "Preorder" ? "Đặt trước" : "Game kỹ thuật số"}
                       </p>
                     </div>
-                    <div className="text-right flex items-center gap-4">
-                      <div>
+
+                    {/* Price + quantity + delete - full width row on mobile */}
+                    <div className="col-span-2 lg:col-span-1 flex items-center justify-between lg:justify-end lg:gap-4">
+                      <div className="lg:text-right">
                         {item.originalPrice > item.price && (
-                          <p className="text-xs text-[#7a6f63] line-through">
+                          <p className="text-xs text-[#7a6f63] line-through leading-tight">
                             {formatPrice(item.originalPrice)}
                           </p>
                         )}
-                        <p className="text-[#ede6db] font-bold">{formatPrice(item.price)}</p>
+                        <p className="text-[#ede6db] font-bold text-sm lg:text-base">{formatPrice(item.price)}</p>
                       </div>
-                      <button
-                        onClick={() => removeItem(item.gameId)}
-                        className="text-[#7a6f63] hover:text-red-400 transition-colors cursor-pointer p-1"
-                        aria-label={`Xóa ${item.name}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center rounded bg-[#1a1714]">
+                          <button
+                            onClick={() => updateQuantity(item.gameId, item.quantity - 1)}
+                            className="min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0 lg:w-7 lg:h-7 flex items-center justify-center text-[#b5a898] hover:text-[#ede6db] hover:bg-[#3d352a] transition-colors cursor-pointer rounded-l"
+                            aria-label="Giảm số lượng"
+                          >
+                            <Minus className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
+                          </button>
+                          <span className="text-sm text-[#ede6db] font-semibold min-w-[28px] lg:min-w-0 lg:w-6 text-center select-none">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.gameId, item.quantity + 1)}
+                            className="min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0 lg:w-7 lg:h-7 flex items-center justify-center text-[#b5a898] hover:text-[#ede6db] hover:bg-[#3d352a] transition-colors cursor-pointer rounded-r"
+                            aria-label="Tăng số lượng"
+                          >
+                            <Plus className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => removeItem(item.gameId)}
+                          className="text-[#7a6f63] hover:text-red-400 transition-colors cursor-pointer min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0 flex items-center justify-center rounded hover:bg-[#3d352a]/50 lg:hover:bg-transparent"
+                          aria-label={`Xóa ${item.name}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -152,3 +179,4 @@ export default function CartPage() {
     </div>
   );
 }
+

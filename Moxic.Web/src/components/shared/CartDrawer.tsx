@@ -2,8 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../lib/cartStore";
 import { formatPrice } from "../../lib/utils";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
-import { EmptyCart } from "./EmptyStates";
+import { ShoppingCart, Trash2, Plus, Minus, X } from "lucide-react";
 
 export default function CartDrawer() {
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
 ﻿import { useState } from "react";
 import { Gamepad2, Eye, EyeOff } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 
 export default function Login({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function Login({ onLogin }: { onLogin: (email: string) => void })
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(apiUrl("/api/auth/login"), {
+      const res = await apiFetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

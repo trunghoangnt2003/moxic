@@ -8,8 +8,8 @@ public record CreateGameDto
     public string Description { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
-    public string Genre { get; init; } = string.Empty;
-    public string? Tags { get; init; }
+    public List<Guid> GenreIds { get; init; } = new();
+    public List<Guid> TagIds { get; init; } = new();
     public GameStatus Status { get; init; } = GameStatus.Available;
     public DateTime? ReleaseDate { get; init; }
     public bool IsFeatured { get; init; }
@@ -23,8 +23,8 @@ public record UpdateGameDto
     public string Description { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
-    public string Genre { get; init; } = string.Empty;
-    public string? Tags { get; init; }
+    public List<Guid> GenreIds { get; init; } = new();
+    public List<Guid> TagIds { get; init; } = new();
     public GameStatus Status { get; init; } = GameStatus.Available;
     public DateTime? ReleaseDate { get; init; }
     public bool IsFeatured { get; init; }
@@ -54,6 +54,10 @@ public record GameRatingDto
     public double MaxScore { get; init; }
     public string Label { get; init; } = string.Empty;
 }
+
+// Genre / Tag DTOs for admin responses
+public record GenreAdminDto(Guid Id, string Name);
+public record TagAdminDto(Guid Id, string Name);
 
 public record UpdatePaymentConfigDto
 {
@@ -127,8 +131,8 @@ public record AdminGameListItem
     public string Name { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
-    public string Genre { get; init; } = string.Empty;
-    public string Tags { get; init; } = string.Empty;
+    public List<GenreAdminDto> Genres { get; init; } = new();
+    public List<TagAdminDto> Tags { get; init; } = new();
     public string Status { get; init; } = string.Empty;
     public DateTime? ReleaseDate { get; init; }
     public int ImageCount { get; init; }
@@ -144,6 +148,7 @@ public record AdminGameMediaItem
     public bool IsPrimary { get; init; }
     public int DisplayOrder { get; init; }
     public string? PresignedUrl { get; init; }
+    public string MediaType { get; init; } = "image"; // "image" | "video"
 }
 
 public record AdminGameDetailResponse
@@ -153,8 +158,8 @@ public record AdminGameDetailResponse
     public string Description { get; init; } = string.Empty;
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
-    public string Genre { get; init; } = string.Empty;
-    public string Tags { get; init; } = string.Empty;
+    public List<GenreAdminDto> Genres { get; init; } = new();
+    public List<TagAdminDto> Tags { get; init; } = new();
     public string Status { get; init; } = string.Empty;
     public DateTime? ReleaseDate { get; init; }
     public bool IsFeatured { get; init; }
@@ -220,3 +225,4 @@ public record AdminOrderListResponse
     public int Page { get; init; }
     public int PageSize { get; init; }
 }
+

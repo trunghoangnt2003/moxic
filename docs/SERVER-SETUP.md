@@ -51,6 +51,8 @@ curl -sL https://raw.githubusercontent.com/trungdocker123/moxic/main/docker-comp
 
 Nội dung cần paste (lấy từ local):
 ```yaml
+version: '3.8'
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -61,9 +63,14 @@ services:
       POSTGRES_USER: moxic
       POSTGRES_PASSWORD: moxic123
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432" # Mở port để bạn có thể kết nối từ máy cá nhân vào check DB
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moxic -d moxic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio:latest
@@ -78,6 +85,26 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://minio:9000 moxicadmin moxic123456 &&
+      mc mb myminio/moxic-games --ignore-existing &&
+      mc mb myminio/moxic-config --ignore-existing &&
+      mc anonymous set download myminio/moxic-games &&
+      mc anonymous set download myminio/moxic-config &&
+      echo 'Buckets ready with Public Read policy'
+      "
 
   moxic-api:
     image: trungdocker123/moxic-api:test
@@ -85,9 +112,14 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_URLS: "http://+:8080"
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=moxic;Username=moxic;Password=moxic123"
-      Minio__Endpoint: "34.158.54.48:9000"
+      ASPNETCORE_URLS: http://+:8080
+      # Kết nối nội bộ sang container postgres
+      ConnectionStrings__DefaultConnection: Host=moxic-postgres;Port=5432;Database=moxic;Username=moxic;Password=moxic123
+      
+      # API đẩy file vào MinIO qua mạng nội bộ Docker
+      Minio__Endpoint: moxic-minio:9000 
+      
+      # Trình duyệt người dùng lấy ảnh từ ngoài Internet qua IP Public
       Minio__PublicEndpoint: "34.158.54.48:9000"
       Minio__AccessKey: moxicadmin
       Minio__SecretKey: moxic123456
@@ -95,9 +127,16 @@ services:
       Minio__GamesBucket: moxic-games
       Minio__ConfigBucket: moxic-config
       Cors__Origins: "http://34.158.54.48:3001,http://34.158.54.48:3002"
+      Smtp__Host: smtp.gmail.com
+      Smtp__Port: 587
+      Smtp__Username: "moxmoz29@gmail.com"
+      Smtp__Password: "lecn pmyk zome stdz"
       Smtp__AdminEmail: "trungnt260303@gmail.com"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     ports:
       - "8080:8080"
 
@@ -105,6 +144,13 @@ services:
     image: trungdocker123/moxic-web:test
     container_name: moxic-web
     restart: unless-stopped
+    # 🟢 Ép buộc Docker Compose tự Build lại giao diện người dùng dựa trên Dockerfile gốc 
+    # và nạp trực tiếp đường dẫn API có tiền tố /api vào mã nguồn tĩnh Vite.
+    build:
+      context: .
+      dockerfile: Moxic.Web/Dockerfile
+      args:
+        - VITE_API_URL=http://34.158.54.48:8080/api
     ports:
       - "3001:80"
 
@@ -112,6 +158,12 @@ services:
     image: trungdocker123/moxic-admin:test
     container_name: moxic-admin
     restart: unless-stopped
+    # 🟢 Tương tự cho trang Admin quản trị
+    build:
+      context: .
+      dockerfile: Moxic.Admin/Dockerfile
+      args:
+        - VITE_API_URL=http://34.158.54.48:8080/api
     ports:
       - "3002:80"
 

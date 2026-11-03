@@ -9,6 +9,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 
 interface TagItem {
   id: string;
@@ -24,7 +25,7 @@ export default function TagList() {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const load = () => fetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTags);
+  const load = () => apiFetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTags);
   useEffect(() => { load(); }, []);
 
   const handleCreate = async () => {
@@ -32,7 +33,7 @@ export default function TagList() {
     setSaving("new");
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags"), {
+      const res = await apiFetch(apiUrl("/api/admin/tags"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim() }),
@@ -53,7 +54,7 @@ export default function TagList() {
     setSaving(id);
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags/"), {
+      const res = await apiFetch(apiUrl(`/api/admin/tags/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName.trim() }),
@@ -72,7 +73,7 @@ export default function TagList() {
     if (!window.confirm(`Delete tag ${name}?`)) return;
     setError("");
     try {
-      const res = await fetch(apiUrl("/api/admin/tags/"), { method: "DELETE" });
+      const res = await apiFetch(apiUrl(`/api/admin/tags/${id}`), { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setError(err.error || "Failed to delete");
@@ -83,15 +84,15 @@ export default function TagList() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 md:space-y-5">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-bold text-white font-mono tracking-tight">Tags</h1>
           <p className="text-xs text-steam-muted mt-0.5">{tags.length} tags</p>
         </div>
         {!adding && (
-          <button onClick={() => setAdding(true)} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue">
-            <Plus size={14} /> Add Tag
+          <button onClick={() => setAdding(true)} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue text-xs md:text-sm px-3 md:px-5 flex-shrink-0">
+            <Plus size={14} /> Add
           </button>
         )}
       </div>
@@ -113,17 +114,18 @@ export default function TagList() {
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               className="flex-1 steam-input text-sm"
             />
-            <button onClick={handleCreate} disabled={saving === "new"} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover">
+            <button onClick={handleCreate} disabled={saving === "new"} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover px-2 py-1">
               {saving === "new" ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
             </button>
-            <button onClick={() => { setAdding(false); setNewName(""); }} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border">
+            <button onClick={() => { setAdding(false); setNewName(""); }} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border px-2 py-1">
               <X size={13} />
             </button>
           </div>
         </div>
       )}
 
-      <div className="bg-steam-surface border border-steam-border rounded-sm overflow-hidden">
+      {/* Desktop table */}
+      <div className="bg-steam-surface border border-steam-border rounded-sm overflow-hidden hidden md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-steam-border bg-steam-bg/30">
@@ -166,6 +168,43 @@ export default function TagList() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="block md:hidden space-y-2">
+        {tags.map((t) => (
+          <div key={t.id} className="bg-steam-surface border border-steam-border rounded-sm px-3 py-3">
+            {editingId === t.id ? (
+              <div className="flex items-center gap-2">
+                <input autoFocus value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleUpdate(t.id)} className="steam-input text-sm flex-1" />
+                <button onClick={() => handleUpdate(t.id)} disabled={saving === t.id} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover px-2 py-1">
+                  {saving === t.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                </button>
+                <button onClick={() => { setEditingId(null); }} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border px-2 py-1">
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-steam-text font-medium">{t.name}</span>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => { setEditingId(t.id); setEditName(t.name); }} className="p-1.5 rounded text-steam-muted hover:text-steam-blue hover:bg-steam-blue/10 transition-colors" title="Edit">
+                    <Edit3 size={14} />
+                  </button>
+                  <button onClick={() => handleDelete(t.id, t.name)} className="p-1.5 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors" title="Delete">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        {tags.length === 0 && (
+          <div className="py-12 text-center text-steam-muted">
+            <Tag size={24} className="mx-auto mb-2 text-steam-border" />
+            <p className="text-sm">No tags yet</p>
+          </div>
+        )}
       </div>
     </div>
   );

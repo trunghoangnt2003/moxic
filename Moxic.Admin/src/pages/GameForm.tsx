@@ -6,16 +6,15 @@ import {
   Upload,
   Trash2,
   Star,
-  Image,
   Loader2,
   Plus,
   Check,
   Monitor,
   AlertCircle,
   Clock,
-  X,
   ChevronDown,
 } from "lucide-react";
+import { apiFetch, apiUrl } from "../lib/api";
 
 interface MediaItem {
   id: string;
@@ -23,6 +22,7 @@ interface MediaItem {
   isPrimary: boolean;
   displayOrder: number;
   presignedUrl?: string;
+  mediaType: string;
 }
 
 interface SysReq {
@@ -152,13 +152,13 @@ export default function GameForm() {
   const [tagOptions, setTagOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
-    fetch(apiUrl("/api/admin/genres")).then(r => r.json()).then(setGenreOptions);
-    fetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTagOptions);
+    apiFetch(apiUrl("/api/admin/genres")).then(r => r.json()).then(setGenreOptions);
+    apiFetch(apiUrl("/api/admin/tags")).then(r => r.json()).then(setTagOptions);
   }, []);
 
   useEffect(() => {
     if (id) {
-      fetch(apiUrl(`/api/admin/games/${id}`))
+      apiFetch(apiUrl(`/api/admin/games/${id}`))
         .then((r) => r.json())
         .then((g) => {
           setName(g.name);
@@ -194,7 +194,7 @@ export default function GameForm() {
   const uploadToGame = async (targetId: string, qf: QueuedFile) => {
     const formData = new FormData();
     formData.append("file", qf.file);
-    const res = await fetch(apiUrl(`/api/admin/games/${targetId}/media`), {
+    const res = await apiFetch(apiUrl(`/api/admin/games/${targetId}/media`), {
       method: "POST", body: formData,
     });
     if (!res.ok) throw new Error((await res.text()) || "Upload failed");
@@ -207,13 +207,13 @@ export default function GameForm() {
     const body = buildBody();
     try {
       if (gameId) {
-        await fetch(apiUrl(`/api/admin/games/${gameId}`), {
+        await apiFetch(apiUrl(`/api/admin/games/${gameId}`), {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         navigate("/games");
       } else {
-        const res = await fetch(apiUrl("/api/admin/games"), {
+        const res = await apiFetch(apiUrl("/api/admin/games"), {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
@@ -226,7 +226,7 @@ export default function GameForm() {
         const newId = data.id;
         setGameId(newId);
         setCreated(true);
-        window.history.replaceState(null, "", /games//edit);
+        window.history.replaceState(null, "", `/games/${newId}/edit`);
 
         for (const qf of queuedFiles) {
           try {
@@ -273,13 +273,13 @@ export default function GameForm() {
 
   const handleDeleteMedia = async (mediaId: string) => {
     if (!gameId) return;
-    await fetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}`), { method: "DELETE" });
+    await apiFetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}`), { method: "DELETE" });
     setMedia((prev) => prev.filter((m) => m.id !== mediaId));
   };
 
   const handleSetPrimary = async (mediaId: string) => {
     if (!gameId) return;
-    await fetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}/primary`), { method: "PUT" });
+    await apiFetch(apiUrl(`/api/admin/games/${gameId}/media/${mediaId}/primary`), { method: "PUT" });
     setMedia((prev) => prev.map((m) => ({ ...m, isPrimary: m.id === mediaId })));
   };
 
@@ -291,27 +291,27 @@ export default function GameForm() {
     setter((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
+    <div className="space-y-4 md:space-y-5">
+      <div className="flex items-center gap-2 md:gap-3">
         <button onClick={() => navigate("/games")} className="p-1.5 rounded text-steam-muted hover:text-steam-text hover:bg-steam-surface-2 transition-colors">
           <ArrowLeft size={18} />
         </button>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-bold text-white font-mono tracking-tight">{gameId ? "Edit Game" : "New Game"}</h1>
-          <p className="text-xs text-steam-muted mt-0.5">{gameId ? "Update details and manage media" : "Add a new game to the catalog"}</p>
+          <p className="text-xs text-steam-muted mt-0.5 truncate">{gameId ? "Update details and manage media" : "Add a new game to the catalog"}</p>
         </div>
       </div>
 
       {created && (
-        <div className="flex items-center gap-2 bg-steam-green/10 border border-steam-green/30 rounded px-4 py-2.5 text-sm text-steam-green">
-          <Check size={16} /> Game created! Now add screenshots and cover art below.
+        <div className="flex items-center gap-2 bg-steam-green/10 border border-steam-green/30 rounded px-3 md:px-4 py-2.5 text-sm text-steam-green">
+          <Check size={16} className="flex-shrink-0" /> Game created! Now add screenshots and cover art below.
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
+      <div className="flex flex-col lg:flex-row gap-4 md:gap-5">
+        <div className="flex-1 space-y-4 md:space-y-5 min-w-0">
           {/* Basic Info */}
-          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-4">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Basic Info</h2>
             <div>
               <label className="block text-xs text-steam-muted mb-1.5 font-medium">Game Name</label>
@@ -328,13 +328,13 @@ export default function GameForm() {
           </div>
 
           {/* Pricing & Classification */}
-          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
-            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Pricing & Classification</h2>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-4">
+            <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Pricing &amp; Classification</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label><input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
               <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label><input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="block text-xs text-steam-muted mb-1.5 font-medium">Genres</label>
                 <MultiSelect options={genreOptions} selected={genreIds} onChange={setGenreIds} placeholder="Select genres..." />
@@ -344,7 +344,7 @@ export default function GameForm() {
                 <MultiSelect options={tagOptions} selected={tagIds} onChange={setTagIds} placeholder="Select tags..." />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Status</label>
                 <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full steam-input">
                   <option value="Available">Available</option>
@@ -356,7 +356,7 @@ export default function GameForm() {
           </div>
 
           {/* System Requirements */}
-          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-4">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2"><Monitor size={14} /> System Requirements</h2>
             {(["Minimum", "Recommended"] as const).map((label) => {
               const req = label === "Minimum" ? minReq : recReq;
@@ -364,9 +364,9 @@ export default function GameForm() {
               return (
                 <div key={label}>
                   <h3 className="text-xs font-medium text-steam-text mb-2">{label}</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {([["os", "OS"], ["processor", "CPU"], ["memory", "RAM"], ["graphics", "GPU"], ["storage", "Storage"]] as const).map(([field, fieldLabel]) => (
-                      <div key={field} className={field === "storage" || field === "graphics" ? "col-span-2" : ""}>
+                      <div key={field} className={field === "storage" || field === "graphics" ? "sm:col-span-2" : ""}>
                         <label className="block text-[11px] text-steam-muted mb-1">{fieldLabel}</label>
                         <input value={req[field]} onChange={(e) => updateReq(setter, field, e.target.value)} className="w-full steam-input text-xs" />
                       </div>
@@ -378,10 +378,10 @@ export default function GameForm() {
           </div>
 
           {/* Ratings */}
-          <div className="bg-steam-surface border border-steam-border rounded-sm p-5 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-4">
+            <div className="flex items-center justify-between gap-2">
               <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest flex items-center gap-2"><Star size={14} /> Ratings</h2>
-              <button onClick={addRating} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border text-xs px-2 py-1"><Plus size={12} /> Add Rating</button>
+              <button onClick={addRating} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border text-xs px-2 py-1"><Plus size={12} /> Add</button>
             </div>
             {ratings.length === 0 && <p className="text-xs text-steam-muted/50 text-center py-4">No ratings added yet</p>}
             {ratings.map((r, i) => (
@@ -390,7 +390,7 @@ export default function GameForm() {
                   <span className="text-xs text-steam-muted font-medium">Rating #{i + 1}</span>
                   <button onClick={() => removeRating(i)} className="p-1 rounded text-steam-muted hover:text-steam-accent hover:bg-steam-accent/10 transition-colors"><Trash2 size={12} /></button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div><label className="block text-[11px] text-steam-muted mb-1">Source</label><input value={r.source} onChange={(e) => updateRating(i, "source", e.target.value)} className="w-full steam-input text-xs" /></div>
                   <div><label className="block text-[11px] text-steam-muted mb-1">Label</label><input value={r.label} onChange={(e) => updateRating(i, "label", e.target.value)} className="w-full steam-input text-xs" /></div>
                   <div><label className="block text-[11px] text-steam-muted mb-1">Score</label><input type="number" min="0" max="100" step="0.1" value={r.score} onChange={(e) => updateRating(i, "score", Number(e.target.value))} className="w-full steam-input text-xs font-mono" /></div>
@@ -401,25 +401,25 @@ export default function GameForm() {
           </div>
 
           {/* Save */}
-          <div className="flex items-center gap-3">
-            <button onClick={handleSubmit} disabled={saving} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue disabled:opacity-50 disabled:cursor-not-allowed">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button onClick={handleSubmit} disabled={saving} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover glow-blue disabled:opacity-50 disabled:cursor-not-allowed justify-center">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {gameId ? "Update Game" : "Create Game"}
             </button>
-            <button onClick={() => navigate("/games")} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border">Cancel</button>
+            <button onClick={() => navigate("/games")} className="steam-btn bg-steam-surface-3 text-steam-muted hover:text-steam-text border border-steam-border justify-center">Cancel</button>
           </div>
         </div>
 
         {/* Media */}
-        <div className="space-y-4">
-          <div className="bg-steam-surface border border-steam-border rounded-sm p-5">
+        <div className="w-full lg:w-80 xl:w-96 flex-shrink-0">
+          <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-4">Media</h2>
 
             <label className="flex flex-col items-center justify-center gap-2 bg-steam-surface-3 border-2 border-dashed border-steam-border rounded-sm p-6 cursor-pointer hover:border-steam-blue/50 hover:bg-steam-blue/5 transition-all">
               {uploading ? <Loader2 size={22} className="text-steam-blue animate-spin" /> : (
-                <><Upload size={22} className="text-steam-muted" /><span className="text-xs text-steam-muted text-center leading-relaxed">Click to upload<br /><span className="text-steam-muted/50">JPG, PNG, WebP — 5MB max</span></span></>
+                <><Upload size={22} className="text-steam-muted" /><span className="text-xs text-steam-muted text-center leading-relaxed">Tap to upload<br /><span className="text-steam-muted/50">JPG, PNG, WebP, MP4</span></span></>
               )}
-              <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleUpload} className="hidden" disabled={uploading} />
+              <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov" onChange={handleUpload} className="hidden" disabled={uploading} />
             </label>
 
             {!gameId && queuedFiles.length === 0 && media.length === 0 && (
@@ -436,7 +436,7 @@ export default function GameForm() {
             {queuedFiles.map((qf, i) => (
               <div key={i} className="mt-3 bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden">
                 <div className="aspect-video bg-steam-bg">
-                  <img src={qf.previewUrl} className="w-full h-full object-cover" alt="" />
+                  {qf.file.type.startsWith("video/") ? <video src={qf.previewUrl} className="w-full h-full object-cover" controls /> : <img src={qf.previewUrl} className="w-full h-full object-cover" alt="" />}
                 </div>
                 <div className="flex items-center justify-between px-3 py-2">
                   <span className="inline-flex items-center gap-1 text-xs text-steam-muted"><Clock size={11} /> Pending</span>
@@ -448,7 +448,7 @@ export default function GameForm() {
             <div className="mt-3 space-y-3">
               {media.map((m) => (
                 <div key={m.id} className="bg-steam-surface-3 border border-steam-border rounded-sm overflow-hidden card-hover">
-                  {m.presignedUrl && <div className="aspect-video bg-steam-bg"><img src={m.presignedUrl} className="w-full h-full object-cover" alt="" /></div>}
+                  {m.presignedUrl && <div className="aspect-video bg-steam-bg">{m.mediaType === "video" ? <video src={m.presignedUrl} className="w-full h-full object-cover" controls /> : <img src={m.presignedUrl} className="w-full h-full object-cover" alt="" />}</div>}
                   <div className="flex items-center justify-between px-3 py-2">
                     <button onClick={() => handleSetPrimary(m.id)} className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors">
                       <Star size={11} fill={m.isPrimary ? "currentColor" : "none"} />{m.isPrimary ? "Primary" : "Set"}

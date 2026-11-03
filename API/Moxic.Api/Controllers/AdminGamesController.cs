@@ -36,6 +36,8 @@ public class AdminGamesController : ControllerBase
         var games = await query
             .OrderByDescending(g => g.CreatedAt)
             .Include(g => g.Media)
+            .Include(g => g.Genres)
+            .Include(g => g.Tags)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -54,7 +56,9 @@ public class AdminGamesController : ControllerBase
             items.Add(new AdminGameListItem
             {
                 Id = g.Id, Name = g.Name, OriginalPrice = g.OriginalPrice,
-                SalePrice = g.SalePrice, Genre = g.Genre, Tags = g.Tags,
+                SalePrice = g.SalePrice,
+                Genres = g.Genres.Select(ge => new GenreAdminDto(ge.Id, ge.Name)).ToList(),
+                Tags = g.Tags.Select(t => new TagAdminDto(t.Id, t.Name)).ToList(),
                 Status = g.Status.ToString(), ReleaseDate = g.ReleaseDate,
                 ImageCount = g.Media.Count, PrimaryImage = primaryImage,
                 CreatedAt = g.CreatedAt, UpdatedAt = g.UpdatedAt
@@ -75,14 +79,26 @@ public class AdminGamesController : ControllerBase
             Description = dto.Description,
             OriginalPrice = dto.OriginalPrice,
             SalePrice = dto.SalePrice,
-            Genre = dto.Genre,
-            Tags = dto.Tags ?? string.Empty,
             Status = dto.Status,
-            ReleaseDate = dto.ReleaseDate,
+            ReleaseDate = dto.ReleaseDate.HasValue
+                ? DateTime.SpecifyKind(dto.ReleaseDate.Value, DateTimeKind.Utc)
+                : null,
             IsFeatured = dto.IsFeatured,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+
+        if (dto.GenreIds.Count > 0)
+        {
+            var genres = await _db.Genres.Where(g => dto.GenreIds.Contains(g.Id)).ToListAsync();
+            game.Genres = genres;
+        }
+
+        if (dto.TagIds.Count > 0)
+        {
+            var tags = await _db.Tags.Where(t => dto.TagIds.Contains(t.Id)).ToListAsync();
+            game.Tags = tags;
+        }
 
         if (dto.SystemRequirements != null)
         {
@@ -130,6 +146,8 @@ public class AdminGamesController : ControllerBase
     {
         var game = await _db.Games
             .Include(g => g.Media.OrderBy(m => m.DisplayOrder))
+            .Include(g => g.Genres)
+            .Include(g => g.Tags)
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (game == null) return NotFound();
@@ -141,13 +159,18 @@ public class AdminGamesController : ControllerBase
         foreach (var media in game.Media)
         {
             var presignedUrl = await _minio.GetPresignedUrlAsync(gamesBucket, media.ObjectKey, expiry);
+            var mediaType = media.ObjectKey.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) 
+                || media.ObjectKey.EndsWith(".webm", StringComparison.OrdinalIgnoreCase) 
+                || media.ObjectKey.EndsWith(".mov", StringComparison.OrdinalIgnoreCase) 
+                ? "video" : "image";
             mediaItems.Add(new AdminGameMediaItem
             {
                 Id = media.Id,
                 ObjectKey = media.ObjectKey,
                 IsPrimary = media.IsPrimary,
                 DisplayOrder = media.DisplayOrder,
-                PresignedUrl = presignedUrl
+                PresignedUrl = presignedUrl,
+                MediaType = mediaType
             });
         }
 
@@ -158,8 +181,8 @@ public class AdminGamesController : ControllerBase
             Description = game.Description,
             OriginalPrice = game.OriginalPrice,
             SalePrice = game.SalePrice,
-            Genre = game.Genre,
-            Tags = game.Tags,
+            Genres = game.Genres.Select(ge => new GenreAdminDto(ge.Id, ge.Name)).ToList(),
+            Tags = game.Tags.Select(t => new TagAdminDto(t.Id, t.Name)).ToList(),
             Status = game.Status.ToString(),
             ReleaseDate = game.ReleaseDate,
             IsFeatured = game.IsFeatured,
@@ -200,19 +223,38 @@ public class AdminGamesController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateGame(Guid id, [FromBody] UpdateGameDto dto)
     {
-        var game = await _db.Games.FindAsync(id);
+        var game = await _db.Games
+            .Include(g => g.Genres)
+            .Include(g => g.Tags)
+            .FirstOrDefaultAsync(g => g.Id == id);
         if (game == null) return NotFound();
 
         game.Name = dto.Name;
         game.Description = dto.Description;
         game.OriginalPrice = dto.OriginalPrice;
         game.SalePrice = dto.SalePrice;
-        game.Genre = dto.Genre;
-        game.Tags = dto.Tags ?? string.Empty;
         game.Status = dto.Status;
-        game.ReleaseDate = dto.ReleaseDate;
+        game.ReleaseDate = dto.ReleaseDate.HasValue
+            ? DateTime.SpecifyKind(dto.ReleaseDate.Value, DateTimeKind.Utc)
+            : null;
         game.IsFeatured = dto.IsFeatured;
         game.UpdatedAt = DateTime.UtcNow;
+
+        // Update genres
+        game.Genres.Clear();
+        if (dto.GenreIds.Count > 0)
+        {
+            var genres = await _db.Genres.Where(g => dto.GenreIds.Contains(g.Id)).ToListAsync();
+            foreach (var genre in genres) game.Genres.Add(genre);
+        }
+
+        // Update tags
+        game.Tags.Clear();
+        if (dto.TagIds.Count > 0)
+        {
+            var tags = await _db.Tags.Where(t => dto.TagIds.Contains(t.Id)).ToListAsync();
+            foreach (var tag in tags) game.Tags.Add(tag);
+        }
 
         if (dto.SystemRequirements != null)
         {
@@ -270,16 +312,18 @@ public class AdminGamesController : ControllerBase
 
     // POST /api/admin/games/{id}/media
     [HttpPost("{id:guid}/media")]
+    [RequestSizeLimit(500 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 500 * 1024 * 1024)]
     public async Task<IActionResult> UploadMedia(Guid id, IFormFile file)
     {
         var game = await _db.Games.FindAsync(id);
         if (game == null) return NotFound();
         if (file.Length == 0) return BadRequest("File is empty");
-        if (file.Length > 5 * 1024 * 1024) return BadRequest("File too large (max 5MB)");
+        if (file.Length > 500 * 1024 * 1024) return BadRequest("File too large (max 500MB)");
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
-            return BadRequest("Invalid file type (jpg, png, webp only)");
+        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" && ext != ".mp4" && ext != ".webm" && ext != ".mov")
+            return BadRequest("Invalid file type (jpg, png, webp, mp4, webm, mov only)");
 
         var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
         var objectKey = $"games/{id}/{Guid.NewGuid()}{ext}";
@@ -336,3 +380,6 @@ public class AdminGamesController : ControllerBase
         return NoContent();
     }
 }
+
+
+

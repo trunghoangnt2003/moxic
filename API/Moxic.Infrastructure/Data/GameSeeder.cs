@@ -1,4 +1,4 @@
-using Moxic.Core.Entities;
+﻿using Moxic.Core.Entities;
 using Moxic.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +13,13 @@ public static class GameSeeder
         var t1Min = new SystemRequirement { Os = "Windows 10 64-bit", Processor = "Intel Core i5-8400 / AMD Ryzen 3 3300X", Memory = "12 GB RAM", Graphics = "NVIDIA GeForce GTX 1060 6GB / AMD Radeon RX 580", Storage = "100 GB SSD" };
         var t1Rec = new SystemRequirement { Os = "Windows 11 64-bit", Processor = "Intel Core i7-8700K / AMD Ryzen 5 3600X", Memory = "16 GB RAM", Graphics = "NVIDIA GeForce RTX 2070 / AMD Radeon RX 6700 XT", Storage = "100 GB SSD" };
 
+        // Load seeded genres/tags
+        var actionRpg = await context.Genres.FirstAsync(g => g.Name == "Action RPG");
+        var actionAdventure = await context.Genres.FirstAsync(g => g.Name == "Action Adventure");
+        var hot = await context.Tags.FirstAsync(t => t.Name == "Hot");
+        var bestseller = await context.Tags.FirstAsync(t => t.Name == "Bestseller");
+        var preorder = await context.Tags.FirstAsync(t => t.Name == "Preorder");
+
         var games = new List<Game>
         {
             new Game
@@ -21,8 +28,8 @@ public static class GameSeeder
                 Name = "ELDEN RING",
                 OriginalPrice = 1499000,
                 SalePrice = 749000,
-                Genre = "Action RPG",
-                Tags = "hot,bestseller",
+                Genres = new List<Genre> { actionRpg },
+                Tags = new List<Tag> { hot, bestseller },
                 Status = GameStatus.Available,
                 IsFeatured = false,
                 Description = "ELDEN RING là game hành động nhập vai phiêu lưu trong thế giới Vòng Địa Ngục rộng lớn...",
@@ -43,10 +50,10 @@ public static class GameSeeder
                 Name = "Grand Theft Auto VI",
                 OriginalPrice = 1799000,
                 SalePrice = 1799000,
-                Genre = "Action Adventure",
-                Tags = "hot,preorder",
+                Genres = new List<Genre> { actionAdventure },
+                Tags = new List<Tag> { hot, preorder },
                 Status = GameStatus.Preorder,
-                IsFeatured = true, // hero banner
+                IsFeatured = true,
                 Description = "GTA VI đưa người chơi trở lại Vice City...",
                 SystemRequirements = new SystemRequirementData { Minimum = t1Min, Recommended = t1Rec },
                 Ratings = new List<GameRating>(),

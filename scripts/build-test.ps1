@@ -20,7 +20,7 @@ Write-Host "1. Building moxic-api..."
 docker build -f "$ProjectRoot\Dockerfile.api" -t ${DockerUser}/moxic-api:test "$ProjectRoot"
 
 Write-Host "2. Building moxic-web (with VITE_API_URL)..."
-docker build -f "$ProjectRoot\Dockerfile.web" --build-arg VITE_API_URL=$ApiUrl -t ${DockerUser}/moxic-web:test "$ProjectRoot"
+docker build -f "$ProjectRoot\Dockerfile.web" --build-arg VITE_API_URL=$ApiUrl/api -t ${DockerUser}/moxic-web:test "$ProjectRoot"
 
 Write-Host "3. Building moxic-admin (with VITE_API_URL)..."
 docker build -f "$ProjectRoot\Dockerfile.admin" --build-arg VITE_API_URL=$ApiUrl -t ${DockerUser}/moxic-admin:test "$ProjectRoot"

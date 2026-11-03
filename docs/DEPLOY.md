@@ -16,7 +16,8 @@ ssh root@34.158.54.48
 apt install -y certbot
 
 # Yêu cầu cấp chứng chỉ SSL cho tất cả các subdomain cùng lúc
-certbot certonly --standalone -d moxic.co -d www.moxic.co -d api.moxic.co -d admin.moxic.co --non-interactive --agree-tos -m trungnt260303@gmail.com
+certbot certonly --standalone -d moxic.co -d www.moxic.co -d api.moxic.co -d admin.moxic.co --non-interactive --agree-tos -m Moxmoz29@gmail.com
+
 
 # Sao chép chứng chỉ SSL vừa khởi tạo vào Docker volume để Nginx có thể đọc được
 docker run --rm -v moxic_nginx_certs:/certs -v /etc/letsencrypt:/letsencrypt alpine sh -c "cp /letsencrypt/live/moxic.co/fullchain.pem /certs/ && cp /letsencrypt/live/moxic.co/privkey.pem /certs/"
