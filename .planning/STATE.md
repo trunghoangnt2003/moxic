@@ -56,5 +56,6 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 261103-qmv | Lucky spin (CS2-style case opening) + floating contact buttons | 2026-11-03 | 876952a | [261103-qmv-lucky-spin-case-opening-and-floating-con](./quick/261103-qmv-lucky-spin-case-opening-and-floating-con/) |
+| 261103-sa8 | MOXIC loader + customer accounts + order history | 2026-11-03 | 4d7c2d9 | [261103-sa8-customer-accounts-order-history-and-moxi](./quick/261103-sa8-customer-accounts-order-history-and-moxi/) |
 
-Last activity: 2026-11-03 - Completed quick task 261103-qmv: Lucky spin + floating contact buttons
+Last activity: 2026-11-03 - Completed quick task 261103-sa8: customer accounts + order history
