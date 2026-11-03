@@ -12,6 +12,8 @@ import {
   BookMarked,
   Menu,
   X,
+  Gift,
+  MessageCircle,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -23,6 +25,8 @@ import Login from "./pages/Login";
 import "./App.css";
 
 const OrderList = lazy(() => import("./pages/OrderList"));
+const LuckySpin = lazy(() => import("./pages/LuckySpin"));
+const ContactSettings = lazy(() => import("./pages/ContactSettings"));
 
 const navItems = [
   { to: "/games", label: "Games", icon: Gamepad2 },
@@ -30,6 +34,8 @@ const navItems = [
   { to: "/tags", label: "Tags", icon: Tags },
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
+  { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
+  { to: "/contact-settings", label: "Contact", icon: MessageCircle },
 ];
 
 function App() {
@@ -229,6 +235,8 @@ function App() {
                   <Route path="/tags" element={<TagList />} />
                   <Route path="/orders" element={<OrderList />} />
                   <Route path="/payment-config" element={<PaymentConfig />} />
+                  <Route path="/lucky-spin" element={<LuckySpin />} />
+                  <Route path="/contact-settings" element={<ContactSettings />} />
                 </Routes>
               </Suspense>
             </div>
