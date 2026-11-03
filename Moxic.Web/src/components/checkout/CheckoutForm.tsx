@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AlertCircle, UserCheck } from "lucide-react";
 import { createOrder } from "../../lib/api";
 import { useCartStore } from "../../lib/cartStore";
+import { useMe } from "../../hooks/useAccount";
+import { MoxicLoader } from "../shared/MoxicLoader";
 import PrivacyNotice from "./PrivacyNotice";
 import type { OrderCreateRequest } from "../../types/game";
 
@@ -19,6 +22,19 @@ export default function CheckoutForm({ onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Logged-in customers: pre-fill the Xbox email with the account email once.
+  // (state adjustment during render — runs once when `me` first arrives)
+  const { data: me } = useMe();
+  const [prefillChecked, setPrefillChecked] = useState(false);
+  const [emailPrefilled, setEmailPrefilled] = useState(false);
+  if (me && !prefillChecked) {
+    setPrefillChecked(true);
+    if (!email.trim()) {
+      setEmail(me.email);
+      setEmailPrefilled(true);
+    }
+  }
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -63,6 +79,28 @@ export default function CheckoutForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Account status */}
+      {me ? (
+        <div className="flex items-start gap-2 bg-[#c9a96e]/10 border border-[#c9a96e]/30 px-4 py-3">
+          <UserCheck className="w-4 h-4 text-[#c9a96e] flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-[#ede6db]">
+            Đang đăng nhập với <strong>{me.displayName}</strong> <span className="text-[#b5a898] break-all">({me.email})</span>.
+            Đơn hàng sẽ được lưu vào{" "}
+            <Link to="/account/orders" className="text-[#c9a96e] hover:underline">
+              Lịch sử mua hàng
+            </Link>
+            .
+          </p>
+        </div>
+      ) : (
+        <p className="text-xs text-[#7a6f63]">
+          Đã có tài khoản?{" "}
+          <Link to="/login?redirect=/checkout" className="text-[#c9a96e] hover:underline font-semibold">
+            Đăng nhập để theo dõi đơn hàng
+          </Link>
+        </p>
+      )}
+
       {/* Phone */}
       <div>
         <label htmlFor="checkout-phone" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
@@ -80,7 +118,11 @@ export default function CheckoutForm({ onSuccess }: Props) {
         </label>
         <input id="checkout-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
           placeholder="example@outlook.com" className={inputClass} />
-        {fieldErrors.email && <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>}
+        {fieldErrors.email ? (
+          <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
+        ) : emailPrefilled && me && email === me.email ? (
+          <p className="text-[#7a6f63] text-xs mt-1">Đã điền sẵn email tài khoản — hãy đổi nếu email Xbox của bạn khác.</p>
+        ) : null}
       </div>
 
       {/* Xbox Password */}
@@ -120,7 +162,7 @@ export default function CheckoutForm({ onSuccess }: Props) {
         className="w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-4 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {loading ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Đang xử lý...</>
+          <><MoxicLoader size="sm" /> Đang xử lý...</>
         ) : (
           "Đặt hàng"
         )}

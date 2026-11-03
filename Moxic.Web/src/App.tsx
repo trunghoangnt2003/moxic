@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import { PageLoader } from "./components/shared/MoxicLoader";
 import GlobalLoader from "./components/shared/GlobalLoader";
+import RequireCustomer from "./components/account/RequireCustomer";
 import { NotFoundPage } from "./components/shared/EmptyStates";
 import { Toaster } from "react-hot-toast";
 
@@ -15,6 +16,12 @@ const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const OrderHistoryPage = lazy(() => import("./pages/OrderHistoryPage"));
+const OrderHistoryDetailPage = lazy(() => import("./pages/OrderHistoryDetailPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
@@ -40,6 +47,14 @@ export default function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
               <Route path="/lucky-spin" element={<LuckySpinPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route element={<RequireCustomer />}>
+                <Route path="/account/orders" element={<OrderHistoryPage />} />
+                <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
+              </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>

@@ -16,6 +16,7 @@ const ORBIT_CIRCUMFERENCE = 2 * Math.PI * ORBIT_RADIUS;
 const ORBIT_PATH = `M 50 50 m -${ORBIT_RADIUS} 0 a ${ORBIT_RADIUS} ${ORBIT_RADIUS} 0 1 1 ${ORBIT_RADIUS * 2} 0 a ${ORBIT_RADIUS} ${ORBIT_RADIUS} 0 1 1 -${ORBIT_RADIUS * 2} 0`;
 
 // Five dots (one per M-O-X-I-C letter), 72° apart, for the tiny button variant.
+// They use currentColor so they stay legible on gold (dark text) and purple (white text) buttons.
 const DOTS = Array.from({ length: 5 }, (_, i) => {
   const angle = (i * 72 * Math.PI) / 180;
   return { cx: 10 + 7 * Math.sin(angle), cy: 10 - 7 * Math.cos(angle), opacity: 1 - i * 0.16 };
@@ -41,7 +42,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
         className={`inline-block shrink-0 animate-moxic-orbit motion-reduce:animate-none ${className}`}
       >
         {DOTS.map((d, i) => (
-          <circle key={i} cx={d.cx} cy={d.cy} r={2} fill="#e5d3b3" opacity={d.opacity} />
+          <circle key={i} cx={d.cx} cy={d.cy} r={2} fill="currentColor" opacity={d.opacity} />
         ))}
       </svg>
     );

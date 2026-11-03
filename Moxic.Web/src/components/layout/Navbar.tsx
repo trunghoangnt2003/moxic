@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Search,
   Menu,
@@ -8,12 +9,58 @@ import {
   Download,
   ChevronDown,
   ShoppingCart,
+  User,
+  Package,
+  LogOut,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
+import { useLogout, useMe } from "../../hooks/useAccount";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const cartCount = useCartStore((s) => s.items.length);
+  const { data: me, isLoading: meLoading } = useMe();
+  const logout = useLogout();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  // Close menus on route change (state adjustment during render, no effect needed).
+  const [lastPath, setLastPath] = useState(location.pathname);
+  if (lastPath !== location.pathname) {
+    setLastPath(location.pathname);
+    setAccountOpen(false);
+    setMenuOpen(false);
+  }
+
+  // Close the account dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAccountOpen(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [accountOpen]);
+
+  const handleLogout = () => {
+    setAccountOpen(false);
+    setMenuOpen(false);
+    logout.mutate(undefined, {
+      onSettled: () => {
+        toast.success("Đã đăng xuất");
+        navigate("/");
+      },
+    });
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-bg-surface/95 backdrop-blur-sm border-b border-border">
@@ -82,9 +129,57 @@ export default function Navbar() {
             </button>
 
             {/* Auth */}
-            <button className="text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer hidden sm:block">
-              Đăng nhập
-            </button>
+            {meLoading ? (
+              <span className="hidden sm:block w-20 h-5" aria-hidden="true" />
+            ) : me ? (
+              <div ref={accountRef} className="relative hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((o) => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={accountOpen}
+                  className="flex items-center gap-1.5 text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="max-w-[120px] truncate">{me.displayName}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${accountOpen ? "rotate-180" : ""}`} />
+                </button>
+                {accountOpen && (
+                  <div role="menu" className="absolute right-0 mt-2 w-60 bg-bg-surface border border-border shadow-xl z-50">
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="text-sm font-semibold text-text-primary truncate">{me.displayName}</p>
+                      <p className="text-xs text-text-muted truncate">{me.email}</p>
+                    </div>
+                    <Link
+                      to="/account/orders"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <Package className="w-4 h-4" />
+                      Lịch sử mua hàng
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleLogout}
+                      disabled={logout.isPending}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer hidden sm:block"
+              >
+                Đăng nhập
+              </Link>
+            )}
 
             {/* Download */}
             <button className="bg-accent hover:bg-accent-hover text-white px-5 py-2  text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer hidden sm:flex">
@@ -128,6 +223,50 @@ export default function Navbar() {
             <a href="#" className="block text-text-secondary hover:text-text-primary py-2 text-sm">
               Phân phối
             </a>
+            <div className="pt-2 border-t border-border space-y-1">
+              {me ? (
+                <>
+                  <p className="py-1 text-sm text-text-primary truncate">
+                    <User className="inline w-4 h-4 mr-1.5 -mt-0.5" />
+                    {me.displayName} <span className="text-text-muted text-xs">({me.email})</span>
+                  </p>
+                  <Link
+                    to="/account/orders"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <Package className="w-4 h-4" />
+                    Lịch sử mua hàng
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={logout.isPending}
+                    className="w-full flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary cursor-pointer disabled:opacity-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Đăng xuất
+                  </button>
+                </>
+              ) : !meLoading ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-2 text-sm text-text-secondary hover:text-text-primary font-semibold"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    Đăng ký
+                  </Link>
+                </>
+              ) : null}
+            </div>
             <div className="flex items-center gap-2 pt-2 border-t border-border">
               <Globe className="w-4 h-4 text-text-secondary" />
               <span className="text-text-secondary text-sm">Tiếng Việt</span>
