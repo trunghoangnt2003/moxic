@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Users,
   Music,
+  TicketPercent,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -31,6 +32,7 @@ const LuckySpin = lazy(() => import("./pages/LuckySpin"));
 const ContactSettings = lazy(() => import("./pages/ContactSettings"));
 const Customers = lazy(() => import("./pages/Customers"));
 const SpinMusic = lazy(() => import("./pages/SpinMusic"));
+const Coupons = lazy(() => import("./pages/Coupons"));
 
 const navItems = [
   { to: "/games", label: "Games", icon: Gamepad2 },
@@ -39,6 +41,7 @@ const navItems = [
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
+  { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
   { to: "/customers", label: "Khách hàng", icon: Users },
   { to: "/spin-music", label: "Kho nhạc", icon: Music },
   { to: "/contact-settings", label: "Contact", icon: MessageCircle },
@@ -245,6 +248,7 @@ function App() {
                   <Route path="/contact-settings" element={<ContactSettings />} />
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/spin-music" element={<SpinMusic />} />
+                  <Route path="/coupons" element={<Coupons />} />
                 </Routes>
               </Suspense>
             </div>

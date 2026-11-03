@@ -108,7 +108,12 @@ public record OrderConfirmationResponse
 {
     public string OrderCode { get; init; } = string.Empty;
     public List<OrderConfirmationItem> Items { get; init; } = new();
+    /// <summary>Amount to transfer (already discounted).</summary>
     public decimal TotalAmount { get; init; }
+    /// <summary>TotalAmount + DiscountAmount (sum of line prices).</summary>
+    public decimal SubtotalAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? CouponCode { get; init; }
     public string Status { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public string? PaymentProofUrl { get; init; }
@@ -185,6 +190,8 @@ public record AdminOrderListItem
     public string OrderCode { get; init; } = string.Empty;
     public string CustomerPhone { get; init; } = string.Empty;
     public decimal TotalAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? CouponCode { get; init; }
     public string Status { get; init; } = string.Empty;
     public string PaymentMethod { get; init; } = string.Empty;
     public int ItemCount { get; init; }
@@ -208,6 +215,9 @@ public record AdminOrderDetailResponse
     public string CustomerXboxPassword { get; init; } = string.Empty;
     public string? CustomerZalo { get; init; }
     public decimal TotalAmount { get; init; }
+    public decimal SubtotalAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? CouponCode { get; init; }
     public string Status { get; init; } = string.Empty;
     public string PaymentMethod { get; init; } = string.Empty;
     public string? Notes { get; init; }

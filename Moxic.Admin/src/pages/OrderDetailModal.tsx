@@ -23,6 +23,9 @@ interface OrderDetail {
   customerXboxPassword: string;
   customerZalo?: string;
   totalAmount: number;
+  subtotalAmount?: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   status: string;
   paymentMethod: string;
   notes?: string;
@@ -177,6 +180,22 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
                     </div>
                   ))}
                 </div>
+                {(order.discountAmount ?? 0) > 0 && (
+                  <div className="pt-2 mt-2 border-t border-steam-border space-y-1 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-steam-muted">Subtotal</span>
+                      <span className="text-steam-text font-mono">
+                        {formatPrice(order.subtotalAmount ?? order.totalAmount + (order.discountAmount ?? 0))}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-steam-muted truncate">
+                        Discount{order.couponCode ? <> (<span className="font-mono">{order.couponCode}</span>)</> : null}
+                      </span>
+                      <span className="text-steam-green font-mono flex-shrink-0">−{formatPrice(order.discountAmount ?? 0)}</span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center justify-between pt-2 mt-2 border-t border-steam-border">
                   <span className="text-sm font-semibold text-white">Total</span>
                   <span className="text-base font-bold text-steam-gold font-mono">{formatPrice(order.totalAmount)}</span>

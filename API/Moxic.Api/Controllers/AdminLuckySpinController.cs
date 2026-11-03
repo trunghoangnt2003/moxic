@@ -114,6 +114,11 @@ public class AdminLuckySpinController : ControllerBase
         if (name.Length > 100) return "Tên giải thưởng tối đa 100 ký tự.";
 
         Guid? gameId = null;
+        // Discount coupon terms (null = legacy/manual Discount prize, or a non-Discount prize)
+        CouponDiscountType? dType = null;
+        decimal? dValue = null, dMax = null, dMin = null;
+        Guid? dGameId = null;
+        int? dValidDays = null;
         switch (req.Type)
         {
             case SpinPrizeType.Game:
@@ -128,6 +133,23 @@ public class AdminLuckySpinController : ControllerBase
                 break;
             case SpinPrizeType.Discount:
                 if (name.Length == 0) return "Vui lòng nhập tên giải giảm giá (ví dụ: \"Giảm 10%\").";
+                if (req.DiscountType != null)
+                {
+                    if (!Enum.IsDefined(req.DiscountType.Value)) return "Loại giảm giá không hợp lệ.";
+                    var (terms, termsError) = CouponRules.NormalizeTerms(
+                        req.DiscountType.Value, req.DiscountValue ?? 0m, req.DiscountMaxAmount, req.DiscountMinOrderAmount, req.DiscountGameId);
+                    if (terms == null) return termsError;
+                    var validDays = req.DiscountValidDays ?? CouponRules.DefaultValidDays;
+                    if (validDays < 1 || validDays > 365) return "Hiệu lực mã phải từ 1 đến 365 ngày.";
+                    if (terms.GameId != null && !await _db.Games.AsNoTracking().AnyAsync(g => g.Id == terms.GameId.Value))
+                        return "Game không tồn tại.";
+                    dType = terms.Type;
+                    dValue = terms.Value;
+                    dMax = terms.MaxDiscountAmount;
+                    dMin = terms.MinOrderAmount;
+                    dGameId = terms.GameId;
+                    dValidDays = validDays;
+                }
                 break;
             case SpinPrizeType.Luck:
                 if (name.Length == 0) name = DefaultLuckName;
@@ -154,6 +176,12 @@ public class AdminLuckySpinController : ControllerBase
         prize.Probability = probability;
         prize.IsActive = req.IsActive;
         prize.DisplayOrder = req.DisplayOrder;
+        prize.DiscountType = dType;
+        prize.DiscountValue = dValue;
+        prize.DiscountMaxAmount = dMax;
+        prize.DiscountMinOrderAmount = dMin;
+        prize.DiscountGameId = dGameId;
+        prize.DiscountValidDays = dValidDays;
         prize.UpdatedAt = DateTime.UtcNow;
         return null;
     }
@@ -176,7 +204,16 @@ public class AdminLuckySpinController : ControllerBase
         p.Probability,
         LuckySpinRules.RarityFor(p.Probability),
         p.IsActive,
-        p.DisplayOrder);
+        p.DisplayOrder,
+        p.DiscountType,
+        p.DiscountValue,
+        p.DiscountMaxAmount,
+        p.DiscountMinOrderAmount,
+        p.DiscountGameId,
+        p.DiscountGameId == null
+            ? null
+            : await _db.Games.AsNoTracking().Where(g => g.Id == p.DiscountGameId.Value).Select(g => g.Name).FirstOrDefaultAsync(),
+        p.DiscountValidDays);
 
     // ───────────────────────── Codes ─────────────────────────
 
@@ -419,7 +456,13 @@ public record PrizeUpsertRequest(
     Guid? GameId,
     decimal Probability,
     bool IsActive,
-    int DisplayOrder);
+    int DisplayOrder,
+    CouponDiscountType? DiscountType = null,
+    decimal? DiscountValue = null,
+    decimal? DiscountMaxAmount = null,
+    decimal? DiscountMinOrderAmount = null,
+    Guid? DiscountGameId = null,
+    int? DiscountValidDays = null);
 
 public record AdminPrizeDto(
     Guid Id,
@@ -431,7 +474,14 @@ public record AdminPrizeDto(
     decimal Probability,
     string Rarity,
     bool IsActive,
-    int DisplayOrder);
+    int DisplayOrder,
+    CouponDiscountType? DiscountType = null,
+    decimal? DiscountValue = null,
+    decimal? DiscountMaxAmount = null,
+    decimal? DiscountMinOrderAmount = null,
+    Guid? DiscountGameId = null,
+    string? DiscountGameName = null,
+    int? DiscountValidDays = null);
 
 public record GenerateCodesRequest(int Count, int? MaxUses, DateTime? ExpiresAt, string? Note);
 

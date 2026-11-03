@@ -54,6 +54,10 @@ public record AccountOrderSummaryDto
     public string Status { get; init; } = string.Empty;
     public string PaymentMethod { get; init; } = string.Empty;
     public decimal TotalAmount { get; init; }
+    /// <summary>TotalAmount + DiscountAmount.</summary>
+    public decimal SubtotalAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? CouponCode { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public List<AccountOrderItemDto> Items { get; init; } = new();

@@ -18,6 +18,8 @@ interface OrderItem {
   orderCode: string;
   customerPhone: string;
   totalAmount: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   status: string;
   paymentMethod: string;
   itemCount: number;
@@ -224,6 +226,11 @@ export default function OrderList() {
                     <td className="px-4 py-3 text-steam-muted text-xs">{o.itemCount}</td>
                     <td className="px-4 py-3">
                       <span className="text-steam-gold font-semibold font-mono text-sm">{formatPrice(o.totalAmount)}</span>
+                      {(o.discountAmount ?? 0) > 0 && (
+                        <p className="text-[10px] text-steam-green font-mono whitespace-nowrap">
+                          −{formatPrice(o.discountAmount ?? 0)}{o.couponCode ? ` · ${o.couponCode}` : ""}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3">{statusBadge(o.status)}</td>
                     <td className="px-4 py-3 text-steam-muted text-xs">{o.paymentMethod}</td>
@@ -273,6 +280,11 @@ export default function OrderList() {
                   <span className="text-steam-muted">{o.customerPhone}</span>
                   <span className="text-steam-gold font-semibold font-mono text-sm">{formatPrice(o.totalAmount)}</span>
                 </div>
+                {(o.discountAmount ?? 0) > 0 && (
+                  <p className="text-right text-[10px] text-steam-green font-mono">
+                    −{formatPrice(o.discountAmount ?? 0)}{o.couponCode ? ` · ${o.couponCode}` : ""}
+                  </p>
+                )}
                 <div className="flex items-center justify-between text-[11px] text-steam-muted">
                   <span>{o.paymentMethod} · {o.itemCount} item{(o.itemCount ?? 0) > 1 ? "s" : ""}</span>
                   <span>{new Date(o.createdAt).toLocaleDateString("vi-VN")}</span>

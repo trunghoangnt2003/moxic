@@ -14,6 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
+import { describeDiscount, DISCOUNT_TYPE_LABELS, type CouponDiscountType } from "../lib/couponAdmin";
 
 type SpinPrizeType = "Luck" | "Discount" | "Game";
 type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
@@ -29,6 +30,13 @@ interface AdminPrize {
   rarity: Rarity;
   isActive: boolean;
   displayOrder: number;
+  discountType: CouponDiscountType | null;
+  discountValue: number | null;
+  discountMaxAmount: number | null;
+  discountMinOrderAmount: number | null;
+  discountGameId: string | null;
+  discountGameName: string | null;
+  discountValidDays: number | null;
 }
 
 interface GameOption {
@@ -44,6 +52,14 @@ interface FormState {
   probability: string;
   displayOrder: string;
   isActive: boolean;
+  /** "" = legacy/manual Discount prize (reward code only, no coupon). */
+  discountType: CouponDiscountType | "";
+  discountValue: string;
+  discountMaxAmount: string;
+  discountMinOrderAmount: string;
+  discountGameId: string | null;
+  discountGameName: string;
+  discountValidDays: string;
 }
 
 const TYPE_LABELS: Record<SpinPrizeType, string> = {
@@ -91,7 +107,30 @@ const emptyForm: FormState = {
   probability: "",
   displayOrder: "0",
   isActive: true,
+  discountType: "Percent",
+  discountValue: "",
+  discountMaxAmount: "",
+  discountMinOrderAmount: "",
+  discountGameId: null,
+  discountGameName: "",
+  discountValidDays: "30",
 };
+
+const optNum = (s: string): number | null => {
+  if (!s.trim()) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+};
+
+/** Discount fields exactly as stored (used by toggleActive so the config is never wiped). */
+const storedDiscountFields = (p: AdminPrize) => ({
+  discountType: p.discountType,
+  discountValue: p.discountValue,
+  discountMaxAmount: p.discountMaxAmount,
+  discountMinOrderAmount: p.discountMinOrderAmount,
+  discountGameId: p.discountGameId,
+  discountValidDays: p.discountValidDays,
+});
 
 function PrizeThumb({ prize }: { prize: AdminPrize }) {
   const color = RARITY_COLORS[prize.rarity];
@@ -175,9 +214,9 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
     load();
   }, [caseId]);
 
-  // Debounced game search (only while the form is open with type Game)
+  // Debounced game search (only while the form is open with type Game or Discount)
   useEffect(() => {
-    if (!formOpen || form.type !== "Game") return;
+    if (!formOpen || form.type === "Luck") return;
     const handle = window.setTimeout(async () => {
       setGameLoading(true);
       try {
@@ -222,6 +261,13 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
       probability: String(p.probability),
       displayOrder: String(p.displayOrder),
       isActive: p.isActive,
+      discountType: p.type === "Discount" ? p.discountType ?? "" : "Percent",
+      discountValue: p.discountValue != null ? String(p.discountValue) : "",
+      discountMaxAmount: p.discountMaxAmount != null ? String(p.discountMaxAmount) : "",
+      discountMinOrderAmount: p.discountMinOrderAmount != null ? String(p.discountMinOrderAmount) : "",
+      discountGameId: p.discountGameId,
+      discountGameName: p.discountGameName ?? "",
+      discountValidDays: p.discountValidDays != null ? String(p.discountValidDays) : "30",
     });
     setFormError("");
     setGameSearch("");
@@ -250,6 +296,19 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
       setFormError("Vui lòng nhập tên giải giảm giá (ví dụ: \"Giảm 10%\").");
       return;
     }
+    const configuredDiscount = form.type === "Discount" && form.discountType !== "";
+    if (configuredDiscount) {
+      const v = Number(form.discountValue);
+      if (!Number.isFinite(v) || v <= 0 || (form.discountType === "Percent" && v > 100)) {
+        setFormError(form.discountType === "Percent" ? "Phần trăm giảm phải lớn hơn 0 và tối đa 100." : "Số tiền giảm không hợp lệ.");
+        return;
+      }
+      const days = Number(form.discountValidDays || "30");
+      if (!Number.isInteger(days) || days < 1 || days > 365) {
+        setFormError("Hiệu lực mã phải từ 1 đến 365 ngày.");
+        return;
+      }
+    }
     if (totalAfterSaveBp > 10000) {
       setFormError(`Tổng tỉ lệ các giải đang bật sẽ vượt quá 100% (${fmtPct(totalAfterSaveBp)}).`);
       return;
@@ -264,6 +323,12 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
         probability: Math.round(formProbability * 100) / 100,
         isActive: form.isActive,
         displayOrder: Number.parseInt(form.displayOrder, 10) || 0,
+        discountType: configuredDiscount ? form.discountType : null,
+        discountValue: configuredDiscount ? Number(form.discountValue) : null,
+        discountMaxAmount: configuredDiscount && form.discountType === "Percent" ? optNum(form.discountMaxAmount) : null,
+        discountMinOrderAmount: configuredDiscount ? optNum(form.discountMinOrderAmount) : null,
+        discountGameId: configuredDiscount ? form.discountGameId : null,
+        discountValidDays: configuredDiscount ? Number(form.discountValidDays || "30") : null,
       };
       const res = await apiFetch(
         apiUrl(editingId ? `/api/admin/lucky-spin/prizes/${editingId}` : `/api/admin/lucky-spin/cases/${caseId}/prizes`),
@@ -302,6 +367,7 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
           probability: p.probability,
           isActive: !p.isActive,
           displayOrder: p.displayOrder,
+          ...storedDiscountFields(p),
         }),
       });
       if (!res.ok) {
@@ -468,6 +534,133 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
               </div>
             )}
 
+            {form.type === "Discount" && (
+              <fieldset className="md:col-span-2 border border-steam-gold/30 rounded-sm p-3 space-y-3">
+                <legend className="px-1 text-xs font-semibold text-steam-gold">Cấu hình mã giảm giá</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-steam-muted mb-1">Loại</label>
+                    <select
+                      value={form.discountType}
+                      onChange={(e) => setForm({ ...form, discountType: e.target.value as CouponDiscountType | "" })}
+                      className="w-full steam-input"
+                    >
+                      <option value="Percent">{DISCOUNT_TYPE_LABELS.Percent}</option>
+                      <option value="Fixed">{DISCOUNT_TYPE_LABELS.Fixed}</option>
+                      <option value="">Chưa cấu hình — trao thủ công</option>
+                    </select>
+                  </div>
+                  {form.discountType !== "" && (
+                    <>
+                      <div>
+                        <label className="block text-xs text-steam-muted mb-1">
+                          Giá trị ({form.discountType === "Percent" ? "%" : "₫"}) <span className="text-steam-accent">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={form.discountType === "Percent" ? 0.01 : 1000}
+                          value={form.discountValue}
+                          onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
+                          placeholder={form.discountType === "Percent" ? "VD: 10" : "VD: 50000"}
+                          className="w-full steam-input"
+                        />
+                      </div>
+                      {form.discountType === "Percent" && (
+                        <div>
+                          <label className="block text-xs text-steam-muted mb-1">Giảm tối đa (₫, tùy chọn)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step={1000}
+                            value={form.discountMaxAmount}
+                            onChange={(e) => setForm({ ...form, discountMaxAmount: e.target.value })}
+                            className="w-full steam-input"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-xs text-steam-muted mb-1">Đơn tối thiểu (₫, tùy chọn)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1000}
+                          value={form.discountMinOrderAmount}
+                          onChange={(e) => setForm({ ...form, discountMinOrderAmount: e.target.value })}
+                          className="w-full steam-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-steam-muted mb-1">Hiệu lực (ngày)</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={365}
+                          step={1}
+                          value={form.discountValidDays}
+                          onChange={(e) => setForm({ ...form, discountValidDays: e.target.value })}
+                          className="w-full steam-input"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs text-steam-muted mb-1">Áp dụng cho game (tùy chọn)</label>
+                        {form.discountGameId && (
+                          <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-sm bg-steam-blue/10 border border-steam-blue/30 text-xs text-steam-blue">
+                            <CheckCircle2 size={12} className="flex-shrink-0" />
+                            <span className="truncate flex-1">{form.discountGameName || form.discountGameId}</span>
+                            <button
+                              type="button"
+                              onClick={() => setForm({ ...form, discountGameId: null, discountGameName: "" })}
+                              className="p-0.5 rounded hover:bg-steam-blue/20"
+                              aria-label="Bỏ chọn game"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        )}
+                        <div className="relative">
+                          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-steam-muted" />
+                          <input
+                            value={gameSearch}
+                            onChange={(e) => setGameSearch(e.target.value)}
+                            placeholder="Tìm game theo tên..."
+                            className="w-full steam-input pl-8"
+                          />
+                          {gameLoading && (
+                            <Loader2 size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-steam-muted" />
+                          )}
+                        </div>
+                        <div className="mt-1.5 max-h-36 overflow-y-auto border border-steam-border rounded-sm divide-y divide-steam-border">
+                          {gameOptions.map((g) => (
+                            <button
+                              key={g.id}
+                              type="button"
+                              onClick={() => setForm({ ...form, discountGameId: g.id, discountGameName: g.name })}
+                              className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
+                                form.discountGameId === g.id
+                                  ? "bg-steam-blue/10 text-steam-blue"
+                                  : "text-steam-text hover:bg-steam-surface-2"
+                              }`}
+                            >
+                              {g.name}
+                            </button>
+                          ))}
+                          {!gameLoading && gameOptions.length === 0 && (
+                            <p className="px-3 py-2 text-xs text-steam-muted">Không tìm thấy game</p>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-[11px] text-steam-muted">
+                  {form.discountType === ""
+                    ? "Giải chỉ phát mã thưởng, admin áp dụng thủ công như trước."
+                    : "Khách đăng nhập nhận mã vào ví ngay khi trúng; mã hết hạn sau số ngày này."}
+                </p>
+              </fieldset>
+            )}
+
             <div>
               <label className="block text-xs text-steam-muted mb-1">Tỉ lệ trúng (%)</label>
               <input
@@ -571,6 +764,18 @@ export default function LuckySpinPrizes({ caseId, onChanged }: LuckySpinPrizesPr
                   {p.type === "Game" && p.gameName && p.gameName !== p.name && (
                     <span className="text-[11px] text-steam-muted truncate">{p.gameName}</span>
                   )}
+                  {p.type === "Discount" &&
+                    (p.discountType && p.discountValue != null ? (
+                      <span className="text-[11px] text-steam-gold truncate">
+                        {describeDiscount({ discountType: p.discountType, value: p.discountValue, maxDiscountAmount: p.discountMaxAmount })}
+                        {` · HSD ${p.discountValidDays ?? 30} ngày`}
+                        {p.discountGameName ? ` · ${p.discountGameName}` : ""}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold border bg-amber-500/10 text-amber-400 border-amber-500/30">
+                        Chưa cấu hình mã — trao thủ công
+                      </span>
+                    ))}
                 </div>
               </div>
               <span className="text-sm font-mono font-semibold text-white flex-shrink-0">
