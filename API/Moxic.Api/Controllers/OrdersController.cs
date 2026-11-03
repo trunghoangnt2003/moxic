@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Moxic.Api.Models;
@@ -23,6 +24,7 @@ public class OrdersController : ControllerBase
     private readonly IEmailService _emailService;
     private readonly IBackgroundEmailQueue _emailQueue;
     private readonly IConfiguration _config;
+    private readonly CouponService _coupons;
 
     public OrdersController(
         MoxicDbContext db,
@@ -31,8 +33,10 @@ public class OrdersController : ControllerBase
         IConfiguration config,
         IEmailService emailService,
         ILogger<OrdersController> logger,
-        IBackgroundEmailQueue emailQueue)
+        IBackgroundEmailQueue emailQueue,
+        CouponService coupons)
     {
+        _coupons = coupons;
         _db = db;
         _minio = minio;
         _dataProtection = dataProtection;
@@ -43,6 +47,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
+    [EnableRateLimiting(CouponRules.RateLimitPolicy)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
         if (request.Items.Count == 0)
@@ -62,7 +67,24 @@ public class OrdersController : ControllerBase
         var encryptedPassword = Convert.ToBase64String(protector.Protect(
             System.Text.Encoding.UTF8.GetBytes(request.CustomerXboxPassword)));
 
-        var totalAmount = request.Items.Sum(i => i.Price);
+        // Link the order to the logged-in customer (separate MoxicCustomer scheme); guests stay unlinked.
+        string? customerId = null;
+        var customerAuth = await HttpContext.AuthenticateAsync(CustomerAuthRules.Scheme);
+        if (customerAuth.Succeeded && customerAuth.Principal != null
+            && customerAuth.Principal.IsInRole(CustomerAuthRules.CustomerRole))
+        {
+            customerId = customerAuth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        // Coupons require login (one coupon per order).
+        var couponCode = string.IsNullOrWhiteSpace(request.CouponCode) ? null : request.CouponCode;
+        if (couponCode != null && string.IsNullOrEmpty(customerId))
+            return BadRequest(new { error = CouponRules.MsgLoginRequired, code = CouponRules.ErrLoginRequired });
+
+        // Server-side pricing from Game.SalePrice — the client Price is ignored (T-smv-01).
+        var (lines, cartError) = await _coupons.PriceLinesAsync(request.Items.Select(i => i.GameId).ToList());
+        if (lines == null) return BadRequest(new { error = cartError });
+        var subtotal = lines.Sum(l => l.Price);
 
         if (!Enum.TryParse<PaymentMethod>(request.PaymentMethod, true, out var paymentMethod))
             paymentMethod = PaymentMethod.Bank;
@@ -75,53 +97,73 @@ public class OrdersController : ControllerBase
             CustomerXboxEmail = request.CustomerXboxEmail.Trim(),
             CustomerXboxPasswordEncrypted = encryptedPassword,
             CustomerZalo = request.CustomerZalo,
-            TotalAmount = totalAmount,
+            TotalAmount = subtotal,
+            DiscountAmount = 0m,
             Status = OrderStatus.Pending,
             PaymentMethod = paymentMethod,
+            CustomerId = customerId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-        // Link the order to the logged-in customer (separate MoxicCustomer scheme); guests stay unlinked.
-        var customerAuth = await HttpContext.AuthenticateAsync(CustomerAuthRules.Scheme);
-        if (customerAuth.Succeeded && customerAuth.Principal != null
-            && customerAuth.Principal.IsInRole(CustomerAuthRules.CustomerRole))
-        {
-            order.CustomerId = customerAuth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
-        _db.Orders.Add(order);
 
-        var gameIds = request.Items.Select(i => i.GameId).ToList();
-        var games = await _db.Games.Where(g => gameIds.Contains(g.Id)).ToListAsync();
-        var gameMap = games.ToDictionary(g => g.Id, g => g.Name);
-
-        foreach (var item in request.Items)
+        await using (var tx = await _db.Database.BeginTransactionAsync())
         {
-            var gameName = gameMap.GetValueOrDefault(item.GameId, "Unknown Game");
-            _db.OrderDetails.Add(new OrderDetail
+            _db.Orders.Add(order);
+            foreach (var line in lines)
             {
-                Id = Guid.NewGuid(),
-                OrderId = order.Id,
-                GameId = item.GameId,
-                GameName = gameName,
-                Price = item.Price
-            });
-        }
+                _db.OrderDetails.Add(new OrderDetail
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    GameId = line.GameId,
+                    GameName = line.GameName,
+                    Price = line.Price
+                });
+            }
 
-        await _db.SaveChangesAsync();
+            if (couponCode != null)
+            {
+                // Re-validates every rule and claims a use atomically inside this transaction.
+                var (eval, coupon) = await _coupons.RedeemAsync(customerId!, couponCode, lines, order.Id);
+                if (!eval.Ok || coupon == null)
+                {
+                    await tx.RollbackAsync();
+                    _db.ChangeTracker.Clear();
+                    return BadRequest(new { error = eval.Error ?? CouponRules.MsgNotFound, code = eval.ErrorCode ?? CouponRules.ErrNotFound });
+                }
+                order.CouponId = coupon.Id;
+                order.CouponCode = coupon.Code;
+                order.DiscountAmount = eval.DiscountAmount;
+                order.TotalAmount = subtotal - eval.DiscountAmount;
+            }
+
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
 
             // NOTF-03: Notify admin of new order
             var _orderCode = order.OrderCode;
             var _phone = order.CustomerPhone;
             var _total = order.TotalAmount;
+            var _discount = order.DiscountAmount;
+            var _couponCode = order.CouponCode;
             _emailQueue.Enqueue(async (sf, ct) =>
             {
                 using var scope = sf.CreateScope();
                 var svc = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                await svc.SendNewOrderNotificationToAdminAsync(_orderCode, _phone, _total);
+                await svc.SendNewOrderNotificationToAdminAsync(_orderCode, _phone, _total, _discount, _couponCode);
             });
 
         return CreatedAtAction(nameof(GetOrder), new { orderCode = order.OrderCode },
-            new CreateOrderResponse { Id = order.Id, OrderCode = order.OrderCode, TotalAmount = order.TotalAmount, CreatedAt = order.CreatedAt });
+            new CreateOrderResponse
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                TotalAmount = order.TotalAmount,
+                DiscountAmount = order.DiscountAmount,
+                CouponCode = order.CouponCode,
+                CreatedAt = order.CreatedAt
+            });
     }
 
     [HttpGet("{orderCode}")]

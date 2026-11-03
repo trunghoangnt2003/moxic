@@ -265,7 +265,7 @@ public class LuckySpinController : ControllerBase
                     var next = await NextFreeOpenAtAsync(userId, spinCase, now) ?? now;
                     return Conflict(new
                     {
-                        error = "Bạn đã dùng lượt miễn phí. Lượt tiếp theo sẽ mở sau ít phút nữa — xem đồng hồ đếm ngược.",
+                        error = $"Bạn đã dùng lượt miễn phí. Lượt tiếp theo sẽ mở sau {LuckySpinRules.FormatWaitVi(next - now)}.",
                         code = "COOLDOWN",
                         nextFreeOpenAt = next
                     });
@@ -308,7 +308,9 @@ public class LuckySpinController : ControllerBase
             for (var attempt = 0; attempt < 5; attempt++)
             {
                 var candidate = LuckySpinRules.GenerateRewardCode();
-                if (!await _db.SpinHistories.AnyAsync(h => h.RewardCode == candidate))
+                // Unique across spin reward codes AND coupon codes (a Discount win may become a coupon).
+                if (!await _db.SpinHistories.AnyAsync(h => h.RewardCode == candidate)
+                    && !await _db.Coupons.AnyAsync(c => c.Code == candidate))
                 {
                     rewardCode = candidate;
                     break;
@@ -324,7 +326,7 @@ public class LuckySpinController : ControllerBase
 
         // (8) history snapshot
         var email = customer?.User.Email;
-        _db.SpinHistories.Add(new SpinHistory
+        var history = new SpinHistory
         {
             Id = spinId,
             CaseId = spinCase.Id,
@@ -344,7 +346,22 @@ public class LuckySpinController : ControllerBase
             Rarity = LuckySpinRules.RarityFor(winner.Probability),
             ClientIp = LuckySpinRules.GetClientIp(HttpContext),
             CreatedAt = now
-        });
+        };
+        _db.SpinHistories.Add(history);
+
+        // (8b) configured Discount prize -> real SpinReward coupon, in the same transaction (T-smv-10).
+        // Verified logged-in customers own it immediately; guests claim it later from the wallet.
+        var ownerUserId = customer != null && customer.Value.User.EmailConfirmed ? customer.Value.UserId : null;
+        var coupon = rewardCode == null ? null : CouponRules.TryBuildSpinRewardCoupon(winner, rewardCode, spinId, ownerUserId, now);
+        if (coupon != null)
+        {
+            _db.Coupons.Add(coupon);
+            if (coupon.OwnerUserId != null)
+            {
+                history.IsClaimed = true;
+                history.ClaimedAt = now;
+            }
+        }
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
 
@@ -363,7 +380,10 @@ public class LuckySpinController : ControllerBase
             nextFreeOpenAt,
             layout.WinningIndex,
             layout.StopOffset,
-            layout.Cards.Select(p => ToPublic(p, images)).ToList()));
+            layout.Cards.Select(p => ToPublic(p, images)).ToList(),
+            coupon != null,
+            coupon?.OwnerUserId != null,
+            coupon?.ExpiresAt));
     }
 
     // GET /api/lucky-spin/code-lookup?code= — which case does this spin code open?

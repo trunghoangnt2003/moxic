@@ -72,6 +72,7 @@ public record UpdatePaymentConfigDto
 public record OrderItemRequest
 {
     public Guid GameId { get; init; }
+    /// <summary>Ignored by the server (lines are priced from Game.SalePrice). Kept for client compatibility.</summary>
     public decimal Price { get; init; }
 }
 
@@ -83,6 +84,8 @@ public record CreateOrderRequest
     public string CustomerXboxPassword { get; init; } = string.Empty;
     public string? CustomerZalo { get; init; }
     public string PaymentMethod { get; init; } = "Bank";
+    /// <summary>Optional coupon (logged-in customers only; one per order).</summary>
+    public string? CouponCode { get; init; }
 }
 
 public record CreateOrderResponse
@@ -90,6 +93,8 @@ public record CreateOrderResponse
     public Guid Id { get; init; }
     public string OrderCode { get; init; } = string.Empty;
     public decimal TotalAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? CouponCode { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 

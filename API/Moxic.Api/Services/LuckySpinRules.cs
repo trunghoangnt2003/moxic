@@ -54,6 +54,24 @@ public static class LuckySpinRules
         return cleaned;
     }
 
+    /// <summary>
+    /// Vietnamese wait text: total minutes = max(1, ceil). "{d} ngày" / "{h} giờ" / "{m} phút"
+    /// (minutes only when d == 0), e.g. 1439 minutes -> "23 giờ 59 phút".
+    /// </summary>
+    public static string FormatWaitVi(TimeSpan remaining)
+    {
+        var total = Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes));
+        var d = total / 1440;
+        var h = total % 1440 / 60;
+        var m = total % 60;
+        var parts = new List<string>();
+        if (d > 0) parts.Add($"{d} ngày");
+        if (h > 0) parts.Add($"{h} giờ");
+        if (d == 0 && m > 0) parts.Add($"{m} phút");
+        if (parts.Count == 0) parts.Add("1 phút");
+        return string.Join(" ", parts);
+    }
+
     public static int ToBasisPoints(decimal percent) => (int)Math.Round(percent * 100m, MidpointRounding.AwayFromZero);
 
     public static string RarityFor(decimal percent)

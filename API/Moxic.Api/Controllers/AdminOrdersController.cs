@@ -24,6 +24,7 @@ public class AdminOrdersController : ControllerBase
     private readonly ILogger<AdminOrdersController> _logger;
     private readonly IConfiguration _config;
     private readonly PointsService _points;
+    private readonly CouponService _coupons;
 
     public AdminOrdersController(
         MoxicDbContext db,
@@ -33,8 +34,10 @@ public class AdminOrdersController : ControllerBase
         IBackgroundEmailQueue emailQueue,
         ILogger<AdminOrdersController> logger,
         IConfiguration config,
-        PointsService points)
+        PointsService points,
+        CouponService coupons)
     {
+        _coupons = coupons;
         _db = db;
         _dataProtection = dataProtection;
         _minio = minio;
@@ -215,6 +218,12 @@ public class AdminOrdersController : ControllerBase
                 var awarded = await _points.AwardForCompletedOrderAsync(order);
                 if (awarded > 0)
                     _logger.LogInformation("Credited {Points} loyalty points for order {OrderCode}", awarded, order.OrderCode);
+            }
+            if (newStatus == OrderStatus.Cancelled)
+            {
+                // Coupon usage is returned exactly once, in the same transaction as the cancel.
+                if (await _coupons.ReleaseForOrderAsync(order.Id))
+                    _logger.LogInformation("Released coupon redemption for cancelled order {OrderCode}", order.OrderCode);
             }
             await tx.CommitAsync();
         }

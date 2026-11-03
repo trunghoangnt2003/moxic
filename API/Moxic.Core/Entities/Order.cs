@@ -24,6 +24,15 @@ public class Order
 
     /// <summary>Set once when loyalty points for this order were credited (idempotency guard).</summary>
     public DateTime? PointsAwardedAt { get; set; }
+
+    /// <summary>Coupon applied to this order (FK Coupons, SET NULL on delete). Null when no coupon.</summary>
+    public Guid? CouponId { get; set; }
+
+    /// <summary>Snapshot of the coupon code at order time (kept even if the coupon is deleted).</summary>
+    public string? CouponCode { get; set; }
+
+    /// <summary>Server-computed discount (VND, whole đồng). TotalAmount = sum(Details.Price) - DiscountAmount.</summary>
+    public decimal DiscountAmount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

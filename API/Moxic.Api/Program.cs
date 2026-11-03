@@ -87,6 +87,7 @@ builder.Services.AddScoped<CustomerOtpService>();
 // Lucky-spin cases + loyalty points
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PointsService>();
+builder.Services.AddScoped<CouponService>();
 builder.Services.AddSingleton<SpinUserRateLimiter>();
 
 // MinIO
@@ -183,6 +184,16 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+    // Coupon validate / claim / order creation: 20 req / minute / IP (anti-enumeration)
+    options.AddPolicy(CouponRules.RateLimitPolicy, ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            LuckySpinRules.GetClientIp(ctx),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 var app = builder.Build();
@@ -246,6 +257,7 @@ using (var scope = app.Services.CreateScope())
         await LuckySpinSchemaBootstrap.EnsureAsync(dbContext);
         await CustomerAccountSchemaBootstrap.EnsureAsync(dbContext);
         await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
+        await CouponSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

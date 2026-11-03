@@ -27,6 +27,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<SpinCaseCooldown> SpinCaseCooldowns => Set<SpinCaseCooldown>();
     public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<SpinMusicTrack> SpinMusicTracks => Set<SpinMusicTrack>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -117,6 +119,14 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasMaxLength(10);
             // Customer account link (nullable, no FK — history also matches by email)
             entity.HasIndex(e => e.CustomerId);
+            // Coupon (nullable FK, SET NULL; CouponCode is a snapshot)
+            entity.Property(e => e.CouponCode).HasMaxLength(32);
+            entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            entity.HasOne<Coupon>()
+                .WithMany()
+                .HasForeignKey(e => e.CouponId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.CouponId);
         });
 
         // OrderDetail
@@ -170,6 +180,12 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasConversion<string>()
                 .HasMaxLength(20);
             entity.Property(e => e.Probability).HasPrecision(5, 2);
+            entity.Property(e => e.DiscountType)
+                .HasConversion<string>()
+                .HasMaxLength(10);
+            entity.Property(e => e.DiscountValue).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountMaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountMinOrderAmount).HasPrecision(18, 2);
             entity.HasOne(e => e.Game)
                 .WithMany()
                 .HasForeignKey(e => e.GameId)
@@ -277,6 +293,45 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.UserId, e.CreatedAt });
             entity.HasIndex(e => new { e.Reason, e.RefId }).IsUnique();
+        });
+
+        // Coupon (event promo codes + spin reward coupons)
+        modelBuilder.Entity<Coupon>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(32).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Source)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.DiscountType)
+                .HasConversion<string>()
+                .HasMaxLength(10);
+            entity.Property(e => e.Value).HasPrecision(18, 2);
+            entity.Property(e => e.MaxDiscountAmount).HasPrecision(18, 2);
+            entity.Property(e => e.MinOrderAmount).HasPrecision(18, 2);
+            entity.Property(e => e.CreatedBy).HasMaxLength(256);
+            entity.HasIndex(e => e.OwnerUserId);
+            entity.HasIndex(e => new { e.Source, e.CreatedAt });
+        });
+
+        // CouponRedemption (append-only usage ledger; one per order)
+        modelBuilder.Entity<CouponRedemption>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+            entity.HasOne(e => e.Coupon)
+                .WithMany(c => c.Redemptions)
+                .HasForeignKey(e => e.CouponId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.OrderId).IsUnique();
+            entity.HasIndex(e => new { e.CouponId, e.UserId });
         });
 
         // SpinMusicTrack (case-page music library)

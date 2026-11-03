@@ -19,10 +19,16 @@ public class EmailService : IEmailService
         _settings = settings.Value;
     }
 
-    public async Task SendNewOrderNotificationToAdminAsync(string orderCode, string customerPhone, decimal totalAmount)
+    public async Task SendNewOrderNotificationToAdminAsync(string orderCode, string customerPhone, decimal totalAmount, decimal discountAmount = 0, string? couponCode = null)
     {
+        var discountHtml = string.Empty;
+        if (discountAmount > 0)
+        {
+            var subtotal = totalAmount + discountAmount;
+            discountHtml = $"<p>Tạm tính: {subtotal:N0}đ</p><p>Giảm giá ({System.Net.WebUtility.HtmlEncode(couponCode ?? string.Empty)}): -{discountAmount:N0}đ</p>";
+        }
         await SendAsync(_settings.AdminEmail, "Đơn hàng mới — Moxic GameStore",
-            $"<h1 style=\"color:#f97316\">ĐƠN HÀNG MỚI</h1><p>Mã: {orderCode}</p><p>SDT: {customerPhone}</p><p>Tiền: {totalAmount:N0}đ</p>");
+            $"<h1 style=\"color:#f97316\">ĐƠN HÀNG MỚI</h1><p>Mã: {orderCode}</p><p>SDT: {customerPhone}</p>{discountHtml}<p>Tiền: {totalAmount:N0}đ</p>");
     }
 
     public async Task SendPaymentConfirmedAsync(string toEmail, string orderCode)

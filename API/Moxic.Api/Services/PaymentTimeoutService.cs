@@ -41,20 +41,42 @@ public class PaymentTimeoutService : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
         var email = scope.ServiceProvider.GetRequiredService<IEmailService>();
+        var coupons = scope.ServiceProvider.GetRequiredService<CouponService>();
         var cutoff = DateTime.UtcNow.AddHours(-24);
-        var expired = await db.Orders
+        var candidates = await db.Orders.AsNoTracking()
             .Where(o => o.Status == OrderStatus.Pending && o.CreatedAt < cutoff)
+            .Select(o => new { o.Id, o.OrderCode, o.CustomerXboxEmail })
             .ToListAsync(ct);
-        if (expired.Count == 0) return;
-        foreach (var order in expired)
+        if (candidates.Count == 0) return;
+
+        const string reason = "Het han thanh toan sau 24 gio";
+        var cancelled = 0;
+        foreach (var order in candidates)
         {
-            order.Status = OrderStatus.Cancelled;
-            order.CancellationReason = "Het han thanh toan sau 24 gio";
-            order.UpdatedAt = DateTime.UtcNow;
-            try { await email.SendOrderCancelledAsync(order.CustomerXboxEmail, order.OrderCode, order.CancellationReason); }
+            // Per-order transaction: conditional Pending -> Cancelled (loses cleanly to a concurrent
+            // admin status change), then the coupon release commits together with the cancel.
+            await using (var tx = await db.Database.BeginTransactionAsync(ct))
+            {
+                var now = DateTime.UtcNow;
+                var affected = await db.Orders
+                    .Where(o => o.Id == order.Id && o.Status == OrderStatus.Pending)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(o => o.Status, OrderStatus.Cancelled)
+                        .SetProperty(o => o.CancellationReason, reason)
+                        .SetProperty(o => o.UpdatedAt, now), ct);
+                if (affected == 0)
+                {
+                    await tx.RollbackAsync(ct);
+                    continue;
+                }
+                await coupons.ReleaseForOrderAsync(order.Id, ct);
+                await tx.CommitAsync(ct);
+            }
+            cancelled++;
+
+            try { await email.SendOrderCancelledAsync(order.CustomerXboxEmail, order.OrderCode, reason); }
             catch (Exception ex) { _logger.LogWarning(ex, "Failed to send cancellation email for order {code}", order.OrderCode); }
         }
-        await db.SaveChangesAsync(ct);
-        _logger.LogInformation("Auto-cancelled {count} expired orders", expired.Count);
+        _logger.LogInformation("Auto-cancelled {count} expired orders", cancelled);
     }
 }

@@ -56,7 +56,10 @@ public record OpenCaseResultDto(
     DateTime? NextFreeOpenAt,
     int WinningIndex,
     double StopOffset,
-    IReadOnlyList<PublicPrizeDto> Reel);
+    IReadOnlyList<PublicPrizeDto> Reel,
+    bool CouponCreated = false,
+    bool CouponInWallet = false,
+    DateTime? CouponExpiresAt = null);
 
 public record PublicMusicTrackDto(Guid Id, string Name, string Url);
 

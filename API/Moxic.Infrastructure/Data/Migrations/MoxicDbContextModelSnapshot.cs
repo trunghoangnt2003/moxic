@@ -280,6 +280,132 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.ToTable("ContactSettings");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.Coupon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("GameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("MaxDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int?>("MaxTotalUses")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxUsesPerCustomer")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MinOrderAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("OwnerUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid?>("SpinHistoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("Source", "CreatedAt");
+
+                    b.ToTable("Coupons");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.CouponRedemption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CouponId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("CouponId", "UserId");
+
+                    b.ToTable("CouponRedemptions");
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.CustomerOtpCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -494,6 +620,13 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("ClientConfirmedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CouponCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid?>("CouponId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -518,6 +651,11 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<string>("CustomerZalo")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<bool>("IsClientConfirmed")
                         .HasColumnType("boolean");
@@ -553,6 +691,8 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CouponId");
 
                     b.HasIndex("CustomerId");
 
@@ -944,6 +1084,28 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("DiscountGameId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("DiscountMaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("DiscountMinOrderAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("DiscountType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("DiscountValidDays")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("DiscountValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
@@ -1077,6 +1239,25 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.CouponRedemption", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Coupon", "Coupon")
+                        .WithMany("Redemptions")
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Moxic.Core.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Coupon");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.CustomerOtpCode", b =>
@@ -1231,6 +1412,14 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Navigation("Game");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.Order", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.Coupon", null)
+                        .WithMany()
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.OrderDetail", b =>
                 {
                     b.HasOne("Moxic.Core.Entities.Game", "Game")
@@ -1319,6 +1508,11 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Navigation("Case");
 
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.Coupon", b =>
+                {
+                    b.Navigation("Redemptions");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.Game", b =>

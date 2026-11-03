@@ -18,6 +18,24 @@ public class SpinPrize
 
     public bool IsActive { get; set; } = true;
     public int DisplayOrder { get; set; } = 0;
+
+    /// <summary>Discount prizes: coupon type. Null = legacy/manual (reward code only, no coupon).</summary>
+    public CouponDiscountType? DiscountType { get; set; }
+
+    /// <summary>Discount prizes: percent (0..100] or fixed VND amount.</summary>
+    public decimal? DiscountValue { get; set; }
+
+    /// <summary>Discount prizes: cap for Percent coupons (VND).</summary>
+    public decimal? DiscountMaxAmount { get; set; }
+
+    /// <summary>Discount prizes: minimum applicable subtotal (VND).</summary>
+    public decimal? DiscountMinOrderAmount { get; set; }
+
+    /// <summary>Discount prizes: restrict the coupon to one game (separate from GameId so no cover is shown). No FK.</summary>
+    public Guid? DiscountGameId { get; set; }
+
+    /// <summary>Discount prizes: coupon validity in days after the win (default 30).</summary>
+    public int? DiscountValidDays { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

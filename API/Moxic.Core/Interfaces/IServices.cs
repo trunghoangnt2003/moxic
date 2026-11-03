@@ -10,7 +10,7 @@ public interface IBackgroundEmailQueue
 
 public interface IEmailService
 {
-    Task SendNewOrderNotificationToAdminAsync(string orderCode, string customerPhone, decimal totalAmount);
+    Task SendNewOrderNotificationToAdminAsync(string orderCode, string customerPhone, decimal totalAmount, decimal discountAmount = 0, string? couponCode = null);
     Task SendPaymentConfirmedAsync(string toEmail, string orderCode);
     Task SendGameInstalledAsync(string toEmail, string orderCode, string gameName);
     Task SendOrderCancelledAsync(string toEmail, string orderCode, string reason);
