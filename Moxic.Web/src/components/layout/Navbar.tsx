@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  Search,
   Menu,
   X,
   Globe,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
+import HeaderSearch from "./HeaderSearch";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,14 +27,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const accountRef = useRef<HTMLDivElement>(null);
-
-  const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const input = e.currentTarget.elements.namedItem("q") as HTMLInputElement | null;
-    const term = input?.value.trim() ?? "";
-    navigate(term ? `/games?q=${encodeURIComponent(term)}` : "/games");
-    input?.blur();
-  };
 
   // Close menus on route change (state adjustment during render, no effect needed).
   const [lastPath, setLastPath] = useState(location.pathname);
@@ -109,16 +101,9 @@ export default function Navbar() {
           {/* Right */}
           <div className="flex items-center gap-3">
             {/* Search */}
-            <form role="search" onSubmit={submitSearch} className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
-              <input
-                type="search"
-                name="q"
-                enterKeyHint="search"
-                placeholder="Tìm kiếm game..."
-                className="bg-bg-elevated border border-border  pl-10 pr-3 py-2 text-sm w-48 focus:w-64 focus:outline-none focus:border-accent/50 text-text-primary placeholder:text-text-placeholder transition-all [&::-webkit-search-cancel-button]:hidden"
-              />
-            </form>
+            <div className="hidden sm:block">
+              <HeaderSearch variant="desktop" />
+            </div>
 
             {/* Cart */}
             <Link
@@ -239,16 +224,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-border bg-bg-surface">
           <div className="max-w-[1200px] mx-auto px-4 py-4 space-y-3">
-            <form role="search" onSubmit={submitSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
-              <input
-                type="search"
-                name="q"
-                enterKeyHint="search"
-                placeholder="Tìm kiếm game..."
-                className="w-full bg-bg-elevated border border-border  pl-10 pr-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-accent/50 text-text-primary placeholder:text-text-placeholder"
-              />
-            </form>
+            <HeaderSearch variant="mobile" onNavigate={() => setMenuOpen(false)} />
             <Link
               to="/games"
               className="block text-text-secondary hover:text-text-primary py-2 text-sm font-semibold"
