@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Moxic.Api.Models;
+using Moxic.Api.Services;
 using Moxic.Core.Entities;
 using Moxic.Core.Interfaces;
 using Moxic.Infrastructure.Data;
@@ -22,6 +23,7 @@ public class AdminOrdersController : ControllerBase
     private readonly IBackgroundEmailQueue _emailQueue;
     private readonly ILogger<AdminOrdersController> _logger;
     private readonly IConfiguration _config;
+    private readonly PointsService _points;
 
     public AdminOrdersController(
         MoxicDbContext db,
@@ -30,7 +32,8 @@ public class AdminOrdersController : ControllerBase
         IEmailService emailService,
         IBackgroundEmailQueue emailQueue,
         ILogger<AdminOrdersController> logger,
-        IConfiguration config)
+        IConfiguration config,
+        PointsService points)
     {
         _db = db;
         _dataProtection = dataProtection;
@@ -39,6 +42,7 @@ public class AdminOrdersController : ControllerBase
         _emailQueue = emailQueue;
         _logger = logger;
         _config = config;
+        _points = points;
     }
 
     [HttpGet]
@@ -202,7 +206,18 @@ public class AdminOrdersController : ControllerBase
         if (newStatus == OrderStatus.Cancelled && !string.IsNullOrWhiteSpace(request.Reason))
             order.CancellationReason = request.Reason;
 
-        await _db.SaveChangesAsync();
+        // Status change + loyalty points credit commit together (points exactly once per order).
+        await using (var tx = await _db.Database.BeginTransactionAsync())
+        {
+            await _db.SaveChangesAsync();
+            if (newStatus == OrderStatus.Completed)
+            {
+                var awarded = await _points.AwardForCompletedOrderAsync(order);
+                if (awarded > 0)
+                    _logger.LogInformation("Credited {Points} loyalty points for order {OrderCode}", awarded, order.OrderCode);
+            }
+            await tx.CommitAsync();
+        }
 
         // Enqueue email notification ? sent in background
         var _newStatus = newStatus;

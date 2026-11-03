@@ -23,6 +23,10 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<ContactSetting> ContactSettings => Set<ContactSetting>();
     public DbSet<CustomerProfile> CustomerProfiles => Set<CustomerProfile>();
     public DbSet<CustomerOtpCode> CustomerOtpCodes => Set<CustomerOtpCode>();
+    public DbSet<SpinCase> SpinCases => Set<SpinCase>();
+    public DbSet<SpinCaseCooldown> SpinCaseCooldowns => Set<SpinCaseCooldown>();
+    public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
+    public DbSet<SpinMusicTrack> SpinMusicTracks => Set<SpinMusicTrack>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +83,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 builder.OwnsOne(r => r.Recommended);
             });
             entity.OwnsMany(e => e.Ratings, builder => builder.ToJson());
+            entity.Property(e => e.RewardPoints).HasDefaultValue(0);
         });
 
         // GameMedia
@@ -170,6 +175,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasForeignKey(e => e.GameId)
                 .OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.GameId);
+            entity.HasOne(e => e.Case)
+                .WithMany(c => c.Prizes)
+                .HasForeignKey(e => e.CaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.CaseId);
         });
 
         // SpinCode
@@ -179,6 +189,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.Code).HasMaxLength(32).IsRequired();
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Note).HasMaxLength(200);
+            entity.HasOne(e => e.Case)
+                .WithMany()
+                .HasForeignKey(e => e.CaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.CaseId);
         });
 
         // SpinHistory
@@ -202,6 +217,75 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.RewardCode).IsUnique();
             entity.HasIndex(e => e.CreatedAt);
+            entity.Property(e => e.CaseName).HasMaxLength(100);
+            entity.Property(e => e.OpenMethod)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.UserEmail).HasMaxLength(256);
+            entity.Property(e => e.PointsSpent).HasDefaultValue(0);
+            entity.Property(e => e.Rarity).HasMaxLength(20);
+            entity.HasOne<SpinCase>()
+                .WithMany()
+                .HasForeignKey(e => e.CaseId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.CaseId);
+            entity.HasIndex(e => e.UserId);
+        });
+
+        // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<SpinCase>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Slug).HasMaxLength(80).IsRequired();
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.ImageObjectKey).HasMaxLength(500);
+            entity.Property(e => e.OpenMethod)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+        });
+
+        // SpinCaseCooldown (last free open per customer + case)
+        modelBuilder.Entity<SpinCaseCooldown>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.CaseId });
+            entity.HasOne<SpinCase>()
+                .WithMany()
+                .HasForeignKey(e => e.CaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.CaseId);
+        });
+
+        // PointsTransaction (loyalty points ledger)
+        modelBuilder.Entity<PointsTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Reason)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.RefId).HasMaxLength(64);
+            entity.Property(e => e.Note).HasMaxLength(200);
+            entity.Property(e => e.CreatedBy).HasMaxLength(256);
+            entity.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+            entity.HasIndex(e => new { e.Reason, e.RefId }).IsUnique();
+        });
+
+        // SpinMusicTrack (case-page music library)
+        modelBuilder.Entity<SpinMusicTrack>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ObjectKey).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.ContentType).HasMaxLength(50).IsRequired();
         });
 
         // ContactSetting (singleton)

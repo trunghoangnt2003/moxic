@@ -5,6 +5,10 @@ namespace Moxic.Core.Entities;
 public class SpinPrize
 {
     public Guid Id { get; set; }
+
+    /// <summary>Owning case; each case validates its own 100% total.</summary>
+    public Guid CaseId { get; set; }
+
     public string Name { get; set; } = string.Empty;
     public SpinPrizeType Type { get; set; } = SpinPrizeType.Luck;
     public Guid? GameId { get; set; }
@@ -19,4 +23,5 @@ public class SpinPrize
 
     // Navigation
     public Game? Game { get; set; }
+    public SpinCase? Case { get; set; }
 }

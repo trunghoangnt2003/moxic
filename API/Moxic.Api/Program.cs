@@ -84,6 +84,11 @@ builder.Services.AddAuthentication()
     });
 builder.Services.AddScoped<CustomerOtpService>();
 
+// Lucky-spin cases + loyalty points
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<PointsService>();
+builder.Services.AddSingleton<SpinUserRateLimiter>();
+
 // MinIO
 builder.Services.Configure<MinioSettings>(builder.Configuration.GetSection("Minio"));
 builder.Services.AddSingleton<IMinioClient>(sp =>
@@ -240,6 +245,7 @@ using (var scope = app.Services.CreateScope())
         ");
         await LuckySpinSchemaBootstrap.EnsureAsync(dbContext);
         await CustomerAccountSchemaBootstrap.EnsureAsync(dbContext);
+        await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

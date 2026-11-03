@@ -12,6 +12,9 @@ public class Game
     public GameStatus Status { get; set; } = GameStatus.Available;
     public DateTime? ReleaseDate { get; set; }
     public bool IsFeatured { get; set; }
+
+    /// <summary>Loyalty points credited when an order containing this game is Completed.</summary>
+    public int RewardPoints { get; set; }
     public SystemRequirementData? SystemRequirements { get; set; }
     public List<GameRating> Ratings { get; set; } = new();
     public DateTime CreatedAt { get; set; }

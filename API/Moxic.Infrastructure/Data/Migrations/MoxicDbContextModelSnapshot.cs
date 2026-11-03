@@ -372,6 +372,11 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("ReleaseDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("RewardPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -533,6 +538,9 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<string>("PaymentProofObjectKey")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("PointsAwardedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -635,10 +643,132 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.ToTable("PaymentConfigs");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.PointsTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("BalanceAfter")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("Delta")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Reason", "RefId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("PointsTransactions");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FreeIntervalHours")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageObjectKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("OpenMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("PointsCost")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("SpinCases");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCaseCooldown", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastOpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "CaseId");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("SpinCaseCooldowns");
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.SpinCode", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CaseId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -667,6 +797,8 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CaseId");
+
                     b.HasIndex("Code")
                         .IsUnique();
 
@@ -678,6 +810,13 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CaseName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("ClaimedAt")
                         .HasColumnType("timestamp with time zone");
@@ -700,6 +839,15 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<bool>("IsClaimed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("OpenMethod")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("PointsSpent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<Guid?>("PrizeId")
                         .HasColumnType("uuid");
 
@@ -713,6 +861,10 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("RewardCode")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
@@ -720,7 +872,16 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Property<Guid?>("SpinCodeId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("UserEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
 
                     b.HasIndex("CreatedAt");
 
@@ -731,13 +892,53 @@ namespace Moxic.Infrastructure.Data.Migrations
 
                     b.HasIndex("SpinCodeId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("SpinHistories");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinMusicTrack", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SpinMusicTracks");
                 });
 
             modelBuilder.Entity("Moxic.Core.Entities.SpinPrize", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CaseId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -770,6 +971,8 @@ namespace Moxic.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
 
                     b.HasIndex("GameId");
 
@@ -1047,8 +1250,48 @@ namespace Moxic.Infrastructure.Data.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Moxic.Core.Entities.PointsTransaction", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCaseCooldown", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.SpinCase", null)
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCode", b =>
+                {
+                    b.HasOne("Moxic.Core.Entities.SpinCase", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
             modelBuilder.Entity("Moxic.Core.Entities.SpinHistory", b =>
                 {
+                    b.HasOne("Moxic.Core.Entities.SpinCase", null)
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Moxic.Core.Entities.SpinPrize", null)
                         .WithMany()
                         .HasForeignKey("PrizeId")
@@ -1062,10 +1305,18 @@ namespace Moxic.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Moxic.Core.Entities.SpinPrize", b =>
                 {
+                    b.HasOne("Moxic.Core.Entities.SpinCase", "Case")
+                        .WithMany("Prizes")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Moxic.Core.Entities.Game", "Game")
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Case");
 
                     b.Navigation("Game");
                 });
@@ -1080,6 +1331,11 @@ namespace Moxic.Infrastructure.Data.Migrations
             modelBuilder.Entity("Moxic.Core.Entities.Order", b =>
                 {
                     b.Navigation("Details");
+                });
+
+            modelBuilder.Entity("Moxic.Core.Entities.SpinCase", b =>
+                {
+                    b.Navigation("Prizes");
                 });
 #pragma warning restore 612, 618
         }

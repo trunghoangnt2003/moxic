@@ -28,11 +28,14 @@ public class AdminLuckySpinController : ControllerBase
 
     // ───────────────────────── Prizes ─────────────────────────
 
-    [HttpGet("prizes")]
-    public async Task<IActionResult> GetPrizes()
+    [HttpGet("cases/{caseId:guid}/prizes")]
+    public async Task<IActionResult> GetPrizes(Guid caseId)
     {
+        if (!await CaseExistsAsync(caseId)) return CaseNotFound();
+
         var prizes = await _db.SpinPrizes.AsNoTracking()
             .Include(p => p.Game).ThenInclude(g => g!.Media)
+            .Where(p => p.CaseId == caseId)
             .OrderBy(p => p.DisplayOrder).ThenBy(p => p.Name)
             .ToListAsync();
 
@@ -41,17 +44,19 @@ public class AdminLuckySpinController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("prizes")]
-    public async Task<IActionResult> CreatePrize([FromBody] PrizeUpsertRequest request)
+    [HttpPost("cases/{caseId:guid}/prizes")]
+    public async Task<IActionResult> CreatePrize(Guid caseId, [FromBody] PrizeUpsertRequest request)
     {
-        var prize = new SpinPrize { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow };
+        if (!await CaseExistsAsync(caseId)) return CaseNotFound();
+
+        var prize = new SpinPrize { Id = Guid.NewGuid(), CaseId = caseId, CreatedAt = DateTime.UtcNow };
         var error = await ApplyPrizeAsync(prize, request, isNew: true);
         if (error != null) return BadRequest(new { error });
 
         _db.SpinPrizes.Add(prize);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetPrizes), null, await LoadAdminPrizeAsync(prize.Id));
+        return CreatedAtAction(nameof(GetPrizes), new { caseId }, await LoadAdminPrizeAsync(prize.Id));
     }
 
     [HttpPut("prizes/{id:guid}")]
@@ -129,9 +134,10 @@ public class AdminLuckySpinController : ControllerBase
                 break;
         }
 
-        // Active total (excluding this prize's stored value) + this prize if active must be <= 100%.
+        // Per case: active total (excluding this prize's stored value) + this prize if active must be <= 100%.
+        var caseId = prize.CaseId;
         var otherActive = await _db.SpinPrizes.AsNoTracking()
-            .Where(p => p.IsActive && (isNew || p.Id != prize.Id))
+            .Where(p => p.CaseId == caseId && p.IsActive && (isNew || p.Id != prize.Id))
             .Select(p => p.Probability)
             .ToListAsync();
         var totalBp = otherActive.Sum(LuckySpinRules.ToBasisPoints)
@@ -174,11 +180,13 @@ public class AdminLuckySpinController : ControllerBase
 
     // ───────────────────────── Codes ─────────────────────────
 
-    [HttpGet("codes")]
-    public async Task<IActionResult> GetCodes([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    [HttpGet("cases/{caseId:guid}/codes")]
+    public async Task<IActionResult> GetCodes(Guid caseId, [FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
+        if (!await CaseExistsAsync(caseId)) return CaseNotFound();
+
         (page, pageSize) = ClampPaging(page, pageSize);
-        var query = _db.SpinCodes.AsNoTracking();
+        var query = _db.SpinCodes.AsNoTracking().Where(c => c.CaseId == caseId);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim().ToUpperInvariant();
@@ -202,9 +210,14 @@ public class AdminLuckySpinController : ControllerBase
         });
     }
 
-    [HttpPost("codes/generate")]
-    public async Task<IActionResult> GenerateCodes([FromBody] GenerateCodesRequest request)
+    [HttpPost("cases/{caseId:guid}/codes/generate")]
+    public async Task<IActionResult> GenerateCodes(Guid caseId, [FromBody] GenerateCodesRequest request)
     {
+        var spinCase = await _db.SpinCases.AsNoTracking().FirstOrDefaultAsync(c => c.Id == caseId);
+        if (spinCase == null) return CaseNotFound();
+        if (spinCase.OpenMethod != SpinCaseOpenMethod.Code)
+            return BadRequest(new { error = "Hòm này không mở bằng mã quay." });
+
         if (request.Count < 1 || request.Count > 500)
             return BadRequest(new { error = "Số lượng mã phải từ 1 đến 500." });
 
@@ -253,6 +266,7 @@ public class AdminLuckySpinController : ControllerBase
         _db.SpinCodes.AddRange(list.Select(c => new SpinCode
         {
             Id = Guid.NewGuid(),
+            CaseId = caseId,
             Code = c,
             MaxUses = maxUses,
             UsedCount = 0,
@@ -314,15 +328,25 @@ public class AdminLuckySpinController : ControllerBase
 
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory(
-        [FromQuery] string? search, [FromQuery] bool? claimed,
+        [FromQuery] Guid? caseId, [FromQuery] string? search, [FromQuery] bool? claimed,
         [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
         (page, pageSize) = ClampPaging(page, pageSize);
         var query = _db.SpinHistories.AsNoTracking();
+        if (caseId.HasValue)
+        {
+            var cid = caseId.Value;
+            query = query.Where(h => h.CaseId == cid);
+        }
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim().ToUpperInvariant();
-            query = query.Where(h => h.CodeText.Contains(s) || (h.RewardCode != null && h.RewardCode.Contains(s)));
+            var trimmed = search.Trim();
+            if (trimmed.Length > 100) trimmed = trimmed[..100];
+            var s = trimmed.ToUpperInvariant();
+            var lower = trimmed.ToLowerInvariant();
+            query = query.Where(h => h.CodeText.Contains(s)
+                                     || (h.RewardCode != null && h.RewardCode.Contains(s))
+                                     || (h.UserEmail != null && h.UserEmail.ToLower().Contains(lower)));
         }
         if (claimed.HasValue)
         {
@@ -363,6 +387,12 @@ public class AdminLuckySpinController : ControllerBase
     private static object ToAdminSpin(SpinHistory h) => new
     {
         h.Id,
+        h.CaseId,
+        h.CaseName,
+        h.OpenMethod,
+        h.PointsSpent,
+        h.UserEmail,
+        h.Rarity,
         h.CodeText,
         h.PrizeName,
         h.PrizeType,
@@ -373,6 +403,11 @@ public class AdminLuckySpinController : ControllerBase
         h.ClientIp,
         h.CreatedAt
     };
+
+    private async Task<bool> CaseExistsAsync(Guid caseId) =>
+        await _db.SpinCases.AsNoTracking().AnyAsync(c => c.Id == caseId);
+
+    private NotFoundObjectResult CaseNotFound() => NotFound(new { error = "Không tìm thấy hòm." });
 
     private static (int page, int pageSize) ClampPaging(int page, int pageSize) =>
         (Math.Max(1, page), Math.Clamp(pageSize, 1, 200));

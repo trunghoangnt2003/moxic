@@ -4,6 +4,10 @@ public class SpinCode
 {
     public Guid Id { get; set; }
 
+    /// <summary>The case this code opens.</summary>
+    public Guid CaseId { get; set; }
+
+
     /// <summary>Stored UPPERCASE; compared case-insensitively by normalizing input.</summary>
     public string Code { get; set; } = string.Empty;
 
@@ -13,4 +17,7 @@ public class SpinCode
     public bool IsActive { get; set; } = true;
     public string? Note { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Navigation
+    public SpinCase? Case { get; set; }
 }

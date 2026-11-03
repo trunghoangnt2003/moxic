@@ -21,6 +21,9 @@ public class Order
 
     /// <summary>IdentityUser.Id of the logged-in customer who placed the order (null for guest checkout). No DB FK.</summary>
     public string? CustomerId { get; set; }
+
+    /// <summary>Set once when loyalty points for this order were credited (idempotency guard).</summary>
+    public DateTime? PointsAwardedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
