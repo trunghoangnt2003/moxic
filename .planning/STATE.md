@@ -58,5 +58,6 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 | 261103-qmv | Lucky spin (CS2-style case opening) + floating contact buttons | 2026-11-03 | 876952a | [261103-qmv-lucky-spin-case-opening-and-floating-con](./quick/261103-qmv-lucky-spin-case-opening-and-floating-con/) |
 | 261103-sa8 | MOXIC loader + customer accounts + order history | 2026-11-03 | 4d7c2d9 | [261103-sa8-customer-accounts-order-history-and-moxi](./quick/261103-sa8-customer-accounts-order-history-and-moxi/) |
 | 261103-sls | Multiple cases (code/free/points), loyalty points, case music, live drops, near-miss reel | 2026-11-03 | d083bc0 | [261103-sls-multi-cases-points-music-and-reel-near-m](./quick/261103-sls-multi-cases-points-music-and-reel-near-m/) |
+| 261103-smv | Coupons: account wallet, checkout discount, admin event codes | 2026-11-04 | 1dca7ca | [261103-smv-coupons-account-wallet-and-event-discoun](./quick/261103-smv-coupons-account-wallet-and-event-discoun/) |
 
-Last activity: 2026-11-03 - Completed quick task 261103-sls: cases, points, music, live drops
+Last activity: 2026-11-04 - Completed quick task 261103-smv: coupons
