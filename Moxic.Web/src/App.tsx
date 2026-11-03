@@ -18,6 +18,7 @@ const CartPage = lazy(() => import("./pages/CartPage"));
 const LuckySpinGalleryPage = lazy(() => import("./pages/LuckySpinGalleryPage"));
 const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
 const PointsHistoryPage = lazy(() => import("./pages/PointsHistoryPage"));
+const CouponWalletPage = lazy(() => import("./pages/CouponWalletPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
@@ -58,6 +59,7 @@ export default function App() {
                 <Route path="/account/orders" element={<OrderHistoryPage />} />
                 <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
                 <Route path="/account/points" element={<PointsHistoryPage />} />
+                <Route path="/account/coupons" element={<CouponWalletPage />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Route>

@@ -38,6 +38,9 @@ export interface AccountOrderSummary {
   status: OrderStatus;
   paymentMethod: string;
   totalAmount: number;
+  subtotalAmount: number;
+  discountAmount: number;
+  couponCode: string | null;
   createdAt: string;
   updatedAt: string;
   items: AccountOrderItem[];

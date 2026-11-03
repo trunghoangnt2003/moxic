@@ -8,9 +8,20 @@ interface Props {
   items: OrderConfirmationItem[];
   totalAmount: number;
   createdAt: string;
+  subtotalAmount?: number;
+  discountAmount?: number;
+  couponCode?: string | null;
 }
 
-export default function ConfirmationContent({ orderCode, items, totalAmount, createdAt }: Props) {
+export default function ConfirmationContent({
+  orderCode,
+  items,
+  totalAmount,
+  createdAt,
+  subtotalAmount,
+  discountAmount = 0,
+  couponCode,
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -54,6 +65,22 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
 
       {/* Divider */}
       <div className="border-t border-[#3d352a]" />
+
+      {/* Discount */}
+      {discountAmount > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm text-[#b5a898]">Tạm tính</span>
+            <span className="text-sm text-[#ede6db]">{formatPrice(subtotalAmount ?? totalAmount + discountAmount)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="min-w-0 truncate text-sm text-[#b5a898]">
+              Giảm giá{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
+            </span>
+            <span className="flex-shrink-0 text-sm font-semibold text-green-400">−{formatPrice(discountAmount)}</span>
+          </div>
+        </div>
+      )}
 
       {/* Total */}
       <div className="flex items-center justify-between">

@@ -102,12 +102,16 @@ export interface OrderCreateRequest {
   customerXboxPassword: string;
   customerZalo?: string;
   paymentMethod: "Bank" | "Crypto";
+  /** Optional coupon (logged-in customers only). The server re-prices and re-validates. */
+  couponCode?: string;
 }
 
 export interface OrderCreateResponse {
   id: string;
   orderCode: string;
   totalAmount: number;
+  discountAmount: number;
+  couponCode?: string | null;
   createdAt: string;
 }
 
@@ -128,7 +132,11 @@ export interface PaymentConfigInfo {
 export interface OrderConfirmationData {
   orderCode: string;
   items: OrderConfirmationItem[];
+  /** Amount to transfer (already discounted). */
   totalAmount: number;
+  subtotalAmount: number;
+  discountAmount: number;
+  couponCode?: string | null;
   status: string;
   createdAt: string;
   paymentProofUrl?: string | null;

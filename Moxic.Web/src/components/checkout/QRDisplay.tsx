@@ -1,15 +1,30 @@
 import { useState } from "react";
 import { Copy, Check, Banknote, Bitcoin } from "lucide-react";
+import { formatPrice } from "../../lib/utils";
 
 interface Props {
   bankQrUrl?: string | null;
   cryptoQrUrl?: string | null;
   transferContent: string;
+  /** Amount to transfer (already discounted). */
+  amount?: number;
+  /** Show the "Đã trừ mã giảm giá" hint. */
+  discounted?: boolean;
 }
 
-export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent }: Props) {
+export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amount, discounted }: Props) {
   const [mode, setMode] = useState<"bank" | "crypto">("bank");
   const [copied, setCopied] = useState(false);
+  const [amountCopied, setAmountCopied] = useState(false);
+
+  const handleCopyAmount = async () => {
+    if (amount == null) return;
+    try {
+      await navigator.clipboard.writeText(String(Math.round(amount)));
+      setAmountCopied(true);
+      setTimeout(() => setAmountCopied(false), 2000);
+    } catch {}
+  };
 
   const qrUrl = mode === "bank" ? bankQrUrl : cryptoQrUrl;
   const hasCrypto = !!cryptoQrUrl;
@@ -57,6 +72,26 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent }: P
           </div>
         )}
       </div>
+
+      {/* Amount */}
+      {amount != null && (
+        <div className="mb-2 bg-[#c9a96e]/10 border border-[#c9a96e]/20 px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[11px] text-[#7a6f63] uppercase tracking-wider mb-0.5">Số tiền cần chuyển</p>
+              <p className="text-[#c9a96e] font-display text-lg font-bold">{formatPrice(amount)}</p>
+              {discounted && <p className="text-[11px] text-green-400">Đã trừ mã giảm giá</p>}
+            </div>
+            <button
+              onClick={handleCopyAmount}
+              className="flex-shrink-0 w-8 h-8 bg-[#c9a96e]/20 hover:bg-[#c9a96e]/30 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Sao chép số tiền cần chuyển"
+            >
+              {amountCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#c9a96e]" />}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Transfer content */}
       <div className="bg-[#c9a96e]/10 border border-[#c9a96e]/20 px-4 py-3">

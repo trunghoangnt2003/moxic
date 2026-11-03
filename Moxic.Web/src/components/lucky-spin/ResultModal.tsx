@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Check, Copy, X } from "lucide-react";
+import { Check, Copy, TicketPercent, X } from "lucide-react";
+import { formatDate } from "../../lib/utils";
 import PrizeCard, { RARITY_COLORS, RARITY_LABELS } from "./PrizeCard";
 import { useContactSettings } from "../../hooks/useLuckySpin";
 import { formatPoints, type CaseSummary, type OpenCaseResult } from "../../lib/luckySpinApi";
@@ -121,6 +123,33 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
               </div>
             )}
 
+            {result.couponCreated && result.couponInWallet ? (
+              <>
+                <p className="mt-4 text-sm text-white/70">
+                  Mã giảm giá đã được thêm vào ví của bạn
+                  {result.couponExpiresAt ? ` — hạn dùng đến ${formatDate(result.couponExpiresAt)}` : ""}. Dùng khi thanh toán.
+                </p>
+                <Link
+                  to="/account/coupons"
+                  onClick={onClose}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-amber-400 px-4 py-2.5 text-sm font-semibold text-[#1a0d33] transition-[filter] hover:brightness-110"
+                >
+                  <TicketPercent className="h-4 w-4" /> Xem ví mã giảm giá
+                </Link>
+              </>
+            ) : result.couponCreated && result.rewardCode ? (
+              <>
+                <p className="mt-4 text-sm text-white/70">Đăng nhập và nhận mã vào ví để dùng khi thanh toán.</p>
+                <Link
+                  to={`/account/coupons?claim=${encodeURIComponent(result.rewardCode)}`}
+                  onClick={onClose}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-amber-400 px-4 py-2.5 text-sm font-semibold text-[#1a0d33] transition-[filter] hover:brightness-110"
+                >
+                  <TicketPercent className="h-4 w-4" /> Nhận mã vào ví
+                </Link>
+              </>
+            ) : (
+              <>
             <p className="mt-4 text-sm text-white/70">
               Lưu lại mã thưởng và liên hệ Moxic qua Zalo hoặc Messenger để nhận quà.
             </p>
@@ -149,6 +178,8 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                   </a>
                 )}
               </div>
+            )}
+              </>
             )}
           </>
         )}

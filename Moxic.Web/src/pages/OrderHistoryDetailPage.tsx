@@ -120,6 +120,20 @@ export default function OrderHistoryDetailPage() {
                 </li>
               ))}
             </ul>
+            {order.discountAmount > 0 && (
+              <div className="mt-5 pt-4 border-t border-[#3d352a] space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[#b5a898]">Tạm tính</span>
+                  <span className="text-[#ede6db]">{formatPrice(order.subtotalAmount)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-[#b5a898]">
+                    Giảm giá{order.couponCode ? <> (<span className="font-mono">{order.couponCode}</span>)</> : null}
+                  </span>
+                  <span className="flex-shrink-0 font-semibold text-green-400">−{formatPrice(order.discountAmount)}</span>
+                </div>
+              </div>
+            )}
             <div className="mt-5 pt-4 border-t border-[#3d352a] flex items-center justify-between">
               <span className="text-sm text-[#b5a898]">Tổng cộng</span>
               <span className="text-lg font-bold text-[#c9a96e]">{formatPrice(order.totalAmount)}</span>

@@ -15,6 +15,7 @@ import {
   type CustomerMe,
   type RegisterPayload,
 } from "../lib/accountApi";
+import { COUPONS_QUERY_KEY } from "./useCoupons";
 
 export const ME_QUERY_KEY = ["account", "me"] as const;
 const ORDERS_KEY = ["account", "orders"] as const;
@@ -84,6 +85,7 @@ export function useLogout() {
       qc.setQueryData(ME_QUERY_KEY, null);
       qc.removeQueries({ queryKey: ORDERS_KEY });
       qc.removeQueries({ queryKey: POINTS_QUERY_KEY });
+      qc.removeQueries({ queryKey: COUPONS_QUERY_KEY });
     },
   });
 }

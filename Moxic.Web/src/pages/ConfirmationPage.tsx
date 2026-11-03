@@ -109,6 +109,9 @@ export default function ConfirmationPage() {
               items={order.items}
               totalAmount={order.totalAmount}
               createdAt={order.createdAt}
+              subtotalAmount={order.subtotalAmount}
+              discountAmount={order.discountAmount}
+              couponCode={order.couponCode}
             />
 
             {/* Bank info + QR */}
@@ -141,6 +144,8 @@ export default function ConfirmationPage() {
                   bankQrUrl={paymentConfig.bankQrUrl}
                   cryptoQrUrl={paymentConfig.cryptoQrUrl}
                   transferContent={order.orderCode}
+                  amount={order.totalAmount}
+                  discounted={(order.discountAmount ?? 0) > 0}
                 />
               </>
             )}

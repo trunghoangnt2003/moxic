@@ -78,6 +78,11 @@ export interface OpenCaseResult {
   /** Fraction of a card width from the winning card's centre (server-chosen), [-0.45, 0.45]. */
   stopOffset: number;
   reel: PublicPrize[];
+  /** A configured Discount win created a real coupon (code = rewardCode). */
+  couponCreated: boolean;
+  /** The coupon is already in the logged-in customer's wallet. */
+  couponInWallet: boolean;
+  couponExpiresAt: string | null;
 }
 
 export interface SpinMusicTrack {

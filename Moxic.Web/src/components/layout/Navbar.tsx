@@ -13,6 +13,7 @@ import {
   Package,
   LogOut,
   Coins,
+  TicketPercent,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -176,6 +177,15 @@ export default function Navbar() {
                       <Coins className="w-4 h-4" />
                       Điểm thưởng
                     </Link>
+                    <Link
+                      to="/account/coupons"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <TicketPercent className="w-4 h-4" />
+                      Mã giảm giá của tôi
+                    </Link>
                     <button
                       type="button"
                       role="menuitem"
@@ -265,6 +275,14 @@ export default function Navbar() {
                   >
                     <Coins className="w-4 h-4" />
                     Điểm thưởng
+                  </Link>
+                  <Link
+                    to="/account/coupons"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <TicketPercent className="w-4 h-4" />
+                    Mã giảm giá của tôi
                   </Link>
                   <button
                     type="button"

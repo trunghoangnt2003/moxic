@@ -1,14 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { useCartStore } from "../lib/cartStore";
 import Container from "../components/layout/Container";
 import CartSummary from "../components/checkout/CartSummary";
 import CheckoutForm from "../components/checkout/CheckoutForm";
+import CouponBox from "../components/checkout/CouponBox";
+import type { CouponQuote } from "../lib/couponApi";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const [searchParams] = useSearchParams();
+  const initialCoupon = searchParams.get("coupon") ?? undefined;
+  const [coupon, setCoupon] = useState<CouponQuote | null>(null);
 
   const handleSuccess = (orderCode: string) => {
     navigate(`/confirmation/${orderCode}`);
@@ -57,13 +63,29 @@ export default function CheckoutPage() {
                 <h3 className="font-display text-base text-[#ede6db] uppercase tracking-wider mb-6 pb-4 border-b border-[#3d352a]">
                   Thông tin tài khoản Xbox
                 </h3>
-                <CheckoutForm onSuccess={handleSuccess} />
+                <CheckoutForm
+                  onSuccess={handleSuccess}
+                  couponCode={coupon?.code}
+                  onCouponRejected={() => setCoupon(null)}
+                />
               </div>
             </div>
 
             {/* Right: Summary */}
-            <div className="w-full lg:w-[360px] flex-shrink-0">
-              <CartSummary items={items} total={total} />
+            <div className="w-full lg:w-[360px] flex-shrink-0 order-first lg:order-none">
+              <CartSummary
+                items={items}
+                total={total}
+                quote={coupon}
+                couponSlot={
+                  <CouponBox
+                    gameIds={items.map((i) => i.gameId)}
+                    applied={coupon}
+                    onApplied={setCoupon}
+                    initialCode={initialCoupon}
+                  />
+                }
+              />
             </div>
           </div>
         </div>

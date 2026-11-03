@@ -55,6 +55,9 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
       <footer className="mt-4 pt-4 border-t border-[#3d352a] flex items-center justify-between gap-3">
         <p className="text-sm text-[#b5a898]">
           Tổng: <span className="font-bold text-[#c9a96e]">{formatPrice(order.totalAmount)}</span>
+          {order.discountAmount > 0 && (
+            <span className="ml-1 text-xs text-green-400">(đã giảm {formatPrice(order.discountAmount)})</span>
+          )}
         </p>
         <Link
           to={`/account/orders/${encodeURIComponent(order.orderCode)}`}

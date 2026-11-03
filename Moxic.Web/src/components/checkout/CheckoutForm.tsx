@@ -10,9 +10,13 @@ import type { OrderCreateRequest } from "../../types/game";
 
 interface Props {
   onSuccess: (orderCode: string) => void;
+  /** Code of the applied (server-previewed) coupon. */
+  couponCode?: string;
+  /** Called when the server rejects the coupon at submit (it is removed from the summary). */
+  onCouponRejected?: () => void;
 }
 
-export default function CheckoutForm({ onSuccess }: Props) {
+export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }: Props) {
   const clearCart = useCartStore((s) => s.clearCart);
 
   const [phone, setPhone] = useState("");
@@ -62,13 +66,20 @@ export default function CheckoutForm({ onSuccess }: Props) {
         customerXboxPassword: password,
         customerZalo: zalo.trim() || undefined,
         paymentMethod: "Bank",
+        couponCode: couponCode || undefined,
       };
       const result = await createOrder(request);
       clearCart();
       onSuccess(result.orderCode);
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || "Đặt hàng thất bại. Vui lòng thử lại.";
-      setError(msg);
+      const code = err?.response?.data?.code;
+      if (typeof code === "string" && code.startsWith("COUPON_")) {
+        onCouponRejected?.();
+        setError(`${msg} Mã giảm giá đã được gỡ — bạn có thể đặt hàng lại.`);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
