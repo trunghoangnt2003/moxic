@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /checkout
+Disallow: /cart
+Disallow: /confirmation
+
+Sitemap: https://moxic.co/sitemap.xml

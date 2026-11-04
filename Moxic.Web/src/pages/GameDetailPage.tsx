@@ -10,6 +10,8 @@ import GameDiscussion from "../components/community/GameDiscussion";
 import ReportButton from "../components/community/ReportButton";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
+import ShareButton from "../components/shared/ShareButton";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
 import { useGameDetail } from "../hooks/useGames";
@@ -121,6 +123,8 @@ export default function GameDetailPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  usePageMeta(game?.name, game ? `Mua ${game.name} cho Xbox giá rẻ hơn Store tại Moxic GameStore.` : null);
 
   // "Đã xem gần đây"
   useEffect(() => {
@@ -503,6 +507,7 @@ export default function GameDetailPage() {
                   <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
                   <CompareButton gameId={game.id} gameName={game.name} className="w-full" />
                 </div>
+                <ShareButton path={`/games/${game.id}`} title={`${game.name} — giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
                 {game.xboxProductId && (
                   <a
                     href={`https://www.xbox.com/vi-VN/games/store/x/${game.xboxProductId}`}
