@@ -138,8 +138,10 @@ public class GiftsController : ControllerBase
             try
             {
                 await _notifications.AddAsync(order.CustomerId, "order",
-                    $"🎁 {order.GiftRecipientName ?? "Người nhận"} đã nhận quà",
-                    $"Đơn {order.OrderCode}: người nhận đã nhập tài khoản Xbox. Moxic sẽ cài game sau khi xác nhận thanh toán.",
+                    order.Lang == "en" ? $"🎁 {order.GiftRecipientName ?? "The recipient"} has claimed the gift" : $"🎁 {order.GiftRecipientName ?? "Người nhận"} đã nhận quà",
+                    order.Lang == "en"
+                        ? $"Order {order.OrderCode}: the recipient entered their Xbox account. Moxic will install the game once payment is confirmed."
+                        : $"Đơn {order.OrderCode}: người nhận đã nhập tài khoản Xbox. Moxic sẽ cài game sau khi xác nhận thanh toán.",
                     $"/account/orders/{order.OrderCode}");
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Gift claim notification failed for {code}", order.OrderCode); }

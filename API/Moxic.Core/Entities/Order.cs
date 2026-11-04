@@ -1,4 +1,4 @@
-﻿namespace Moxic.Core.Entities;
+namespace Moxic.Core.Entities;
 
 using Moxic.Shared.Enums;
 
@@ -8,6 +8,8 @@ public class Order
     public string OrderCode { get; set; } = string.Empty; // "MOXIC-YYYYMMDD-XXXXX"
     public string CustomerPhone { get; set; } = string.Empty;
     public string CustomerXboxEmail { get; set; } = string.Empty;
+    /// <summary>"vi" | "en" — the site language the order was placed in (its emails use it).</summary>
+    public string Lang { get; set; } = "vi";
     public string CustomerXboxPasswordEncrypted { get; set; } = string.Empty; // AES-256 encrypted
     public string? CustomerZalo { get; set; }
     public decimal TotalAmount { get; set; }

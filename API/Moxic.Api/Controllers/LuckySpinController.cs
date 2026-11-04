@@ -265,7 +265,7 @@ public class LuckySpinController : ControllerBase
                     var next = await NextFreeOpenAtAsync(userId, spinCase, now) ?? now;
                     return Conflict(new
                     {
-                        error = $"Bạn đã dùng lượt miễn phí. Lượt tiếp theo sẽ mở sau {LuckySpinRules.FormatWaitVi(next - now)}.",
+                        error = RequestLanguage.T($"Bạn đã dùng lượt miễn phí. Lượt tiếp theo sẽ mở sau {LuckySpinRules.FormatWaitVi(next - now)}.", $"You've used your free spin. The next one opens in {LuckySpinRules.FormatWaitEn(next - now)}."),
                         code = "COOLDOWN",
                         nextFreeOpenAt = next
                     });
@@ -282,7 +282,7 @@ public class LuckySpinController : ControllerBase
                     await tx.RollbackAsync();
                     return Conflict(new
                     {
-                        error = $"Bạn không đủ điểm để mở hòm này (cần {cost} điểm).",
+                        error = RequestLanguage.T($"Bạn không đủ điểm để mở hòm này (cần {cost} điểm).", $"You don't have enough points to open this case ({cost} points needed)."),
                         code = "INSUFFICIENT_POINTS",
                         pointsBalance = balance,
                         pointsCost = cost

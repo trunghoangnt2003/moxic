@@ -54,6 +54,8 @@ public static class ShoppingSchemaBootstrap
         CREATE INDEX IF NOT EXISTS "IX_WebPushSubscriptions_UserId" ON "WebPushSubscriptions" ("UserId");
 
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "IsGift" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "Lang" character varying(5) NOT NULL DEFAULT 'vi';
+        ALTER TABLE "CustomerProfiles" ADD COLUMN IF NOT EXISTS "Lang" character varying(5) NOT NULL DEFAULT 'vi';
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftToken" character varying(32);
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftFromName" character varying(60);
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftRecipientName" character varying(60);

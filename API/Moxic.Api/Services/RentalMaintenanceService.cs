@@ -64,6 +64,14 @@ public class RentalMaintenanceService : BackgroundService
             var claimed = await db.RentalOrders.Where(x => x.Id == r.Id && x.ReminderSentAt == null)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.ReminderSentAt, now), ct);
             if (claimed == 0) continue;
+            if (await notify.IsEnglishAsync(r.CustomerId))
+            {
+                await notify.AddAsync(r.CustomerId, "rental", $"⏰ {r.GameName} rental ends soon", $"Ends at {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM}. Extend now to keep playing.", $"/account/rentals/{r.Code}");
+                await SafeSend(email, r.CustomerEmail, "Your game rental ends soon — Moxic GameStore", "RENTAL ENDING SOON",
+                    $"{r.GameName} (order {r.Code}) ends at {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM/yyyy} (Vietnam time).",
+                    "You can extend it right away under \"Rented games\" on moxic.co/en so you're not interrupted.");
+                continue;
+            }
             await notify.AddAsync(r.CustomerId, "rental", $"⏰ {r.GameName} sắp hết hạn thuê", $"Hết hạn lúc {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM}. Gia hạn ngay để không bị gián đoạn.", $"/account/rentals/{r.Code}");
             await SafeSend(email, r.CustomerEmail, "Sắp hết hạn thuê game — Moxic GameStore", "SẮP HẾT HẠN THUÊ",
                 $"Game {r.GameName} (đơn {r.Code}) sẽ hết hạn lúc {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM/yyyy}.",
@@ -79,6 +87,14 @@ public class RentalMaintenanceService : BackgroundService
             var done = await db.RentalOrders.Where(x => x.Id == r.Id && x.Status == RentalStatus.Active)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, RentalStatus.Expired).SetProperty(x => x.UpdatedAt, now), ct);
             if (done == 0) continue;
+            if (await notify.IsEnglishAsync(r.CustomerId))
+            {
+                await notify.AddAsync(r.CustomerId, "rental", $"{r.GameName} rental has ended", "Extend before the account is taken back.", $"/account/rentals/{r.Code}");
+                await SafeSend(email, r.CustomerEmail, "Your game rental has ended — Moxic GameStore", "RENTAL ENDED",
+                    $"Rental {r.Code} ({r.GameName}) has ended. Moxic will take the account back shortly.",
+                    "Want to keep playing? Extend it under \"Rented games\" before the account is taken back.");
+                continue;
+            }
             await notify.AddAsync(r.CustomerId, "rental", $"{r.GameName} đã hết hạn thuê", "Gia hạn trước khi tài khoản được thu hồi.", $"/account/rentals/{r.Code}");
             await SafeSend(email, r.CustomerEmail, "Đã hết hạn thuê game — Moxic GameStore", "ĐÃ HẾT HẠN THUÊ",
                 $"Đơn thuê {r.Code} ({r.GameName}) đã hết hạn. Moxic sẽ thu hồi tài khoản trong thời gian sớm nhất.",

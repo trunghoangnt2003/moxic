@@ -267,6 +267,27 @@ app.Use(async (ctx, next) =>
         }
     }
 });
+// Browsers may reuse the public catalog briefly (instant repeat visits and back/forward; stale data is shown
+// while a fresh copy loads) and must keep the two languages apart.
+var publicCatalog = new System.Text.RegularExpressions.Regex(@"^/api/games(/featured|/facets|/[0-9a-fA-F-]{36})?/?$", System.Text.RegularExpressions.RegexOptions.Compiled);
+app.Use(async (ctx, next) =>
+{
+    var path = ctx.Request.Path.Value ?? "";
+    if (HttpMethods.IsGet(ctx.Request.Method) && (publicCatalog.IsMatch(path) || path.StartsWith("/api/seo/")))
+    {
+        ctx.Response.OnStarting(() =>
+        {
+            if (ctx.Response.StatusCode == StatusCodes.Status200OK)
+            {
+                ctx.Response.Headers.Append("Vary", "Accept-Language");
+                if (publicCatalog.IsMatch(path))
+                    ctx.Response.Headers.CacheControl = "public, max-age=30, stale-while-revalidate=300";
+            }
+            return Task.CompletedTask;
+        });
+    }
+    await next();
+});
 app.UseOutputCache();
 app.MapControllers();
 app.MapRazorPages();

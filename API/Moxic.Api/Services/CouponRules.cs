@@ -166,11 +166,11 @@ public static class CouponRules
         var applicable = c.GameId == null ? subtotal : lines.Where(l => l.GameId == c.GameId.Value).Sum(l => l.Price);
         if (c.GameId != null && applicable == 0m)
             return Fail(ErrGameScope,
-                $"Mã chỉ áp dụng cho {scopedGameName ?? "một game khác"} — game này không có trong giỏ hàng.", subtotal);
+                RequestLanguage.T($"Mã chỉ áp dụng cho {scopedGameName ?? "một game khác"} — game này không có trong giỏ hàng.", $"This code only applies to {scopedGameName ?? "another game"}, which isn't in your cart."), subtotal);
 
         if (c.MinOrderAmount.HasValue && applicable < c.MinOrderAmount.Value)
             return Fail(ErrMinOrder,
-                $"Đơn hàng cần tối thiểu {FormatVnd(c.MinOrderAmount.Value)} (phần được áp dụng) để dùng mã này.", subtotal);
+                RequestLanguage.T($"Đơn hàng cần tối thiểu {FormatVnd(c.MinOrderAmount.Value)} (phần được áp dụng) để dùng mã này.", $"The order needs at least {FormatVnd(c.MinOrderAmount.Value)} (eligible amount) to use this code."), subtotal);
 
         var discount = ComputeDiscount(TermsOf(c), applicable);
         if (discount <= 0m) return Fail(ErrNotApplicable, "Mã không áp dụng được cho giỏ hàng này.", subtotal);

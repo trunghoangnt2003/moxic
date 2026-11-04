@@ -289,7 +289,7 @@ public class PriceTrackerService
             join p in _db.CustomerProfiles on w.UserId equals p.UserId into profiles
             from p in profiles.DefaultIfEmpty()
             where w.NotifiedPrice == null || w.NotifiedPrice != g.SalePrice
-            select new { w.UserId, w.GameId, w.NotifiedPrice, g.Name, g.SalePrice, g.OriginalPrice, u.Email, u.EmailConfirmed, Alerts = p == null || p.PriceAlerts })
+            select new { w.UserId, w.GameId, w.NotifiedPrice, g.Name, g.NameEn, g.SalePrice, g.OriginalPrice, u.Email, u.EmailConfirmed, Alerts = p == null || p.PriceAlerts, En = p != null && p.Lang == "en" })
             .ToListAsync(ct);
 
         var sent = 0;
@@ -301,15 +301,23 @@ public class PriceTrackerService
                 .ExecuteUpdateAsync(s => s.SetProperty(w => w.NotifiedPrice, r.SalePrice), ct);
             if (!dropped) continue;
             var pct = r.NotifiedPrice!.Value > 0 ? Math.Round((1 - r.SalePrice / r.NotifiedPrice.Value) * 100) : 0;
-            await _notifications.AddAsync(r.UserId, "price", $"💸 {r.Name} giảm còn {Vnd(r.SalePrice)}", $"Giảm {pct}% so với lúc bạn thêm vào Yêu thích.", $"/games/{r.GameId}");
+            var gname = r.En && !string.IsNullOrWhiteSpace(r.NameEn) ? r.NameEn : r.Name;
+            if (r.En) await _notifications.AddAsync(r.UserId, "price", $"💸 {gname} is down to {Vnd(r.SalePrice)}", $"{pct}% less than when you added it to your wishlist.", $"/games/{r.GameId}");
+            else await _notifications.AddAsync(r.UserId, "price", $"💸 {r.Name} giảm còn {Vnd(r.SalePrice)}", $"Giảm {pct}% so với lúc bạn thêm vào Yêu thích.", $"/games/{r.GameId}");
             if (!r.Alerts || !r.EmailConfirmed || string.IsNullOrWhiteSpace(r.Email)) continue;
 
             try
             {
-                await _email.SendNoticeAsync(r.Email!, $"{r.Name} vừa giảm giá — Moxic GameStore", "GAME YÊU THÍCH GIẢM GIÁ",
-                    $"{r.Name} giảm từ {Vnd(r.NotifiedPrice.Value)} còn {Vnd(r.SalePrice)} (-{pct}%).",
-                    $"Mua ngay tại moxic.co/games/{r.GameId} trước khi hết ưu đãi.",
-                    "Bạn nhận email này vì game nằm trong danh sách Yêu thích. Tắt thông báo trong trang Yêu thích.");
+                if (r.En)
+                    await _email.SendNoticeAsync(r.Email!, $"{gname} is on sale — Moxic GameStore", "A WISHLISTED GAME IS ON SALE",
+                        $"{gname} dropped from {Vnd(r.NotifiedPrice.Value)} to {Vnd(r.SalePrice)} (-{pct}%).",
+                        $"Buy it now at moxic.co/en/games/{r.GameId} before the deal ends.",
+                        "You get this email because the game is on your wishlist. Turn alerts off on the Wishlist page.");
+                else
+                    await _email.SendNoticeAsync(r.Email!, $"{r.Name} vừa giảm giá — Moxic GameStore", "GAME YÊU THÍCH GIẢM GIÁ",
+                        $"{r.Name} giảm từ {Vnd(r.NotifiedPrice.Value)} còn {Vnd(r.SalePrice)} (-{pct}%).",
+                        $"Mua ngay tại moxic.co/games/{r.GameId} trước khi hết ưu đãi.",
+                        "Bạn nhận email này vì game nằm trong danh sách Yêu thích. Tắt thông báo trong trang Yêu thích.");
                 sent++;
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Price alert email failed"); }

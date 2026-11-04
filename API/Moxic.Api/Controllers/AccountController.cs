@@ -245,11 +245,12 @@ public class AccountController : ControllerBase
                 if (code != null)
                 {
                     var to = user.Email!;
+                    var en = RequestLanguage.IsEnglish;
                     _emailQueue.Enqueue(async (sf, ct) =>
                     {
                         using var scope = sf.CreateScope();
                         var svc = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                        await svc.SendPasswordResetCodeAsync(to, code);
+                        await svc.SendPasswordResetCodeAsync(to, code, en);
                     });
                 }
             }
@@ -335,6 +336,7 @@ public class AccountController : ControllerBase
             {
                 UserId = userId,
                 DisplayName = displayName,
+                Lang = RequestLanguage.IsEnglish ? "en" : "vi",
                 Points = 0,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -355,11 +357,12 @@ public class AccountController : ControllerBase
 
         var to = user.Email!;
         var name = displayName;
+        var en = RequestLanguage.IsEnglish;
         _emailQueue.Enqueue(async (sf, ct) =>
         {
             using var scope = sf.CreateScope();
             var svc = scope.ServiceProvider.GetRequiredService<IEmailService>();
-            await svc.SendEmailVerificationCodeAsync(to, name, code);
+            await svc.SendEmailVerificationCodeAsync(to, name, code, en);
         });
     }
 
@@ -374,6 +377,9 @@ public class AccountController : ControllerBase
             new ClaimsPrincipal(identity),
             new AuthenticationProperties { IsPersistent = true });
         _logger.LogInformation("Customer {UserId} signed in", user.Id);
+        // Remember the site language for emails/notifications sent later.
+        var lang = RequestLanguage.IsEnglish ? "en" : "vi";
+        await _db.CustomerProfiles.Where(p => p.UserId == user.Id && p.Lang != lang).ExecuteUpdateAsync(s => s.SetProperty(p => p.Lang, lang));
     }
 
     private async Task<CustomerMeDto> BuildMeAsync(IdentityUser user)

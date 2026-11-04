@@ -85,7 +85,7 @@ public class WishlistController : ControllerBase
     {
         if (!await _db.Games.AnyAsync(g => g.Id == gameId)) return NotFound(new { error = "Không tìm thấy game." });
         if (await _db.WishlistItems.CountAsync(w => w.UserId == UserId) >= MaxItems)
-            return BadRequest(new { error = $"Danh sách yêu thích tối đa {MaxItems} game." });
+            return BadRequest(new { error = RequestLanguage.T($"Danh sách yêu thích tối đa {MaxItems} game.", $"Your wishlist can hold up to {MaxItems} games.") });
 
         await _db.Database.ExecuteSqlInterpolatedAsync(
             $"""INSERT INTO "WishlistItems" ("UserId", "GameId", "CreatedAt", "NotifiedPrice") SELECT {UserId}, g."Id", {DateTime.UtcNow}, g."SalePrice" FROM "Games" g WHERE g."Id" = {gameId} ON CONFLICT DO NOTHING""");

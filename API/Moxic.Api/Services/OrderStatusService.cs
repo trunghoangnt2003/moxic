@@ -132,9 +132,18 @@ public class OrderStatusService
 
         // In-app notification for the customer's bell.
         var customerId = await _notifications.ResolveOrderCustomerAsync(order);
+        var en = order.Lang == "en";
         if (customerId != null)
         {
-            var (title, body) = newStatus switch
+            var (title, body) = en ? newStatus switch
+            {
+                OrderStatus.Verifying => ($"Payment received for order {order.OrderCode}", "Moxic is verifying it and getting ready to install your game."),
+                OrderStatus.Installing => ($"🔐 Moxic is signing in to Xbox for order {order.OrderCode}", "Please don't sign in to your Xbox account during the install."),
+                OrderStatus.ActionRequired => ($"Order {order.OrderCode} needs your action", reason ?? "The Xbox account details aren't correct — please check them."),
+                OrderStatus.Completed => ($"🎉 Order {order.OrderCode} is complete", "The game has been installed on your Xbox account. Have fun!"),
+                OrderStatus.Cancelled => ($"Order {order.OrderCode} was cancelled", reason ?? "Contact Moxic if you need help."),
+                _ => (null as string, null as string),
+            } : newStatus switch
             {
                 OrderStatus.Verifying => ($"Đã nhận thanh toán đơn {order.OrderCode}", "Moxic đang xác minh và chuẩn bị cài đặt game cho bạn."),
                 OrderStatus.Installing => ($"🔐 Moxic đang đăng nhập Xbox cho đơn {order.OrderCode}", "Vui lòng không đăng nhập tài khoản Xbox trong lúc cài đặt."),
@@ -153,6 +162,7 @@ public class OrderStatusService
         var _orderCode = order.OrderCode;
         var _gameName = order.Details.FirstOrDefault()?.GameName ?? "Game";
         var _reason = reason;
+        var _en = en;
         _emailQueue.Enqueue(async (sf, ct) =>
         {
             using var scope = sf.CreateScope();
@@ -162,17 +172,17 @@ public class OrderStatusService
                 switch (_newStatus)
                 {
                     case OrderStatus.Verifying:
-                        await svc.SendPaymentConfirmedAsync(_customerEmail, _orderCode);
+                        await svc.SendPaymentConfirmedAsync(_customerEmail, _orderCode, _en);
                         break;
                     case OrderStatus.Completed:
-                        await svc.SendGameInstalledAsync(_customerEmail, _orderCode, _gameName);
+                        await svc.SendGameInstalledAsync(_customerEmail, _orderCode, _gameName, _en);
                         break;
                     case OrderStatus.Cancelled:
-                        await svc.SendOrderCancelledAsync(_customerEmail, _orderCode, _reason ?? "Không có lý do");
+                        await svc.SendOrderCancelledAsync(_customerEmail, _orderCode, _reason ?? (_en ? "No reason given" : "Không có lý do"), _en);
                         break;
                     case OrderStatus.ActionRequired:
                         await svc.SendActionRequiredAsync(_customerEmail, _orderCode,
-                            "Thông tin tài khoản Xbox không chính xác. Vui lòng cập nhật.");
+                            _en ? "The Xbox account details are incorrect. Please update them." : "Thông tin tài khoản Xbox không chính xác. Vui lòng cập nhật.", _en);
                         break;
                 }
             }

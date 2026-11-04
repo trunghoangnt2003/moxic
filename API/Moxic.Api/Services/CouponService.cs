@@ -66,7 +66,7 @@ public class CouponService
 
             var edition = editionId.HasValue ? gameEditions.FirstOrDefault(e => e.Id == editionId.Value) : gameEditions[0];
             if (edition == null)
-                return (null, $"Phiên bản đã chọn của \"{g.Name}\" không còn bán, vui lòng chọn lại.");
+                return (null, RequestLanguage.T($"Phiên bản đã chọn của \"{g.Name}\" không còn bán, vui lòng chọn lại.", $"The chosen edition of \"{g.Name}\" is no longer for sale, please choose again."));
             // An edition saved without a price (0) sells at the game's own price, never for free.
             var unpriced = edition.SalePrice <= 0;
             lines.Add(new PricedLine(g.Id, $"{g.Name} — {edition.Name}",

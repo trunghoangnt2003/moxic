@@ -113,7 +113,7 @@ export default function PriceListPage() {
                   <Link to={`/games/${r.id}`} className="font-semibold hover:text-accent">
                     {r.name}
                   </Link>
-                  {r.status !== "Có sẵn" && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info/40 text-info">{r.status}</span>}
+                  {r.status !== "Có sẵn" && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info/40 text-info">{t(r.status)}</span>}
                 </td>
                 <td className="px-3 py-2.5 text-right text-text-muted line-through whitespace-nowrap">{r.storePrice > r.moxicPrice ? formatPrice(r.storePrice) : "—"}</td>
                 <td className="px-3 py-2.5 text-right font-bold text-accent whitespace-nowrap">{formatPrice(r.moxicPrice)}</td>

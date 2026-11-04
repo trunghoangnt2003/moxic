@@ -113,8 +113,10 @@ public class ChatService
             try
             {
                 using var scope = _scopes.CreateScope();
-                await scope.ServiceProvider.GetRequiredService<NotificationService>().AddAsync(thread.UserId, "chat",
-                    "💬 Moxic đã trả lời bạn", text.Length > 140 ? text[..140] + "…" : text, "/?chat=1");
+                var notes = scope.ServiceProvider.GetRequiredService<NotificationService>();
+                await notes.AddAsync(thread.UserId, "chat",
+                    await notes.IsEnglishAsync(thread.UserId) ? "💬 Moxic replied to you" : "💬 Moxic đã trả lời bạn",
+                    text.Length > 140 ? text[..140] + "…" : text, "/?chat=1");
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Chat reply notification failed"); }
         }

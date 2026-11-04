@@ -52,13 +52,14 @@ public class SeoController : ControllerBase
 
     // GET /api/seo/games/{id} — HTML for social/search crawlers
     [HttpGet("games/{id:guid}")]
-    public async Task<IActionResult> GamePage(Guid id)
+    public async Task<IActionResult> GamePage(Guid id, [FromQuery] string? lang = null)
     {
+        var en = string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         var g = await _db.Games.AsNoTracking()
             .Where(x => x.Id == id)
             .Select(x => new
             {
-                x.Id, x.Name, x.Description, x.SalePrice, x.OriginalPrice, x.Status, x.ReleaseDate, x.Publisher, x.ProductType,
+                x.Id, x.Name, x.NameEn, x.Description, x.DescriptionEn, x.SalePrice, x.OriginalPrice, x.Status, x.ReleaseDate, x.Publisher, x.ProductType,
                 Genres = x.Genres.Select(z => z.Name).ToList(),
                 Rating = x.Reviews.Where(r => !r.IsHidden).Average(r => (double?)r.Rating),
                 Reviews = x.Reviews.Count(r => !r.IsHidden),
@@ -66,23 +67,31 @@ public class SeoController : ControllerBase
             .FirstOrDefaultAsync();
         if (g == null) return NotFound();
 
-        var url = $"{_site}/games/{g.Id}";
+        var name = en && !string.IsNullOrWhiteSpace(g.NameEn) ? g.NameEn : g.Name;
+        var description = en && !string.IsNullOrWhiteSpace(g.DescriptionEn) ? g.DescriptionEn : g.Description;
+        var viUrl = $"{_site}/games/{g.Id}";
+        var enUrl = $"{_site}/en/games/{g.Id}";
+        var url = en ? enUrl : viUrl;
         var image = $"{_apiBase}/api/seo/games/{g.Id}/image";
         var discount = g.OriginalPrice > 0 && g.SalePrice < g.OriginalPrice ? (int)Math.Round((1 - g.SalePrice / g.OriginalPrice) * 100) : 0;
-        var priceText = g.SalePrice > 0 ? Vnd(g.SalePrice) : "Liên hệ";
-        var title = $"{g.Name} — {priceText}{(discount > 0 ? $" (-{discount}%)" : "")} | Moxic GameStore";
-        var desc = $"{(g.Status == GameStatus.Preorder ? "Đặt trước" : "Mua")} {g.Name} cho Xbox giá {priceText}" +
-                   (discount > 0 ? $", rẻ hơn Store {discount}%" : "") + ". " +
-                   PlainText(g.Description, 120) + " Cài đặt tận nơi, uy tín tại Moxic.";
+        var priceText = g.SalePrice > 0 ? Vnd(g.SalePrice) : (en ? "Contact us" : "Liên hệ");
+        var title = $"{name} — {priceText}{(discount > 0 ? $" (-{discount}%)" : "")} | Moxic GameStore";
+        var desc = en
+            ? $"{(g.Status == GameStatus.Preorder ? "Pre-order" : "Buy")} {name} for Xbox at {priceText}" +
+              (discount > 0 ? $", {discount}% cheaper than the Store" : "") + ". " +
+              PlainText(description, 120) + " Installed on your account by Moxic."
+            : $"{(g.Status == GameStatus.Preorder ? "Đặt trước" : "Mua")} {name} cho Xbox giá {priceText}" +
+              (discount > 0 ? $", rẻ hơn Store {discount}%" : "") + ". " +
+              PlainText(description, 120) + " Cài đặt tận nơi, uy tín tại Moxic.";
         desc = desc.Length > 300 ? desc[..299] + "…" : desc;
 
         var jsonLd = new Dictionary<string, object?>
         {
             ["@context"] = "https://schema.org",
             ["@type"] = "Product",
-            ["name"] = g.Name,
+            ["name"] = name,
             ["image"] = image,
-            ["description"] = PlainText(g.Description, 500),
+            ["description"] = PlainText(description, 500),
             ["brand"] = new Dictionary<string, object?> { ["@type"] = "Brand", ["name"] = g.Publisher ?? "Xbox" },
             ["category"] = string.Join(", ", g.Genres),
             ["offers"] = new Dictionary<string, object?>
@@ -99,22 +108,25 @@ public class SeoController : ControllerBase
             jsonLd["aggregateRating"] = new Dictionary<string, object?> { ["@type"] = "AggregateRating", ["ratingValue"] = Math.Round(g.Rating.Value, 1), ["reviewCount"] = g.Reviews };
 
         var html = new StringBuilder();
-        html.Append("<!doctype html><html lang=\"vi\"><head><meta charset=\"utf-8\">");
+        html.Append($"<!doctype html><html lang=\"{(en ? "en" : "vi")}\"><head><meta charset=\"utf-8\">");
         html.Append($"<title>{H(title)}</title>");
         html.Append($"<meta name=\"description\" content=\"{H(desc)}\">");
         html.Append($"<link rel=\"canonical\" href=\"{H(url)}\">");
-        html.Append("<meta property=\"og:type\" content=\"product\"><meta property=\"og:site_name\" content=\"Moxic GameStore\"><meta property=\"og:locale\" content=\"vi_VN\">");
+        html.Append($"<link rel=\"alternate\" hreflang=\"vi\" href=\"{H(viUrl)}\"><link rel=\"alternate\" hreflang=\"en\" href=\"{H(enUrl)}\"><link rel=\"alternate\" hreflang=\"x-default\" href=\"{H(viUrl)}\">");
+        html.Append($"<meta property=\"og:type\" content=\"product\"><meta property=\"og:site_name\" content=\"Moxic GameStore\"><meta property=\"og:locale\" content=\"{(en ? "en_US" : "vi_VN")}\">");
         html.Append($"<meta property=\"og:title\" content=\"{H(title)}\"><meta property=\"og:description\" content=\"{H(desc)}\">");
         html.Append($"<meta property=\"og:url\" content=\"{H(url)}\"><meta property=\"og:image\" content=\"{H(image)}\">");
         html.Append($"<meta property=\"product:price:amount\" content=\"{g.SalePrice.ToString(CultureInfo.InvariantCulture)}\"><meta property=\"product:price:currency\" content=\"VND\">");
         html.Append($"<meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"twitter:title\" content=\"{H(title)}\"><meta name=\"twitter:description\" content=\"{H(desc)}\"><meta name=\"twitter:image\" content=\"{H(image)}\">");
         html.Append($"<script type=\"application/ld+json\">{JsonSerializer.Serialize(jsonLd).Replace("</", "<\\/")}</script>");
         html.Append("</head><body>");
-        html.Append($"<h1>{H(g.Name)}</h1><p><strong>{H(priceText)}</strong>{(discount > 0 ? $" <s>{H(Vnd(g.OriginalPrice))}</s> -{discount}%" : "")}</p>");
-        if (g.Genres.Count > 0) html.Append($"<p>Thể loại: {H(string.Join(", ", g.Genres))}</p>");
-        if (g.ReleaseDate != null) html.Append($"<p>Phát hành: {g.ReleaseDate.Value.AddHours(7):dd/MM/yyyy}</p>");
-        html.Append($"<p>{H(PlainText(g.Description, 2000))}</p>");
-        html.Append($"<p><a href=\"{H(url)}\">Xem và mua {H(g.Name)} tại Moxic GameStore</a></p>");
+        html.Append($"<h1>{H(name)}</h1><p><strong>{H(priceText)}</strong>{(discount > 0 ? $" <s>{H(Vnd(g.OriginalPrice))}</s> -{discount}%" : "")}</p>");
+        if (g.Genres.Count > 0) html.Append($"<p>{(en ? "Genre" : "Thể loại")}: {H(string.Join(", ", g.Genres))}</p>");
+        if (g.ReleaseDate != null) html.Append($"<p>{(en ? "Release" : "Phát hành")}: {g.ReleaseDate.Value.AddHours(7):dd/MM/yyyy}</p>");
+        html.Append($"<p>{H(PlainText(description, 2000))}</p>");
+        html.Append(en
+            ? $"<p><a href=\"{H(url)}\">See and buy {H(name)} at Moxic GameStore</a> · <a href=\"{H(viUrl)}\" hreflang=\"vi\">Tiếng Việt</a></p>"
+            : $"<p><a href=\"{H(url)}\">Xem và mua {H(name)} tại Moxic GameStore</a> · <a href=\"{H(enUrl)}\" hreflang=\"en\">English</a></p>");
         html.Append("</body></html>");
 
         Response.Headers.CacheControl = "public, max-age=600";
@@ -196,11 +208,19 @@ public class SeoController : ControllerBase
     public async Task<IActionResult> Sitemap()
     {
         var games = await _db.Games.AsNoTracking().OrderByDescending(g => g.UpdatedAt).Select(g => new { g.Id, g.UpdatedAt }).ToListAsync();
-        var sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
+        var sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">");
+        string Vi(string path) => _site + path;
+        string En(string path) => _site + (path == "/" ? "/en" : "/en" + path);
+        void Both(string path, string extra)
+        {
+            var alt = $"<xhtml:link rel=\"alternate\" hreflang=\"vi\" href=\"{Vi(path)}\"/><xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{En(path)}\"/><xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"{Vi(path)}\"/>";
+            sb.Append($"<url><loc>{Vi(path)}</loc>{alt}{extra}</url>");
+            sb.Append($"<url><loc>{En(path)}</loc>{alt}{extra}</url>");
+        }
         foreach (var (path, freq, prio) in new[] { ("/", "daily", "1.0"), ("/games", "daily", "0.9"), ("/bang-gia-xbox", "daily", "0.9"), ("/hoi-dap", "weekly", "0.8"), ("/rent", "daily", "0.8"), ("/release-calendar", "weekly", "0.7"), ("/lucky-spin", "weekly", "0.6"), ("/rewards", "monthly", "0.5"), ("/leaderboard", "daily", "0.5"), ("/doan-game", "daily", "0.6") })
-            sb.Append($"<url><loc>{_site}{path}</loc><changefreq>{freq}</changefreq><priority>{prio}</priority></url>");
+            Both(path, $"<changefreq>{freq}</changefreq><priority>{prio}</priority>");
         foreach (var g in games)
-            sb.Append($"<url><loc>{_site}/games/{g.Id}</loc><lastmod>{g.UpdatedAt:yyyy-MM-dd}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>");
+            Both($"/games/{g.Id}", $"<lastmod>{g.UpdatedAt:yyyy-MM-dd}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority>");
         sb.Append("</urlset>");
         Response.Headers.CacheControl = "public, max-age=3600";
         return Content(sb.ToString(), "application/xml; charset=utf-8");

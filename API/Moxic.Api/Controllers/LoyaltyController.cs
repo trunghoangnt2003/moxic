@@ -187,7 +187,7 @@ public class LoyaltyController : ControllerBase
         var updated = await _db.CustomerProfiles.Where(p => p.UserId == user.Id && p.ReferredByUserId == null)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.ReferredByUserId, referrer));
         if (updated == 0) return Conflict(new { error = "Bạn đã nhập mã giới thiệu trước đó." });
-        return Ok(new { message = $"Đã ghi nhận! Hoàn tất đơn đầu tiên để bạn nhận {LoyaltyRules.RefereeReward} điểm và người giới thiệu nhận {LoyaltyRules.ReferrerReward} điểm." });
+        return Ok(new { message = RequestLanguage.T($"Đã ghi nhận! Hoàn tất đơn đầu tiên để bạn nhận {LoyaltyRules.RefereeReward} điểm và người giới thiệu nhận {LoyaltyRules.ReferrerReward} điểm.", $"Done! Complete your first order to get {LoyaltyRules.RefereeReward} points, and your referrer gets {LoyaltyRules.ReferrerReward} points.") });
     }
 
     // ───────────── helpers ─────────────

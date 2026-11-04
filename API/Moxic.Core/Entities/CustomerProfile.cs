@@ -15,6 +15,8 @@ public class CustomerProfile
     public int Points { get; set; }
     /// <summary>Email me when a wishlisted game drops in price.</summary>
     public bool PriceAlerts { get; set; } = true;
+    /// <summary>"vi" | "en" — the site language the customer last signed in on (emails and notifications use it).</summary>
+    public string Lang { get; set; } = "vi";
     /// <summary>This customer's personal referral code (lazily generated).</summary>
     public string? ReferralCode { get; set; }
     /// <summary>Who referred this customer (set once, shortly after sign-up).</summary>

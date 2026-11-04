@@ -50,7 +50,7 @@ public class RewardShopService
         {
             var mine = await _db.RewardRedemptions.CountAsync(r => r.RewardItemId == item.Id && r.UserId == userId);
             if (mine >= item.PerUserLimit)
-                return new(false, $"Bạn đã đổi tối đa {item.PerUserLimit} lần phần quà này", null, await _points.GetBalanceAsync(userId));
+                return new(false, RequestLanguage.T($"Bạn đã đổi tối đa {item.PerUserLimit} lần phần quà này", $"You've already redeemed this reward the maximum {item.PerUserLimit} times"), null, await _points.GetBalanceAsync(userId));
         }
 
         var claimed = await _db.RewardItems
@@ -69,7 +69,7 @@ public class RewardShopService
             await tx.RollbackAsync();
             _db.ChangeTracker.Clear();
             var vi = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
-            return new(false, $"Bạn cần {item.PointsCost.ToString("N0", vi)} điểm (hiện có {balance.ToString("N0", vi)})", null, balance);
+            return new(false, RequestLanguage.T($"Bạn cần {item.PointsCost.ToString("N0", vi)} điểm (hiện có {balance.ToString("N0", vi)})", $"You need {item.PointsCost.ToString("N0", vi)} points (you have {balance.ToString("N0", vi)})"), null, balance);
         }
 
         var now = DateTime.UtcNow;
@@ -136,8 +136,8 @@ public class RewardShopService
 
         try
         {
-            await _notifications.AddAsync(userId, "points", $"🎁 Đổi thành công: {item.Name}",
-                item.Kind == RewardKind.Coupon ? $"Mã {redemption.IssuedCode} đã vào ví mã giảm giá." : $"Mã mở hòm {redemption.IssuedCode}.",
+            await _notifications.AddAsync(userId, "points", RequestLanguage.T($"🎁 Đổi thành công: {item.Name}", $"🎁 Redeemed: {RequestLanguage.Pick(item.Name, item.NameEn)}"),
+                item.Kind == RewardKind.Coupon ? RequestLanguage.T($"Mã {redemption.IssuedCode} đã vào ví mã giảm giá.", $"Code {redemption.IssuedCode} is in your coupon wallet.") : RequestLanguage.T($"Mã mở hòm {redemption.IssuedCode}.", $"Case code {redemption.IssuedCode}."),
                 item.Kind == RewardKind.Coupon ? "/account/coupons" : $"/lucky-spin/{spinCase!.Slug}");
         }
         catch (Exception ex) { _logger.LogWarning(ex, "Redeem notification failed"); }

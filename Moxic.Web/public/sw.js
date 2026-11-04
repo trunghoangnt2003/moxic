@@ -1,5 +1,5 @@
 /* Moxic service worker: offline shell, asset caching, Web Push. */
-const VERSION = "moxic-v1";
+const VERSION = "moxic-v2";
 const SHELL = ["/", "/offline.html", "/icon-192.png", "/icon-512.png", "/icon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -20,16 +20,26 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // API, images (MinIO), fonts: straight to network
 
-  // Page navigations: network first (fresh deploys), fall back to cached shell, then offline page.
+  // Page navigations: the app shell (one index.html for every route, /en included) comes from the cache
+  // at once and is refreshed in the background (stale-while-revalidate), so repeat visits open instantly
+  // even on a slow network. First visit, or no cache yet: network, then the offline page.
   if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
+    const network = fetch(req)
+      .then((res) => {
+        if (res.ok) {
           const copy = res.clone();
           caches.open(VERSION).then((c) => c.put("/", copy));
-          return res;
-        })
-        .catch(() => caches.match("/").then((r) => r || caches.match("/offline.html")))
+        }
+        return res;
+      });
+    event.respondWith(
+      caches.match("/").then((cached) => {
+        if (cached) {
+          event.waitUntil(network.catch(() => undefined));
+          return cached;
+        }
+        return network.catch(() => caches.match("/offline.html"));
+      })
     );
     return;
   }
@@ -60,7 +70,7 @@ self.addEventListener("push", (event) => {
       icon: data.icon || "/icon-192.png",
       badge: data.badge || "/icon-192.png",
       data: { url: data.url || "/" },
-      lang: "vi",
+      lang: data.lang || "vi",
     })
   );
 });

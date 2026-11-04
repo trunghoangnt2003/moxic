@@ -21,6 +21,17 @@ public class NotificationService
         _logger = logger;
     }
 
+    /// <summary>True when the customer last used the English site (profile language).</summary>
+    public async Task<bool> IsEnglishAsync(string? userId) =>
+        !string.IsNullOrEmpty(userId) && await _db.CustomerProfiles.AsNoTracking().AnyAsync(p => p.UserId == userId && p.Lang == "en");
+
+    /// <summary>Adds a notification in the customer's language: make(en) returns the title and body.</summary>
+    public async Task AddLocalizedAsync(string userId, string type, Func<bool, (string Title, string? Body)> make, string? link = null)
+    {
+        var (title, body) = make(await IsEnglishAsync(userId));
+        await AddAsync(userId, type, title, body, link);
+    }
+
     public async Task AddAsync(string userId, string type, string title, string? body = null, string? link = null)
     {
         if (string.IsNullOrEmpty(userId)) return;

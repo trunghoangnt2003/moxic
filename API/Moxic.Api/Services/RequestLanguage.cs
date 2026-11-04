@@ -21,4 +21,7 @@ public static class RequestLanguage
 
     /// <summary>The English text on English requests when there is one, otherwise the Vietnamese source.</summary>
     public static string Pick(string vi, string? en) => IsEnglish && !string.IsNullOrWhiteSpace(en) ? en : vi;
+
+    /// <summary>Message in the request's language: T("Vietnamese", "English").</summary>
+    public static string T(string vi, string en) => IsEnglish ? en : vi;
 }

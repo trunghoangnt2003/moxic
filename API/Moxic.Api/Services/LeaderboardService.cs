@@ -156,8 +156,12 @@ public class LeaderboardAwardJob : BackgroundService
                 await db.SaveChangesAsync();
                 await points.CreditOnceAsync(row.UserId, prize, PointsReason.Leaderboard, $"lb:{month}:{board}:{row.Rank}",
                     $"Top {row.Rank} {LeaderboardService.BoardTitle(board)} tháng {month[5..]}/{month[..4]}");
-                await notifications.AddAsync(row.UserId, "points", $"🏆 Bạn đạt Top {row.Rank} — {LeaderboardService.BoardTitle(board)}!",
-                    $"Tháng {month[5..]}/{month[..4]}: +{prize} điểm và huy hiệu {LeaderboardService.Badge(award)}.", "/leaderboard");
+                if (await notifications.IsEnglishAsync(row.UserId))
+                    await notifications.AddAsync(row.UserId, "points", $"🏆 You made the Top {row.Rank} this month!",
+                        $"{month[5..]}/{month[..4]}: +{prize} points and a new badge.", "/leaderboard");
+                else
+                    await notifications.AddAsync(row.UserId, "points", $"🏆 Bạn đạt Top {row.Rank} — {LeaderboardService.BoardTitle(board)}!",
+                        $"Tháng {month[5..]}/{month[..4]}: +{prize} điểm và huy hiệu {LeaderboardService.Badge(award)}.", "/leaderboard");
             }
         }
         if (any) _logger.LogInformation("Leaderboard awards for {Month} granted", month);

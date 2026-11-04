@@ -45,7 +45,7 @@ public class PaymentTimeoutService : BackgroundService
         var cutoff = DateTime.UtcNow.AddHours(-24);
         var candidates = await db.Orders.AsNoTracking()
             .Where(o => o.Status == OrderStatus.Pending && o.CreatedAt < cutoff)
-            .Select(o => new { o.Id, o.OrderCode, o.CustomerXboxEmail })
+            .Select(o => new { o.Id, o.OrderCode, o.CustomerXboxEmail, o.Lang })
             .ToListAsync(ct);
         if (candidates.Count == 0) return;
 
@@ -75,7 +75,7 @@ public class PaymentTimeoutService : BackgroundService
             cancelled++;
             TelegramOrderNotifier.RefreshInBackground(_scopeFactory, order.Id, _logger);
 
-            try { await email.SendOrderCancelledAsync(order.CustomerXboxEmail, order.OrderCode, reason); }
+            try { await email.SendOrderCancelledAsync(order.CustomerXboxEmail, order.OrderCode, order.Lang == "en" ? "Payment not received within 24 hours" : reason, order.Lang == "en"); }
             catch (Exception ex) { _logger.LogWarning(ex, "Failed to send cancellation email for order {code}", order.OrderCode); }
         }
         _logger.LogInformation("Auto-cancelled {count} expired orders", cancelled);

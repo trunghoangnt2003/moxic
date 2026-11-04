@@ -48,7 +48,7 @@ public class SpinCodeShopService
         if (spinCase.OpenMethod != SpinCaseOpenMethod.Code || spinCase.CodePrice <= 0)
             return (null, "Hòm này chưa mở bán mã quay.");
         if (quantity < 1 || quantity > MaxQuantity)
-            return (null, $"Số lượt mua từ 1 đến {MaxQuantity}.");
+            return (null, RequestLanguage.T($"Số lượt mua từ 1 đến {MaxQuantity}.", $"You can buy 1 to {MaxQuantity} spins."));
 
         var since = DateTime.UtcNow.AddHours(-24);
         var pending = await _db.SpinCodeOrders.CountAsync(o => o.UserId == userId && o.Status == "Pending" && o.CreatedAt > since);
@@ -154,9 +154,11 @@ public class SpinCodeShopService
             _logger.LogInformation("Spin code order {Order} paid, issued {Code} ({Uses} uses)", order.Code, issued.Code, issued.MaxUses);
             try
             {
+                var en = await _notifications.IsEnglishAsync(order.UserId);
+                var caseName = en && !string.IsNullOrWhiteSpace(order.Case?.NameEn) ? order.Case!.NameEn : order.Case?.Name;
                 await _notifications.AddAsync(order.UserId, "spin",
-                    $"🎰 Mã quay của bạn đã sẵn sàng: {issued.Code}",
-                    $"{order.Quantity} lượt mở {order.Case?.Name}. Mở hòm ngay!",
+                    en ? $"🎰 Your spin code is ready: {issued.Code}" : $"🎰 Mã quay của bạn đã sẵn sàng: {issued.Code}",
+                    en ? $"{order.Quantity} spins for {caseName}. Open the case now!" : $"{order.Quantity} lượt mở {caseName}. Mở hòm ngay!",
                     $"/lucky-spin/{order.Case?.Slug}?code={issued.Code}");
             }
             catch (Exception e)

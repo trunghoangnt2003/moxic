@@ -112,10 +112,20 @@ public class AdminRentalsController : ControllerBase
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
 
-        QueueEmail(r.CustomerEmail, "Thuê game — Moxic GameStore", r.Kind == "Extension" ? "GIA HẠN THÀNH CÔNG" : "ĐÃ BÀN GIAO GAME THUÊ", notice);
+        var en = await _notifications.IsEnglishAsync(r.CustomerId);
+        if (en)
+        {
+            var noticeEn = r.Kind == "Extension"
+                ? $"Rental {r.Code} ({r.GameName}) has been extended. New end: {ToVn(r.Kind == "Extension" ? r.Parent?.EndsAt : r.EndsAt)} (Vietnam time)."
+                : $"Rental {r.Code} ({r.GameName}) is ready. The sign-in details are under \"Rented games\" on moxic.co/en. Ends {ToVn(r.EndsAt)} (Vietnam time).";
+            QueueEmail(r.CustomerEmail, "Game rental — Moxic GameStore", r.Kind == "Extension" ? "RENTAL EXTENDED" : "YOUR RENTAL IS READY", noticeEn);
+        }
+        else QueueEmail(r.CustomerEmail, "Thuê game — Moxic GameStore", r.Kind == "Extension" ? "GIA HẠN THÀNH CÔNG" : "ĐÃ BÀN GIAO GAME THUÊ", notice);
         await _notifications.AddAsync(r.CustomerId, "rental",
-            r.Kind == "Extension" ? $"Đã gia hạn {r.GameName} thêm {r.Days} ngày" : $"🎮 {r.GameName} đã sẵn sàng để chơi",
-            r.Kind == "Extension" ? "Hạn thuê mới đã được cập nhật." : "Xem thông tin đăng nhập trong mục Game đang thuê.",
+            en ? (r.Kind == "Extension" ? $"{r.GameName} extended by {r.Days} days" : $"🎮 {r.GameName} is ready to play")
+               : (r.Kind == "Extension" ? $"Đã gia hạn {r.GameName} thêm {r.Days} ngày" : $"🎮 {r.GameName} đã sẵn sàng để chơi"),
+            en ? (r.Kind == "Extension" ? "The new rental end date has been updated." : "See the sign-in details under Rented games.")
+               : (r.Kind == "Extension" ? "Hạn thuê mới đã được cập nhật." : "Xem thông tin đăng nhập trong mục Game đang thuê."),
             $"/account/rentals/{(r.Kind == "Extension" ? r.Parent!.Code : r.Code)}");
         return NoContent();
     }
@@ -148,8 +158,16 @@ public class AdminRentalsController : ControllerBase
         r.CancelReason = reason;
         r.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
-        QueueEmail(r.CustomerEmail, "Đơn thuê đã hủy — Moxic GameStore", "ĐƠN THUÊ ĐÃ HỦY", $"Đơn {r.Code} ({r.GameName}) đã bị hủy. Lý do: {reason}.");
-        await _notifications.AddAsync(r.CustomerId, "rental", $"Đơn thuê {r.Code} đã bị hủy", reason, r.Kind == "Rental" ? $"/account/rentals/{r.Code}" : null);
+        if (await _notifications.IsEnglishAsync(r.CustomerId))
+        {
+            QueueEmail(r.CustomerEmail, "Rental cancelled — Moxic GameStore", "RENTAL CANCELLED", $"Rental {r.Code} ({r.GameName}) was cancelled. Reason: {reason}.");
+            await _notifications.AddAsync(r.CustomerId, "rental", $"Rental {r.Code} was cancelled", reason, r.Kind == "Rental" ? $"/account/rentals/{r.Code}" : null);
+        }
+        else
+        {
+            QueueEmail(r.CustomerEmail, "Đơn thuê đã hủy — Moxic GameStore", "ĐƠN THUÊ ĐÃ HỦY", $"Đơn {r.Code} ({r.GameName}) đã bị hủy. Lý do: {reason}.");
+            await _notifications.AddAsync(r.CustomerId, "rental", $"Đơn thuê {r.Code} đã bị hủy", reason, r.Kind == "Rental" ? $"/account/rentals/{r.Code}" : null);
+        }
         return NoContent();
     }
 

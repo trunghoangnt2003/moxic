@@ -70,10 +70,10 @@ public class GuessController : ControllerBase
 
         // Hints unlock with wrong guesses.
         var hints = new List<object>();
-        if (tries >= 2 || finished) hints.Add(new { label = "Thể loại", value = game.Genres.Count > 0 ? string.Join(", ", game.Genres.Take(2)) : "—" });
-        if (tries >= 3 || finished) hints.Add(new { label = "Năm phát hành", value = game.ReleaseDate?.AddHours(7).Year.ToString() ?? "—" });
-        if (tries >= 4 || finished) hints.Add(new { label = "Nhà phát hành", value = game.Publisher ?? "—" });
-        if (tries >= 5 || finished) hints.Add(new { label = "Chữ cái đầu", value = $"{char.ToUpperInvariant(game.Name.Trim()[0])}… ({game.Name.Length} ký tự)" });
+        if (tries >= 2 || finished) hints.Add(new { label = RequestLanguage.T("Thể loại", "Genre"), value = game.Genres.Count > 0 ? string.Join(", ", game.Genres.Take(2)) : "—" });
+        if (tries >= 3 || finished) hints.Add(new { label = RequestLanguage.T("Năm phát hành", "Release year"), value = game.ReleaseDate?.AddHours(7).Year.ToString() ?? "—" });
+        if (tries >= 4 || finished) hints.Add(new { label = RequestLanguage.T("Nhà phát hành", "Publisher"), value = game.Publisher ?? "—" });
+        if (tries >= 5 || finished) hints.Add(new { label = RequestLanguage.T("Chữ cái đầu", "First letter"), value = RequestLanguage.T($"{char.ToUpperInvariant(game.Name.Trim()[0])}… ({game.Name.Length} ký tự)", $"{char.ToUpperInvariant(game.Name.Trim()[0])}… ({game.Name.Length} characters)") });
 
         var stats = await _cache.GetOrCreateAsync($"guess-stats:{p.Date}", async e =>
         {

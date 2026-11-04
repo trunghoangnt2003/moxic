@@ -96,6 +96,7 @@ public class OrdersController : ControllerBase
         {
             Id = Guid.NewGuid(),
             OrderCode = orderCode,
+            Lang = RequestLanguage.IsEnglish ? "en" : "vi",
             CustomerPhone = request.CustomerPhone,
             CustomerXboxEmail = request.IsGift ? string.Empty : request.CustomerXboxEmail.Trim(),
             CustomerXboxPasswordEncrypted = encryptedPassword,
