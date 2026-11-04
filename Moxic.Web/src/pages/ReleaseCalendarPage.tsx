@@ -64,7 +64,7 @@ export default function ReleaseCalendarPage() {
         <div className="space-y-10">
           {groups.map(([month, games]) => (
             <section key={month}>
-              <h2 className="sticky top-14 z-10 py-2 bg-bg-base/90 backdrop-blur-md font-display text-lg font-bold text-accent border-b border-white/5 mb-3">{month}</h2>
+              <h2 className="sticky top-[calc(3.5rem+var(--sat))] z-10 py-2 bg-bg-base/90 backdrop-blur-md font-display text-lg font-bold text-accent border-b border-white/5 mb-3">{month}</h2>
               <ul className="space-y-2">
                 {games.map((g) => {
                   const d = new Date(g.releaseDate!);

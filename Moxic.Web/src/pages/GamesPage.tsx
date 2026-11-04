@@ -233,7 +233,7 @@ export default function GamesPage() {
       </div>
 
       {/* Toolbar: search + (mobile filter button) + sort */}
-      <div className="sticky top-14 z-30 -mx-4 px-4 py-3 mb-4 bg-bg-base/90 backdrop-blur-md border-b border-white/5 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none md:border-0">
+      <div className="sticky top-[calc(3.5rem+var(--sat))] z-30 -mx-4 px-4 py-3 mb-4 bg-bg-base/90 backdrop-blur-md border-b border-white/5 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none md:border-0">
         <div className="flex gap-2 md:gap-3">
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />

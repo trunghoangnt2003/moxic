@@ -73,7 +73,7 @@ export default function PurchaseToast() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed left-3 bottom-3 sm:left-5 sm:bottom-5 z-40 w-[calc(100vw-6rem)] max-w-[340px] transition-all duration-500 ${
+      className={`fixed left-3 bottom-[calc(0.75rem+var(--sab))] sm:left-5 sm:bottom-5 z-40 w-[calc(100vw-6rem)] max-w-[340px] transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
       }`}
     >

@@ -47,7 +47,7 @@ export function CompareBar() {
   const games = ids.map((id) => data?.items.find((g) => g.id === id)).filter(Boolean);
 
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 w-[calc(100vw-1.5rem)] max-w-md">
+    <div className="fixed bottom-[calc(0.75rem+var(--sab))] left-1/2 -translate-x-1/2 z-40 w-[calc(100vw-1.5rem)] max-w-md">
       <div className="flex items-center gap-2 p-2 bg-bg-surface/95 backdrop-blur-md border border-sky-500/30 shadow-2xl shadow-black/60">
         <div className="flex gap-1.5 flex-1 min-w-0">
           {Array.from({ length: MAX }).map((_, i) => {

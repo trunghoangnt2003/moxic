@@ -155,3 +155,10 @@
   60% { transform: rotate(-6deg); }
   75% { transform: rotate(3deg); }
 }
+
+/* Safe areas (notch / Dynamic Island / home indicator) — the installed PWA draws under the
+   translucent iOS status bar, so fixed/sticky chrome must pad itself. 0 on desktop. */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}

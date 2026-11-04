@@ -148,7 +148,7 @@ export default function AnnouncementModal() {
 
       <div
         key={a.id}
-        className={`relative w-full sm:max-w-[640px] max-h-[94vh] overflow-y-auto bg-bg-surface border border-white/10 ${meta.glow} animate-[popIn_0.35s_cubic-bezier(0.2,0.9,0.25,1.1)]`}
+        className={`relative w-full sm:max-w-[640px] max-h-[94vh] overflow-y-auto pb-[var(--sab)] sm:pb-0 bg-bg-surface border border-white/10 ${meta.glow} animate-[popIn_0.35s_cubic-bezier(0.2,0.9,0.25,1.1)]`}
       >
         {/* Banner */}
         <div className="relative aspect-[16/9] sm:aspect-[16/8] bg-bg-elevated overflow-hidden">

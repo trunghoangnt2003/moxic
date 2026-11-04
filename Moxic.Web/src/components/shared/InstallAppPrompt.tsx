@@ -44,7 +44,7 @@ export default function InstallAppPrompt() {
   if (!visible || QUIET.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <div className="fixed inset-x-2 bottom-2 sm:left-auto sm:right-4 sm:bottom-4 sm:w-[380px] z-[45] animate-[popIn_0.35s_ease-out]">
+    <div className="fixed inset-x-2 bottom-[calc(0.5rem+var(--sab))] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[380px] z-[45] animate-[popIn_0.35s_ease-out]">
       <div className="relative bg-bg-surface/95 backdrop-blur-md border border-accent/30 shadow-2xl shadow-black/60 p-4">
         <button type="button" onClick={dismiss} aria-label="Đóng" className="absolute top-2 right-2 p-1 text-text-muted hover:text-white cursor-pointer">
           <X className="w-4 h-4" />

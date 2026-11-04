@@ -80,7 +80,7 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="fixed sm:absolute inset-x-2 sm:inset-x-auto top-14 sm:top-auto sm:right-0 sm:mt-3 sm:w-[360px] z-[60] bg-bg-surface border border-white/10 shadow-2xl shadow-black/60">
+        <div className="fixed sm:absolute inset-x-2 sm:inset-x-auto top-[calc(3.5rem+var(--sat))] sm:top-auto sm:right-0 sm:mt-3 sm:w-[360px] z-[60] bg-bg-surface border border-white/10 shadow-2xl shadow-black/60">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
             <p className="font-display font-bold">Thông báo</p>
             {unread > 0 && (

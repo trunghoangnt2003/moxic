@@ -620,7 +620,7 @@ export default function GameDetailPage() {
 
       {/* Sticky bottom CTA - mobile only */}
       {showStickyCTA && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-surface/95 backdrop-blur-md border-t border-border p-3 flex items-center gap-3 shadow-2xl animate-slide-up">
+        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-surface/95 backdrop-blur-md border-t border-border p-3 pb-[calc(0.75rem+var(--sab))] flex items-center gap-3 shadow-2xl animate-slide-up">
           <div className="flex-1 min-w-0">
             <p className="font-display text-lg text-accent">
               {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}

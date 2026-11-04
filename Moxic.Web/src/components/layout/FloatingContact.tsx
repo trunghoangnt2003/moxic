@@ -87,8 +87,8 @@ export default function FloatingContact() {
   const hasSecondary = secondary.length > 0;
 
   const position = onGameDetail
-    ? "right-4 bottom-24 lg:bottom-6 md:right-6"
-    : "right-4 bottom-4 md:right-6 md:bottom-6";
+    ? "right-4 bottom-[calc(6rem+var(--sab))] lg:bottom-6 md:right-6"
+    : "right-4 bottom-[calc(1rem+var(--sab))] md:right-6 md:bottom-6";
 
   return (
     <div className={`pointer-events-none fixed z-40 flex flex-col items-end gap-3 ${position}`}>
