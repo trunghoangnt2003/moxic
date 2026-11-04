@@ -6,6 +6,7 @@ WORKDIR /app
 COPY Moxic.Web/package*.json ./
 RUN npm ci
 COPY Moxic.Web/src ./src
+COPY Moxic.Web/public ./public
 COPY Moxic.Web/index.html Moxic.Web/tsconfig.json Moxic.Web/tsconfig.app.json Moxic.Web/tsconfig.node.json Moxic.Web/vite.config.ts ./
 RUN npm run build
 

@@ -25,6 +25,7 @@ import Container from "../components/layout/Container";
 import { SectionLoader } from "../components/shared/MoxicLoader";
 import { apiError, changePassword, getLibrary, getProfile, updateProfile } from "../lib/communityApi";
 import { formatPrice } from "../lib/utils";
+import PushToggle from "../components/shared/PushToggle";
 
 const INSTALL = {
   Installed: { label: "Đã cài đặt", cls: "text-emerald-300 bg-emerald-500/15 border-emerald-500/40", icon: CheckCircle2 },
@@ -170,6 +171,9 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
           <input type="checkbox" className="sr-only peer" checked={priceAlerts} onChange={(e) => save.mutate({ priceAlerts: e.target.checked })} />
           <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-rose-500 after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
         </label>
+        <div className="pt-4 border-t border-white/5">
+          <PushToggle />
+        </div>
       </section>
 
       <section className="bg-bg-surface border border-border p-5 space-y-4">

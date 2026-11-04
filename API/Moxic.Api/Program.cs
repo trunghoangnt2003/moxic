@@ -91,6 +91,7 @@ builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<RentalService>();
 builder.Services.AddScoped<CommunityService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<PushService>();
 builder.Services.AddHttpClient(PriceTrackerService.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddScoped<PriceTrackerService>();
 builder.Services.AddHostedService<PriceTrackerJob>();

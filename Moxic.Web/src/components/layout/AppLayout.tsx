@@ -7,6 +7,7 @@ import AnnouncementModal from "../shared/AnnouncementModal";
 import PurchaseToast from "../shared/PurchaseToast";
 import { CompareBar } from "../games/Compare";
 import ReferralCapture from "../shared/ReferralCapture";
+import InstallAppPrompt from "../shared/InstallAppPrompt";
 
 
 export default function AppLayout() {
@@ -23,6 +24,7 @@ export default function AppLayout() {
       <PurchaseToast />
       <CompareBar />
       <ReferralCapture />
+      <InstallAppPrompt />
     </div>
   );
 }

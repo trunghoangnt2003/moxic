@@ -24,6 +24,19 @@ public static class ShoppingSchemaBootstrap
         CREATE INDEX IF NOT EXISTS "IX_Notifications_UserId_CreatedAt" ON "Notifications" ("UserId", "CreatedAt");
 
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "SaleEndsAt" timestamp with time zone;
+
+        CREATE TABLE IF NOT EXISTS "WebPushSubscriptions" (
+            "Id" uuid NOT NULL,
+            "UserId" text NOT NULL,
+            "Endpoint" character varying(1000) NOT NULL,
+            "P256dh" character varying(200) NOT NULL,
+            "Auth" character varying(100) NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_WebPushSubscriptions" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_WebPushSubscriptions_aspnetusers_UserId" FOREIGN KEY ("UserId") REFERENCES aspnetusers ("Id") ON DELETE CASCADE
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_WebPushSubscriptions_Endpoint" ON "WebPushSubscriptions" ("Endpoint");
+        CREATE INDEX IF NOT EXISTS "IX_WebPushSubscriptions_UserId" ON "WebPushSubscriptions" ("UserId");
         """;
 
     public static Task EnsureAsync(MoxicDbContext db) => db.Database.ExecuteSqlRawAsync(Sql);

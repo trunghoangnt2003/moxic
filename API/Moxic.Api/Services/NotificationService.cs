@@ -11,9 +11,11 @@ public class NotificationService
     private readonly MoxicDbContext _db;
     private readonly UserManager<IdentityUser> _users;
     private readonly ILogger<NotificationService> _logger;
+    private readonly PushService _push;
 
-    public NotificationService(MoxicDbContext db, UserManager<IdentityUser> users, ILogger<NotificationService> logger)
+    public NotificationService(MoxicDbContext db, UserManager<IdentityUser> users, ILogger<NotificationService> logger, PushService push)
     {
+        _push = push;
         _db = db;
         _users = users;
         _logger = logger;
@@ -28,6 +30,8 @@ public class NotificationService
                 INSERT INTO "Notifications" ("Id", "UserId", "Type", "Title", "Body", "Link", "CreatedAt")
                 VALUES ({Guid.NewGuid()}, {userId}, {type}, {Cut(title, 150)}, {(body == null ? null : Cut(body, 500))}, {link}, {DateTime.UtcNow})
                 """);
+            // Also to the customer's phones/browsers (PWA push).
+            _push.Enqueue(userId, title, body, link);
         }
         catch (Exception ex)
         {

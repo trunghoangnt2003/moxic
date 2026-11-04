@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Bell, CheckCheck, Coins, KeyRound, Package, Tag, Info } from "lucide-react";
 import { timeAgo } from "../../lib/utils";
+import PushToggle from "../shared/PushToggle";
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api", withCredentials: true });
 
@@ -117,6 +118,7 @@ export default function NotificationBell() {
               );
             })}
           </ul>
+          <PushToggle compact />
         </div>
       )}
     </div>
