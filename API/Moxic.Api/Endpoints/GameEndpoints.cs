@@ -20,6 +20,9 @@ public static class GameEndpoints
             string? genres,
             string? tags,
             string? ids,
+            string? type,
+            string? region,
+            string? publisher,
             decimal? minPrice,
             decimal? maxPrice,
             bool? onSale,
@@ -51,6 +54,13 @@ public static class GameEndpoints
             var tagIds = ParseIds(tags);
             if (tagIds.Count > 0)
                 query = query.Where(g => g.Tags.Any(t => tagIds.Contains(t.Id)));
+
+            var types = ParseList(type);
+            if (types.Count > 0) query = query.Where(g => types.Contains(g.ProductType));
+            var regions = ParseList(region);
+            if (regions.Count > 0) query = query.Where(g => g.Region != null && regions.Contains(g.Region));
+            var publishers = ParseList(publisher);
+            if (publishers.Count > 0) query = query.Where(g => g.Publisher != null && publishers.Contains(g.Publisher));
 
             var idList = ParseIds(ids);
             if (idList.Count > 0)
@@ -86,7 +96,13 @@ public static class GameEndpoints
                 .Take(pageSize)
                 .ToListAsync();
 
-            var sold = await LoadSoldCountsAsync(dbContext, items.Select(g => g.Id).ToList());
+            var pageIds = items.Select(g => g.Id).ToList();
+            var sold = await LoadSoldCountsAsync(dbContext, pageIds);
+            var editionCounts = await dbContext.GameEditions.AsNoTracking()
+                .Where(e => pageIds.Contains(e.GameId) && e.IsActive)
+                .GroupBy(e => e.GameId)
+                .Select(g => new { g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
             var dtos = new List<GameListItemDto>();
             foreach (var game in items)
             {
@@ -108,7 +124,11 @@ public static class GameEndpoints
                     Status = game.Status.ToString(),
                     ReleaseDate = game.ReleaseDate,
                     CoverImageUrl = coverUrl,
-                    SoldCount = sold.GetValueOrDefault(game.Id)
+                    SoldCount = sold.GetValueOrDefault(game.Id),
+                    ProductType = game.ProductType,
+                    Region = game.Region,
+                    Publisher = game.Publisher,
+                    EditionCount = editionCounts.GetValueOrDefault(game.Id)
                 });
             }
 
@@ -140,10 +160,26 @@ public static class GameEndpoints
             var preorder = await games.CountAsync(g => g.Status == Moxic.Shared.Enums.GameStatus.Preorder);
             var onSale = await games.CountAsync(g => g.SalePrice < g.OriginalPrice);
 
+            var typeFacets = await games
+                .GroupBy(g => g.ProductType)
+                .Select(grp => new { id = grp.Key, name = grp.Key, count = grp.Count() })
+                .OrderByDescending(x => x.count).ToListAsync();
+            var regionFacets = await games.Where(g => g.Region != null && g.Region != "")
+                .GroupBy(g => g.Region!)
+                .Select(grp => new { id = grp.Key, name = grp.Key, count = grp.Count() })
+                .OrderByDescending(x => x.count).ToListAsync();
+            var publisherFacets = await games.Where(g => g.Publisher != null && g.Publisher != "")
+                .GroupBy(g => g.Publisher!)
+                .Select(grp => new { id = grp.Key, name = grp.Key, count = grp.Count() })
+                .OrderByDescending(x => x.count).ThenBy(x => x.name).ToListAsync();
+
             return Results.Ok(new
             {
                 genres = genreFacets,
                 tags = tagFacets,
+                types = typeFacets,
+                regions = regionFacets,
+                publishers = publisherFacets,
                 price = new { min = minPrice, max = maxPrice },
                 status = new { available, preorder },
                 onSale
@@ -194,6 +230,8 @@ public static class GameEndpoints
                 .Include(g => g.Genres)
                 .Include(g => g.Tags)
                 .Include(g => g.Reviews)
+                .Include(g => g.Editions)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(g => g.Id == id);
 
             if (game == null) return Results.NotFound();
@@ -215,7 +253,7 @@ public static class GameEndpoints
             }
 
             var purchaseCount = await dbContext.OrderDetails
-                .CountAsync(od => od.GameId == id);
+                .CountAsync(od => od.GameId == id && SoldStatuses.Contains(od.Order.Status));
 
             var storeRating = game.Reviews.Count > 0
                 ? Math.Round(game.Reviews.Average(r => r.Rating), 1)
@@ -237,6 +275,23 @@ public static class GameEndpoints
                 Media = mediaDtos,
                 PurchaseCount = purchaseCount,
                 StoreRating = storeRating,
+                ProductType = game.ProductType,
+                Region = game.Region,
+                Publisher = game.Publisher,
+                Developer = game.Developer,
+                Editions = game.Editions
+                    .Where(e => e.IsActive)
+                    .OrderBy(e => e.DisplayOrder).ThenBy(e => e.SalePrice)
+                    .Select(e => new GameEditionDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Includes = (e.Includes ?? string.Empty)
+                            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
+                        OriginalPrice = e.OriginalPrice,
+                        SalePrice = e.SalePrice,
+                        IsDefault = e.IsDefault
+                    }).ToList(),
                 Reviews = game.Reviews
                     .OrderByDescending(r => r.CreatedAt)
                     .Take(8)
@@ -336,6 +391,12 @@ public static class GameEndpoints
                 .Distinct()
                 .Take(30)
                 .ToList();
+
+    private static List<string> ParseList(string? csv) =>
+        string.IsNullOrWhiteSpace(csv)
+            ? new List<string>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(s => s.Length <= 100).Distinct().Take(20).ToList();
 
     private static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");

@@ -144,5 +144,10 @@ export function toGameDetail(game: GameListItem): GameDetail {
     purchaseCount: entry?.purchaseCount ?? 0,
     storeRating: avgRating,
     reviews,
+    productType: game.productType ?? "Game",
+    region: game.region ?? null,
+    publisher: game.publisher ?? null,
+    developer: null,
+    editions: [],
   };
 }

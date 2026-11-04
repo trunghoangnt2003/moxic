@@ -82,7 +82,7 @@ public class OrdersController : ControllerBase
             return BadRequest(new { error = CouponRules.MsgLoginRequired, code = CouponRules.ErrLoginRequired });
 
         // Server-side pricing from Game.SalePrice — the client Price is ignored (T-smv-01).
-        var (lines, cartError) = await _coupons.PriceLinesAsync(request.Items.Select(i => i.GameId).ToList());
+        var (lines, cartError) = await _coupons.PriceLinesAsync(request.Items.Select(i => (i.GameId, i.EditionId)).ToList());
         if (lines == null) return BadRequest(new { error = cartError });
         var subtotal = lines.Sum(l => l.Price);
 
@@ -117,7 +117,9 @@ public class OrdersController : ControllerBase
                     OrderId = order.Id,
                     GameId = line.GameId,
                     GameName = line.GameName,
-                    Price = line.Price
+                    Price = line.Price,
+                    EditionId = line.EditionId,
+                    EditionName = line.EditionName
                 });
             }
 

@@ -13,4 +13,9 @@ public class GameListItemDto
     public string? CoverImageUrl { get; set; }
     /// <summary>Copies sold in paid/fulfilled orders (social proof).</summary>
     public int SoldCount { get; set; }
+    public string ProductType { get; set; } = "Game";
+    public string? Region { get; set; }
+    public string? Publisher { get; set; }
+    /// <summary>Number of active editions; &gt; 1 shows "Từ …" pricing.</summary>
+    public int EditionCount { get; set; }
 }

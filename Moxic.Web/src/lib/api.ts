@@ -13,6 +13,9 @@ export interface GameQuery {
   genres?: string[];
   tags?: string[];
   ids?: string[];
+  types?: string[];
+  regions?: string[];
+  publishers?: string[];
   minPrice?: number;
   maxPrice?: number;
   onSale?: boolean;
@@ -28,6 +31,9 @@ export async function getGames(query: GameQuery = {}) {
   if (query.genres?.length) params.genres = query.genres.join(",");
   if (query.tags?.length) params.tags = query.tags.join(",");
   if (query.ids?.length) params.ids = query.ids.join(",");
+  if (query.types?.length) params.type = query.types.join(",");
+  if (query.regions?.length) params.region = query.regions.join(",");
+  if (query.publishers?.length) params.publisher = query.publishers.join(",");
   if (query.minPrice != null) params.minPrice = query.minPrice;
   if (query.maxPrice != null) params.maxPrice = query.maxPrice;
   if (query.onSale) params.onSale = true;

@@ -6,7 +6,8 @@ import GameCard from "../components/games/GameCard";
 import Container from "../components/layout/Container";
 import { MoxicLoader, SectionLoader } from "../components/shared/MoxicLoader";
 import { formatPrice } from "../lib/utils";
-import type { FacetOption } from "../types/game";
+import type { FacetOption, ProductType } from "../types/game";
+import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 
 const PAGE_SIZE = 24;
 
@@ -39,6 +40,9 @@ interface Filters {
   status: string;
   genres: string[];
   tags: string[];
+  types: string[];
+  regions: string[];
+  publishers: string[];
   min?: number;
   max?: number;
   sale: boolean;
@@ -59,6 +63,9 @@ function readFilters(sp: URLSearchParams): Filters {
     status: sp.get("status") ?? "",
     genres: list("genres"),
     tags: list("tags"),
+    types: list("type"),
+    regions: list("region"),
+    publishers: list("publisher"),
     min: num("min"),
     max: num("max"),
     sale: sp.get("sale") === "1",
@@ -73,6 +80,9 @@ function writeFilters(f: Filters): URLSearchParams {
   if (f.status) sp.set("status", f.status);
   if (f.genres.length) sp.set("genres", f.genres.join(","));
   if (f.tags.length) sp.set("tags", f.tags.join(","));
+  if (f.types.length) sp.set("type", f.types.join(","));
+  if (f.regions.length) sp.set("region", f.regions.join(","));
+  if (f.publishers.length) sp.set("publisher", f.publishers.join(","));
   if (f.min != null) sp.set("min", String(f.min));
   if (f.max != null) sp.set("max", String(f.max));
   if (f.sale) sp.set("sale", "1");
@@ -119,6 +129,9 @@ export default function GamesPage() {
       status: filters.status || undefined,
       genres: filters.genres,
       tags: filters.tags,
+      types: filters.types,
+      regions: filters.regions,
+      publishers: filters.publishers,
       minPrice: filters.min,
       maxPrice: filters.max,
       onSale: filters.sale,
@@ -140,6 +153,12 @@ export default function GamesPage() {
   if (filters.sale) chips.push({ key: "sale", label: "Đang giảm giá", onRemove: () => update({ sale: false }) });
   for (const id of filters.genres)
     chips.push({ key: `g${id}`, label: nameOf(facets?.genres, id), onRemove: () => update({ genres: filters.genres.filter((x) => x !== id) }) });
+  for (const t of filters.types)
+    chips.push({ key: "ty" + t, label: PRODUCT_TYPE_LABELS[t as ProductType] ?? t, onRemove: () => update({ types: filters.types.filter((x) => x !== t) }) });
+  for (const pb of filters.publishers)
+    chips.push({ key: "pb" + pb, label: pb, onRemove: () => update({ publishers: filters.publishers.filter((x) => x !== pb) }) });
+  for (const r of filters.regions)
+    chips.push({ key: "rg" + r, label: "Region " + r, onRemove: () => update({ regions: filters.regions.filter((x) => x !== r) }) });
   for (const id of filters.tags)
     chips.push({ key: `t${id}`, label: <>#{nameOf(facets?.tags, id)}</>, onRemove: () => update({ tags: filters.tags.filter((x) => x !== id) }) });
   if (filters.min != null || filters.max != null)
@@ -448,6 +467,17 @@ function FilterPanel({
         </label>
       </Section>
 
+      {facets && facets.types.length > 1 && (
+        <Section title="Loại sản phẩm">
+          <CheckList
+            options={facets.types.map((t) => ({ ...t, name: PRODUCT_TYPE_LABELS[t.id as ProductType] ?? t.name }))}
+            selected={filters.types}
+            onToggle={(id) => update({ types: toggle(filters.types, id) })}
+            searchPlaceholder="Tìm loại…"
+          />
+        </Section>
+      )}
+
       <Section title="Thể loại">
         <CheckList
           options={facets?.genres}
@@ -460,6 +490,23 @@ function FilterPanel({
       <Section title="Khoảng giá">
         <PriceFilter min={filters.min} max={filters.max} bounds={facets?.price} onChange={(min, max) => update({ min, max })} />
       </Section>
+
+      {facets && facets.publishers.length > 0 && (
+        <Section title="Nhà phát hành" defaultOpen={filters.publishers.length > 0}>
+          <CheckList
+            options={facets.publishers}
+            selected={filters.publishers}
+            onToggle={(id) => update({ publishers: toggle(filters.publishers, id) })}
+            searchPlaceholder="Tìm nhà phát hành…"
+          />
+        </Section>
+      )}
+
+      {facets && facets.regions.length > 0 && (
+        <Section title="Region" defaultOpen={filters.regions.length > 0}>
+          <TagCloud options={facets.regions} selected={filters.regions} onToggle={(id) => update({ regions: toggle(filters.regions, id) })} />
+        </Section>
+      )}
 
       {facets && facets.tags.length > 0 && (
         <Section title="Tag" defaultOpen={filters.tags.length > 0}>

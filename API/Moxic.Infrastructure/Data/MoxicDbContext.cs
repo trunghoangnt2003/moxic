@@ -31,6 +31,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<GameEdition> GameEditions => Set<GameEdition>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,6 +65,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Description).HasColumnType("text").IsRequired();
+            entity.Property(e => e.ProductType).HasMaxLength(20).IsRequired().HasDefaultValue("Game");
+            entity.Property(e => e.Region).HasMaxLength(30);
+            entity.Property(e => e.Publisher).HasMaxLength(100);
+            entity.Property(e => e.Developer).HasMaxLength(100);
+            entity.HasIndex(e => e.ProductType);
             entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Status)
@@ -136,6 +142,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.GameName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.EditionName).HasMaxLength(60);
             entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
             entity.HasOne(e => e.Order)
                 .WithMany(o => o.Details)
@@ -251,6 +258,17 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<GameEdition>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(60).IsRequired();
+            entity.Property(e => e.Includes).HasMaxLength(2000);
+            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.SalePrice).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Game).WithMany(g => g.Editions).HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.GameId);
+        });
+
         modelBuilder.Entity<WishlistItem>(entity =>
         {
             entity.HasKey(e => new { e.UserId, e.GameId });

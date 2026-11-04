@@ -6,7 +6,7 @@ import Container from "../components/layout/Container";
 import CartSummary from "../components/checkout/CartSummary";
 import CheckoutForm from "../components/checkout/CheckoutForm";
 import CouponBox from "../components/checkout/CouponBox";
-import type { CouponQuote } from "../lib/couponApi";
+import { cartLineToken, type CouponQuote } from "../lib/couponApi";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -79,7 +79,7 @@ export default function CheckoutPage() {
                 quote={coupon}
                 couponSlot={
                   <CouponBox
-                    gameIds={items.map((i) => i.gameId)}
+                    gameIds={items.map((i) => cartLineToken(i.gameId, i.editionId))}
                     applied={coupon}
                     onApplied={setCoupon}
                     initialCode={initialCoupon}

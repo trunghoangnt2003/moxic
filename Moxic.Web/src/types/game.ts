@@ -22,6 +22,21 @@ export interface GameListItem {
   releaseDate?: string;
   coverImageUrl?: string;
   soldCount?: number;
+  productType?: ProductType;
+  region?: string | null;
+  publisher?: string | null;
+  editionCount?: number;
+}
+
+export type ProductType = "Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle";
+
+export interface GameEdition {
+  id: string;
+  name: string;
+  includes: string[];
+  originalPrice: number;
+  salePrice: number;
+  isDefault: boolean;
 }
 
 export interface GameRating {
@@ -47,6 +62,9 @@ export interface CartItem {
   originalPrice: number;
   status: "Available" | "Preorder";
   quantity: number;
+  /** Chosen edition (one edition per game in the cart). */
+  editionId?: string | null;
+  editionName?: string | null;
 }
 
 export interface GameReview {
@@ -78,6 +96,11 @@ export interface GameDetail {
   purchaseCount: number;
   storeRating: number;
   reviews: GameReview[];
+  productType: ProductType;
+  region: string | null;
+  publisher: string | null;
+  developer: string | null;
+  editions: GameEdition[];
 }
 
 export interface GamesResponse {
@@ -99,6 +122,9 @@ export interface GameFacets {
   price: { min: number; max: number };
   status: { available: number; preorder: number };
   onSale: number;
+  types: FacetOption[];
+  regions: FacetOption[];
+  publishers: FacetOption[];
 }
 
 export interface ActivePaymentConfig {
@@ -111,7 +137,7 @@ export interface ActivePaymentConfig {
 }
 
 export interface OrderCreateRequest {
-  items: { gameId: string; price: number }[];
+  items: { gameId: string; editionId?: string; price: number }[];
   customerPhone: string;
   customerXboxEmail: string;
   customerXboxPassword: string;

@@ -5,6 +5,7 @@ import { formatPrice } from "../../lib/utils";
 import { useState } from "react";
 import { Flame, Gamepad2 } from "lucide-react";
 import WishlistButton from "./WishlistButton";
+import { PRODUCT_TYPE_LABELS, PRODUCT_TYPE_STYLES } from "../../lib/productTypes";
 
 /** Cover image with a branded placeholder when the URL is missing or fails to load. */
 function Cover({ src, name, className }: { src?: string; name: string; className: string }) {
@@ -35,7 +36,10 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
 
   const priceDisplay = isFree
     ? "Miễn phí"
-    : formatPrice(game.salePrice);
+    : (game.editionCount ?? 0) > 1
+      ? `Từ ${formatPrice(game.salePrice)}`
+      : formatPrice(game.salePrice);
+  const type = game.productType ?? "Game";
 
   const priceClass = isFree
     ? "text-success font-semibold text-sm"
@@ -54,6 +58,20 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
             <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-orange-500/90 text-white">
               <Flame className="w-3 h-3" /> Bán chạy
             </span>
+          )}
+          {(type !== "Game" || game.region) && (
+            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+              {type !== "Game" && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${PRODUCT_TYPE_STYLES[type]}`}>
+                  {PRODUCT_TYPE_LABELS[type]}
+                </span>
+              )}
+              {game.region && game.region !== "Global" && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-black/70 text-white border border-white/20 backdrop-blur-sm">
+                  {game.region}
+                </span>
+              )}
+            </div>
           )}
         </div>
         <div className="p-3 space-y-1">

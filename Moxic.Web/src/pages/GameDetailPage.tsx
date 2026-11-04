@@ -1,5 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import WishlistButton from "../components/games/WishlistButton";
+import EditionCompare from "../components/game-detail/EditionCompare";
+import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
@@ -108,6 +110,7 @@ export default function GameDetailPage() {
   const [showStickyCTA, setShowStickyCTA] = useState(false);
   const [showReviews, setShowReviews] = useState(true);
   const [newReviews, setNewReviews] = useState<GameReview[]>([]);
+  const [editionId, setEditionId] = useState<string | null>(null);
   useEffect(() => {
     const handleScroll = () => {
       setShowStickyCTA(window.scrollY > window.innerHeight * 0.6);
@@ -132,9 +135,13 @@ export default function GameDetailPage() {
     );
   }
 
+  const editions = game.editions ?? [];
+  const edition = editions.find((e) => e.id === editionId) ?? editions.find((e) => e.isDefault) ?? editions[0] ?? null;
+  const price = edition?.salePrice ?? game.salePrice;
+  const original = edition?.originalPrice ?? game.originalPrice;
   const isPreorder = game.status === "Preorder";
-  const discount = game.originalPrice > 0 && game.salePrice > 0
-    ? Math.round((1 - game.salePrice / game.originalPrice) * 100) : 0;
+  const discount = original > 0 && price > 0
+    ? Math.round((1 - price / original) * 100) : 0;
   const primaryImage = game.media[activeMedia]?.presignedUrl || game.media[0]?.presignedUrl;
   const backgroundHeroImage = game.media[0]?.presignedUrl;
   const days = game.releaseDate ? daysUntil(game.releaseDate) : 0;
@@ -142,13 +149,15 @@ export default function GameDetailPage() {
   const activeReq = showMinReq ? req.minimum : req.recommended;
 
   const handleAddToCart = () => {
-    toast.success("Đã thêm vào giỏ hàng!", { duration: 3000 });
+    toast.success(edition ? `Đã thêm bản ${edition.name} vào giỏ hàng!` : "Đã thêm vào giỏ hàng!", { duration: 3000 });
     addItem({
       gameId: game.id,
-      name: game.name,
+      name: edition ? game.name + " — " + edition.name : game.name,
+      editionId: edition?.id ?? null,
+      editionName: edition?.name ?? null,
       coverImageUrl: game.media[0]?.presignedUrl || "",
-      price: game.salePrice,
-      originalPrice: game.originalPrice,
+      price: price,
+      originalPrice: original,
       status: game.status,
       quantity: 1,
     });
@@ -189,7 +198,7 @@ export default function GameDetailPage() {
               <span className="text-xs text-text-muted bg-bg-surface px-2 py-1">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
               {discount > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-text-muted text-xs line-through">{formatPrice(game.originalPrice)}</span>
+                  <span className="text-text-muted text-xs line-through">{formatPrice(original)}</span>
                   <Badge variant="discount">-{discount}%</Badge>
                 </div>
               )}
@@ -203,7 +212,7 @@ export default function GameDetailPage() {
           </div>
           <div className="flex items-center gap-3">
             <p className="font-display text-3xl md:text-4xl text-accent">
-              {isPreorder ? formatPrice(game.salePrice) : game.salePrice > 0 ? formatPrice(game.salePrice) : "Liên hệ"}
+              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
             </p>
             <Button variant="ghost" onClick={handleAddToCart}>
               {added ? "Đã thêm" : "Thêm vào giỏ"}
@@ -408,12 +417,45 @@ export default function GameDetailPage() {
                 <span className="text-text-muted text-xs uppercase tracking-wider">Giá bán</span>
                 {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
               </div>
+              {editions.length > 1 && (
+                <div className="mb-4 space-y-2" role="radiogroup" aria-label="Chọn phiên bản">
+                  <p className="text-[11px] uppercase tracking-wider text-text-muted">Chọn phiên bản</p>
+                  {editions.map((ed) => {
+                    const active = ed.id === edition?.id;
+                    const off = ed.originalPrice > ed.salePrice && ed.originalPrice > 0 ? Math.round((1 - ed.salePrice / ed.originalPrice) * 100) : 0;
+                    return (
+                      <button
+                        key={ed.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setEditionId(ed.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 border text-left transition-colors cursor-pointer ${
+                          active ? "border-accent bg-accent/10" : "border-border hover:border-white/30"
+                        }`}
+                      >
+                        <span className={`w-4 h-4 shrink-0 rounded-full border-2 flex items-center justify-center ${active ? "border-accent" : "border-white/30"}`}>
+                          {active && <span className="w-2 h-2 rounded-full bg-accent" />}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className={`block text-sm font-semibold truncate ${active ? "text-white" : "text-text-secondary"}`}>{ed.name}</span>
+                          {ed.includes.length > 0 && <span className="block text-[11px] text-text-muted truncate">{ed.includes.length} nội dung</span>}
+                        </span>
+                        <span className="text-right shrink-0">
+                          {off > 0 && <span className="block text-[10px] font-bold text-discount">-{off}%</span>}
+                          <span className={`text-sm font-bold ${active ? "text-accent" : "text-text-primary"}`}>{formatPrice(ed.salePrice)}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="flex items-baseline gap-3 mb-4">
-                {game.originalPrice > 0 && game.salePrice > 0 && (
-                  <span className="text-text-muted text-lg line-through">{formatPrice(game.originalPrice)}</span>
+                {original > 0 && price > 0 && (
+                  <span className="text-text-muted text-lg line-through">{formatPrice(original)}</span>
                 )}
                 <span className="font-display text-3xl text-accent">
-                  {isPreorder ? formatPrice(game.salePrice) : game.salePrice > 0 ? formatPrice(game.salePrice) : "Liên hệ"}
+                  {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
                 </span>
               </div>
               {isPreorder && game.releaseDate && (
@@ -449,6 +491,32 @@ export default function GameDetailPage() {
                   <span className="text-text-muted">Thể loại</span>
                   <span className="text-text-primary">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
                 </div>
+                {game.productType && game.productType !== "Game" && (
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Loại</span>
+                    <span className="text-text-primary">{PRODUCT_TYPE_LABELS[game.productType] ?? game.productType}</span>
+                  </div>
+                )}
+                {game.publisher && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-text-muted">Nhà phát hành</span>
+                    <Link to={`/games?publisher=${encodeURIComponent(game.publisher)}`} className="text-text-primary text-right hover:text-accent">
+                      {game.publisher}
+                    </Link>
+                  </div>
+                )}
+                {game.developer && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-text-muted">Nhà phát triển</span>
+                    <span className="text-text-primary text-right">{game.developer}</span>
+                  </div>
+                )}
+                {game.region && (
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Region</span>
+                    <span className="text-text-primary">{game.region}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-text-muted">Trạng thái</span>
                   <span className="text-text-primary">{isPreorder ? "Sắp ra mắt" : "Sẵn có"}</span>
@@ -493,6 +561,9 @@ export default function GameDetailPage() {
           </div>
         </div>
 
+        {/* ─── EDITION COMPARISON ─── */}
+        {editions.length > 1 && <EditionCompare editions={editions} selectedId={edition?.id ?? null} onSelect={setEditionId} />}
+
         {/* ─── RELATED GAMES ─── */}
         {relatedGames.length > 0 && (
           <div className="mt-12 mb-8">
@@ -529,10 +600,10 @@ export default function GameDetailPage() {
         <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-surface/95 backdrop-blur-md border-t border-border p-3 flex items-center gap-3 shadow-2xl animate-slide-up">
           <div className="flex-1 min-w-0">
             <p className="font-display text-lg text-accent">
-              {isPreorder ? formatPrice(game.salePrice) : game.salePrice > 0 ? formatPrice(game.salePrice) : "Liên hệ"}
+              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
             </p>
-            {game.originalPrice > 0 && game.salePrice > 0 && (
-              <p className="text-text-muted text-xs line-through">{formatPrice(game.originalPrice)}</p>
+            {original > 0 && price > 0 && (
+              <p className="text-text-muted text-xs line-through">{formatPrice(original)}</p>
             )}
           </div>
           <button

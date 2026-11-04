@@ -29,6 +29,10 @@ export const useCartStore = create<CartStore>()(
       addItem: (item) =>
         set((state) => {
           const exists = state.items.find((i) => i.gameId === item.gameId);
+          // One edition per game: choosing another edition replaces the cart line.
+          if (exists && (exists.editionId ?? null) !== (item.editionId ?? null)) {
+            return { items: state.items.map((i) => (i.gameId === item.gameId ? { ...item, quantity: 1 } : i)) };
+          }
           if (exists) {
             return {
               items: state.items.map((i) =>

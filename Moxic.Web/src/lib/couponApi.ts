@@ -48,10 +48,16 @@ export interface WalletCoupon {
   createdAt: string;
 }
 
-export async function validateCoupon(code: string, gameIds: string[]): Promise<CouponQuote> {
+/** Cart line token for coupon previews: "gameId" or "gameId:editionId". */
+export const cartLineToken = (gameId: string, editionId?: string | null) => (editionId ? `${gameId}:${editionId}` : gameId);
+
+export async function validateCoupon(code: string, lineTokens: string[]): Promise<CouponQuote> {
   const { data } = await api.post<CouponQuote>("/coupons/validate", {
     code,
-    items: gameIds.map((gameId) => ({ gameId })),
+    items: lineTokens.map((token) => {
+      const [gameId, editionId] = token.split(":");
+      return editionId ? { gameId, editionId } : { gameId };
+    }),
   });
   return data;
 }

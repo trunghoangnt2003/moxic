@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
+import GameCatalogEditor from "./GameCatalogEditor";
 
 interface MediaItem {
   id: string;
@@ -407,6 +408,19 @@ export default function GameForm() {
               </div>
             ))}
           </div>
+
+          {/* Catalog: product type / region / editions (only after the game exists) */}
+          {gameId ? (
+            <GameCatalogEditor
+              gameId={gameId}
+              onPricesSynced={(original, sale) => {
+                setOriginalPrice(original);
+                setSalePrice(sale);
+              }}
+            />
+          ) : (
+            <p className="text-xs text-steam-muted">Tạo game xong sẽ cấu hình được loại sản phẩm, region và các phiên bản (Standard/Deluxe/Ultimate).</p>
+          )}
 
           {/* Save */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">

@@ -75,7 +75,7 @@ public static class CouponRules
     }
 
     /// <summary>One server-priced cart line (price from Game.SalePrice).</summary>
-    public record PricedLine(Guid GameId, string GameName, decimal Price);
+    public record PricedLine(Guid GameId, string GameName, decimal Price, Guid? EditionId = null, string? EditionName = null);
 
     public record CouponTerms(CouponDiscountType Type, decimal Value, decimal? MaxDiscountAmount, decimal? MinOrderAmount, Guid? GameId);
 

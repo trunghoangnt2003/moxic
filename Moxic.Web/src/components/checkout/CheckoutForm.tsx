@@ -60,7 +60,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
     try {
       const items = useCartStore.getState().items;
       const request: OrderCreateRequest = {
-        items: items.map((i) => ({ gameId: i.gameId, price: i.price })),
+        items: items.map((i) => ({ gameId: i.gameId, editionId: i.editionId ?? undefined, price: i.price })),
         customerPhone: phone.trim(),
         customerXboxEmail: email.trim(),
         customerXboxPassword: password,

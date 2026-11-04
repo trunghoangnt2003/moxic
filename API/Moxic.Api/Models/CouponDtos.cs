@@ -4,7 +4,7 @@ namespace Moxic.Api.Models;
 
 // ---- Customer (storefront) ----
 
-public record CouponCartItemDto(Guid GameId);
+public record CouponCartItemDto(Guid GameId, Guid? EditionId = null);
 
 public record CouponValidateRequest(string? Code, IReadOnlyList<CouponCartItemDto>? Items);
 

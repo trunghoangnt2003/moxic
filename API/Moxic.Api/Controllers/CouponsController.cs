@@ -28,8 +28,8 @@ public class CouponsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Forbid(CustomerAuthRules.Scheme);
 
-        var gameIds = (request.Items ?? Array.Empty<CouponCartItemDto>()).Select(i => i.GameId).ToList();
-        var (lines, cartError) = await _coupons.PriceLinesAsync(gameIds);
+        var cart = (request.Items ?? Array.Empty<CouponCartItemDto>()).Select(i => (i.GameId, i.EditionId)).ToList();
+        var (lines, cartError) = await _coupons.PriceLinesAsync(cart);
         if (lines == null) return BadRequest(new { error = cartError, code = "CART_INVALID" });
 
         if (string.IsNullOrWhiteSpace(request.Code))

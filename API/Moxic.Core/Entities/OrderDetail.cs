@@ -7,6 +7,8 @@ public class OrderDetail
     public Guid GameId { get; set; }
     public string GameName { get; set; } = string.Empty; // Snapshot
     public decimal Price { get; set; } // Snapshot price at purchase
+    public Guid? EditionId { get; set; }
+    public string? EditionName { get; set; } // Snapshot
 
     // Navigation
     public Order Order { get; set; } = null!;

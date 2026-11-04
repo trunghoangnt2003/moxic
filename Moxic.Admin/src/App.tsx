@@ -17,6 +17,7 @@ import {
   Users,
   Music,
   Megaphone,
+  LayoutDashboard,
   TicketPercent,
 } from "lucide-react";
 import GameList from "./pages/GameList";
@@ -35,8 +36,10 @@ const Customers = lazy(() => import("./pages/Customers"));
 const SpinMusic = lazy(() => import("./pages/SpinMusic"));
 const Coupons = lazy(() => import("./pages/Coupons"));
 const Announcements = lazy(() => import("./pages/Announcements"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 const navItems = [
+  { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
   { to: "/games", label: "Games", icon: Gamepad2 },
   { to: "/genres", label: "Genres", icon: BookMarked },
   { to: "/tags", label: "Tags", icon: Tags },
@@ -238,7 +241,8 @@ function App() {
             <div className="p-3 md:p-5 max-w-7xl mx-auto">
               <Suspense fallback={<div className="text-steam-muted p-6 md:p-8 text-sm">Loading...</div>}>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/games" />} />
+                  <Route path="/" element={<Navigate to="/dashboard" />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />
                   <Route path="/games/:id/edit" element={<GameForm />} />

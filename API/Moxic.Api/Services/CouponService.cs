@@ -30,23 +30,44 @@ public class CouponService
     /// Prices cart lines from Game.SalePrice (client prices are never trusted). Lines keep the
     /// request order; duplicates stay separate lines.
     /// </summary>
-    public async Task<(List<PricedLine>? Lines, string? Error)> PriceLinesAsync(IReadOnlyList<Guid> gameIds)
+    /// <summary>
+    /// Prices cart lines server-side. A line with an edition is priced from that (active) edition;
+    /// a game that has active editions but no edition chosen falls back to its default edition;
+    /// a game without editions is priced from Game.SalePrice. Client prices are never trusted.
+    /// </summary>
+    public async Task<(List<PricedLine>? Lines, string? Error)> PriceLinesAsync(IReadOnlyList<(Guid GameId, Guid? EditionId)> items)
     {
-        if (gameIds.Count == 0) return (null, "Giỏ hàng trống");
-        if (gameIds.Count > MaxCartItems) return (null, "Giỏ hàng quá lớn.");
+        if (items.Count == 0) return (null, "Giỏ hàng trống");
+        if (items.Count > MaxCartItems) return (null, "Giỏ hàng quá lớn.");
 
-        var distinct = gameIds.Distinct().ToList();
+        var distinct = items.Select(i => i.GameId).Distinct().ToList();
         var games = await _db.Games.AsNoTracking()
             .Where(g => distinct.Contains(g.Id))
             .Select(g => new { g.Id, g.Name, g.SalePrice })
             .ToDictionaryAsync(g => g.Id);
+        var editions = await _db.GameEditions.AsNoTracking()
+            .Where(e => distinct.Contains(e.GameId) && e.IsActive)
+            .OrderByDescending(e => e.IsDefault).ThenBy(e => e.DisplayOrder)
+            .Select(e => new { e.Id, e.GameId, e.Name, e.SalePrice })
+            .ToListAsync();
 
-        var lines = new List<PricedLine>(gameIds.Count);
-        foreach (var id in gameIds)
+        var lines = new List<PricedLine>(items.Count);
+        foreach (var (gameId, editionId) in items)
         {
-            if (!games.TryGetValue(id, out var g))
+            if (!games.TryGetValue(gameId, out var g))
                 return (null, "Một số game trong giỏ hàng không còn bán, vui lòng cập nhật giỏ hàng.");
-            lines.Add(new PricedLine(g.Id, g.Name, g.SalePrice));
+
+            var gameEditions = editions.Where(e => e.GameId == gameId).ToList();
+            if (gameEditions.Count == 0)
+            {
+                lines.Add(new PricedLine(g.Id, g.Name, g.SalePrice));
+                continue;
+            }
+
+            var edition = editionId.HasValue ? gameEditions.FirstOrDefault(e => e.Id == editionId.Value) : gameEditions[0];
+            if (edition == null)
+                return (null, $"Phiên bản đã chọn của \"{g.Name}\" không còn bán, vui lòng chọn lại.");
+            lines.Add(new PricedLine(g.Id, $"{g.Name} — {edition.Name}", edition.SalePrice, edition.Id, edition.Name));
         }
         return (lines, null);
     }

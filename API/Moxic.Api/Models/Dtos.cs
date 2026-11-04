@@ -72,7 +72,9 @@ public record UpdatePaymentConfigDto
 public record OrderItemRequest
 {
     public Guid GameId { get; init; }
-    /// <summary>Ignored by the server (lines are priced from Game.SalePrice). Kept for client compatibility.</summary>
+    /// <summary>Chosen edition (Standard/Deluxe/…). Null = game price, or the default edition.</summary>
+    public Guid? EditionId { get; init; }
+    /// <summary>Ignored by the server (lines are priced from the game/edition). Kept for client compatibility.</summary>
     public decimal Price { get; init; }
 }
 

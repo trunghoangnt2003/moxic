@@ -17,11 +17,26 @@ public class GameDetailDto
     public List<GameRating> Ratings { get; set; } = new();
     public SystemRequirementData? SystemRequirements { get; set; }
     public List<Guid> RelatedGameIds { get; set; } = new();
+    public string ProductType { get; set; } = "Game";
+    public string? Region { get; set; }
+    public string? Publisher { get; set; }
+    public string? Developer { get; set; }
+    public List<GameEditionDto> Editions { get; set; } = new();
 
     // Social proof fields
     public int PurchaseCount { get; set; }
     public double StoreRating { get; set; }
     public List<GameReviewDto> Reviews { get; set; } = new();
+}
+
+public class GameEditionDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public List<string> Includes { get; set; } = new();
+    public decimal OriginalPrice { get; set; }
+    public decimal SalePrice { get; set; }
+    public bool IsDefault { get; set; }
 }
 
 public class GameMediaDto

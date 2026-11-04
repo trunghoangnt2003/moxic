@@ -254,6 +254,7 @@ using (var scope = app.Services.CreateScope())
             );
             CREATE INDEX IF NOT EXISTS ""IX_GameReviews_GameId"" ON ""GameReviews"" (""GameId"");
         ");
+        await CatalogSchemaBootstrap.EnsureAsync(dbContext);
         await LuckySpinSchemaBootstrap.EnsureAsync(dbContext);
         await CustomerAccountSchemaBootstrap.EnsureAsync(dbContext);
         await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
