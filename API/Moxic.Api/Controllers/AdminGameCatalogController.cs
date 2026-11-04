@@ -90,7 +90,8 @@ public class AdminGameCatalogController : ControllerBase
 
         // Keep the game's list price = default edition, so filters/sorting/cards stay consistent.
         var def = active.FirstOrDefault(e => e.Name?.Trim() == defaultName);
-        if (def != null)
+        // An unpriced default edition (0) must not zero the game's own price.
+        if (def != null && def.SalePrice > 0)
         {
             game.SalePrice = def.SalePrice;
             game.OriginalPrice = def.OriginalPrice;

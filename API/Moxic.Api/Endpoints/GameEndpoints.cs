@@ -333,8 +333,9 @@ public static class GameEndpoints
                         Name = e.Name,
                         Includes = (e.Includes ?? string.Empty)
                             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
-                        OriginalPrice = e.OriginalPrice,
-                        SalePrice = e.SalePrice,
+                        // Unpriced edition (0) sells at the game's price, same as checkout.
+                        OriginalPrice = e.SalePrice > 0 ? e.OriginalPrice : game.OriginalPrice,
+                        SalePrice = e.SalePrice > 0 ? e.SalePrice : game.SalePrice,
                         IsDefault = e.IsDefault
                     }).ToList(),
                 Reviews = game.Reviews

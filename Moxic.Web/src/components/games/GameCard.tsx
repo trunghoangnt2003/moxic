@@ -90,12 +90,12 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
           <h3 className="font-semibold text-[15px] leading-snug text-text-primary line-clamp-2 min-h-[2.6em] group-hover:text-accent transition-colors">
             {game.name}
           </h3>
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
+          <div className="mt-2 flex items-center gap-x-2 gap-y-1 flex-wrap">
             {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-xs font-bold bg-discount text-on-solid num">-{discount}%</span>}
+            <span className={`${isFree ? "text-success" : "text-text-primary"} font-bold text-[15px] num whitespace-nowrap`}>{priceDisplay}</span>
             {game.originalPrice > 0 && game.salePrice > 0 && discount > 0 && (
-              <span className="text-text-muted text-sm line-through num">{formatPrice(game.originalPrice)}</span>
+              <span className="text-text-muted text-xs line-through num whitespace-nowrap">{formatPrice(game.originalPrice)}</span>
             )}
-            <span className={`${isFree ? "text-success" : "text-text-primary"} font-bold text-[15px] num`}>{priceDisplay}</span>
           </div>
           {(game.rentFrom != null || (game.soldCount ?? 0) > 0) && (
             <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-text-muted">

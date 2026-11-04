@@ -219,7 +219,7 @@ export default function GamesPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-2 mb-5">
         <div>
-          <h1 className="font-display text-2xl md:text-4xl font-bold">Cửa hàng Game</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-text-primary">Cửa hàng game</h1>
           <p className="text-text-muted text-sm mt-1">
             {data ? (
               <>
@@ -235,8 +235,8 @@ export default function GamesPage() {
 
       {/* Toolbar: search + (mobile filter button) + sort */}
       <div className="sticky top-[calc(3.5rem+var(--sat))] z-30 -mx-4 px-4 py-3 mb-4 bg-bg-base/90 backdrop-blur-md border-b border-white/5 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none md:border-0">
-        <div className="flex gap-2 md:gap-3">
-          <div className="relative flex-1 min-w-0">
+        <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-3">
+          <div className="relative basis-full md:basis-auto md:flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
             <input
               type="search"
@@ -248,7 +248,7 @@ export default function GamesPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") update({ q: searchText.trim() });
               }}
-              className="w-full h-11 bg-bg-surface border border-white/10 pl-10 pr-10 text-sm focus:outline-none focus:border-accent text-text-primary placeholder:text-text-placeholder transition-colors [&::-webkit-search-cancel-button]:hidden"
+              className="w-full h-11 bg-bg-surface border border-white/10 pl-10 pr-10 text-base md:text-sm focus:outline-none focus:border-accent text-text-primary placeholder:text-text-placeholder transition-colors [&::-webkit-search-cancel-button]:hidden"
             />
             {searchText && (
               <button
@@ -268,7 +268,7 @@ export default function GamesPage() {
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
-            className="md:hidden relative h-11 px-3 flex items-center gap-2 border border-white/10 bg-bg-surface text-sm font-semibold cursor-pointer"
+            className="md:hidden relative flex-1 h-11 px-3 flex items-center justify-center gap-2 border border-white/10 bg-bg-surface text-sm font-semibold cursor-pointer"
           >
             <SlidersHorizontal className="w-4 h-4 text-accent" />
             Lọc
@@ -310,8 +310,8 @@ export default function GamesPage() {
       <div className="flex gap-8 items-start">
         {/* Desktop sidebar */}
         <aside className="hidden md:block w-[272px] lg:w-[288px] shrink-0">
-          <div className="bg-black/40 border border-white/5 backdrop-blur-md">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+          <div className="md:sticky md:top-20">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-accent" />
                 <span className="font-display font-bold">Bộ lọc</span>
@@ -329,7 +329,7 @@ export default function GamesPage() {
         {/* Results */}
         <div className="flex-1 min-w-0">
           {error ? (
-            <div className="text-center py-20 bg-black/40 border border-white/5">
+            <div className="text-center py-20 border border-dashed border-white/15">
               <p className="text-danger mb-4">Không thể tải danh sách game</p>
               <button onClick={() => refetch()} className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-3 text-sm font-semibold cursor-pointer">
                 Thử lại
@@ -338,7 +338,7 @@ export default function GamesPage() {
           ) : isLoading ? (
             <GridSkeleton count={8} />
           ) : data && data.items.length === 0 ? (
-            <div className="text-center py-20 px-6 bg-black/40 border border-white/5">
+            <div className="text-center py-20 px-6 border border-dashed border-white/15">
               <Search className="w-10 h-10 mx-auto text-text-muted mb-4" />
               <p className="font-semibold mb-1">Không tìm thấy game phù hợp</p>
               <p className="text-text-muted text-sm mb-5">Thử bỏ bớt bộ lọc hoặc tìm với từ khóa khác.</p>
@@ -353,7 +353,7 @@ export default function GamesPage() {
                   <MoxicLoader size="sm" />
                 </div>
               )}
-              <div className={`grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 transition-opacity ${isFetching ? "opacity-50" : ""}`}>
+              <div className={`grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-3 sm:gap-x-5 gap-y-8 transition-opacity ${isFetching ? "opacity-50" : ""}`}>
                 {data?.items.map((game) => <GameCard key={game.id} game={game} variant="vertical" />)}
               </div>
               {totalPages > 1 && (
@@ -434,7 +434,7 @@ function Section({ title, children, defaultOpen = true }: { title: string; child
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-text-secondary cursor-pointer hover:text-white"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-text-primary cursor-pointer hover:text-accent transition-colors"
       >
         {title}
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />

@@ -12,13 +12,12 @@ import ReportButton from "../components/community/ReportButton";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import ShareButton from "../components/shared/ShareButton";
-import { Play as PlayIcon, Zap as ZapIcon } from "lucide-react";
+import { ExternalLink, Play as PlayIcon, Zap as ZapIcon } from "lucide-react";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
 import { useGameDetail } from "../hooks/useGames";
 import Container from "../components/layout/Container";
-import Button from "../components/shared/Button";
 import Badge from "../components/shared/Badge";
 import type { GameReview } from "../types/game";
 import { formatPrice, formatDate, daysUntil, timeAgo } from "../lib/utils";
@@ -33,12 +32,9 @@ import {
   ChevronRight,
   ChevronDown,
   Star,
-  Info,
-  Monitor,
   Check,
   Gift,
   Flame,
-  MessageCircle,
   User,
   BadgeCheck,
 } from "lucide-react";
@@ -83,10 +79,11 @@ function RatingCard({
 }
 
 function SpecRow({ label, value }: { label: string; value: string }) {
+  if (!value?.trim()) return null;
   return (
-    <div className="flex gap-3 py-2 border-b border-border/30 last:border-0">
-      <span className="text-text-muted text-xs w-[90px] flex-shrink-0">{label}</span>
-      <span className="text-text-primary text-xs">{value}</span>
+    <div className="flex gap-4 py-2.5 border-b border-border/40 last:border-0">
+      <span className="text-text-muted text-sm w-[110px] shrink-0">{label}</span>
+      <span className="text-text-primary text-sm">{value}</span>
     </div>
   );
 }
@@ -147,8 +144,10 @@ export default function GameDetailPage() {
 
   const editions = game.editions ?? [];
   const edition = editions.find((e) => e.id === editionId) ?? editions.find((e) => e.isDefault) ?? editions[0] ?? null;
-  const price = edition?.salePrice ?? game.salePrice;
-  const original = edition?.originalPrice ?? game.originalPrice;
+  // An edition saved without a price sells at the game's own price (the server does the same).
+  const priced = edition && edition.salePrice > 0 ? edition : null;
+  const price = priced?.salePrice ?? game.salePrice;
+  const original = priced?.originalPrice ?? game.originalPrice;
   const isPreorder = game.status === "Preorder";
   const discount = original > 0 && price > 0
     ? Math.round((1 - price / original) * 100) : 0;
@@ -159,6 +158,8 @@ export default function GameDetailPage() {
   const days = game.releaseDate ? daysUntil(game.releaseDate) : 0;
   const req = game.systemRequirements;
   const activeReq = showMinReq ? req.minimum : req.recommended;
+  const hasReq = [req.minimum, req.recommended].some((r) => r && Object.values(r).some((v) => typeof v === "string" && v.trim()));
+  const genreText = game.genres?.map((g) => g.name).join(", ");
 
   const handleAddToCart = () => {
     toast.success(edition ? `Đã thêm bản ${edition.name} vào giỏ hàng!` : "Đã thêm vào giỏ hàng!", { duration: 3000 });
@@ -209,12 +210,12 @@ export default function GameDetailPage() {
         {/* ─── TITLE + PRICE ─── */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-display text-3xl md:text-5xl text-text-primary mb-3">{game.name}</h1>
+            <h1 className="font-display text-3xl md:text-5xl font-extrabold leading-tight text-text-primary mb-3 max-w-3xl">{game.name}</h1>
             <div className="flex items-center gap-3 flex-wrap">
               <Badge variant={isPreorder ? "preorder" : "available"}>
                 {isPreorder ? "Sắp ra mắt" : "Sẵn có"}
               </Badge>
-              <span className="text-xs text-text-muted bg-bg-surface px-2 py-1">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
+              {genreText && <span className="text-xs text-text-secondary bg-bg-surface/80 px-2 py-1">{genreText}</span>}
               {discount > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-text-muted text-xs line-through">{formatPrice(original)}</span>
@@ -229,16 +230,23 @@ export default function GameDetailPage() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <p className="font-display text-3xl md:text-4xl text-accent">
+          {/* Phone: price + actions right under the title (desktop has the price card beside the gallery) */}
+          <div className="lg:hidden">
+            <p className="font-display text-3xl font-bold text-accent num">
               {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
             </p>
-            <Button variant="ghost" onClick={handleAddToCart}>
-              {added ? "Đã thêm" : "Thêm vào giỏ"}
-            </Button>
-            <Button variant="primary" className="text-base whitespace-nowrap" onClick={handleBuyNow}>
-              {isPreorder ? "Đặt trước" : "Mua ngay"}
-            </Button>
+            <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <button onClick={handleBuyNow} className="h-12 bg-accent hover:bg-accent-hover text-on-accent font-bold transition-colors cursor-pointer">
+                {isPreorder ? "Đặt trước" : "Mua ngay"}
+              </button>
+              <button
+                onClick={handleAddToCart}
+                aria-label="Thêm vào giỏ hàng"
+                className="h-12 px-4 inline-flex items-center justify-center gap-2 border border-border text-text-primary hover:bg-bg-surface-hover transition-colors cursor-pointer"
+              >
+                {added ? <Check className="w-5 h-5 text-success" /> : <ShoppingCart className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -248,7 +256,7 @@ export default function GameDetailPage() {
             {/* Gallery */}
             {game.media.length > 0 && (
               <div className="mb-8">
-                <div className="relative w-full aspect-video bg-bg-surface overflow-hidden mb-3 group">
+                <div className="relative w-full aspect-video bg-bg-surface overflow-hidden rounded-md mb-3 group">
                   {game.media[activeMedia]?.presignedUrl?.includes('.mp4') ? (
                     <video
                       key={game.media[activeMedia].presignedUrl}
@@ -286,7 +294,7 @@ export default function GameDetailPage() {
                       <button
                         key={m.id}
                         onClick={() => setActiveMedia(i)}
-                        className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video overflow-hidden border-2 transition duration-200 cursor-pointer relative ${
+                        className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video overflow-hidden rounded-sm border-2 transition duration-200 cursor-pointer relative ${
                           i === activeMedia ? "border-accent brightness-100" : "border-transparent brightness-50 hover:brightness-75"
                         }`}
                       >
@@ -309,19 +317,15 @@ export default function GameDetailPage() {
 
             {/* Description */}
             <div className="mb-8" id="mo-ta">
-              <h2 className="font-display text-xl text-text-primary mb-4 flex items-center gap-2">
-                <Info className="w-5 h-5 text-accent" /> Mô tả
-              </h2>
-              <div className="text-text-secondary text-sm leading-relaxed whitespace-pre-line bg-bg-surface border border-border p-5">
+              <h2 className="font-display text-xl font-bold text-text-primary mb-3">Mô tả</h2>
+              <div className="text-text-secondary text-base leading-relaxed whitespace-pre-line max-w-prose">
                 {game.description}
               </div>
             </div>
 
             {/* System Requirements */}
-            <div className="mb-8" id="cau-hinh">
-              <h2 className="font-display text-xl text-text-primary mb-4 flex items-center gap-2">
-                <Monitor className="w-5 h-5 text-accent" /> Cấu hình yêu cầu
-              </h2>
+            {hasReq && <div className="mb-8" id="cau-hinh">
+              <h2 className="font-display text-xl font-bold text-text-primary mb-3">Cấu hình yêu cầu</h2>
               <div className="bg-bg-surface border border-border overflow-hidden">
                 <div className="flex border-b border-border">
                   <button
@@ -347,14 +351,12 @@ export default function GameDetailPage() {
                   <SpecRow label="Lưu trữ" value={activeReq.storage} />
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* Ratings */}
             {game.ratings.length > 0 && (
               <div className="mb-8" id="danh-gia">
-                <h2 className="font-display text-xl text-text-primary mb-4 flex items-center gap-2">
-                  <Star className="w-5 h-5 text-accent" /> Đánh giá
-                </h2>
+                <h2 className="font-display text-xl font-bold text-text-primary mb-3">Đánh giá</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {game.ratings.map((r) => <RatingCard key={r.source} {...r} />)}
                 </div>
@@ -372,9 +374,7 @@ export default function GameDetailPage() {
                   aria-expanded={showReviews}
                   aria-controls="reviews-content"
                 >
-                  <h2 className="font-display text-xl text-text-primary flex items-center gap-2 group-hover:text-accent transition-colors">
-                    <MessageCircle className="w-5 h-5 text-accent" /> Đánh giá từ khách hàng
-                  </h2>
+                  <h2 className="font-display text-xl font-bold text-text-primary group-hover:text-accent transition-colors">Đánh giá từ khách hàng</h2>
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="flex items-center gap-1.5 bg-bg-surface border border-border px-2.5 py-1.5 md:px-3 md:py-1.5">
                       <StarRating rating={Math.round(game.storeRating)} size={10} />
@@ -450,7 +450,7 @@ export default function GameDetailPage() {
             {/* Price card */}
             <div className="bg-bg-surface border border-border p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-text-muted text-xs">Giá bán</span>
+                <span className="text-text-muted text-sm">Giá bán</span>
                 {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
               </div>
               {game.saleEndsAt && (
@@ -494,9 +494,9 @@ export default function GameDetailPage() {
               )}
               <div className="flex items-baseline gap-3 mb-4">
                 {original > 0 && price > 0 && (
-                  <span className="text-text-muted text-lg line-through">{formatPrice(original)}</span>
+                  <span className="text-text-muted text-base line-through num">{formatPrice(original)}</span>
                 )}
-                <span className="font-display text-3xl text-accent">
+                <span className="font-display text-3xl font-bold text-accent num">
                   {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
                 </span>
               </div>
@@ -509,12 +509,12 @@ export default function GameDetailPage() {
                 </div>
               )}
               <div className="flex flex-col gap-2">
-                <Button variant="primary" className="w-full text-base" onClick={handleBuyNow}>
+                <button onClick={handleBuyNow} className="w-full h-12 bg-accent hover:bg-accent-hover text-on-accent font-bold text-base transition-colors cursor-pointer">
                   {isPreorder ? "Đặt trước ngay" : "Mua ngay"}
-                </Button>
+                </button>
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-2.5 border border-border text-text-secondary text-sm hover:bg-bg-surface-hover transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full h-11 border border-border text-text-secondary text-sm hover:bg-bg-surface-hover transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {added ? (
                     <><Check className="w-4 h-4 text-success" /> Đã thêm vào giỏ</>
@@ -541,9 +541,9 @@ export default function GameDetailPage() {
                     href={`https://www.xbox.com/vi-VN/games/store/x/${game.xboxProductId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-center text-xs text-text-muted hover:text-accent underline underline-offset-4 pt-1"
+                    className="inline-flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-accent pt-1"
                   >
-                    So giá trên Xbox Store chính hãng ↗
+                    So giá trên Xbox Store chính hãng <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>            </div>
@@ -552,11 +552,11 @@ export default function GameDetailPage() {
 
             {/* Game info */}
             <div className="bg-bg-surface border border-border p-5 space-y-3">
-              <h3 className="font-display text-sm text-text-primary">Thông tin game</h3>
+              <h3 className="font-display text-base font-semibold text-text-primary">Thông tin game</h3>
               <div className="text-sm space-y-2">
                 <div className="flex justify-between">
                   <span className="text-text-muted">Thể loại</span>
-                  <span className="text-text-primary">{game.genres?.map(g => g.name).join(", ") || "—"}</span>
+                  <span className="text-text-primary text-right">{genreText || "Chưa phân loại"}</span>
                 </div>
                 {game.productType && game.productType !== "Game" && (
                   <div className="flex justify-between">
@@ -606,12 +606,12 @@ export default function GameDetailPage() {
 
             {/* Purchase guide */}
             <div className="bg-bg-surface border border-border p-5">
-              <h3 className="font-display text-sm text-text-primary mb-4">Cách mua hàng</h3>
+              <h3 className="font-display text-base font-semibold text-text-primary mb-4">Cách mua hàng</h3>
               <div className="space-y-4">
                 {[
                   { icon: ShoppingCart, step: "Chọn game", desc: "Thêm vào giỏ hàng" },
                   { icon: CreditCard, step: "Thanh toán", desc: "QR + cung cấp tài khoản Xbox" },
-                  { icon: Gamepad2, step: "Cài đặt", desc: "Nhân viên cài đặt trong 15-30 phút" },
+                  { icon: Gamepad2, step: "Cài đặt", desc: "Nhân viên cài đặt trong 15 đến 30 phút" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
