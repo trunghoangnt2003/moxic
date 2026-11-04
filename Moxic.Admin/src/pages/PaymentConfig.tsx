@@ -204,7 +204,7 @@ export default function PaymentConfig() {
             />
           </div>
           <div>
-            <label className="block text-xs text-steam-muted mb-1">Mã ngân hàng VietQR (để tạo QR riêng cho từng đơn)</label>
+            <label className="block text-xs text-steam-muted mb-1">Ngân hàng (để SePay tạo QR riêng cho từng đơn)</label>
             <select value={bankCode} onChange={(e) => setBankCode(e.target.value)} className="w-full steam-input">
               <option value="">— Không dùng (hiện ảnh QR tĩnh) —</option>
               {VIETQR_BANKS.map(([code, name]) => (

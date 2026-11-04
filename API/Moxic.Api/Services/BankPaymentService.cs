@@ -39,11 +39,10 @@ public class BankPaymentService
     public static string? VietQrUrl(PaymentConfig? cfg, decimal amount, string content)
     {
         if (cfg == null || string.IsNullOrWhiteSpace(cfg.BankCode) || string.IsNullOrWhiteSpace(cfg.BankAccountNumber)) return null;
+        // SePay's QR generator (standard VietQR/NAPAS payload — any banking app can scan it).
         var acc = Regex.Replace(cfg.BankAccountNumber, @"\s", "");
-        var url = $"https://img.vietqr.io/image/{Uri.EscapeDataString(cfg.BankCode.Trim())}-{Uri.EscapeDataString(acc)}-compact2.png" +
-                  $"?amount={Math.Round(amount, 0).ToString(CultureInfo.InvariantCulture)}&addInfo={Uri.EscapeDataString(content)}";
-        if (!string.IsNullOrWhiteSpace(cfg.BankAccountHolder)) url += $"&accountName={Uri.EscapeDataString(cfg.BankAccountHolder.Trim())}";
-        return url;
+        return $"https://qr.sepay.vn/img?acc={Uri.EscapeDataString(acc)}&bank={Uri.EscapeDataString(cfg.BankCode.Trim())}" +
+               $"&amount={Math.Round(amount, 0).ToString(CultureInfo.InvariantCulture)}&des={Uri.EscapeDataString(content)}&template=compact";
     }
 
     /// <summary>"…mb moxic20261104513e6 ft…" → "MOXIC-20261104-513E6".</summary>
