@@ -23,6 +23,7 @@ const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 const GiftPage = lazy(() => import("./pages/GiftPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const LuckySpinGalleryPage = lazy(() => import("./pages/LuckySpinGalleryPage"));
 const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
@@ -64,6 +65,7 @@ export default function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
               <Route path="/gift/:token" element={<GiftPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/lucky-spin" element={<LuckySpinGalleryPage />} />
               <Route path="/lucky-spin/:slug" element={<LuckySpinPage />} />
               <Route path="/login" element={<LoginPage />} />

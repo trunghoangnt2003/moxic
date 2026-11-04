@@ -101,6 +101,8 @@ builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<TelegramOrderNotifier>();
 builder.Services.AddScoped<OrderStatusService>();
 builder.Services.AddScoped<BankPaymentService>();
+builder.Services.AddScoped<LeaderboardService>();
+builder.Services.AddHostedService<LeaderboardAwardJob>();
 builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddHostedService<TelegramChatCleanup>();
 builder.Services.AddScoped<CouponService>();

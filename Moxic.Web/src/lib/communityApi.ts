@@ -100,3 +100,16 @@ export async function getLibrary() {
   const { data } = await api.get<Library>("/account/library");
   return data;
 }
+
+export interface SavingsSummary {
+  saved: number;
+  games: number;
+  spent: number;
+  orders: number;
+  badges: string[];
+}
+
+export async function getSavings() {
+  const { data } = await api.get<SavingsSummary>("/account/savings");
+  return data;
+}

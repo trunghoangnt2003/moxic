@@ -65,6 +65,11 @@ public record AccountOrderSummaryDto
 
 public record AccountOrderDetailDto : AccountOrderSummaryDto
 {
+    public decimal SavedAmount { get; init; }
+    public DateTime? PaidAt { get; init; }
+    public DateTime? InstallStartedAt { get; init; }
+    public DateTime? DownloadingAt { get; init; }
+    public DateTime? CompletedAt { get; init; }
     public string XboxEmail { get; init; } = string.Empty;
     public bool IsGift { get; init; }
     public string? GiftToken { get; init; }

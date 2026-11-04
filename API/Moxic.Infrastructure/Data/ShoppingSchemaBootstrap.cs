@@ -170,6 +170,35 @@ public static class ShoppingSchemaBootstrap
         CREATE INDEX IF NOT EXISTS "IX_BankTransactions_CreatedAt" ON "BankTransactions" ("CreatedAt");
         CREATE INDEX IF NOT EXISTS "IX_BankTransactions_OrderId" ON "BankTransactions" ("OrderId");
 
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "PaidAt" timestamp with time zone;
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "InstallStartedAt" timestamp with time zone;
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "DownloadingAt" timestamp with time zone;
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "CompletedAt" timestamp with time zone;
+        UPDATE "Orders" SET "PaidAt" = "UpdatedAt" WHERE "PaidAt" IS NULL AND "Status" IN ('Verifying', 'Installing', 'ActionRequired', 'Completed');
+        UPDATE "Orders" SET "InstallStartedAt" = "UpdatedAt" WHERE "InstallStartedAt" IS NULL AND "Status" IN ('Installing', 'Completed');
+        UPDATE "Orders" SET "CompletedAt" = "UpdatedAt" WHERE "CompletedAt" IS NULL AND "Status" = 'Completed';
+
+        ALTER TABLE "OrderDetails" ADD COLUMN IF NOT EXISTS "ListPrice" numeric(18,2);
+        UPDATE "OrderDetails" d SET "ListPrice" = COALESCE(
+            (SELECT e."OriginalPrice" FROM "GameEditions" e WHERE e."Id" = d."EditionId"),
+            (SELECT g."OriginalPrice" FROM "Games" g WHERE g."Id" = d."GameId"))
+        WHERE d."ListPrice" IS NULL;
+
+        CREATE TABLE IF NOT EXISTS "LeaderboardAwards" (
+            "Id" uuid NOT NULL,
+            "Month" character varying(7) NOT NULL,
+            "Board" character varying(20) NOT NULL,
+            "Rank" integer NOT NULL,
+            "UserId" character varying(450) NOT NULL,
+            "DisplayName" character varying(100) NOT NULL,
+            "Score" integer NOT NULL,
+            "Points" integer NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_LeaderboardAwards" PRIMARY KEY ("Id")
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_LeaderboardAwards_Month_Board_Rank" ON "LeaderboardAwards" ("Month", "Board", "Rank");
+        CREATE INDEX IF NOT EXISTS "IX_LeaderboardAwards_UserId" ON "LeaderboardAwards" ("UserId");
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES

@@ -43,6 +43,12 @@ public class Order
     public string? GiftRecipientPhone { get; set; }
     public DateTime? GiftClaimedAt { get; set; }
 
+    // Live tracking milestones (shown to the customer as a delivery-style progress bar).
+    public DateTime? PaidAt { get; set; }
+    public DateTime? InstallStartedAt { get; set; }
+    public DateTime? DownloadingAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

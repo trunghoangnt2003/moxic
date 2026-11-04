@@ -126,6 +126,7 @@ public class OrdersController : ControllerBase
                     GameId = line.GameId,
                     GameName = line.GameName,
                     Price = line.Price,
+                    ListPrice = line.ListPrice,
                     EditionId = line.EditionId,
                     EditionName = line.EditionName
                 });
@@ -228,7 +229,7 @@ public class OrdersController : ControllerBase
         return Ok(new OrderConfirmationResponse
         {
             OrderCode = order.OrderCode,
-            Items = order.Details.Select(d => new OrderConfirmationItem { GameName = d.GameName, Price = d.Price }).ToList(),
+            Items = order.Details.Select(d => new OrderConfirmationItem { GameName = d.GameName, Price = d.Price, ListPrice = d.ListPrice }).ToList(),
             TotalAmount = order.TotalAmount,
             SubtotalAmount = order.TotalAmount + order.DiscountAmount,
             DiscountAmount = order.DiscountAmount,
@@ -243,7 +244,12 @@ public class OrdersController : ControllerBase
             GiftClaimedAt = order.GiftClaimedAt,
             TransferContent = BankPaymentService.TransferContent(order.OrderCode),
             DynamicQrUrl = BankPaymentService.VietQrUrl(paymentConfig, order.TotalAmount, BankPaymentService.TransferContent(order.OrderCode)),
-            AutoConfirm = !string.IsNullOrWhiteSpace(_config["Sepay:ApiKey"])
+            AutoConfirm = !string.IsNullOrWhiteSpace(_config["Sepay:ApiKey"]),
+            SavedAmount = OrderSavings.Saved(order.Details.Select(d => (d.Price, d.ListPrice)), order.DiscountAmount),
+            PaidAt = order.PaidAt,
+            InstallStartedAt = order.InstallStartedAt,
+            DownloadingAt = order.DownloadingAt,
+            CompletedAt = order.CompletedAt
         });
     }
 

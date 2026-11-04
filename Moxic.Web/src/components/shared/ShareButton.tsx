@@ -19,13 +19,15 @@ interface Props {
   title: string;
   text?: string;
   className?: string;
+  /** Button label (default "Chia sẻ"). */
+  label?: string;
 }
 
 /**
  * Share a page: native share sheet on phones, otherwise a small menu (copy, Facebook, Messenger, Telegram, X).
  * Signed-in customers share with their referral code attached so friends who join earn them points.
  */
-export default function ShareButton({ path, title, text, className = "" }: Props) {
+export default function ShareButton({ path, title, text, className = "", label = "Chia sẻ" }: Props) {
   const { data: me } = useMe();
   const { data: loyalty } = useQuery({ queryKey: ["loyalty"], queryFn: getLoyalty, enabled: !!me, staleTime: 5 * 60_000 });
   const [open, setOpen] = useState(false);
@@ -82,7 +84,7 @@ export default function ShareButton({ path, title, text, className = "" }: Props
         onClick={onClick}
         className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 border border-white/15 text-sm font-semibold text-text-secondary hover:text-white hover:border-white/30 transition-colors cursor-pointer"
       >
-        <Share2 className="w-4 h-4" /> Chia sẻ
+        <Share2 className="w-4 h-4" /> {label}
       </button>
       {open && (
         <div className="absolute z-30 left-0 right-0 mt-1 bg-bg-elevated border border-white/10 shadow-2xl shadow-black/60 py-1 animate-[popIn_0.15s_ease-out]">

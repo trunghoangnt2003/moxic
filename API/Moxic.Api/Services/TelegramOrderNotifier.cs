@@ -85,7 +85,7 @@ public class TelegramOrderNotifier
         OrderStatus.Pending => "🟡 Chờ thanh toán",
         OrderStatus.AwaitingConfirmation => "🟠 Đã gửi ảnh CK — chờ duyệt",
         OrderStatus.Verifying => "🔵 Đã nhận tiền — chờ cài",
-        OrderStatus.Installing => "🔧 Đang cài đặt",
+        OrderStatus.Installing => "🔐 Đang đăng nhập Xbox / cài đặt",
         OrderStatus.ActionRequired => "⚠️ Cần khách cập nhật TK Xbox",
         OrderStatus.Completed => "🎉 Hoàn tất",
         OrderStatus.Cancelled => "❌ Đã hủy",
@@ -103,7 +103,7 @@ public class TelegramOrderNotifier
         var sb = new StringBuilder();
         if (headline != null) sb.Append($"<b>{H(headline)}</b>\n");
         sb.Append($"📦 <code>{H(o.OrderCode)}</code>\n");
-        sb.Append($"{StatusLabel(o.Status)}\n");
+        sb.Append(o.Status == OrderStatus.Installing && o.DownloadingAt != null ? "⬇️ Đang tải game\n" : $"{StatusLabel(o.Status)}\n");
         sb.Append($"💰 <b>{Vnd(o.TotalAmount)}</b>");
         if (o.DiscountAmount > 0) sb.Append($" (giảm {Vnd(o.DiscountAmount)}{(o.CouponCode != null ? $", mã {H(o.CouponCode)}" : "")})");
         sb.Append($" · {(o.PaymentMethod == PaymentMethod.Crypto ? "Crypto" : "Chuyển khoản")}\n");
@@ -146,6 +146,8 @@ public class TelegramOrderNotifier
                 rows.Add([("❌ Hủy", $"ox:{id}", null)]);
                 break;
             case OrderStatus.Installing:
+                if (o.DownloadingAt == null)
+                    rows.Add([("⬇️ Đã đăng nhập, đang tải", $"od:{id}", null)]);
                 rows.Add([("🎉 Hoàn tất", $"oc:{id}", null), ("↩️ Về chờ cài", $"ov:{id}", null)]);
                 break;
             case OrderStatus.ActionRequired:

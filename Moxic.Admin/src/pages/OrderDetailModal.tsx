@@ -116,6 +116,22 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
   }, [orderId]);
 
   const handleStatusTransition = async (newStatus: string) => {
+    // Installing sub-step for the customer's live tracker (not a real status change).
+    if (newStatus === "Downloading") {
+      setTransitioning(newStatus);
+      try {
+        const res = await apiFetch(apiUrl(`/api/admin/orders/${orderId}/downloading`), { method: "POST" });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || "Failed");
+          return;
+        }
+        onStatusChange();
+      } finally {
+        setTransitioning(null);
+      }
+      return;
+    }
     if (newStatus === "Cancelled" && !rejectReason) {
       setShowRejectInput(true);
       return;
@@ -164,6 +180,7 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
         ];
       case "Installing":
         return [
+          { label: "⬇️ Đang tải game", status: "Downloading", color: "bg-sky-500/10 text-sky-300 border border-sky-500/30 hover:bg-sky-500/20", icon: ArrowRight },
           { label: "Completed", status: "Completed", color: "bg-steam-green text-black hover:bg-steam-green/80", icon: ArrowRight },
         ];
       default:

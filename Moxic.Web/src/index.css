@@ -182,3 +182,42 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
+
+/* Tactile press feedback on every button / button-like link (uses the standalone `scale` property so it
+   doesn't fight Tailwind's translate/rotate utilities). */
+button:not(:disabled), a[class*="bg-accent"], a[class*="h-10"], a[class*="h-11"], a[class*="h-12"] {
+  transition-property: scale, color, background-color, border-color, opacity, box-shadow, filter;
+  transition-duration: 150ms;
+}
+button:not(:disabled):active, a[class*="bg-accent"]:active, a[class*="h-10"]:active, a[class*="h-11"]:active, a[class*="h-12"]:active {
+  scale: 0.96;
+}
+
+/* Route change: gentle fade/slide in */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active { scale: 1; }
+  .skeleton::after { animation: none; }
+}

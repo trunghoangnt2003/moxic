@@ -1,11 +1,12 @@
 import { Link, useParams } from "react-router-dom";
+import { OrderSkeleton } from "../components/shared/Skeleton";
 import { AlertTriangle, Clock, Gamepad2, PackageX } from "lucide-react";
 import Container from "../components/layout/Container";
 import OrderStatusBadge from "../components/account/OrderStatusBadge";
-import { PageLoader } from "../components/shared/MoxicLoader";
 import { useMyOrder } from "../hooks/useAccount";
 import { formatDate, formatPrice } from "../lib/utils";
-import OrderTimeline from "../components/account/OrderTimeline";
+import LiveOrderTracker from "../components/account/LiveOrderTracker";
+import SavedCallout from "../components/shared/SavedCallout";
 import GiftLinkCard from "../components/gift/GiftLinkCard";
 import { useChatUi } from "../lib/chatApi";
 
@@ -35,7 +36,7 @@ export default function OrderHistoryDetailPage() {
   const { orderCode = "" } = useParams();
   const { data: order, isLoading, isError } = useMyOrder(orderCode);
 
-  if (isLoading) return <PageLoader label="Đang tải đơn hàng..." />;
+  if (isLoading) return <OrderSkeleton />;
 
   if (isError || !order) {
     return (
@@ -68,9 +69,14 @@ export default function OrderHistoryDetailPage() {
               <OrderStatusBadge status={order.status} />
             </div>
 
-            <div className="mt-6 mb-2">
-              <OrderTimeline status={order.status} />
+            <div className="mt-5 mb-2">
+              <LiveOrderTracker order={order} />
             </div>
+            {order.status !== "Cancelled" && (order.savedAmount ?? 0) > 0 && (
+              <div className="mt-4">
+                <SavedCallout amount={order.savedAmount!} suffix="với đơn này" share={order.status === "Completed"} />
+              </div>
+            )}
 
             {order.status === "Cancelled" && order.cancellationReason && (
               <p className="mt-4 bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">

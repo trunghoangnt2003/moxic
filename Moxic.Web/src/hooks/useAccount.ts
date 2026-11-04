@@ -105,6 +105,8 @@ export function useMyOrder(orderCode: string, enabled = true) {
     queryFn: () => getMyOrder(orderCode),
     enabled: enabled && !!orderCode,
     retry: false,
+    // Live tracking: keep polling until the order is finished.
+    refetchInterval: (q) => (q.state.data && !["Completed", "Cancelled"].includes(q.state.data.status) ? 5000 : false),
   });
 }
 

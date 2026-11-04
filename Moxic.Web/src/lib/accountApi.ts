@@ -52,6 +52,11 @@ export interface AccountOrderDetail extends AccountOrderSummary {
   giftToken?: string | null;
   giftRecipientName?: string | null;
   giftClaimedAt?: string | null;
+  savedAmount?: number;
+  paidAt?: string | null;
+  installStartedAt?: string | null;
+  downloadingAt?: string | null;
+  completedAt?: string | null;
   cancellationReason: string | null;
   isClientConfirmed: boolean;
   hasPaymentProof: boolean;
@@ -162,7 +167,7 @@ export function safeRedirect(raw: string | null, fallback = "/"): string {
 
 // ───────────────────────── Loyalty points ─────────────────────────
 
-export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem";
+export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem" | "Leaderboard";
 
 export interface PointsTransaction {
   id: string;
@@ -194,4 +199,5 @@ export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
   Mission: "Hoàn thành nhiệm vụ",
   Referral: "Giới thiệu bạn bè",
   Redeem: "Đổi điểm",
+  Leaderboard: "Thưởng bảng xếp hạng",
 };

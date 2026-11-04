@@ -22,5 +22,8 @@ public enum PointsReason
     Referral,
 
     /// <summary>Spent in the points shop (RefId = redeem:{redemptionId}).</summary>
-    Redeem
+    Redeem,
+
+    /// <summary>Monthly leaderboard prize (RefId = lb:{yyyy-MM}:{board}:{rank}).</summary>
+    Leaderboard
 }

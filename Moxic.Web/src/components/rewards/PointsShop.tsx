@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confetti, haptic } from "../../lib/fx";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -42,6 +43,8 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
     mutationFn: (item: RewardShopItem) => redeemReward(item.id),
     onSuccess: (r, item) => {
       setConfirm(null);
+      haptic([20, 50, 20]);
+      confetti({ particles: 80, origin: { x: 0.5, y: 0.45 } });
       setWon({ name: item.name, code: r.code, kind: r.kind, caseSlug: r.caseSlug, expiresAt: r.expiresAt });
       qc.invalidateQueries({ queryKey: ["rewards"] });
       qc.invalidateQueries({ queryKey: ["loyalty"] });

@@ -1,4 +1,5 @@
 import { useGames, useFeaturedGames } from "../hooks/useGames";
+import { HomeSkeleton } from "../components/shared/Skeleton";
 import HeroSplash from "../components/home/HeroSplash";
 import DiscoverySection from "../components/home/DiscoverySection";
 import LuckySpinBanner from "../components/home/LuckySpinBanner";
@@ -11,7 +12,6 @@ import GameRail from "../components/games/GameRail";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { ForYouRail } from "../components/games/DiscoveryRails";
 import { FlashSaleRail } from "../components/games/FlashSale";
-import { PageLoader } from "../components/shared/MoxicLoader";
 
 export default function HomePage() {
   const { data, isLoading } = useGames({ pageSize: 50 });
@@ -20,7 +20,7 @@ export default function HomePage() {
   const bestsellers = (bestData?.items ?? []).filter((g) => (g.soldCount ?? 0) > 0);
 
   if (isLoading || featuredLoading) {
-    return <PageLoader />;
+    return <HomeSkeleton />;
   }
 
   const games = data?.items || [];

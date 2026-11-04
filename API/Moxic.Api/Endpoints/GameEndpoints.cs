@@ -265,7 +265,7 @@ public static class GameEndpoints
             return Results.Ok(dtos);
         });
 
-        group.MapGet("/{id:guid}", async (Guid id, MoxicDbContext dbContext, IMinioService minioService) =>
+        group.MapGet("/{id:guid}", async (Guid id, MoxicDbContext dbContext, IMinioService minioService, Moxic.Api.Services.LeaderboardService leaderboard) =>
         {
             var game = await dbContext.Games.AsNoTracking()
                 .Include(g => g.Media)
@@ -353,6 +353,12 @@ public static class GameEndpoints
                         IsVerifiedPurchase = r.IsVerifiedPurchase
                     }).ToList()
             };
+
+            // Leaderboard badges next to review authors
+            var authorOf = game.Reviews.Where(r => r.UserId != null).ToDictionary(r => r.Id, r => r.UserId!);
+            var badges = await leaderboard.BadgesAsync(authorOf.Values);
+            foreach (var rv in dto.Reviews)
+                if (authorOf.TryGetValue(rv.Id, out var uid) && badges.TryGetValue(uid, out var b)) rv.Badges = b;
 
             return Results.Ok(dto);
         });

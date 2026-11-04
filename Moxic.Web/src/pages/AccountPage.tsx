@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import Container from "../components/layout/Container";
 import { SectionLoader } from "../components/shared/MoxicLoader";
-import { apiError, changePassword, getLibrary, getProfile, updateProfile } from "../lib/communityApi";
+import { apiError, changePassword, getLibrary, getProfile, getSavings, updateProfile } from "../lib/communityApi";
+import SavedCallout from "../components/shared/SavedCallout";
 import { formatPrice } from "../lib/utils";
 import PushToggle from "../components/shared/PushToggle";
 
@@ -207,6 +208,7 @@ export default function AccountPage() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") === "settings" ? "settings" : "library";
   const { data: p, isLoading } = useQuery({ queryKey: ["account", "profile"], queryFn: getProfile });
+  const { data: savings } = useQuery({ queryKey: ["account", "savings"], queryFn: getSavings, staleTime: 60_000 });
 
   if (isLoading || !p) return <SectionLoader />;
   const initials = p.displayName.trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase() || "M";
@@ -257,7 +259,22 @@ export default function AccountPage() {
             );
           })}
         </div>
+        {savings && savings.badges.length > 0 && (
+          <div className="relative flex flex-wrap gap-2 mt-4">
+            {savings.badges.map((b) => (
+              <Link key={b} to="/leaderboard" className="px-2.5 py-1 text-xs font-semibold rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-200">
+                {b}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
+
+      {savings && savings.saved > 0 && (
+        <div className="mb-6">
+          <SavedCallout amount={savings.saved} suffix={`qua ${savings.games} game`} share />
+        </div>
+      )}
 
       <div className="flex border-b border-white/10 mb-6">
         {[

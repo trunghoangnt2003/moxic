@@ -50,6 +50,25 @@ public class OrderStatusService
         _ => false
     };
 
+    /// <summary>Installing sub-step: logged into the customer's Xbox, the game is now downloading.</summary>
+    public async Task<OrderStatusResult> MarkDownloadingAsync(Guid id)
+    {
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
+        if (order == null) return new(false, "Không tìm thấy đơn hàng", true);
+        if (order.Status != OrderStatus.Installing) return new(false, "Đơn chưa ở bước cài đặt");
+        if (order.DownloadingAt != null) return new(true, null);
+        order.DownloadingAt = DateTime.UtcNow;
+        order.UpdatedAt = order.DownloadingAt.Value;
+        await _db.SaveChangesAsync();
+
+        var customerId = await _notifications.ResolveOrderCustomerAsync(order);
+        if (customerId != null)
+            await _notifications.AddAsync(customerId, "order", $"⬇️ Đang tải game cho đơn {order.OrderCode}",
+                "Moxic đã đăng nhập Xbox của bạn và đang tải game. Sắp xong rồi!", $"/account/orders/{order.OrderCode}");
+        TelegramOrderNotifier.RefreshInBackground(_scopes, order.Id, _logger);
+        return new(true, null);
+    }
+
     public async Task<OrderStatusResult> ChangeAsync(Guid id, OrderStatus newStatus, string? reason)
     {
         var order = await _db.Orders.Include(o => o.Details).FirstOrDefaultAsync(o => o.Id == id);
@@ -73,6 +92,22 @@ public class OrderStatusService
 
         order.Status = newStatus;
         order.UpdatedAt = DateTime.UtcNow;
+        // Live-tracking milestones
+        switch (newStatus)
+        {
+            case OrderStatus.Verifying:
+                order.PaidAt ??= order.UpdatedAt;
+                order.InstallStartedAt = null;
+                order.DownloadingAt = null;
+                break;
+            case OrderStatus.Installing:
+                order.InstallStartedAt = order.UpdatedAt;
+                order.DownloadingAt = null;
+                break;
+            case OrderStatus.Completed:
+                order.CompletedAt = order.UpdatedAt;
+                break;
+        }
         if (newStatus == OrderStatus.Cancelled && !string.IsNullOrWhiteSpace(reason))
             order.CancellationReason = reason;
 
@@ -102,7 +137,7 @@ public class OrderStatusService
             var (title, body) = newStatus switch
             {
                 OrderStatus.Verifying => ($"Đã nhận thanh toán đơn {order.OrderCode}", "Moxic đang xác minh và chuẩn bị cài đặt game cho bạn."),
-                OrderStatus.Installing => ($"Đơn {order.OrderCode} đang được cài đặt", "Vui lòng không đăng nhập tài khoản Xbox trong lúc cài đặt."),
+                OrderStatus.Installing => ($"🔐 Moxic đang đăng nhập Xbox cho đơn {order.OrderCode}", "Vui lòng không đăng nhập tài khoản Xbox trong lúc cài đặt."),
                 OrderStatus.ActionRequired => ($"Đơn {order.OrderCode} cần bạn xử lý", reason ?? "Thông tin tài khoản Xbox chưa chính xác — vui lòng kiểm tra."),
                 OrderStatus.Completed => ($"🎉 Đơn {order.OrderCode} đã hoàn tất", "Game đã được cài vào tài khoản Xbox của bạn. Chúc bạn chơi vui!"),
                 OrderStatus.Cancelled => ($"Đơn {order.OrderCode} đã bị hủy", reason ?? "Liên hệ Moxic nếu bạn cần hỗ trợ."),

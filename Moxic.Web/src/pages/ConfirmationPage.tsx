@@ -6,6 +6,8 @@ import Container from "../components/layout/Container";
 import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import ConfirmationContent from "../components/checkout/ConfirmationContent";
 import GiftLinkCard from "../components/gift/GiftLinkCard";
+import LiveOrderTracker from "../components/account/LiveOrderTracker";
+import SavedCallout from "../components/shared/SavedCallout";
 import QRDisplay from "../components/checkout/QRDisplay";
 import { getOrder, uploadPaymentProof } from "../lib/api";
 
@@ -23,7 +25,7 @@ export default function ConfirmationPage() {
     enabled: !!orderCode,
     retry: 1,
     // While unpaid, poll so the page flips to "đã nhận tiền" as soon as the bank webhook confirms it.
-    refetchInterval: (q) => (q.state.data && ["Pending", "AwaitingConfirmation"].includes(q.state.data.status) ? 5000 : false),
+    refetchInterval: (q) => (q.state.data && !["Completed", "Cancelled"].includes(q.state.data.status) ? 5000 : false),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,14 +127,9 @@ export default function ConfirmationPage() {
               couponCode={order.couponCode}
             />
 
-            {isPaid && (
-              <div className="flex items-start gap-3 bg-green-500/10 border border-green-500/30 px-4 py-4 animate-[popIn_0.4s_ease-out]">
-                <CheckCircle className="w-6 h-6 text-green-400 shrink-0" />
-                <div>
-                  <p className="font-semibold text-green-300">Đã nhận thanh toán</p>
-                  <p className="text-sm text-[#b5a898]">Moxic đang chuẩn bị cài game vào tài khoản Xbox của bạn — thường trong 15–30 phút. Bạn sẽ nhận thông báo khi xong.</p>
-                </div>
-              </div>
+            {(isPaid || order.status === "ActionRequired") && <LiveOrderTracker order={order} />}
+            {order.status !== "Cancelled" && (order.savedAmount ?? 0) > 0 && (
+              <SavedCallout amount={order.savedAmount!} suffix="với đơn này" share={isPaid} />
             )}
 
             {/* Bank info + QR */}

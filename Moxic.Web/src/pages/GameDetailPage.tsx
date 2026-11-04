@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import { GameDetailSkeleton } from "../components/shared/Skeleton";
 import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
 import RentPanel from "../components/rental/RentPanel";
@@ -19,9 +20,9 @@ import Container from "../components/layout/Container";
 import Button from "../components/shared/Button";
 import Badge from "../components/shared/Badge";
 import type { GameReview } from "../types/game";
-import { PageLoader } from "../components/shared/MoxicLoader";
 import { formatPrice, formatDate, daysUntil, timeAgo } from "../lib/utils";
 import { useCartStore } from "../lib/cartStore";
+import { flyToCart, haptic } from "../lib/fx";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingCart,
@@ -132,7 +133,7 @@ export default function GameDetailPage() {
     if (game?.id) recentlyViewed.push(game.id);
   }, [game?.id]);
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return <GameDetailSkeleton />;
 
   if (error || !game) {
     return (
@@ -171,6 +172,8 @@ export default function GameDetailPage() {
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+    haptic();
+    flyToCart(document.getElementById("game-main-media"));
   };
 
   const handleBuyNow = () => {
@@ -252,6 +255,7 @@ export default function GameDetailPage() {
                     />
                   ) : (
                     <img
+                      id="game-main-media"
                       src={primaryImage}
                       alt={`${game.name} media ${activeMedia + 1}`}
                       className="w-full h-full object-cover"
@@ -410,6 +414,11 @@ export default function GameDetailPage() {
                                   <BadgeCheck className="w-3 h-3" /> Đã mua
                                 </span>
                               )}
+                              {review.badges?.slice(0, 1).map((b) => (
+                                <Link key={b} to="/leaderboard" className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-400/10 text-amber-200 border border-amber-400/40">
+                                  {b}
+                                </Link>
+                              ))}
                               <StarRating rating={review.rating} size={10} />
                               <span className="text-[10px] md:text-[11px] text-text-muted ml-auto flex-shrink-0 whitespace-nowrap">{timeAgo(review.createdAt)}</span>
                             </div>

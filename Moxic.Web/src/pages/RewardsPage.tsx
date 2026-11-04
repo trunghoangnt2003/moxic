@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confetti, haptic } from "../lib/fx";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -60,6 +61,8 @@ export default function RewardsPage() {
   const doCheckIn = useMutation({
     mutationFn: checkIn,
     onSuccess: (r) => {
+      haptic([15, 40, 15]);
+      if (r.weekly) confetti({ particles: 90 });
       toast.success(r.weekly ? `🔥 Chuỗi ${r.streak} ngày! +${r.reward} điểm thưởng tuần` : `Điểm danh thành công +${r.reward} điểm`);
       refresh();
     },
@@ -145,6 +148,9 @@ export default function RewardsPage() {
             <a href="#doi-diem" className="text-xs text-accent hover:underline">
               Đổi điểm lấy quà →
             </a>
+            <Link to="/leaderboard" className="block text-xs text-amber-300 hover:underline mt-1">
+              🏆 Đua top tháng →
+            </Link>
           </div>
         </div>
       </section>

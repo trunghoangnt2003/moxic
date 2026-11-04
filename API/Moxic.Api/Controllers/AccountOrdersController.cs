@@ -113,6 +113,11 @@ public class AccountOrdersController : ControllerBase
                 o.GiftClaimedAt,
                 o.CancellationReason,
                 o.IsClientConfirmed,
+                o.PaidAt,
+                o.InstallStartedAt,
+                o.DownloadingAt,
+                o.CompletedAt,
+                Lines = o.Details.Select(d => new { d.Price, d.ListPrice }).ToList(),
                 HasPaymentProof = o.PaymentProofObjectKey != null,
                 Items = o.Details.Select(d => new ItemRow(d.GameId, d.GameName, d.Price)).ToList()
             })
@@ -143,7 +148,12 @@ public class AccountOrdersController : ControllerBase
             GiftClaimedAt = row.GiftClaimedAt,
             CancellationReason = row.CancellationReason,
             IsClientConfirmed = row.IsClientConfirmed,
-            HasPaymentProof = row.HasPaymentProof
+            HasPaymentProof = row.HasPaymentProof,
+            SavedAmount = OrderSavings.Saved(row.Lines.Select(l => (l.Price, l.ListPrice)), row.DiscountAmount),
+            PaidAt = row.PaidAt,
+            InstallStartedAt = row.InstallStartedAt,
+            DownloadingAt = row.DownloadingAt,
+            CompletedAt = row.CompletedAt
         });
     }
 

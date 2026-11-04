@@ -1,4 +1,5 @@
 ﻿import { Link, useNavigate } from "react-router-dom";
+import SavedCallout from "../components/shared/SavedCallout";
 import Container from "../components/layout/Container";
 import { useCartStore } from "../lib/cartStore";
 import { formatPrice } from "../lib/utils";
@@ -162,6 +163,11 @@ export default function CartPage() {
                       <span className="text-[#b5a898] text-sm font-semibold uppercase tracking-wider">Tổng cộng</span>
                       <span className="font-display text-2xl text-[#c9a96e] font-bold">{formatPrice(total)}</span>
                     </div>
+                    {saved > 0 && (
+                      <div className="mt-3">
+                        <SavedCallout amount={saved} compact />
+                      </div>
+                    )}
                   </div>
 
                   <button

@@ -1,3 +1,4 @@
+import SavedCallout from "../shared/SavedCallout";
 import type { ReactNode } from "react";
 import { formatPrice } from "../../lib/utils";
 import type { CouponQuote } from "../../lib/couponApi";
@@ -52,6 +53,15 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
         <span className="text-[#7a6f63] text-sm font-semibold uppercase tracking-wider">Tổng cộng</span>
         <span className="font-display text-xl text-[#c9a96e] font-bold">{formatPrice(quote ? quote.total : total)}</span>
       </div>
+      {(() => {
+        const list = items.reduce((s, i) => s + (i.originalPrice || i.price) * i.quantity, 0);
+        const saved = list - (quote ? quote.total : total);
+        return saved > 0 ? (
+          <div className="mt-3">
+            <SavedCallout amount={saved} compact />
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }

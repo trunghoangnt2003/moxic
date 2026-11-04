@@ -1,3 +1,4 @@
+import SavedCallout from "./SavedCallout";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../lib/cartStore";
 import { formatPrice } from "../../lib/utils";
@@ -113,6 +114,7 @@ export default function CartDrawer() {
               <span className="text-text-muted text-sm">T\u1ea1m t\u00ednh</span>
               <span className="font-display text-xl text-accent">{formatPrice(totalPrice())}</span>
             </div>
+            <SavedCallout amount={items.reduce((s, i) => s + Math.max(0, (i.originalPrice || i.price) - i.price) * i.quantity, 0)} compact />
             <div className="flex gap-2">
               <button
                 onClick={clearCart}

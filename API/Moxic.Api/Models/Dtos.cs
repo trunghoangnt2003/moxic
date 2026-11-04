@@ -110,6 +110,8 @@ public record OrderConfirmationItem
 {
     public string GameName { get; init; } = string.Empty;
     public decimal Price { get; init; }
+    /// <summary>Xbox Store price at purchase time (null when unknown).</summary>
+    public decimal? ListPrice { get; init; }
 }
 
 public record OrderConfirmationResponse
@@ -136,6 +138,12 @@ public record OrderConfirmationResponse
     public string TransferContent { get; init; } = string.Empty;
     /// <summary>True when transfers are confirmed automatically (SePay webhook configured).</summary>
     public bool AutoConfirm { get; init; }
+    /// <summary>Saved vs Xbox Store (list prices − paid prices + coupon discount).</summary>
+    public decimal SavedAmount { get; init; }
+    public DateTime? PaidAt { get; init; }
+    public DateTime? InstallStartedAt { get; init; }
+    public DateTime? DownloadingAt { get; init; }
+    public DateTime? CompletedAt { get; init; }
 }
 
 public record PaymentConfigInfo

@@ -77,6 +77,7 @@ export interface GameReview {
   content: string;
   createdAt: string;
   isVerifiedPurchase?: boolean;
+  badges?: string[];
   isMine?: boolean;
 }
 
@@ -201,4 +202,9 @@ export interface OrderConfirmationData {
   dynamicQrUrl?: string | null;
   transferContent?: string;
   autoConfirm?: boolean;
+  savedAmount?: number;
+  paidAt?: string | null;
+  installStartedAt?: string | null;
+  downloadingAt?: string | null;
+  completedAt?: string | null;
 }

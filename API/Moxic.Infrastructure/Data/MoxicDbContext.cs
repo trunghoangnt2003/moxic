@@ -15,6 +15,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
+    public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<GameReview> GameReviews => Set<GameReview>();
@@ -169,6 +170,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.GameName).HasMaxLength(200).IsRequired();
             entity.Property(e => e.EditionName).HasMaxLength(60);
             entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ListPrice).HasColumnType("decimal(18,2)");
             entity.HasOne(e => e.Order)
                 .WithMany(o => o.Details)
                 .HasForeignKey(e => e.OrderId)
@@ -204,6 +206,16 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.CryptoQrObjectKey).HasMaxLength(500);
             entity.Property(e => e.TransferSyntaxTemplate).HasMaxLength(256).IsRequired();
             entity.Property(e => e.BankCode).HasMaxLength(20);
+        });
+        modelBuilder.Entity<LeaderboardAward>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Month).HasMaxLength(7).IsRequired();
+            entity.Property(e => e.Board).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.UserId).HasMaxLength(450).IsRequired();
+            entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
+            entity.HasIndex(e => new { e.Month, e.Board, e.Rank }).IsUnique();
+            entity.HasIndex(e => e.UserId);
         });
         modelBuilder.Entity<BankTransaction>(entity =>
         {

@@ -14,6 +14,9 @@ export default function Footer() {
             </span>
           </div>
           <div className="flex items-center gap-6 text-xs text-text-secondary">
+            <Link to="/leaderboard" className="hover:text-text-primary transition-colors">
+              Bảng xếp hạng
+            </Link>
             <Link to="/games" className="hover:text-text-primary transition-colors">
               Store
             </Link>

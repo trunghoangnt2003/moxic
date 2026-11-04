@@ -124,6 +124,14 @@ export default function Navbar() {
               >
                 Sắp ra mắt
               </NavLink>
+              <NavLink
+                to="/leaderboard"
+                className={({ isActive }) =>
+                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
+                }
+              >
+                Xếp hạng
+              </NavLink>
             </div>
           </div>
 
@@ -153,7 +161,9 @@ export default function Navbar() {
 
             {/* Cart */}
             <Link
+              id="nav-cart-button"
               to="/cart"
+              aria-label="Giỏ hàng"
               className="relative text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -322,6 +332,9 @@ export default function Navbar() {
             </Link>
             <Link to="/release-calendar" className="block text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
               Lịch phát hành
+            </Link>
+            <Link to="/leaderboard" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
+              🏆 Bảng xếp hạng
             </Link>
             <div className="pt-2 border-t border-border space-y-1">
               {me ? (

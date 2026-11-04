@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { GridSkeleton } from "../components/shared/Skeleton";
 import { useSearchParams } from "react-router-dom";
 import { Search, X, SlidersHorizontal, ChevronDown, ChevronLeft, ChevronRight, Check, Tag as TagIcon, Percent } from "lucide-react";
 import { useGameFacets, useGames } from "../hooks/useGames";
 import GameCard from "../components/games/GameCard";
 import Container from "../components/layout/Container";
-import { MoxicLoader, SectionLoader } from "../components/shared/MoxicLoader";
+import { MoxicLoader } from "../components/shared/MoxicLoader";
 import { formatPrice } from "../lib/utils";
 import type { FacetOption, ProductType } from "../types/game";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
@@ -335,7 +336,7 @@ export default function GamesPage() {
               </button>
             </div>
           ) : isLoading ? (
-            <SectionLoader />
+            <GridSkeleton count={8} />
           ) : data && data.items.length === 0 ? (
             <div className="text-center py-20 px-6 bg-black/40 border border-white/5">
               <Search className="w-10 h-10 mx-auto text-text-muted mb-4" />

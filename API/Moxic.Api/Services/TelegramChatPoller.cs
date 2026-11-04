@@ -408,6 +408,14 @@ public class TelegramChatPoller : BackgroundService
                 await _bot.EditKeyboardAsync(chatId.Value, messageId.Value, cards.Buttons(order, confirmCancel: true), ct);
                 await _bot.AnswerCallbackAsync(cbId, "Bấm xác nhận để hủy đơn", ct: ct);
                 return;
+            case 'd':
+            {
+                var rd = await scope.ServiceProvider.GetRequiredService<OrderStatusService>().MarkDownloadingAsync(orderId);
+                await _bot.AnswerCallbackAsync(cbId, rd.Ok ? "⬇️ Đã báo khách: đang tải game" : rd.Error, !rd.Ok, ct);
+                var fr = await cards.FindAsync(orderId);
+                if (fr != null) await _bot.EditAsync(chatId.Value, messageId.Value, cards.CardText(fr, null), cards.Buttons(fr), ct);
+                return;
+            }
             case 'k':
             {
                 var userId = cb["from"]?["id"]?.GetValue<long>();

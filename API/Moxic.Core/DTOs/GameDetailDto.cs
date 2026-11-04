@@ -61,4 +61,6 @@ public class GameReviewDto
     public bool IsVerifiedPurchase { get; set; }
     /// <summary>Set on the author's own submit response.</summary>
     public bool IsMine { get; set; }
+    /// <summary>Recent leaderboard badges of the author.</summary>
+    public List<string> Badges { get; set; } = new();
 }
