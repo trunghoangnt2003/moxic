@@ -164,7 +164,7 @@ public class TelegramChatPoller : BackgroundService
         if (text.StartsWith("/start") || text.StartsWith("/help"))
         {
             await Say(
-                "<b>💬 Tin nhắn khách:</b> bấm <b>Reply</b> vào tin của khách để trả lời, hoặc <code>/r MÃ nội dung</code>.\n" +
+                "<b>💬 Tin nhắn khách:</b> mỗi khách có tab riêng (bot tự tạo khi khách nhắn) — gõ thẳng trong tab để trả lời, /exit khi xong. Ngoài tab: Reply tin của khách hoặc <code>/r MÃ nội dung</code>.\n" +
                 "<b>🛒 Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn\nBấm nút dưới mỗi đơn để đổi trạng thái. 🔑 gửi TK Xbox riêng cho người bấm (cần mở chat riêng với bot và bấm Start 1 lần).\n" +
                 "<b>Nhóm:</b> /setup — tạo lại các tab Đơn hàng / Tin nhắn.");
             return;
@@ -311,7 +311,7 @@ public class TelegramChatPoller : BackgroundService
         link.ChatTopicId = chats;
         await db.SaveChangesAsync(ct);
         await _bot.SendAsync(link.ChatId, "✅ Đơn hàng mới, ảnh chuyển khoản và các nút xử lý sẽ vào tab này.\nGõ /cho để xem các đơn đang cần xử lý.", ct: ct, threadId: orders);
-        await _bot.SendAsync(link.ChatId, "✅ Tin nhắn của khách trên moxic.co sẽ vào tab này.\nBấm <b>Reply</b> vào tin của khách để trả lời — bot thả 👍 khi đã gửi tới khách.", ct: ct, threadId: chats);
+        await _bot.SendAsync(link.ChatId, "✅ Mỗi khách nhắn trên moxic.co sẽ có <b>tab riêng</b> (bot tự tạo). Tab này là mục lục — bấm \"mở tab\" để nhảy tới khách.\nTrong tab của khách: gõ thẳng để trả lời (bot thả 👍 khi đã gửi), /exit khi xong.", ct: ct, threadId: chats);
     }
 
     /// <summary>Creates "💬 Name #CODE" tab for one conversation and replays its recent history there.</summary>

@@ -87,7 +87,7 @@ public class ChatService
             try
             {
                 using var scope = _scopes.CreateScope();
-                await scope.ServiceProvider.GetRequiredService<ChatService>().ForwardToTelegramAsync(threadId, text);
+                await scope.ServiceProvider.GetRequiredService<ChatService>().ForwardToTelegramAsync(threadId, text, orderCode);
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Chat forward to Telegram failed"); }
         });
@@ -152,27 +152,100 @@ public class ChatService
         return sb.ToString();
     }
 
-    public async Task ForwardToTelegramAsync(Guid threadId, string text)
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> ForwardLocks = new();
+
+    /// <summary>t.me link that jumps straight to a topic of a supergroup (-100xxxxxxxxxx → c/xxxxxxxxxx/topic).</summary>
+    public static string? TopicLink(long chatId, long topicId)
+    {
+        var s = chatId.ToString();
+        return s.StartsWith("-100") ? $"https://t.me/c/{s[4..]}/{topicId}" : null;
+    }
+
+    /// <summary>
+    /// Each customer gets their own tab in a group with Topics (created on their first message, and again after
+    /// the tab was cleaned up). The shared "Tin nhắn khách" tab only gets a one-line index entry with a jump link.
+    /// Returns the tab id, or null when the chat has no Topics / the bot can't create topics.
+    /// </summary>
+    private async Task<(long? TopicId, bool Created)> EnsureTabAsync(ChatThread t, long chatId, long? indexTopicId)
+    {
+        if (indexTopicId == null) return (null, false); // not a forum group (or private chat)
+        if (t.TgTopicId != null && t.TgTopicChatId == chatId) return (t.TgTopicId, false);
+        if (t.TgTopicId != null) return (null, false); // already has a tab in another admin chat
+
+        string? who = t.Name;
+        if (string.IsNullOrWhiteSpace(who) && t.UserId != null)
+            who = await _db.CustomerProfiles.AsNoTracking().Where(p => p.UserId == t.UserId).Select(p => p.DisplayName).FirstOrDefaultAsync();
+        if (string.IsNullOrWhiteSpace(who)) who = t.Contact ?? "Khách";
+        var name = $"💬 {who} #{t.Code}";
+        if (name.Length > 120) name = name[..120];
+
+        var topicId = await _bot.CreateTopicAsync(chatId, name, 9367192);
+        if (topicId == null) return (null, false);
+        await _db.ChatThreads.Where(x => x.Id == t.Id).ExecuteUpdateAsync(s => s
+            .SetProperty(x => x.TgTopicChatId, chatId)
+            .SetProperty(x => x.TgTopicId, topicId)
+            .SetProperty(x => x.TgTopicCloseAt, (DateTime?)null));
+        t.TgTopicChatId = chatId;
+        t.TgTopicId = topicId;
+
+        var link = TopicLink(chatId, topicId.Value);
+        var index = await _bot.SendAsync(chatId,
+            $"🆕 <b>{TelegramBot.Html(who)}</b> <code>#{t.Code}</code> vừa nhắn" + (link != null ? $" → <a href=\"{link}\">mở tab</a>" : " — xem tab riêng"),
+            threadId: indexTopicId);
+        if (index != null)
+            _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = index.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+        return (topicId, true);
+    }
+
+    public async Task ForwardToTelegramAsync(Guid threadId, string text, string? attachedOrder = null)
     {
         if (!_bot.Enabled) return;
-        var t = await _db.ChatThreads.AsNoTracking().FirstOrDefaultAsync(x => x.Id == threadId);
-        if (t == null) return;
-        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => new { a.ChatId, a.ChatTopicId }).ToListAsync();
-        if (admins.Count == 0) return;
-
-        var html = $"{await HeaderAsync(t)}\n\n{TelegramBot.Html(text)}\n\n<i>↩️ Reply tin này để trả lời</i>";
-        // Conversations moved to their own tab: short message there, no header; the customer writing again cancels a pending /exit.
-        var tabHtml = $"👤 {TelegramBot.Html(text)}";
-        if (t.TgTopicId != null && t.TgTopicCloseAt != null)
-            await _db.ChatThreads.Where(x => x.Id == t.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.TgTopicCloseAt, (DateTime?)null));
-        foreach (var a in admins)
+        // Serialize per conversation so two quick messages don't create two tabs.
+        var gate = ForwardLocks.GetOrAdd(threadId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync();
+        try
         {
-            var inTab = t.TgTopicId != null && t.TgTopicChatId == a.ChatId;
-            var id = await _bot.SendAsync(a.ChatId, inTab ? tabHtml : html, threadId: inTab ? t.TgTopicId : a.ChatTopicId);
-            if (id != null)
-                _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = a.ChatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+            var t = await _db.ChatThreads.AsNoTracking().FirstOrDefaultAsync(x => x.Id == threadId);
+            if (t == null) return;
+            var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => new { a.ChatId, a.ChatTopicId }).ToListAsync();
+            if (admins.Count == 0) return;
+
+            var header = await HeaderAsync(t);
+            var html = $"{header}\n\n{TelegramBot.Html(text)}\n\n<i>↩️ Reply tin này để trả lời</i>";
+            // The customer writing again cancels a pending /exit.
+            if (t.TgTopicId != null && t.TgTopicCloseAt != null)
+                await _db.ChatThreads.Where(x => x.Id == t.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.TgTopicCloseAt, (DateTime?)null));
+
+            foreach (var a in admins)
+            {
+                var (tab, created) = await EnsureTabAsync(t, a.ChatId, a.ChatTopicId);
+                long? id;
+                if (tab != null)
+                {
+                    if (created)
+                    {
+                        var intro = await _bot.SendAsync(a.ChatId,
+                            $"{header}\n\n✍️ Gõ thẳng trong tab này để trả lời khách (không cần Reply). /exit khi xong — tab tự xóa sau 3 tiếng; không ai nhắn 24 tiếng cũng tự xóa.",
+                            threadId: tab);
+                        if (intro != null)
+                            _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = a.ChatId, TelegramMessageId = intro.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+                    }
+                    var order = attachedOrder != null && !created ? $"📦 <code>{TelegramBot.Html(attachedOrder)}</code>\n" : "";
+                    id = await _bot.SendAsync(a.ChatId, $"{order}👤 {TelegramBot.Html(text)}", threadId: tab);
+                }
+                else
+                {
+                    id = await _bot.SendAsync(a.ChatId, html, threadId: a.ChatTopicId);
+                }
+                if (id != null)
+                    _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = a.ChatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+            }
+            await _db.SaveChangesAsync();
         }
-        await _db.SaveChangesAsync();
+        finally
+        {
+            gate.Release();
+        }
     }
 
     /// <summary>Tells the other linked admins that someone answered (keeps everyone in sync).</summary>
