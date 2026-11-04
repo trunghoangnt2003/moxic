@@ -72,6 +72,12 @@ public class BankPaymentService
             Gateway = gateway, AccountNumber = account, ReferenceCode = reference, TransactionDate = date, CreatedAt = DateTime.UtcNow,
         };
 
+        // Spin codes bought by transfer (content MXS…) are settled by their own service.
+        var spinOrderCode = SpinCodeShopService.FindOrderCode(content);
+        if (spinOrderCode != null)
+            return await _scopes.CreateScope().ServiceProvider.GetRequiredService<SpinCodeShopService>()
+                .HandleTransferAsync(tx, spinOrderCode);
+
         var code = FindOrderCode(content);
         var order = code == null ? null : await _db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderCode == code);
         string? alert = null;

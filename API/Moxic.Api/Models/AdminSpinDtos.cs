@@ -12,7 +12,8 @@ public record CaseUpsertRequest(
     int? FreeIntervalHours,
     int? PointsCost,
     bool IsActive,
-    int DisplayOrder);
+    int DisplayOrder,
+    decimal? CodePrice = null);
 
 public record AdminCaseDto(
     Guid Id,
@@ -31,7 +32,8 @@ public record AdminCaseDto(
     bool IsPoolValid,
     int CodeCount,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    decimal CodePrice = 0);
 
 public record AdminCustomerDto(
     string UserId,

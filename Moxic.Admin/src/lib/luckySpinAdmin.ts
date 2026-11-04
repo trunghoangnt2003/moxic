@@ -11,6 +11,8 @@ export interface AdminCase {
   openMethod: OpenMethod;
   freeIntervalHours: number;
   pointsCost: number;
+  /** Code cases: price per spin bought by bank transfer (0 = not for sale). */
+  codePrice?: number;
   isActive: boolean;
   displayOrder: number;
   prizeCount: number;
@@ -31,10 +33,10 @@ export const OPEN_METHOD_LABELS: Record<OpenMethod, string> = {
 export const OPEN_METHODS: OpenMethod[] = ["Code", "FreeInterval", "Points"];
 
 /** "Nhập mã" | "Miễn phí mỗi 24h" | "500 điểm" */
-export function describeOpenMethod(c: Pick<AdminCase, "openMethod" | "freeIntervalHours" | "pointsCost">): string {
+export function describeOpenMethod(c: Pick<AdminCase, "openMethod" | "freeIntervalHours" | "pointsCost" | "codePrice">): string {
   if (c.openMethod === "FreeInterval") return `Miễn phí mỗi ${c.freeIntervalHours}h`;
   if (c.openMethod === "Points") return `${c.pointsCost.toLocaleString("vi-VN")} điểm`;
-  return "Nhập mã";
+  return c.codePrice ? `Nhập mã, bán ${c.codePrice.toLocaleString("vi-VN")}đ/lượt` : "Nhập mã";
 }
 
 /** Same rules as the server: lowercase ASCII, Vietnamese diacritics removed, non [a-z0-9] runs -> "-". */

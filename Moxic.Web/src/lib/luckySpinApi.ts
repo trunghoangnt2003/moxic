@@ -37,6 +37,8 @@ export interface CaseSummary {
   previewPrizes: PublicPrize[];
   /** FreeInterval + logged-in customer with an active cooldown only. */
   nextFreeOpenAt: string | null;
+  /** Code cases: price of one spin bought by bank transfer (0 = not for sale). */
+  codePrice?: number;
 }
 
 export interface CasesPage {
@@ -142,6 +144,36 @@ export async function openCase(slug: string, code?: string) {
   const { data } = await api.post<OpenCaseResult>(`/lucky-spin/cases/${encodeURIComponent(slug)}/open`, {
     code: code || null,
   });
+  return data;
+}
+
+/** A purchase of spins for a code case, paid by bank transfer (SePay confirms automatically). */
+export interface SpinCodeOrder {
+  id: string;
+  transferContent: string;
+  caseSlug: string;
+  caseName: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  status: "Pending" | "Paid" | "Cancelled";
+  qrUrl: string | null;
+  bankName: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
+  autoConfirm: boolean;
+  spinCode: string | null;
+  createdAt: string;
+  paidAt: string | null;
+}
+
+export async function buySpinCode(slug: string, quantity: number) {
+  const { data } = await api.post<SpinCodeOrder>(`/lucky-spin/cases/${encodeURIComponent(slug)}/buy-code`, { quantity });
+  return data;
+}
+
+export async function getSpinCodeOrder(id: string) {
+  const { data } = await api.get<SpinCodeOrder>(`/lucky-spin/code-orders/${encodeURIComponent(id)}`);
   return data;
 }
 

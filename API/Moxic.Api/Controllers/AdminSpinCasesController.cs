@@ -191,6 +191,12 @@ public class AdminSpinCasesController : ControllerBase
         spinCase.OpenMethod = req.OpenMethod;
         spinCase.FreeIntervalHours = hours;
         spinCase.PointsCost = cost;
+        var price = req.OpenMethod == SpinCaseOpenMethod.Code ? Math.Round(req.CodePrice ?? 0m) : 0m;
+        if (price < 0 || price > 100_000_000m)
+            return BadRequest(new { error = "Giá mã quay phải từ 0 đến 100.000.000đ." });
+        if (price is > 0 and < 1000)
+            return BadRequest(new { error = "Giá mã quay tối thiểu 1.000đ (hoặc 0 để không bán)." });
+        spinCase.CodePrice = price;
         spinCase.IsActive = req.IsActive;
         spinCase.DisplayOrder = req.DisplayOrder;
         spinCase.UpdatedAt = DateTime.UtcNow;
@@ -246,7 +252,7 @@ public class AdminSpinCasesController : ControllerBase
             c.Id, c.Name, c.Slug, c.Description, imageUrl, c.OpenMethod, c.FreeIntervalHours, c.PointsCost,
             c.IsActive, c.DisplayOrder, prizeCount, activeCount, activeBp / 100m,
             activeCount > 0 && activeBp == LuckySpinRules.TotalBasisPoints,
-            codeCount, c.CreatedAt, c.UpdatedAt);
+            codeCount, c.CreatedAt, c.UpdatedAt, c.CodePrice);
     }
 
     private async Task TryDeleteObjectAsync(string? key)

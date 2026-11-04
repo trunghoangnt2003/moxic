@@ -32,6 +32,7 @@ interface CaseForm {
   openMethod: OpenMethod;
   freeIntervalHours: string;
   pointsCost: string;
+  codePrice: string;
   displayOrder: string;
   isActive: boolean;
 }
@@ -58,6 +59,7 @@ const emptyForm: CaseForm = {
   openMethod: "Code",
   freeIntervalHours: "24",
   pointsCost: "500",
+  codePrice: "0",
   displayOrder: "0",
   isActive: true,
 };
@@ -71,6 +73,7 @@ function toForm(c: AdminCase): CaseForm {
     openMethod: c.openMethod,
     freeIntervalHours: String(c.freeIntervalHours || 24),
     pointsCost: String(c.pointsCost || 500),
+    codePrice: String(c.codePrice ?? 0),
     displayOrder: String(c.displayOrder),
     isActive: c.isActive,
   };
@@ -84,6 +87,7 @@ function caseBody(c: AdminCase, overrides: Partial<{ isActive: boolean }> = {}) 
     openMethod: c.openMethod,
     freeIntervalHours: c.freeIntervalHours,
     pointsCost: c.pointsCost,
+    codePrice: c.codePrice ?? 0,
     isActive: overrides.isActive ?? c.isActive,
     displayOrder: c.displayOrder,
   };
@@ -187,6 +191,7 @@ export default function LuckySpinCases({ cases, reload, onManagePrizes }: LuckyS
         openMethod: form.openMethod,
         freeIntervalHours: form.openMethod === "FreeInterval" ? hours : null,
         pointsCost: form.openMethod === "Points" ? cost : null,
+        codePrice: form.openMethod === "Code" ? Number.parseInt(form.codePrice, 10) || 0 : null,
         isActive: form.isActive,
         displayOrder: Number.parseInt(form.displayOrder, 10) || 0,
       };
@@ -558,6 +563,23 @@ export default function LuckySpinCases({ cases, reload, onManagePrizes }: LuckyS
                     onChange={(e) => setForm({ ...form, freeIntervalHours: e.target.value })}
                     className="w-full steam-input"
                   />
+                </div>
+              )}
+              {form.openMethod === "Code" && (
+                <div>
+                  <label className="block text-xs text-steam-muted mb-1">Giá bán mỗi lượt quay (VND)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100000000}
+                    step={1000}
+                    value={form.codePrice}
+                    onChange={(e) => setForm({ ...form, codePrice: e.target.value })}
+                    className="w-full steam-input"
+                  />
+                  <p className="mt-1 text-[11px] text-steam-muted">
+                    0 = không bán. Có giá thì khách mua mã ngay trên trang hòm bằng QR, SePay tự xác nhận và cấp mã; tab Đơn hàng trên Telegram được báo.
+                  </p>
                 </div>
               )}
               {form.openMethod === "Points" && (

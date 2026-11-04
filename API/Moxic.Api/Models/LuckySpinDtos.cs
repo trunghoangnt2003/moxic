@@ -22,7 +22,8 @@ public record PublicCaseSummaryDto(
     bool Available,
     int PrizeCount,
     IReadOnlyList<PublicPrizeDto> PreviewPrizes,
-    DateTime? NextFreeOpenAt);
+    DateTime? NextFreeOpenAt,
+    decimal CodePrice = 0);
 
 public record PublicCasesResponse(
     IReadOnlyList<PublicCaseSummaryDto> Items,

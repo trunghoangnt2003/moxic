@@ -15,6 +15,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
+    public DbSet<SpinCodeOrder> SpinCodeOrders => Set<SpinCodeOrder>();
     public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
     public DbSet<GuessPuzzle> GuessPuzzles => Set<GuessPuzzle>();
     public DbSet<GuessPlay> GuessPlays => Set<GuessPlay>();
@@ -248,6 +249,19 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
             entity.HasIndex(e => new { e.Month, e.Board, e.Rank }).IsUnique();
             entity.HasIndex(e => e.UserId);
+        });
+        modelBuilder.Entity<SpinCodeOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(20).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.UserId).HasMaxLength(450).IsRequired();
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Case).WithMany().HasForeignKey(e => e.CaseId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SpinCode).WithMany().HasForeignKey(e => e.SpinCodeId).OnDelete(DeleteBehavior.SetNull);
         });
         modelBuilder.Entity<BankTransaction>(entity =>
         {

@@ -491,7 +491,8 @@ public class LuckySpinController : ControllerBase
             LuckySpinRules.IsPoolValid(activePrizes),
             activePrizes.Count,
             preview.Select(p => ToPublic(p, images)).ToList(),
-            nextFreeOpenAt);
+            nextFreeOpenAt,
+            c.OpenMethod == SpinCaseOpenMethod.Code ? c.CodePrice : 0);
     }
 
     private int PresignExpiryHours()

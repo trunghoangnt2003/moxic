@@ -1,3 +1,4 @@
+import BuySpinCode from "../components/lucky-spin/BuySpinCode";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -332,6 +333,9 @@ export default function LuckySpinPage() {
 
       {/* Actions */}
       <div className="mx-auto mt-6 flex max-w-xl justify-center md:mt-8">{actionPanel}</div>
+      {spinCase && spinCase.openMethod === "Code" && (spinCase.codePrice ?? 0) > 0 && available && (
+        <BuySpinCode slug={spinCase.slug} price={spinCase.codePrice!} loggedIn={!!me} onUseCode={(c) => setCode(normalizeInput(c))} />
+      )}
 
       {!isLoading && (isError || (spinCase && !available)) && (
         <p className="mx-auto mt-4 max-w-xl rounded-sm border border-caution/30 bg-caution/10 px-4 py-3 text-center text-sm text-caution">

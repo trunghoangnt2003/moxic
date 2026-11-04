@@ -20,6 +20,8 @@ public class SpinCase
 
     /// <summary>Points only: cost per open.</summary>
     public int PointsCost { get; set; }
+    /// <summary>Code cases: price of one spin when customers buy a code by bank transfer (VND). 0 = not for sale.</summary>
+    public decimal CodePrice { get; set; }
 
     public bool IsActive { get; set; } = true;
     public int DisplayOrder { get; set; }

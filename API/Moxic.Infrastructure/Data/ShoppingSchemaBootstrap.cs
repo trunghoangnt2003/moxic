@@ -279,6 +279,27 @@ public static class ShoppingSchemaBootstrap
             ('7a1d0c3e-0001-4000-8000-000000000003'::uuid, 'Giảm 10% tối đa 150.000đ', 'Cho mọi đơn hàng', 1500, 'Percent', 10::numeric, 150000::numeric, NULL::numeric, 3)
         ) AS v(id, name, descr, cost, dtype, val, maxamt, minord, ord)
         WHERE NOT EXISTS (SELECT 1 FROM "RewardItems");
+
+        -- Buying spin codes by bank transfer
+        ALTER TABLE "SpinCases" ADD COLUMN IF NOT EXISTS "CodePrice" numeric(18,2) NOT NULL DEFAULT 0;
+        CREATE TABLE IF NOT EXISTS "SpinCodeOrders" (
+            "Id" uuid NOT NULL,
+            "Code" character varying(20) NOT NULL,
+            "UserId" character varying(450) NOT NULL,
+            "CaseId" uuid NOT NULL,
+            "Quantity" integer NOT NULL,
+            "UnitPrice" numeric(18,2) NOT NULL,
+            "Amount" numeric(18,2) NOT NULL,
+            "Status" character varying(20) NOT NULL,
+            "SpinCodeId" uuid,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "PaidAt" timestamp with time zone,
+            CONSTRAINT "PK_SpinCodeOrders" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_SpinCodeOrders_SpinCases_CaseId" FOREIGN KEY ("CaseId") REFERENCES "SpinCases" ("Id") ON DELETE CASCADE,
+            CONSTRAINT "FK_SpinCodeOrders_SpinCodes_SpinCodeId" FOREIGN KEY ("SpinCodeId") REFERENCES "SpinCodes" ("Id") ON DELETE SET NULL
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_SpinCodeOrders_Code" ON "SpinCodeOrders" ("Code");
+        CREATE INDEX IF NOT EXISTS "IX_SpinCodeOrders_UserId" ON "SpinCodeOrders" ("UserId");
         """;
 
     public static Task EnsureAsync(MoxicDbContext db) => db.Database.ExecuteSqlRawAsync(Sql);
