@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import {
   Menu,
   X,
-  Download,
   ChevronDown,
   ShoppingCart,
   User,
@@ -19,7 +18,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import NavExplore from "./NavExplore";
-import LanguageSwitcher from "./LanguageSwitcher";
+import LanguageSwitcher, { LanguageSegmented } from "./LanguageSwitcher";
 import { ThemeMenuButton, ThemeSegmented } from "./ThemeToggle";
 import { Puzzle as PuzzleIcon, Trophy as TrophyIcon } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -81,12 +80,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo + Primary Nav */}
           <div className="flex items-center gap-6 lg:gap-8 min-w-0">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Link to="/" className="text-accent font-display text-xl">
-                MOXIC
-              </Link>
-              <LanguageSwitcher />
-            </div>
+            <Link to="/" className="text-accent font-display text-xl shrink-0">
+              MOXIC
+            </Link>
             <div className="hidden md:flex items-center gap-5 lg:gap-6">
               <NavLink
                 to="/games"
@@ -273,11 +269,10 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Download */}
-            <button className="bg-accent hover:bg-accent-hover text-on-accent px-4 py-2 text-sm font-bold transition-colors items-center gap-2 cursor-pointer hidden xl:flex whitespace-nowrap">
-              <Download className="w-4 h-4" />
-              {t("Tải về")}
-            </button>
+            {/* Language / country */}
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* Mobile menu toggle */}
             <button
@@ -416,10 +411,7 @@ export default function Navbar() {
             <div className="pt-3 border-t border-border">
               <ThemeSegmented />
             </div>
-            <button className="w-full bg-accent hover:bg-accent-hover text-on-accent py-3  text-sm font-bold flex items-center justify-center gap-2 cursor-pointer">
-              <Download className="w-4 h-4" />
-              {t("Tải về")}
-            </button>
+            <LanguageSegmented />
           </div>
         </div>
       )}

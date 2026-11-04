@@ -70,7 +70,7 @@ export default function LanguageSwitcher() {
         <ChevronDown className="w-3.5 h-3.5" />
       </button>
       {open && (
-        <div role="menu" className="absolute left-0 top-full mt-2 w-56 py-1 bg-bg-surface border border-border shadow-xl shadow-black/20 z-50">
+        <div role="menu" className="absolute right-0 top-full mt-2 w-56 py-1 bg-bg-surface border border-border shadow-xl shadow-black/20 z-50">
           {LANGS.map((l) => {
             const active = l.value === lang;
             return (
@@ -99,6 +99,36 @@ export default function LanguageSwitcher() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Phone menu: both languages as one segmented control, flag + name. */
+export function LanguageSegmented() {
+  return (
+    <div>
+      <p className="text-sm text-text-muted mb-2">{lang === "en" ? "Language" : "Ngôn ngữ"}</p>
+      <div role="radiogroup" aria-label={lang === "en" ? "Language" : "Ngôn ngữ"} className="grid grid-cols-2 border border-border">
+        {LANGS.map((l) => {
+          const active = l.value === lang;
+          return (
+            <button
+              key={l.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              lang={l.value}
+              onClick={() => switchLanguage(l.value)}
+              className={`h-11 inline-flex items-center justify-center gap-2 text-sm transition-colors cursor-pointer ${
+                active ? "bg-accent/15 text-accent font-semibold" : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              <l.Flag className="w-5 h-[14px] rounded-[2px] ring-1 ring-white/15" />
+              {l.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

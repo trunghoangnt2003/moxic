@@ -19,6 +19,9 @@ export const useNavPending = create<NavPending>((set) => ({
 
 let installed = false;
 
+/** Router paths exclude the language basename (/en), so compare without it. */
+const routerPath = (p: string) => p.replace(/^\/en(?=\/|$)/, "") || "/";
+
 export function installNavPendingTracker() {
   if (installed || typeof window === "undefined") return;
   installed = true;
@@ -27,7 +30,7 @@ export function installNavPendingTracker() {
     const next = new URL(String(url), window.location.href);
     // Only real page changes (query-string tweaks like filters are instant).
     if (next.pathname === window.location.pathname) return;
-    useNavPending.setState({ target: next.pathname, startedAt: Date.now() });
+    useNavPending.setState({ target: routerPath(next.pathname), startedAt: Date.now() });
   };
   const push = history.pushState.bind(history);
   const replace = history.replaceState.bind(history);
@@ -40,5 +43,5 @@ export function installNavPendingTracker() {
     replace(data, unused, url);
   };
   // Back/forward: the URL has already changed when this fires.
-  window.addEventListener("popstate", () => useNavPending.setState({ target: window.location.pathname, startedAt: Date.now() }));
+  window.addEventListener("popstate", () => useNavPending.setState({ target: routerPath(window.location.pathname), startedAt: Date.now() }));
 }
