@@ -1,7 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useLocation, useMatch } from "react-router-dom";
-import { Phone, Plus } from "lucide-react";
+import { useLocation, useMatch, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { MessageCircleMore, Phone, Plus } from "lucide-react";
 import { useContactSettings } from "../../hooks/useLuckySpin";
+import { getChatConfig, getChatUnread, useChatUi } from "../../lib/chatApi";
+import ChatPanel from "../chat/ChatPanel";
 
 function MessengerGlyph({ className = "" }: { className?: string }) {
   // lucide 1.x has no brand icons — inline Messenger glyph.
@@ -41,6 +44,25 @@ export default function FloatingContact() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const onGameDetail = useMatch("/games/:id");
+  const chatOpen = useChatUi((s) => s.open);
+  const openChat = useChatUi((s) => s.openChat);
+  const { data: chatCfg } = useQuery({ queryKey: ["chat", "config"], queryFn: getChatConfig, staleTime: 5 * 60_000 });
+  const chatEnabled = !!chatCfg?.enabled;
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["chat", "unread"],
+    queryFn: getChatUnread,
+    enabled: chatEnabled && !chatOpen,
+    refetchInterval: 30_000,
+  });
+  const [params, setParams] = useSearchParams();
+
+  // ?chat=1 (e.g. from a "Moxic đã trả lời" notification) opens the chat.
+  useEffect(() => {
+    if (params.get("chat") !== "1" || !chatEnabled) return;
+    openChat();
+    params.delete("chat");
+    setParams(params, { replace: true });
+  }, [params, setParams, chatEnabled, openChat]);
 
   // Close on route change.
   useEffect(() => {
@@ -60,7 +82,8 @@ export default function FloatingContact() {
   const messengerUrl = data?.messengerUrl ?? null;
   const zaloUrl = data?.zaloUrl ?? null;
   const phoneHref = data?.phoneHref ?? null;
-  if (!messengerUrl && !zaloUrl && !phoneHref) return null;
+  if (!chatEnabled && !messengerUrl && !zaloUrl && !phoneHref) return null;
+  if (chatOpen) return <ChatPanel />;
 
   // Top to bottom: Phone, Zalo (secondary, only when expanded), then Messenger, then the toggle.
   const secondary: SecondaryItem[] = [];
@@ -82,6 +105,16 @@ export default function FloatingContact() {
       external: true,
       className: "bg-[#0068FF] hover:brightness-110",
       content: <span className="font-display text-[13px] font-black tracking-tight text-white">Zalo</span>,
+    });
+  }
+  if (chatEnabled && messengerUrl) {
+    secondary.push({
+      key: "messenger",
+      href: messengerUrl,
+      label: "Chat Messenger",
+      external: true,
+      className: "bg-gradient-to-br from-[#0099FF] via-[#A033FF] to-[#FF5280] hover:brightness-110",
+      content: <MessengerGlyph className="h-6 w-6" />,
     });
   }
   const hasSecondary = secondary.length > 0;
@@ -115,7 +148,25 @@ export default function FloatingContact() {
           );
         })}
 
-      {messengerUrl && (
+      {chatEnabled && (
+        <button
+          type="button"
+          onClick={() => openChat()}
+          aria-label="Chat với Moxic"
+          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-bg-base shadow-[0_6px_20px_rgba(201,169,110,0.45)] transition-transform duration-200 hover:scale-105 cursor-pointer"
+        >
+          <span className="pointer-events-none absolute inset-0 rounded-full bg-accent/40 animate-ping [animation-duration:2.4s]" />
+          <MessageCircleMore className="relative h-7 w-7" strokeWidth={2.2} />
+          {unread > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-bg-base">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+          <HoverLabel>Chat với Moxic</HoverLabel>
+        </button>
+      )}
+
+      {!chatEnabled && messengerUrl && (
         <a
           href={messengerUrl}
           target="_blank"

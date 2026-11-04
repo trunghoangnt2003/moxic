@@ -7,6 +7,7 @@ import { useMyOrder } from "../hooks/useAccount";
 import { formatDate, formatPrice } from "../lib/utils";
 import OrderTimeline from "../components/account/OrderTimeline";
 import GiftLinkCard from "../components/gift/GiftLinkCard";
+import { useChatUi } from "../lib/chatApi";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   Bank: "Chuyển khoản ngân hàng",
@@ -100,6 +101,14 @@ export default function OrderHistoryDetailPage() {
               )}
             </dl>
           </div>
+
+          <button
+            type="button"
+            onClick={() => useChatUi.getState().openChat(order.orderCode)}
+            className="mt-4 w-full h-11 inline-flex items-center justify-center gap-2 border border-[#c9a96e]/40 text-[#c9a96e] text-sm font-semibold hover:bg-[#c9a96e]/10 cursor-pointer"
+          >
+            💬 Chat với Moxic về đơn này
+          </button>
 
           {order.giftToken && (
             <div className="mt-4">

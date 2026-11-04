@@ -68,6 +68,31 @@ interface Props {
   onStatusChange: () => void;
 }
 
+function OrderChatHistory({ orderCode }: { orderCode: string }) {
+  const [msgs, setMsgs] = useState<{ id: string; fromAdmin: boolean; text: string; createdAt: string }[] | null>(null);
+  useEffect(() => {
+    apiFetch(apiUrl(`/api/admin/chat/by-order/${encodeURIComponent(orderCode)}`))
+      .then((r) => (r.ok ? r.json() : { messages: [] }))
+      .then((d) => setMsgs(d.messages ?? []))
+      .catch(() => setMsgs([]));
+  }, [orderCode]);
+  if (!msgs || msgs.length === 0) return null;
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-steam-muted uppercase tracking-wider mb-2">Chat về đơn này ({msgs.length})</h3>
+      <div className="max-h-56 overflow-y-auto space-y-1.5 rounded-sm border border-steam-border p-2">
+        {msgs.map((m) => (
+          <div key={m.id} className={`text-xs px-2 py-1.5 rounded ${m.fromAdmin ? "bg-steam-blue/15 text-white ml-6" : "bg-steam-surface-2 text-steam-text mr-6"}`}>
+            <span className="whitespace-pre-wrap break-words">{m.text}</span>
+            <span className="block text-[10px] text-steam-muted">{new Date(m.createdAt).toLocaleString("vi-VN")}</span>
+          </div>
+        ))}
+      </div>
+      <a href="/chat" className="text-[11px] text-steam-blue hover:underline">Mở hộp chat →</a>
+    </div>
+  );
+}
+
 export default function OrderDetailModal({ orderId, onClose, onStatusChange }: Props) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -225,6 +250,8 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
                   )}
                 </div>
               )}
+
+              <OrderChatHistory orderCode={order.orderCode} />
 
               {/* Customer Info */}
               <div>

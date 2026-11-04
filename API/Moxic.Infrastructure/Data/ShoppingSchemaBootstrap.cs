@@ -86,6 +86,52 @@ public static class ShoppingSchemaBootstrap
         CREATE INDEX IF NOT EXISTS "IX_RewardRedemptions_UserId_CreatedAt" ON "RewardRedemptions" ("UserId", "CreatedAt");
         CREATE INDEX IF NOT EXISTS "IX_RewardRedemptions_RewardItemId_UserId" ON "RewardRedemptions" ("RewardItemId", "UserId");
 
+        CREATE TABLE IF NOT EXISTS "ChatThreads" (
+            "Id" uuid NOT NULL,
+            "Code" character varying(8) NOT NULL,
+            "AccessKeyHash" character varying(64) NOT NULL,
+            "UserId" character varying(450),
+            "Name" character varying(60),
+            "Contact" character varying(100),
+            "OrderCode" character varying(50),
+            "AdminUnread" integer NOT NULL,
+            "CustomerUnread" integer NOT NULL,
+            "LastMessageAt" timestamp with time zone NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_ChatThreads" PRIMARY KEY ("Id")
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ChatThreads_Code" ON "ChatThreads" ("Code");
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ChatThreads_AccessKeyHash" ON "ChatThreads" ("AccessKeyHash");
+        CREATE INDEX IF NOT EXISTS "IX_ChatThreads_UserId" ON "ChatThreads" ("UserId");
+        CREATE INDEX IF NOT EXISTS "IX_ChatThreads_LastMessageAt" ON "ChatThreads" ("LastMessageAt");
+        CREATE TABLE IF NOT EXISTS "ChatMessages" (
+            "Id" uuid NOT NULL,
+            "ThreadId" uuid NOT NULL,
+            "FromAdmin" boolean NOT NULL,
+            "Text" character varying(2000) NOT NULL,
+            "OrderCode" character varying(50),
+            "Via" character varying(10),
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_ChatMessages" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_ChatMessages_ChatThreads_ThreadId" FOREIGN KEY ("ThreadId") REFERENCES "ChatThreads" ("Id") ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS "IX_ChatMessages_ThreadId_CreatedAt" ON "ChatMessages" ("ThreadId", "CreatedAt");
+        CREATE INDEX IF NOT EXISTS "IX_ChatMessages_OrderCode" ON "ChatMessages" ("OrderCode");
+        CREATE TABLE IF NOT EXISTS "ChatTelegramRefs" (
+            "TelegramChatId" bigint NOT NULL,
+            "TelegramMessageId" bigint NOT NULL,
+            "ThreadId" uuid NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_ChatTelegramRefs" PRIMARY KEY ("TelegramChatId", "TelegramMessageId"),
+            CONSTRAINT "FK_ChatTelegramRefs_ChatThreads_ThreadId" FOREIGN KEY ("ThreadId") REFERENCES "ChatThreads" ("Id") ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS "TelegramAdminChats" (
+            "ChatId" bigint NOT NULL,
+            "Name" character varying(100),
+            "LinkedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_TelegramAdminChats" PRIMARY KEY ("ChatId")
+        );
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES

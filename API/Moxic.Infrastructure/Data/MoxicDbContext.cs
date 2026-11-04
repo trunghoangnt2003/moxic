@@ -29,6 +29,10 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<SpinMusicTrack> SpinMusicTracks => Set<SpinMusicTrack>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<RewardItem> RewardItems => Set<RewardItem>();
+    public DbSet<ChatThread> ChatThreads => Set<ChatThread>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    public DbSet<ChatTelegramRef> ChatTelegramRefs => Set<ChatTelegramRef>();
+    public DbSet<TelegramAdminChat> TelegramAdminChats => Set<TelegramAdminChat>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
@@ -438,6 +442,43 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.CaseId);
+        });
+
+        // Live chat (web ↔ Telegram)
+        modelBuilder.Entity<ChatThread>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(8).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.AccessKeyHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(e => e.AccessKeyHash).IsUnique();
+            entity.Property(e => e.UserId).HasMaxLength(450);
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.Name).HasMaxLength(60);
+            entity.Property(e => e.Contact).HasMaxLength(100);
+            entity.Property(e => e.OrderCode).HasMaxLength(50);
+            entity.HasIndex(e => e.LastMessageAt);
+        });
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Text).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.OrderCode).HasMaxLength(50);
+            entity.Property(e => e.Via).HasMaxLength(10);
+            entity.HasOne<ChatThread>().WithMany().HasForeignKey(e => e.ThreadId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.ThreadId, e.CreatedAt });
+            entity.HasIndex(e => e.OrderCode);
+        });
+        modelBuilder.Entity<ChatTelegramRef>(entity =>
+        {
+            entity.HasKey(e => new { e.TelegramChatId, e.TelegramMessageId });
+            entity.HasOne<ChatThread>().WithMany().HasForeignKey(e => e.ThreadId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<TelegramAdminChat>(entity =>
+        {
+            entity.HasKey(e => e.ChatId);
+            entity.Property(e => e.ChatId).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         // Points shop

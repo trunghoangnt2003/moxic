@@ -88,6 +88,11 @@ builder.Services.AddScoped<CustomerOtpService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PointsService>();
 builder.Services.AddScoped<RewardShopService>();
+// Live chat (web <-> Telegram)
+builder.Services.AddHttpClient(TelegramBot.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(60));
+builder.Services.AddSingleton<TelegramBot>();
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<RentalService>();
 builder.Services.AddScoped<CommunityService>();

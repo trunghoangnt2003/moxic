@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   TicketPercent,
   ShoppingBag,
+  MessagesSquare,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -43,6 +44,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
 const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
+const Chat = lazy(() => import("./pages/Chat"));
 
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -50,6 +52,7 @@ const navItems = [
   { to: "/genres", label: "Genres", icon: BookMarked },
   { to: "/tags", label: "Tags", icon: Tags },
   { to: "/orders", label: "Orders", icon: Package },
+  { to: "/chat", label: "Chat", icon: MessagesSquare },
   { to: "/rentals", label: "Thuê game", icon: KeyRound },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
@@ -268,6 +271,7 @@ function App() {
                   <Route path="/spin-music" element={<SpinMusic />} />
                   <Route path="/coupons" element={<Coupons />} />
                   <Route path="/reward-shop" element={<RewardShop />} />
+                  <Route path="/chat" element={<Chat />} />
                   <Route path="/announcements" element={<Announcements />} />
                 </Routes>
               </Suspense>
