@@ -28,6 +28,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<SpinMusicTrack> SpinMusicTracks => Set<SpinMusicTrack>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<RewardItem> RewardItems => Set<RewardItem>();
+    public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
@@ -146,6 +148,12 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasForeignKey(e => e.CouponId)
                 .OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.CouponId);
+            entity.Property(e => e.GiftToken).HasMaxLength(32);
+            entity.HasIndex(e => e.GiftToken).IsUnique();
+            entity.Property(e => e.GiftFromName).HasMaxLength(60);
+            entity.Property(e => e.GiftRecipientName).HasMaxLength(60);
+            entity.Property(e => e.GiftMessage).HasMaxLength(300);
+            entity.Property(e => e.GiftRecipientPhone).HasMaxLength(20);
         });
 
         // OrderDetail
@@ -430,6 +438,29 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.CaseId);
+        });
+
+        // Points shop
+        modelBuilder.Entity<RewardItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(300);
+            entity.Property(e => e.Kind).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.DiscountType).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.DiscountValue).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DiscountMaxAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DiscountMinOrderAmount).HasColumnType("decimal(18,2)");
+        });
+        modelBuilder.Entity<RewardRedemption>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ItemName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Kind).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.IssuedCode).HasMaxLength(32).IsRequired();
+            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+            entity.HasIndex(e => new { e.RewardItemId, e.UserId });
         });
 
         // PointsTransaction (loyalty points ledger)

@@ -44,6 +44,7 @@ type SourceTab = CouponSource | "";
 const SOURCE_TABS: { value: SourceTab; label: string }[] = [
   { value: "Event", label: "Sự kiện" },
   { value: "SpinReward", label: "Thưởng vòng quay" },
+  { value: "PointsReward", label: "Đổi điểm" },
   { value: "", label: "Tất cả" },
 ];
 
@@ -795,7 +796,7 @@ export default function Coupons() {
                   <td className="px-3 py-2.5 text-xs text-steam-text max-w-[180px]">
                     <p className="truncate" title={c.name}>{c.name}</p>
                     {source === "" && (
-                      <p className="text-[10px] text-steam-muted">{c.source === "SpinReward" ? "Thưởng vòng quay" : "Sự kiện"}</p>
+                      <p className="text-[10px] text-steam-muted">{c.source === "SpinReward" ? "Thưởng vòng quay" : c.source === "PointsReward" ? "Đổi điểm" : "Sự kiện"}</p>
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-steam-gold whitespace-nowrap">{describeDiscount(c)}</td>
@@ -811,7 +812,7 @@ export default function Coupons() {
                   </td>
                   {showOwner && (
                     <td className="px-3 py-2.5 text-xs text-steam-muted max-w-[180px] truncate">
-                      {c.source === "SpinReward" ? c.ownerEmail ?? (c.ownerUserId ? "(tài khoản đã xóa)" : "Chưa nhận") : "—"}
+                      {c.source !== "Event" ? c.ownerEmail ?? (c.ownerUserId ? "(tài khoản đã xóa)" : "Chưa nhận") : "—"}
                     </td>
                   )}
                   <td className="px-3 py-2.5">
@@ -873,7 +874,7 @@ export default function Coupons() {
                 <span>
                   Đã dùng {c.usedCount}/{c.maxTotalUses ?? "∞"} · mỗi khách {c.maxUsesPerCustomer}
                 </span>
-                {c.source === "SpinReward" && <span>Chủ: {c.ownerEmail ?? (c.ownerUserId ? "(tài khoản đã xóa)" : "Chưa nhận")}</span>}
+                {c.source !== "Event" && <span>Chủ: {c.ownerEmail ?? (c.ownerUserId ? "(tài khoản đã xóa)" : "Chưa nhận")}</span>}
               </div>
               {actions(c)}
             </div>

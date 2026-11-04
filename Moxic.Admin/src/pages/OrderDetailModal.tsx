@@ -34,6 +34,12 @@ interface OrderDetail {
   cancellationReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  isGift?: boolean;
+  giftFromName?: string | null;
+  giftRecipientName?: string | null;
+  giftMessage?: string | null;
+  giftRecipientPhone?: string | null;
+  giftClaimedAt?: string | null;
 }
 
 const formatPrice = (n: number) => n.toLocaleString() + "₫";
@@ -201,6 +207,24 @@ export default function OrderDetailModal({ orderId, onClose, onStatusChange }: P
                   <span className="text-base font-bold text-steam-gold font-mono">{formatPrice(order.totalAmount)}</span>
                 </div>
               </div>
+
+              {order.isGift && (
+                <div className={`rounded-lg border px-3 py-2.5 text-sm space-y-1 ${order.giftClaimedAt ? "border-pink-500/30 bg-pink-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
+                  <p className="font-semibold text-white">🎁 Đơn quà tặng</p>
+                  <p className="text-steam-muted text-xs">
+                    Từ <b className="text-steam-text">{order.giftFromName || "—"}</b> → <b className="text-steam-text">{order.giftRecipientName || "—"}</b>
+                  </p>
+                  {order.giftMessage && <p className="text-xs text-steam-text italic whitespace-pre-line">“{order.giftMessage}”</p>}
+                  {order.giftClaimedAt ? (
+                    <p className="text-xs text-pink-300">
+                      Người nhận đã nhập Xbox lúc {new Date(order.giftClaimedAt).toLocaleString("vi-VN")}
+                      {order.giftRecipientPhone ? ` · SĐT/Zalo người nhận: ${order.giftRecipientPhone}` : ""}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-300">Người nhận chưa mở quà — chưa có tài khoản Xbox để cài. SĐT bên dưới là của người tặng.</p>
+                  )}
+                </div>
+              )}
 
               {/* Customer Info */}
               <div>

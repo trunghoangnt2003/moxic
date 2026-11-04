@@ -54,17 +54,20 @@ public class OrdersController : ControllerBase
             return BadRequest(new { error = "Giỏ hàng trống" });
         if (string.IsNullOrWhiteSpace(request.CustomerPhone))
             return BadRequest(new { error = "Số điện thoại không được để trống" });
-        if (string.IsNullOrWhiteSpace(request.CustomerXboxEmail))
+        if (!request.IsGift && string.IsNullOrWhiteSpace(request.CustomerXboxEmail))
             return BadRequest(new { error = "Email Xbox không được để trống" });
-        if (string.IsNullOrWhiteSpace(request.CustomerXboxPassword))
+        if (!request.IsGift && string.IsNullOrWhiteSpace(request.CustomerXboxPassword))
             return BadRequest(new { error = "Mật khẩu Xbox không được để trống" });
+        if (request.IsGift && string.IsNullOrWhiteSpace(request.GiftRecipientName))
+            return BadRequest(new { error = "Nhập tên người nhận quà" });
 
         var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
         var randomPart = Guid.NewGuid().ToString("N")[..5].ToUpper();
         var orderCode = $"MOXIC-{datePart}-{randomPart}";
 
         var protector = _dataProtection.CreateProtector("XboxPassword");
-        var encryptedPassword = Convert.ToBase64String(protector.Protect(
+        // Gift orders carry no Xbox credentials until the recipient claims the gift.
+        var encryptedPassword = request.IsGift ? string.Empty : Convert.ToBase64String(protector.Protect(
             System.Text.Encoding.UTF8.GetBytes(request.CustomerXboxPassword)));
 
         // Link the order to the logged-in customer (separate MoxicCustomer scheme); guests stay unlinked.
@@ -94,7 +97,7 @@ public class OrdersController : ControllerBase
             Id = Guid.NewGuid(),
             OrderCode = orderCode,
             CustomerPhone = request.CustomerPhone,
-            CustomerXboxEmail = request.CustomerXboxEmail.Trim(),
+            CustomerXboxEmail = request.IsGift ? string.Empty : request.CustomerXboxEmail.Trim(),
             CustomerXboxPasswordEncrypted = encryptedPassword,
             CustomerZalo = request.CustomerZalo,
             TotalAmount = subtotal,
@@ -102,6 +105,11 @@ public class OrdersController : ControllerBase
             Status = OrderStatus.Pending,
             PaymentMethod = paymentMethod,
             CustomerId = customerId,
+            IsGift = request.IsGift,
+            GiftToken = request.IsGift ? GiftRules.NewToken() : null,
+            GiftFromName = request.IsGift ? GiftRules.Clean(request.GiftFromName, 60) : null,
+            GiftRecipientName = request.IsGift ? GiftRules.Clean(request.GiftRecipientName, 60) : null,
+            GiftMessage = request.IsGift ? GiftRules.Clean(request.GiftMessage, 300) : null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -225,7 +233,11 @@ public class OrdersController : ControllerBase
             Status = order.Status.ToString(),
             CreatedAt = order.CreatedAt,
             PaymentProofUrl = paymentProofUrl,
-            PaymentConfig = paymentInfo
+            PaymentConfig = paymentInfo,
+            IsGift = order.IsGift,
+            GiftToken = order.GiftToken,
+            GiftRecipientName = order.GiftRecipientName,
+            GiftClaimedAt = order.GiftClaimedAt
         });
     }
 

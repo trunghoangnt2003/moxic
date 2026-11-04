@@ -164,3 +164,27 @@ export async function getRecentPurchases() {
   const { data } = await api.get<{ items: RecentPurchase[]; serverNow: string }>("/activity/recent-purchases");
   return data;
 }
+
+export interface GiftInfo {
+  fromName: string | null;
+  recipientName: string | null;
+  message: string | null;
+  items: { gameId: string; gameName: string; editionName: string | null; coverUrl: string | null }[];
+  status: string;
+  paid: boolean;
+  claimed: boolean;
+  claimedAt: string | null;
+  xboxEmailHint: string | null;
+  canClaim: boolean;
+  createdAt: string;
+}
+
+export async function getGift(token: string) {
+  const { data } = await api.get<GiftInfo>(`/gifts/${token}`);
+  return data;
+}
+
+export async function claimGift(token: string, body: { xboxEmail: string; xboxPassword: string; phone?: string }) {
+  const { data } = await api.post<{ message: string }>(`/gifts/${token}/claim`, body);
+  return data;
+}

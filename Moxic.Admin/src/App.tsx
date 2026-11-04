@@ -21,6 +21,7 @@ import {
   KeyRound,
   ShieldAlert,
   TicketPercent,
+  ShoppingBag,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -41,6 +42,7 @@ const Announcements = lazy(() => import("./pages/Announcements"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
 const Moderation = lazy(() => import("./pages/Moderation"));
+const RewardShop = lazy(() => import("./pages/RewardShop"));
 
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -52,6 +54,7 @@ const navItems = [
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
   { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
+  { to: "/reward-shop", label: "Đổi điểm", icon: ShoppingBag },
   { to: "/customers", label: "Khách hàng", icon: Users },
   { to: "/spin-music", label: "Kho nhạc", icon: Music },
   { to: "/announcements", label: "Thông báo", icon: Megaphone },
@@ -264,6 +267,7 @@ function App() {
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/spin-music" element={<SpinMusic />} />
                   <Route path="/coupons" element={<Coupons />} />
+                  <Route path="/reward-shop" element={<RewardShop />} />
                   <Route path="/announcements" element={<Announcements />} />
                 </Routes>
               </Suspense>

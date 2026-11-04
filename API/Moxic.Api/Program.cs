@@ -87,6 +87,7 @@ builder.Services.AddScoped<CustomerOtpService>();
 // Lucky-spin cases + loyalty points
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PointsService>();
+builder.Services.AddScoped<RewardShopService>();
 builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<RentalService>();
 builder.Services.AddScoped<CommunityService>();

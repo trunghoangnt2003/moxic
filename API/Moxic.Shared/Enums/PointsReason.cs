@@ -19,5 +19,8 @@ public enum PointsReason
     Mission,
 
     /// <summary>Referral reward to referrer or referee (RefId = ref:{role}:{refereeUserId}).</summary>
-    Referral
+    Referral,
+
+    /// <summary>Spent in the points shop (RefId = redeem:{redemptionId}).</summary>
+    Redeem
 }

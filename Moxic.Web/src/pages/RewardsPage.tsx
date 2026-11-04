@@ -9,6 +9,7 @@ import { useMe } from "../hooks/useAccount";
 import { apiError } from "../lib/communityApi";
 import { checkIn, claimMission, enterReferral, getLoyalty, getLoyaltyProgram, TIER_STYLES } from "../lib/loyaltyApi";
 import { formatPrice } from "../lib/utils";
+import PointsShop from "../components/rewards/PointsShop";
 
 function Guest() {
   const { data } = useQuery({ queryKey: ["loyalty", "program"], queryFn: getLoyaltyProgram, staleTime: 60 * 60_000 });
@@ -25,8 +26,11 @@ function Guest() {
           Đăng nhập
         </Link>
       </div>
+      <div className="mt-12">
+        <PointsShop signedIn={false} />
+      </div>
       {data && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-12 text-left">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6 text-left">
           {data.tiers.map((t) => {
             const st = TIER_STYLES[t.key] ?? TIER_STYLES.member;
             return (
@@ -138,9 +142,9 @@ export default function RewardsPage() {
           <div className="sm:text-right">
             <p className="text-xs uppercase tracking-widest text-text-muted">Điểm hiện có</p>
             <p className="font-display text-4xl font-extrabold text-amber-300 tabular-nums">{data.points.toLocaleString("vi-VN")}</p>
-            <Link to="/lucky-spin" className="text-xs text-accent hover:underline">
-              Dùng điểm mở hòm →
-            </Link>
+            <a href="#doi-diem" className="text-xs text-accent hover:underline">
+              Đổi điểm lấy quà →
+            </a>
           </div>
         </div>
       </section>
@@ -182,6 +186,10 @@ export default function RewardsPage() {
           {data.checkIn.checkedToday ? "Đã điểm danh hôm nay — hẹn gặp lại ngày mai!" : `Điểm danh nhận +${data.checkIn.todayReward} điểm`}
         </button>
       </section>
+
+      <div id="doi-diem" className="scroll-mt-[calc(4rem+var(--sat))]">
+        <PointsShop signedIn />
+      </div>
 
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Missions */}

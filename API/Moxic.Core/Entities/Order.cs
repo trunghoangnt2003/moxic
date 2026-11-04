@@ -33,6 +33,16 @@ public class Order
 
     /// <summary>Server-computed discount (VND, whole đồng). TotalAmount = sum(Details.Price) - DiscountAmount.</summary>
     public decimal DiscountAmount { get; set; }
+
+    // Gift orders: the buyer pays, the recipient opens /gift/{GiftToken} and enters their own Xbox account.
+    public bool IsGift { get; set; }
+    public string? GiftToken { get; set; }
+    public string? GiftFromName { get; set; }
+    public string? GiftRecipientName { get; set; }
+    public string? GiftMessage { get; set; }
+    public string? GiftRecipientPhone { get; set; }
+    public DateTime? GiftClaimedAt { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

@@ -4,5 +4,6 @@ Disallow: /account
 Disallow: /checkout
 Disallow: /cart
 Disallow: /confirmation
+Disallow: /gift
 
 Sitemap: https://moxic.co/sitemap.xml

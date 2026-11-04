@@ -34,7 +34,7 @@ interface AdminCustomer {
   isLocked: boolean;
 }
 
-type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral";
+type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem";
 
 interface AdminPointsTx {
   id: string;
@@ -66,6 +66,7 @@ const REASON_LABELS: Record<PointsReason, string> = {
   CheckIn: "Điểm danh",
   Mission: "Nhiệm vụ",
   Referral: "Giới thiệu bạn bè",
+  Redeem: "Đổi điểm",
 };
 
 const fmtPoints = (n: number) => n.toLocaleString("vi-VN");

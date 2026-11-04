@@ -37,6 +37,63 @@ public static class ShoppingSchemaBootstrap
         );
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_WebPushSubscriptions_Endpoint" ON "WebPushSubscriptions" ("Endpoint");
         CREATE INDEX IF NOT EXISTS "IX_WebPushSubscriptions_UserId" ON "WebPushSubscriptions" ("UserId");
+
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "IsGift" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftToken" character varying(32);
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftFromName" character varying(60);
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftRecipientName" character varying(60);
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftMessage" character varying(300);
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftRecipientPhone" character varying(20);
+        ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "GiftClaimedAt" timestamp with time zone;
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_Orders_GiftToken" ON "Orders" ("GiftToken");
+
+        CREATE TABLE IF NOT EXISTS "RewardItems" (
+            "Id" uuid NOT NULL,
+            "Name" character varying(100) NOT NULL,
+            "Description" character varying(300),
+            "Kind" character varying(20) NOT NULL,
+            "PointsCost" integer NOT NULL,
+            "DiscountType" character varying(20),
+            "DiscountValue" numeric(18,2),
+            "DiscountMaxAmount" numeric(18,2),
+            "DiscountMinOrderAmount" numeric(18,2),
+            "SpinCaseId" uuid,
+            "ValidDays" integer NOT NULL,
+            "Stock" integer,
+            "RedeemedCount" integer NOT NULL,
+            "PerUserLimit" integer,
+            "IsActive" boolean NOT NULL,
+            "DisplayOrder" integer NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "UpdatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_RewardItems" PRIMARY KEY ("Id")
+        );
+        CREATE TABLE IF NOT EXISTS "RewardRedemptions" (
+            "Id" uuid NOT NULL,
+            "RewardItemId" uuid NOT NULL,
+            "UserId" text NOT NULL,
+            "ItemName" character varying(100) NOT NULL,
+            "Kind" character varying(20) NOT NULL,
+            "PointsSpent" integer NOT NULL,
+            "IssuedCode" character varying(32) NOT NULL,
+            "CouponId" uuid,
+            "SpinCodeId" uuid,
+            "ExpiresAt" timestamp with time zone,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_RewardRedemptions" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_RewardRedemptions_aspnetusers_UserId" FOREIGN KEY ("UserId") REFERENCES aspnetusers ("Id") ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS "IX_RewardRedemptions_UserId_CreatedAt" ON "RewardRedemptions" ("UserId", "CreatedAt");
+        CREATE INDEX IF NOT EXISTS "IX_RewardRedemptions_RewardItemId_UserId" ON "RewardRedemptions" ("RewardItemId", "UserId");
+
+        INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
+        SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
+        FROM (VALUES
+            ('7a1d0c3e-0001-4000-8000-000000000001'::uuid, 'Giảm 20.000đ', 'Cho đơn từ 200.000đ', 300, 'Fixed', 20000::numeric, NULL::numeric, 200000::numeric, 1),
+            ('7a1d0c3e-0001-4000-8000-000000000002'::uuid, 'Giảm 50.000đ', 'Cho đơn từ 500.000đ', 700, 'Fixed', 50000::numeric, NULL::numeric, 500000::numeric, 2),
+            ('7a1d0c3e-0001-4000-8000-000000000003'::uuid, 'Giảm 10% tối đa 150.000đ', 'Cho mọi đơn hàng', 1500, 'Percent', 10::numeric, 150000::numeric, NULL::numeric, 3)
+        ) AS v(id, name, descr, cost, dtype, val, maxamt, minord, ord)
+        WHERE NOT EXISTS (SELECT 1 FROM "RewardItems");
         """;
 
     public static Task EnsureAsync(MoxicDbContext db) => db.Database.ExecuteSqlRawAsync(Sql);

@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 export type CouponDiscountType = "Percent" | "Fixed";
-export type CouponSource = "Event" | "SpinReward";
+export type CouponSource = "Event" | "SpinReward" | "PointsReward";
 export type WalletCouponStatus = "Usable" | "Upcoming" | "Used" | "Expired" | "Inactive";
 
 /** Server-computed checkout preview. */

@@ -88,6 +88,11 @@ public record CreateOrderRequest
     public string PaymentMethod { get; init; } = "Bank";
     /// <summary>Optional coupon (logged-in customers only; one per order).</summary>
     public string? CouponCode { get; init; }
+    /// <summary>Gift order: Xbox email/password are entered later by the recipient via the gift link.</summary>
+    public bool IsGift { get; init; }
+    public string? GiftFromName { get; init; }
+    public string? GiftRecipientName { get; init; }
+    public string? GiftMessage { get; init; }
 }
 
 public record CreateOrderResponse
@@ -120,6 +125,10 @@ public record OrderConfirmationResponse
     public DateTime CreatedAt { get; init; }
     public string? PaymentProofUrl { get; init; }
     public PaymentConfigInfo? PaymentConfig { get; init; }
+    public bool IsGift { get; init; }
+    public string? GiftToken { get; init; }
+    public string? GiftRecipientName { get; init; }
+    public DateTime? GiftClaimedAt { get; init; }
 }
 
 public record PaymentConfigInfo
@@ -188,6 +197,8 @@ public record AdminGameDetailResponse
 // Admin order DTOs
 public record AdminOrderListItem
 {
+    public bool IsGift { get; init; }
+    public bool GiftClaimed { get; init; }
     public Guid Id { get; init; }
     public string OrderCode { get; init; } = string.Empty;
     public string CustomerPhone { get; init; } = string.Empty;
@@ -210,6 +221,13 @@ public record AdminOrderDetailItem
 
 public record AdminOrderDetailResponse
 {
+    public bool IsGift { get; init; }
+    public string? GiftFromName { get; init; }
+    public string? GiftRecipientName { get; init; }
+    public string? GiftMessage { get; init; }
+    public string? GiftRecipientPhone { get; init; }
+    public DateTime? GiftClaimedAt { get; init; }
+    public string? GiftToken { get; init; }
     public Guid Id { get; init; }
     public string OrderCode { get; init; } = string.Empty;
     public string CustomerPhone { get; init; } = string.Empty;

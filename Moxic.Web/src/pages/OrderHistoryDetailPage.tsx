@@ -6,6 +6,7 @@ import { PageLoader } from "../components/shared/MoxicLoader";
 import { useMyOrder } from "../hooks/useAccount";
 import { formatDate, formatPrice } from "../lib/utils";
 import OrderTimeline from "../components/account/OrderTimeline";
+import GiftLinkCard from "../components/gift/GiftLinkCard";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   Bank: "Chuyển khoản ngân hàng",
@@ -92,9 +93,19 @@ export default function OrderHistoryDetailPage() {
               <InfoRow label="Ngày đặt" value={formatDate(order.createdAt)} />
               <InfoRow label="Cập nhật" value={formatDate(order.updatedAt)} />
               <InfoRow label="Thanh toán" value={PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod} />
-              <InfoRow label="Email Xbox" value={order.xboxEmail} />
+              {order.isGift ? (
+                <InfoRow label="Quà tặng cho" value={`${order.giftRecipientName ?? "—"}${order.giftClaimedAt ? " · đã nhận" : " · chưa nhận"}`} />
+              ) : (
+                <InfoRow label="Email Xbox" value={order.xboxEmail} />
+              )}
             </dl>
           </div>
+
+          {order.giftToken && (
+            <div className="mt-4">
+              <GiftLinkCard token={order.giftToken} recipientName={order.giftRecipientName} claimedAt={order.giftClaimedAt} />
+            </div>
+          )}
 
           <div className="mt-4 bg-[#252019] border border-[#3d352a] p-5 sm:p-6">
             <h2 className="font-display text-sm uppercase tracking-wider text-[#b5a898] mb-4">

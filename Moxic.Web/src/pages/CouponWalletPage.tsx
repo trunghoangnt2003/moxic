@@ -64,7 +64,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
         <div className="flex flex-wrap items-center gap-2">
           <p className="min-w-0 truncate text-sm font-semibold text-[#ede6db]">{coupon.name}</p>
           <span className="border border-[#c9a96e]/30 bg-[#c9a96e]/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#c9a96e]">
-            {coupon.source === "SpinReward" ? "Thưởng vòng quay" : "Sự kiện"}
+            {coupon.source === "SpinReward" ? "Thưởng vòng quay" : coupon.source === "PointsReward" ? "Đổi điểm" : "Sự kiện"}
           </span>
           {coupon.status === "Inactive" && (
             <span className="border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-red-400">Đã vô hiệu</span>

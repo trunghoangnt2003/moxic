@@ -48,6 +48,10 @@ export interface AccountOrderSummary {
 
 export interface AccountOrderDetail extends AccountOrderSummary {
   xboxEmail: string;
+  isGift?: boolean;
+  giftToken?: string | null;
+  giftRecipientName?: string | null;
+  giftClaimedAt?: string | null;
   cancellationReason: string | null;
   isClientConfirmed: boolean;
   hasPaymentProof: boolean;
@@ -158,7 +162,7 @@ export function safeRedirect(raw: string | null, fallback = "/"): string {
 
 // ───────────────────────── Loyalty points ─────────────────────────
 
-export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral";
+export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem";
 
 export interface PointsTransaction {
   id: string;
@@ -189,4 +193,5 @@ export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
   CheckIn: "Điểm danh hằng ngày",
   Mission: "Hoàn thành nhiệm vụ",
   Referral: "Giới thiệu bạn bè",
+  Redeem: "Đổi điểm",
 };

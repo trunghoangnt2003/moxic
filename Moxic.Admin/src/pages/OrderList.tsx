@@ -24,8 +24,23 @@ interface OrderItem {
   paymentMethod: string;
   itemCount: number;
   isPreorder: boolean;
+  isGift?: boolean;
+  giftClaimed?: boolean;
   releaseDate?: string;
   createdAt: string;
+}
+
+function GiftBadge({ claimed }: { claimed: boolean }) {
+  return (
+    <span
+      title={claimed ? "Quà tặng — người nhận đã nhập Xbox" : "Quà tặng — chờ người nhận nhập Xbox"}
+      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border flex-shrink-0 ${
+        claimed ? "bg-pink-500/10 text-pink-300 border-pink-500/30" : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+      }`}
+    >
+      🎁 {claimed ? "Gift" : "Gift · chờ"}
+    </span>
+  );
 }
 
 interface OrderListResponse {
@@ -214,6 +229,7 @@ export default function OrderList() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-medium text-steam-text">{o.orderCode}</span>
+                        {o.isGift && <GiftBadge claimed={!!o.giftClaimed} />}
                         {o.isPreorder && (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-steam-blue/10 text-steam-blue border border-steam-blue/20">
                             <Clock size={8} />
@@ -268,6 +284,7 @@ export default function OrderList() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="font-mono text-xs font-medium text-steam-text truncate">{o.orderCode}</span>
+                    {o.isGift && <GiftBadge claimed={!!o.giftClaimed} />}
                     {o.isPreorder && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-steam-blue/10 text-steam-blue border border-steam-blue/20 flex-shrink-0">
                         <Clock size={8} /> Pre

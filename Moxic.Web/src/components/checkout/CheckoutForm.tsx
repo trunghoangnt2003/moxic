@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { AlertCircle, UserCheck } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { AlertCircle, Gift, UserCheck } from "lucide-react";
 import { createOrder } from "../../lib/api";
 import { useCartStore } from "../../lib/cartStore";
 import { useMe } from "../../hooks/useAccount";
@@ -48,6 +48,11 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [params] = useSearchParams();
+  const [isGift, setIsGift] = useState(params.get("gift") === "1");
+  const [giftTo, setGiftTo] = useState("");
+  const [giftFrom, setGiftFrom] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
 
   // Logged-in customers: pre-fill the Xbox email with the account email once.
   // (state adjustment during render — runs once when `me` first arrives)
@@ -66,9 +71,13 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
     const errors: Record<string, string> = {};
     if (!phone.trim()) errors.phone = "Số điện thoại không được để trống";
     else if (!/^\d+$/.test(phone.trim())) errors.phone = "Số điện thoại chỉ gồm chữ số";
-    if (!email.trim()) errors.email = "Email Xbox không được để trống";
-    else if (!email.includes("@")) errors.email = "Email không hợp lệ";
-    if (!password.trim()) errors.password = "Mật khẩu tài khoản Xbox không được để trống";
+    if (isGift) {
+      if (!giftTo.trim()) errors.giftTo = "Nhập tên người nhận";
+    } else {
+      if (!email.trim()) errors.email = "Email Xbox không được để trống";
+      else if (!email.includes("@")) errors.email = "Email không hợp lệ";
+      if (!password.trim()) errors.password = "Mật khẩu tài khoản Xbox không được để trống";
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -84,14 +93,18 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
       const request: OrderCreateRequest = {
         items: items.map((i) => ({ gameId: i.gameId, editionId: i.editionId ?? undefined, price: i.price })),
         customerPhone: phone.trim(),
-        customerXboxEmail: email.trim(),
-        customerXboxPassword: password,
+        customerXboxEmail: isGift ? "" : email.trim(),
+        customerXboxPassword: isGift ? "" : password,
+        isGift,
+        giftRecipientName: isGift ? giftTo.trim() : undefined,
+        giftFromName: isGift ? giftFrom.trim() || me?.displayName || undefined : undefined,
+        giftMessage: isGift ? giftMessage.trim() || undefined : undefined,
         customerZalo: zalo.trim() || undefined,
         paymentMethod: "Bank",
         couponCode: couponCode || undefined,
       };
       const result = await createOrder(request);
-      writeSavedCheckout(remember ? { phone: phone.trim(), email: email.trim(), zalo: zalo.trim() } : null);
+      if (!isGift) writeSavedCheckout(remember ? { phone: phone.trim(), email: email.trim(), zalo: zalo.trim() } : null);
       clearCart();
       onSuccess(result.orderCode);
     } catch (err: any) {
@@ -135,10 +148,49 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         </p>
       )}
 
+      {/* Gift toggle */}
+      <button
+        type="button"
+        onClick={() => setIsGift((v) => !v)}
+        aria-pressed={isGift}
+        className={`w-full flex items-center gap-3 px-4 py-3 border text-left transition-colors cursor-pointer ${
+          isGift ? "border-[#c9a96e] bg-[#c9a96e]/10" : "border-[#3d352a] hover:border-[#c9a96e]/50"
+        }`}
+      >
+        <Gift className={`w-5 h-5 shrink-0 ${isGift ? "text-[#c9a96e]" : "text-[#b5a898]"}`} />
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-semibold text-[#ede6db]">Mua làm quà tặng</span>
+          <span className="block text-xs text-[#7a6f63]">Bạn thanh toán, nhận link quà gửi cho bạn bè. Người nhận tự nhập tài khoản Xbox của họ.</span>
+        </span>
+        <span className={`w-10 h-6 rounded-full p-0.5 transition-colors shrink-0 ${isGift ? "bg-[#c9a96e]" : "bg-[#3d352a]"}`}>
+          <span className={`block w-5 h-5 rounded-full bg-white transition-transform ${isGift ? "translate-x-4" : ""}`} />
+        </span>
+      </button>
+
+      {isGift && (
+        <div className="space-y-4 border-l-2 border-[#c9a96e]/50 pl-4">
+          <div>
+            <label htmlFor="gift-to" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+              Tên người nhận <span className="text-red-400">*</span>
+            </label>
+            <input id="gift-to" maxLength={60} value={giftTo} onChange={(e) => setGiftTo(e.target.value)} placeholder="VD: Minh" className={inputClass} />
+            {fieldErrors.giftTo && <p className="text-red-400 text-xs mt-1">{fieldErrors.giftTo}</p>}
+          </div>
+          <div>
+            <label htmlFor="gift-from" className="block text-xs text-[#b5a898] font-semibold mb-1.5">Tên người tặng</label>
+            <input id="gift-from" maxLength={60} value={giftFrom} onChange={(e) => setGiftFrom(e.target.value)} placeholder={me?.displayName || "Tên của bạn"} className={inputClass} />
+          </div>
+          <div>
+            <label htmlFor="gift-msg" className="block text-xs text-[#b5a898] font-semibold mb-1.5">Lời nhắn <span className="text-[#7a6f63]">({giftMessage.length}/300)</span></label>
+            <textarea id="gift-msg" rows={3} maxLength={300} value={giftMessage} onChange={(e) => setGiftMessage(e.target.value)} placeholder="Chúc mừng sinh nhật! Chơi vui nhé 🎮" className={`${inputClass} resize-none`} />
+          </div>
+        </div>
+      )}
+
       {/* Phone */}
       <div>
         <label htmlFor="checkout-phone" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
-          Số điện thoại <span className="text-red-400">*</span>
+          {isGift ? "Số điện thoại của bạn (người tặng)" : "Số điện thoại"} <span className="text-red-400">*</span>
         </label>
         <input id="checkout-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
           placeholder="0901234567" className={inputClass} />
@@ -146,6 +198,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
       </div>
 
       {/* Xbox Email */}
+      {!isGift && <>
       <div>
         <label htmlFor="checkout-email" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
           Email tài khoản Xbox <span className="text-red-400">*</span>
@@ -168,6 +221,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
           placeholder="Mật khẩu đăng nhập Xbox" className={inputClass} />
         {fieldErrors.password && <p className="text-red-400 text-xs mt-1">{fieldErrors.password}</p>}
       </div>
+      </>}
 
       {/* Zalo/FB (optional) */}
       <div>
@@ -203,7 +257,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         {loading ? (
           <><MoxicLoader size="sm" /> Đang xử lý...</>
         ) : (
-          "Đặt hàng"
+          isGift ? "Đặt quà tặng" : "Đặt hàng"
         )}
       </button>
     </form>

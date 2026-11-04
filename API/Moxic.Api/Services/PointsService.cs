@@ -90,7 +90,7 @@ public class PointsService
     /// Atomic spend: `UPDATE ... SET Points = Points - cost WHERE UserId = x AND Points >= cost`.
     /// Returns (false, current balance) when the balance is short.
     /// </summary>
-    public async Task<(bool Ok, int Balance)> TrySpendAsync(string userId, int cost, string refId, string note)
+    public async Task<(bool Ok, int Balance)> TrySpendAsync(string userId, int cost, string refId, string note, PointsReason reason = PointsReason.CaseOpen)
     {
         if (cost < 1) return (false, await GetBalanceAsync(userId));
 
@@ -108,7 +108,7 @@ public class PointsService
             Id = Guid.NewGuid(),
             UserId = userId,
             Delta = -cost,
-            Reason = PointsReason.CaseOpen,
+            Reason = reason,
             RefId = refId,
             Note = Truncate(note, 200),
             BalanceAfter = balance,

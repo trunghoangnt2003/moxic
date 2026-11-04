@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, ArrowLeft, ShoppingCart, Upload, Banknote, X 
 import Container from "../components/layout/Container";
 import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import ConfirmationContent from "../components/checkout/ConfirmationContent";
+import GiftLinkCard from "../components/gift/GiftLinkCard";
 import QRDisplay from "../components/checkout/QRDisplay";
 import { getOrder, uploadPaymentProof } from "../lib/api";
 
@@ -104,6 +105,9 @@ export default function ConfirmationPage() {
 
           {/* Order content */}
           <div className="space-y-5">
+            {order.isGift && order.giftToken && (
+              <GiftLinkCard token={order.giftToken} recipientName={order.giftRecipientName} claimedAt={order.giftClaimedAt} />
+            )}
             <ConfirmationContent
               orderCode={order.orderCode}
               items={order.items}

@@ -152,6 +152,11 @@ export interface OrderCreateRequest {
   paymentMethod: "Bank" | "Crypto";
   /** Optional coupon (logged-in customers only). The server re-prices and re-validates. */
   couponCode?: string;
+  /** Gift order: the recipient enters their Xbox account later via the gift link. */
+  isGift?: boolean;
+  giftFromName?: string;
+  giftRecipientName?: string;
+  giftMessage?: string;
 }
 
 export interface OrderCreateResponse {
@@ -189,4 +194,8 @@ export interface OrderConfirmationData {
   createdAt: string;
   paymentProofUrl?: string | null;
   paymentConfig?: PaymentConfigInfo | null;
+  isGift?: boolean;
+  giftToken?: string | null;
+  giftRecipientName?: string | null;
+  giftClaimedAt?: string | null;
 }

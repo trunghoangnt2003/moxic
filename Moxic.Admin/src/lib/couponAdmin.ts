@@ -1,7 +1,7 @@
 import { apiFetch, apiUrl } from "./api";
 import { readApiError } from "./luckySpinAdmin";
 
-export type CouponSource = "Event" | "SpinReward";
+export type CouponSource = "Event" | "SpinReward" | "PointsReward";
 export type CouponDiscountType = "Percent" | "Fixed";
 
 export interface AdminCoupon {

@@ -34,6 +34,7 @@ import {
   Info,
   Monitor,
   Check,
+  Gift,
   Flame,
   MessageCircle,
   User,
@@ -175,6 +176,11 @@ export default function GameDetailPage() {
   const handleBuyNow = () => {
     handleAddToCart();
     setTimeout(() => navigate("/cart"), 300);
+  };
+
+  const handleGift = () => {
+    handleAddToCart();
+    setTimeout(() => navigate("/checkout?gift=1"), 300);
   };
 
   const prevMedia = () => setActiveMedia((p) => (p === 0 ? game.media.length - 1 : p - 1));
@@ -507,7 +513,16 @@ export default function GameDetailPage() {
                   <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
                   <CompareButton gameId={game.id} gameName={game.name} className="w-full" />
                 </div>
-                <ShareButton path={`/games/${game.id}`} title={`${game.name} — giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGift}
+                    className="inline-flex items-center justify-center gap-2 h-10 px-3 border border-accent/40 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors cursor-pointer"
+                  >
+                    <Gift className="w-4 h-4" /> Tặng game
+                  </button>
+                  <ShareButton path={`/games/${game.id}`} title={`${game.name} — giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
+                </div>
                 {game.xboxProductId && (
                   <a
                     href={`https://www.xbox.com/vi-VN/games/store/x/${game.xboxProductId}`}

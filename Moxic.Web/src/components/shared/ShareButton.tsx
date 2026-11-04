@@ -82,7 +82,7 @@ export default function ShareButton({ path, title, text, className = "" }: Props
         onClick={onClick}
         className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 border border-white/15 text-sm font-semibold text-text-secondary hover:text-white hover:border-white/30 transition-colors cursor-pointer"
       >
-        <Share2 className="w-4 h-4" /> Chia sẻ{code ? " · nhận điểm" : ""}
+        <Share2 className="w-4 h-4" /> Chia sẻ
       </button>
       {open && (
         <div className="absolute z-30 left-0 right-0 mt-1 bg-bg-elevated border border-white/10 shadow-2xl shadow-black/60 py-1 animate-[popIn_0.15s_ease-out]">

@@ -93,6 +93,8 @@ public class AdminOrdersController : ControllerBase
 
             items.Add(new AdminOrderListItem
             {
+                IsGift = order.IsGift,
+                GiftClaimed = order.GiftClaimedAt != null,
                 Id = order.Id,
                 OrderCode = order.OrderCode,
                 CustomerPhone = order.CustomerPhone,
@@ -123,7 +125,9 @@ public class AdminOrdersController : ControllerBase
 
         var protector = _dataProtection.CreateProtector("XboxPassword");
         string decryptedPassword;
-        try
+        if (order.IsGift && string.IsNullOrEmpty(order.CustomerXboxPasswordEncrypted))
+            decryptedPassword = "(chờ người nhận quà nhập)";
+        else try
         {
             decryptedPassword = System.Text.Encoding.UTF8.GetString(
                 protector.Unprotect(Convert.FromBase64String(order.CustomerXboxPasswordEncrypted)));
@@ -142,6 +146,13 @@ public class AdminOrdersController : ControllerBase
 
         return Ok(new AdminOrderDetailResponse
         {
+            IsGift = order.IsGift,
+            GiftFromName = order.GiftFromName,
+            GiftRecipientName = order.GiftRecipientName,
+            GiftMessage = order.GiftMessage,
+            GiftRecipientPhone = order.GiftRecipientPhone,
+            GiftClaimedAt = order.GiftClaimedAt,
+            GiftToken = order.GiftToken,
             Id = order.Id,
             OrderCode = order.OrderCode,
             CustomerPhone = order.CustomerPhone,
@@ -198,6 +209,8 @@ public class AdminOrdersController : ControllerBase
 
         if (!validTransition)
             return BadRequest(new { error = $"Không thể chuyển từ {currentStatus} sang {newStatus}" });
+        if (order.IsGift && order.GiftClaimedAt == null && newStatus == OrderStatus.Installing)
+            return BadRequest(new { error = "Đơn quà tặng: người nhận chưa nhập tài khoản Xbox" });
 
         // Preorder check: chỉ chặn đánh dấu hoàn thành nếu game chưa phát hành
         if (currentStatus == OrderStatus.Installing && newStatus == OrderStatus.Completed)

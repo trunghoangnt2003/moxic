@@ -66,6 +66,10 @@ public record AccountOrderSummaryDto
 public record AccountOrderDetailDto : AccountOrderSummaryDto
 {
     public string XboxEmail { get; init; } = string.Empty;
+    public bool IsGift { get; init; }
+    public string? GiftToken { get; init; }
+    public string? GiftRecipientName { get; init; }
+    public DateTime? GiftClaimedAt { get; init; }
     public string? CancellationReason { get; init; }
     public bool IsClientConfirmed { get; init; }
     public bool HasPaymentProof { get; init; }

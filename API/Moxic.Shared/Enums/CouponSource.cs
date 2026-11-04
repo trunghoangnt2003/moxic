@@ -7,5 +7,8 @@ public enum CouponSource
     Event,
 
     /// <summary>Issued by a Lucky Spin Discount prize; bound to one account (OwnerUserId).</summary>
-    SpinReward
+    SpinReward,
+
+    /// <summary>Bought in the points shop; bound to one account (OwnerUserId).</summary>
+    PointsReward
 }
