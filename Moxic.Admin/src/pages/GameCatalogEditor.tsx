@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { AlertCircle, ArrowDown, ArrowUp, CheckCircle2, Layers, Loader2, Plus, Save, Star, Trash2 } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { AlertCircle, ArrowDown, ArrowUp, Layers, Loader2, Plus, Star, Trash2 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
 import { readApiError } from "../lib/luckySpinAdmin";
 
@@ -47,13 +47,86 @@ const PRESETS: { name: string; includes: string }[] = [
   { name: "Ultimate", includes: "Game gốc\nSeason Pass (tất cả DLC)\nGói vật phẩm Deluxe\nChơi sớm (nếu có)" },
 ];
 
-export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: string; onPricesSynced: (original: number, sale: number) => void }) {
-  const [data, setData] = useState<Catalog | null>(null);
-  const [saving, setSaving] = useState(false);
+export interface CatalogEditorHandle {
+  /** Client-side checks before anything is saved; returns an error message or null. */
+  validate: () => string | null;
+  /** Saves classification + editions for the given game (called by the main form after the game itself is saved). */
+  save: (gameId: string) => Promise<{ ok: boolean; error?: string }>;
+}
+
+interface Props {
+  /** Missing while creating a new game — edits are kept locally and saved right after the game is created. */
+  gameId?: string | null;
+  /** Live: called whenever the default edition's prices change, so the main price fields mirror them. */
+  onPricesSynced: (original: number, sale: number) => void;
+  /** Live: whether the game is sold by editions (then the main price fields are read-only). */
+  onHasEditions?: (has: boolean) => void;
+}
+
+const EMPTY: Catalog = { productType: "Game", region: null, publisher: null, developer: null, editions: [], xboxProductId: null, priceRegion: null, saleEndsAt: null };
+
+const GameCatalogEditor = forwardRef<CatalogEditorHandle, Props>(function GameCatalogEditor({ gameId, onPricesSynced, onHasEditions }, ref) {
+  const [data, setData] = useState<Catalog | null>(gameId ? null : EMPTY);
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const dataRef = useRef<Catalog | null>(data);
+  dataRef.current = data;
+  const syncRef = useRef({ onPricesSynced, onHasEditions });
+  syncRef.current = { onPricesSynced, onHasEditions };
+  const loadedFor = useRef<string | null>(null);
+
+  // Mirror the default edition into the main price fields as the admin edits.
+  useEffect(() => {
+    if (!data) return;
+    const active = data.editions.filter((e) => e.isActive);
+    syncRef.current.onHasEditions?.(active.length > 0);
+    const def = active.find((e) => e.isDefault) ?? active[0];
+    if (def) syncRef.current.onPricesSynced(def.originalPrice, def.salePrice);
+  }, [data]);
+
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      const d = dataRef.current;
+      if (!d) return null;
+      const names = new Set<string>();
+      for (const e of d.editions) {
+        const n = e.name.trim();
+        if (!n) return "Phiên bản chưa có tên.";
+        if (names.has(n.toLowerCase())) return `Tên phiên bản bị trùng: ${n}`;
+        names.add(n.toLowerCase());
+        if (e.originalPrice < 0 || e.salePrice < 0) return "Giá không được âm.";
+        if (e.originalPrice > 0 && e.salePrice > e.originalPrice) return `Giá bán của "${n}" lớn hơn giá gốc.`;
+      }
+      return null;
+    },
+    save: async (targetId: string) => {
+      const d = dataRef.current;
+      if (!d) return { ok: true };
+      setError("");
+      try {
+        const res = await apiFetch(apiUrl(`/api/admin/games/${targetId}/catalog`), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...d, editions: d.editions.map((e, i) => ({ ...e, name: e.name.trim(), displayOrder: i })) }),
+        });
+        if (!res.ok) throw new Error(await readApiError(res, "Không lưu được phiên bản"));
+        const fresh: Catalog = await res.json();
+        loadedFor.current = targetId;
+        setData(fresh);
+        setDirty(false);
+        return { ok: true };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Không lưu được phiên bản";
+        setError(msg);
+        return { ok: false, error: msg };
+      }
+    },
+  }));
 
   useEffect(() => {
+    // A brand-new game keeps its local draft; only existing games load from the server (once per id).
+    if (!gameId || loadedFor.current === gameId) return;
+    loadedFor.current = gameId;
     (async () => {
       try {
         const res = await apiFetch(apiUrl(`/api/admin/games/${gameId}/catalog`));
@@ -74,7 +147,7 @@ export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: 
   }
 
   const set = (patch: Partial<Catalog>) => {
-    setSaved(false);
+    setDirty(true);
     setData({ ...data, ...patch });
   };
   const setEdition = (i: number, patch: Partial<Edition>) =>
@@ -102,28 +175,6 @@ export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: 
         },
       ],
     });
-
-  const save = async () => {
-    setError("");
-    setSaving(true);
-    try {
-      const res = await apiFetch(apiUrl(`/api/admin/games/${gameId}/catalog`), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, editions: data.editions.map((e, i) => ({ ...e, displayOrder: i })) }),
-      });
-      if (!res.ok) throw new Error(await readApiError(res, "Không lưu được"));
-      const fresh: Catalog = await res.json();
-      setData(fresh);
-      setSaved(true);
-      const def = fresh.editions.find((e) => e.isDefault && e.isActive);
-      if (def) onPricesSynced(def.originalPrice, def.salePrice);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Không lưu được");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const unused = PRESETS.filter((p) => !data.editions.some((e) => e.name.trim().toLowerCase() === p.name.toLowerCase()));
 
@@ -242,16 +293,12 @@ export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: 
           <AlertCircle size={12} /> {error}
         </div>
       )}
-      <div className="flex items-center gap-3">
-        <button type="button" onClick={save} disabled={saving} className="steam-btn bg-steam-blue text-black hover:bg-steam-blue-hover text-xs">
-          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Lưu phân loại & phiên bản
-        </button>
-        {saved && (
-          <span className="inline-flex items-center gap-1 text-xs text-steam-green">
-            <CheckCircle2 size={12} /> Đã lưu
-          </span>
-        )}
-      </div>
+      <p className="text-[11px] text-steam-muted">
+        {dirty ? <span className="text-steam-gold">● Có thay đổi chưa lưu — </span> : null}
+        Phân loại và phiên bản được lưu cùng nút <b>{gameId ? "Update Game" : "Create Game"}</b> bên dưới.
+      </p>
     </div>
   );
-}
+});
+
+export default GameCatalogEditor;

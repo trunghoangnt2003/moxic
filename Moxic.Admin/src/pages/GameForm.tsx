@@ -15,7 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
-import GameCatalogEditor from "./GameCatalogEditor";
+import GameCatalogEditor, { type CatalogEditorHandle } from "./GameCatalogEditor";
 
 interface MediaItem {
   id: string;
@@ -145,6 +145,8 @@ export default function GameForm() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [queuedFiles, setQueuedFiles] = useState<QueuedFile[]>([]);
   const [saving, setSaving] = useState(false);
+  const catalogRef = useRef<CatalogEditorHandle>(null);
+  const [hasEditions, setHasEditions] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [created, setCreated] = useState(false);
@@ -207,14 +209,31 @@ export default function GameForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Check editions first so we never save half of the form.
+    const catalogError = catalogRef.current?.validate();
+    if (catalogError) {
+      alert(catalogError);
+      return;
+    }
     setSaving(true);
     const body = buildBody();
     try {
       if (gameId) {
-        await apiFetch(apiUrl(`/api/admin/games/${gameId}`), {
+        const res = await apiFetch(apiUrl(`/api/admin/games/${gameId}`), {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || "Không lưu được game");
+          return;
+        }
+        // Editions last: the server then sets the game price to the default edition.
+        const cat = await catalogRef.current?.save(gameId);
+        if (cat && !cat.ok) {
+          alert(cat.error || "Không lưu được phiên bản");
+          return;
+        }
         navigate("/games");
       } else {
         const res = await apiFetch(apiUrl("/api/admin/games"), {
@@ -228,6 +247,8 @@ export default function GameForm() {
         }
         const data = await res.json();
         const newId = data.id;
+        const cat = await catalogRef.current?.save(newId);
+        if (cat && !cat.ok) alert(`Đã tạo game, nhưng chưa lưu được phiên bản: ${cat.error}`);
         setGameId(newId);
         setCreated(true);
         window.history.replaceState(null, "", `/games/${newId}/edit`);
@@ -335,8 +356,8 @@ export default function GameForm() {
           <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 space-y-4">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Pricing &amp; Classification</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label><input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
-              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label><input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} className="w-full steam-input font-mono" required /></div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Original Price (₫)</label><input type="number" placeholder="0" value={originalPrice} onChange={(e) => setOriginalPrice(Number(e.target.value))} readOnly={hasEditions} title={hasEditions ? "Đang bán theo phiên bản — giá lấy theo phiên bản mặc định" : undefined} className={`w-full steam-input font-mono ${hasEditions ? "opacity-60 cursor-not-allowed" : ""}`} required /></div>
+              <div><label className="block text-xs text-steam-muted mb-1.5 font-medium">Sale Price (₫)</label><input type="number" placeholder="0" value={salePrice} onChange={(e) => setSalePrice(Number(e.target.value))} readOnly={hasEditions} title={hasEditions ? "Đang bán theo phiên bản — giá lấy theo phiên bản mặc định" : undefined} className={`w-full steam-input font-mono ${hasEditions ? "opacity-60 cursor-not-allowed" : ""}`} required /></div>
             </div>
             <div>
               <label htmlFor="rewardPoints" className="block text-xs text-steam-muted mb-1.5 font-medium">Điểm thưởng (khi đơn hoàn tất)</label>
@@ -410,17 +431,15 @@ export default function GameForm() {
           </div>
 
           {/* Catalog: product type / region / editions (only after the game exists) */}
-          {gameId ? (
-            <GameCatalogEditor
-              gameId={gameId}
-              onPricesSynced={(original, sale) => {
-                setOriginalPrice(original);
-                setSalePrice(sale);
-              }}
-            />
-          ) : (
-            <p className="text-xs text-steam-muted">Tạo game xong sẽ cấu hình được loại sản phẩm, region và các phiên bản (Standard/Deluxe/Ultimate).</p>
-          )}
+          <GameCatalogEditor
+            ref={catalogRef}
+            gameId={gameId}
+            onPricesSynced={(original, sale) => {
+              setOriginalPrice(original);
+              setSalePrice(sale);
+            }}
+            onHasEditions={setHasEditions}
+          />
 
           {/* Save */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
