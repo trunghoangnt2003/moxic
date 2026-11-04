@@ -16,6 +16,7 @@ const RentalsPage = lazy(() => import("./pages/RentalsPage"));
 const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
+const RewardsPage = lazy(() => import("./pages/RewardsPage"));
 const ReleaseCalendarPage = lazy(() => import("./pages/ReleaseCalendarPage"));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage"));
 const PreorderPage = lazy(() => import("./pages/PreorderPage"));
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/rent" element={<RentPage />} />
               <Route path="/compare" element={<ComparePage />} />
+              <Route path="/rewards" element={<RewardsPage />} />
               <Route path="/release-calendar" element={<ReleaseCalendarPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />

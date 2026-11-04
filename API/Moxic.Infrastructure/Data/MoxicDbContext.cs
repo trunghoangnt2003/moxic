@@ -489,6 +489,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.HasKey(e => e.UserId);
             entity.Property(e => e.DisplayName).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Points).HasDefaultValue(0);
+            entity.Property(e => e.ReferralCode).HasMaxLength(16);
+            entity.HasIndex(e => e.ReferralCode).IsUnique().HasFilter("\"ReferralCode\" IS NOT NULL");
             entity.HasOne<IdentityUser>()
                 .WithOne()
                 .HasForeignKey<CustomerProfile>(e => e.UserId)

@@ -158,7 +158,7 @@ export function safeRedirect(raw: string | null, fallback = "/"): string {
 
 // ───────────────────────── Loyalty points ─────────────────────────
 
-export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust";
+export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral";
 
 export interface PointsTransaction {
   id: string;
@@ -186,4 +186,7 @@ export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
   OrderCompleted: "Hoàn tất đơn hàng",
   CaseOpen: "Mở hòm",
   AdminAdjust: "Điều chỉnh bởi Moxic",
+  CheckIn: "Điểm danh hằng ngày",
+  Mission: "Hoàn thành nhiệm vụ",
+  Referral: "Giới thiệu bạn bè",
 };

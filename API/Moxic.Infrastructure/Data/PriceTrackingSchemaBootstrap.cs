@@ -29,6 +29,11 @@ public static class PriceTrackingSchemaBootstrap
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "PriceRegion" character varying(5);
         ALTER TABLE "WishlistItems" ADD COLUMN IF NOT EXISTS "NotifiedPrice" numeric(18,2);
         ALTER TABLE "CustomerProfiles" ADD COLUMN IF NOT EXISTS "PriceAlerts" boolean NOT NULL DEFAULT TRUE;
+        ALTER TABLE "CustomerProfiles" ALTER COLUMN "PriceAlerts" SET DEFAULT TRUE;
+        ALTER TABLE "CustomerProfiles" ADD COLUMN IF NOT EXISTS "ReferralCode" character varying(16);
+        ALTER TABLE "CustomerProfiles" ADD COLUMN IF NOT EXISTS "ReferredByUserId" text;
+        ALTER TABLE "CustomerProfiles" ADD COLUMN IF NOT EXISTS "ReferralRewardedAt" timestamp with time zone;
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_CustomerProfiles_ReferralCode" ON "CustomerProfiles" ("ReferralCode") WHERE "ReferralCode" IS NOT NULL;
 
         INSERT INTO "GamePriceSnapshots" ("Id", "GameId", "Source", "Region", "Currency", "BasePrice", "SalePrice", "CapturedAt")
         SELECT gen_random_uuid(), g."Id", 'Moxic', 'vn', 'VND', g."OriginalPrice", g."SalePrice", now()

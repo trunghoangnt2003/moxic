@@ -10,5 +10,14 @@ public enum PointsReason
     CaseOpen,
 
     /// <summary>Manual adjustment by an admin (RefId null, CreatedBy = admin).</summary>
-    AdminAdjust
+    AdminAdjust,
+
+    /// <summary>Daily check-in (RefId = checkin:{userId}:{yyyy-MM-dd}).</summary>
+    CheckIn,
+
+    /// <summary>One-time mission reward (RefId = mission:{key}:{userId}).</summary>
+    Mission,
+
+    /// <summary>Referral reward to referrer or referee (RefId = ref:{role}:{refereeUserId}).</summary>
+    Referral
 }

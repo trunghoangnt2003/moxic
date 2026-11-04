@@ -16,6 +16,7 @@ import {
   Gift,
   Heart,
   KeyRound,
+  Crown,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -236,6 +237,15 @@ export default function Navbar() {
                       Game đang thuê
                     </Link>
                     <Link
+                      to="/rewards"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-amber-200 hover:bg-bg-surface-hover hover:text-amber-100 transition-colors"
+                    >
+                      <Crown className="w-4 h-4" />
+                      Thành viên & điểm danh
+                    </Link>
+                    <Link
                       to="/account/points"
                       role="menuitem"
                       onClick={() => setAccountOpen(false)}
@@ -361,6 +371,14 @@ export default function Navbar() {
                   >
                     <KeyRound className="w-4 h-4" />
                     Game đang thuê
+                  </Link>
+                  <Link
+                    to="/rewards"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-amber-200"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Thành viên & điểm danh
                   </Link>
                   <Link
                     to="/account/points"

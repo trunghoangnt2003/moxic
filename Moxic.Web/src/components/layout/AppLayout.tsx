@@ -6,6 +6,7 @@ import FloatingContact from "./FloatingContact";
 import AnnouncementModal from "../shared/AnnouncementModal";
 import PurchaseToast from "../shared/PurchaseToast";
 import { CompareBar } from "../games/Compare";
+import ReferralCapture from "../shared/ReferralCapture";
 
 
 export default function AppLayout() {
@@ -21,6 +22,7 @@ export default function AppLayout() {
       <AnnouncementModal />
       <PurchaseToast />
       <CompareBar />
+      <ReferralCapture />
     </div>
   );
 }

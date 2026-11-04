@@ -211,7 +211,7 @@ export default function AccountPage() {
     { icon: Package, label: "Đơn hàng", value: p.stats.orders, to: "/account/orders" },
     { icon: KeyRound, label: "Đang thuê", value: p.stats.activeRentals, to: "/account/rentals" },
     { icon: Heart, label: "Yêu thích", value: p.stats.wishlist, to: "/wishlist" },
-    { icon: Coins, label: "Điểm thưởng", value: p.points.toLocaleString("vi-VN"), to: "/account/points" },
+    { icon: Coins, label: "Điểm thưởng", value: p.points.toLocaleString("vi-VN"), to: "/rewards" },
     { icon: TicketPercent, label: "Mã giảm giá", value: "Ví", to: "/account/coupons" },
     { icon: MessageSquareText, label: "Đánh giá", value: p.stats.reviews, to: null },
   ];
