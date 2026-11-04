@@ -32,7 +32,7 @@ export default function PushToggle({ compact = false }: { compact?: boolean }) {
       } else {
         const r = await enablePush();
         setState(r === "on" ? "on" : r === "denied" ? "denied" : "unsupported");
-        if (r === "on") toast.success("Đã bật thông báo — bạn sẽ nhận tin đơn hàng, giảm giá ngay cả khi đóng web");
+        if (r === "on") toast.success("Đã bật thông báo, bạn sẽ nhận tin đơn hàng, giảm giá ngay cả khi đóng web");
         else if (r === "denied") toast.error("Bạn đã chặn thông báo. Mở cài đặt trình duyệt để cho phép lại.");
       }
     } catch {
@@ -57,7 +57,7 @@ export default function PushToggle({ compact = false }: { compact?: boolean }) {
       <span className="flex items-center gap-2 text-sm">
         {state === "on" ? <BellRing className="w-4 h-4 text-accent" /> : <BellOff className="w-4 h-4 text-text-muted" />}
         Thông báo đẩy trên thiết bị này
-        {state === "denied" && <span className="text-xs text-rose-300">(đang bị chặn)</span>}
+        {state === "denied" && <span className="text-xs text-negative">(đang bị chặn)</span>}
       </span>
       <input type="checkbox" className="sr-only peer" checked={state === "on"} disabled={busy || state === "denied"} onChange={toggle} />
       <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />

@@ -18,7 +18,7 @@ function DropCard({ drop, featured = false }: { drop: LiveDrop; featured?: boole
     <div
       className="relative h-[68px] w-[104px] overflow-hidden rounded-[3px] sm:w-[120px]"
       style={{
-        background: "linear-gradient(180deg, #241b3a 0%, #15101f 100%)",
+        background: "linear-gradient(180deg, var(--color-spin-card) 0%, var(--color-spin-card-2) 100%)",
         boxShadow: featured ? `inset 0 0 0 1px ${WOW_GOLD}66` : "inset 0 0 0 1px rgba(255,255,255,0.06)",
       }}
     >
@@ -41,12 +41,12 @@ function DropCard({ drop, featured = false }: { drop: LiveDrop; featured?: boole
       {/* rarity glow rising from the bottom */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: `linear-gradient(to top, ${color}55 0%, #15101fcc 45%, transparent 100%)` }}
+        style={{ background: `linear-gradient(to top, ${color}55 0%, color-mix(in oklab, var(--color-spin-card-2) 80%, transparent) 45%, transparent 100%)` }}
       />
       <div className="relative flex h-full flex-col justify-end px-1.5 pb-1.5">
         <p className="line-clamp-1 text-[11px] font-semibold leading-tight text-white">{drop.prizeName}</p>
         <p className="line-clamp-1 text-[9px] leading-tight text-white/50">{drop.caseName}</p>
-        <p className="line-clamp-1 text-[9px] leading-tight text-fuchsia-200/80">{drop.winnerName}</p>
+        <p className="line-clamp-1 text-[9px] leading-tight text-highlight/80">{drop.winnerName}</p>
       </div>
       <div className="absolute inset-x-0 bottom-0 h-[3px]" style={{ background: color, boxShadow: `0 0 10px ${color}` }} />
     </div>
@@ -57,7 +57,7 @@ function DropCard({ drop, featured = false }: { drop: LiveDrop; featured?: boole
       <Link
         to={`/lucky-spin/${encodeURIComponent(drop.caseSlug)}`}
         title={title}
-        className="block flex-none transition-[filter] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-400"
+        className="block flex-none transition-[filter] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight"
       >
         {body}
       </Link>
@@ -113,16 +113,16 @@ export default function LiveDropsBar() {
   return (
     <section
       aria-label="Phần thưởng vừa trúng"
-      className="relative overflow-hidden rounded-sm border border-white/10 bg-[#120a22]/85"
+      className="relative overflow-hidden rounded-sm border border-white/10 bg-spin-deep/85"
     >
       <div className="flex items-stretch gap-2 p-2">
         {/* LIVE label */}
         <div className="flex flex-none flex-col items-center justify-center gap-1 px-1">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-70 motion-reduce:animate-none" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-negative opacity-70 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-negative" />
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400 [writing-mode:vertical-rl] rotate-180 sm:[writing-mode:horizontal-tb] sm:rotate-0">
+          <span className="text-[10px] font-bold text-negative [writing-mode:vertical-rl] rotate-180 sm:[writing-mode:horizontal-tb] sm:rotate-0">
             Live
           </span>
         </div>
@@ -134,11 +134,11 @@ export default function LiveDropsBar() {
             style={{
               border: `1px solid ${WOW_GOLD}`,
               boxShadow: `0 0 16px ${WOW_GOLD}40, inset 0 0 12px ${WOW_GOLD}1a`,
-              background: "linear-gradient(135deg, #2a1f0c 0%, #160f05 100%)",
+              background: "linear-gradient(135deg, var(--color-spin-gold-1) 0%, var(--color-spin-gold-2) 100%)",
             }}
           >
             <span
-              className="text-[11px] font-black uppercase tracking-wider [writing-mode:vertical-rl] rotate-180"
+              className="text-[11px] font-black [writing-mode:vertical-rl] rotate-180"
               style={{ color: WOW_GOLD, textShadow: `0 0 8px ${WOW_GOLD}aa` }}
             >
               Wow

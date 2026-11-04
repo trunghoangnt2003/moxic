@@ -30,7 +30,7 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
   return (
     <div className="bg-bg-surface border border-white/10">
       <div className="px-4 py-3 border-b border-white/10">
-        <p className="text-[11px] text-text-muted uppercase tracking-wider">Mã đơn hàng</p>
+        <p className="text-[11px] text-text-muted">Mã đơn hàng</p>
         <div className="flex items-center gap-2">
           <span className="font-mono text-base font-semibold text-text-primary truncate">{orderCode}</span>
           <button
@@ -39,7 +39,7 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
             className="w-7 h-7 shrink-0 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Sao chép mã đơn hàng"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-text-muted" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-positive" /> : <Copy className="w-3.5 h-3.5 text-text-muted" />}
           </button>
         </div>
         <p className="text-text-muted text-xs">{formatDate(createdAt)}</p>
@@ -68,7 +68,7 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
               <span className="text-text-muted truncate">
                 Giảm giá{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
               </span>
-              <span className="text-emerald-400 font-semibold tabular-nums">−{formatPrice(discountAmount)}</span>
+              <span className="text-positive font-semibold tabular-nums">−{formatPrice(discountAmount)}</span>
             </div>
           </>
         )}

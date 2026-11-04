@@ -30,7 +30,7 @@ const pts = (n: number) => n.toLocaleString("vi-VN");
 
 type Won = { name: string; code: string; kind: string; caseSlug: string | null; expiresAt: string };
 
-/** "Đổi điểm" — spend loyalty points on wallet coupons or lucky-spin case codes. */
+/** "Đổi điểm", spend loyalty points on wallet coupons or lucky-spin case codes. */
 export default function PointsShop({ signedIn }: { signedIn: boolean }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["rewards", "shop", signedIn], queryFn: getRewardShop, staleTime: 30_000 });
@@ -66,11 +66,11 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
     <section className="border border-white/10 bg-bg-surface p-5 space-y-4 text-left">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h2 className="font-display text-lg font-bold flex items-center gap-2">
-          <ShoppingBag className="w-5 h-5 text-amber-300" /> Đổi điểm
+          <ShoppingBag className="w-5 h-5 text-caution" /> Đổi điểm
         </h2>
         {balance != null && (
           <p className="text-sm text-text-secondary">
-            Bạn có <b className="text-amber-300 text-base">{pts(balance)}</b> điểm
+            Bạn có <b className="text-caution text-base">{pts(balance)}</b> điểm
           </p>
         )}
       </div>
@@ -88,8 +88,8 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
               <span className="absolute left-0 top-[58px] -translate-x-1/2 w-3 h-3 rounded-full bg-bg-surface border border-white/10" />
               <span className="absolute right-0 top-[58px] translate-x-1/2 w-3 h-3 rounded-full bg-bg-surface border border-white/10" />
               <div className="h-16 flex items-center justify-center gap-2 px-3 border-b border-dashed border-white/10">
-                {i.kind === "CaseCode" ? <Box className="w-5 h-5 text-fuchsia-300 shrink-0" /> : <Ticket className="w-5 h-5 text-amber-300 shrink-0" />}
-                <span className={`font-display font-extrabold truncate ${i.kind === "CaseCode" ? "text-base text-fuchsia-200" : "text-xl sm:text-2xl text-amber-200"}`}>
+                {i.kind === "CaseCode" ? <Box className="w-5 h-5 text-highlight shrink-0" /> : <Ticket className="w-5 h-5 text-caution shrink-0" />}
+                <span className={`font-display font-extrabold truncate ${i.kind === "CaseCode" ? "text-base text-highlight" : "text-xl sm:text-2xl text-caution"}`}>
                   {headline(i)}
                 </span>
               </div>
@@ -97,12 +97,12 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                 <p className="text-sm font-semibold leading-tight line-clamp-2">{i.name}</p>
                 {i.description && <p className="text-[11px] text-text-secondary leading-snug">{i.description}</p>}
                 <p className="text-[11px] text-text-muted leading-snug">{terms(i)}</p>
-                {i.remaining != null && <p className="text-[11px] text-orange-300">Còn {i.remaining} phần</p>}
+                {i.remaining != null && <p className="text-[11px] text-caution">Còn {i.remaining} phần</p>}
               </div>
               <div className="p-3 pt-0 space-y-2">
                 {short && !soldOut && (
                   <div className="h-1 bg-white/5 overflow-hidden" title={`Còn thiếu ${pts(i.pointsCost - (balance ?? 0))} điểm`}>
-                    <div className="h-full bg-amber-400/70" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-caution/70" style={{ width: `${pct}%` }} />
                   </div>
                 )}
                 {signedIn ? (
@@ -110,12 +110,12 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                     type="button"
                     disabled={disabled}
                     onClick={() => setConfirm(i)}
-                    className="w-full h-10 inline-flex items-center justify-center gap-1.5 text-sm font-bold bg-amber-400 text-bg-base hover:bg-amber-300 disabled:bg-white/5 disabled:text-text-muted disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full h-10 inline-flex items-center justify-center gap-1.5 text-sm font-bold bg-caution text-bg-base hover:bg-caution disabled:bg-white/5 disabled:text-text-muted disabled:cursor-not-allowed cursor-pointer"
                   >
                     {soldOut ? "Hết quà" : limitHit ? "Đã đổi tối đa" : `${pts(i.pointsCost)} điểm`}
                   </button>
                 ) : (
-                  <Link to="/login?redirect=/rewards" className="w-full h-10 inline-flex items-center justify-center text-sm font-bold border border-amber-400/50 text-amber-200">
+                  <Link to="/login?redirect=/rewards" className="w-full h-10 inline-flex items-center justify-center text-sm font-bold border border-caution/50 text-caution">
                     {pts(i.pointsCost)} điểm
                   </Link>
                 )}
@@ -131,7 +131,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
           <ul className="mt-2 divide-y divide-white/5">
             {history.map((h) => (
               <li key={h.id} className="flex items-center gap-3 py-2 text-sm">
-                {h.kind === "CaseCode" ? <Box className="w-4 h-4 text-fuchsia-300 shrink-0" /> : <Ticket className="w-4 h-4 text-amber-300 shrink-0" />}
+                {h.kind === "CaseCode" ? <Box className="w-4 h-4 text-highlight shrink-0" /> : <Ticket className="w-4 h-4 text-caution shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <p className="truncate">{h.itemName}</p>
                   <p className="text-[11px] text-text-muted">
@@ -140,7 +140,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                 </div>
                 <span className={`font-mono text-xs ${h.used ? "line-through text-text-muted" : "text-white"}`}>{h.code}</span>
                 {!h.used && h.kind === "CaseCode" && h.caseSlug && (
-                  <Link to={`/lucky-spin/${h.caseSlug}?code=${h.code}`} className="text-xs text-fuchsia-300 hover:underline shrink-0">
+                  <Link to={`/lucky-spin/${h.caseSlug}?code=${h.code}`} className="text-xs text-highlight hover:underline shrink-0">
                     Mở
                   </Link>
                 )}
@@ -169,7 +169,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                 type="button"
                 disabled={redeem.isPending}
                 onClick={() => redeem.mutate(confirm)}
-                className="h-11 inline-flex items-center justify-center gap-2 bg-amber-400 text-bg-base text-sm font-bold cursor-pointer"
+                className="h-11 inline-flex items-center justify-center gap-2 bg-caution text-bg-base text-sm font-bold cursor-pointer"
               >
                 {redeem.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Đổi ngay
               </button>
@@ -183,12 +183,12 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
           className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 pb-[calc(0.75rem+var(--sab))]"
           onClick={() => setWon(null)}
         >
-          <div className="relative w-full max-w-sm bg-bg-elevated border border-amber-400/40 p-6 text-center space-y-4 animate-[popIn_0.3s_ease-out]" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-sm bg-bg-elevated border border-caution/40 p-6 text-center space-y-4 animate-[popIn_0.3s_ease-out]" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => setWon(null)} aria-label="Đóng" className="absolute top-2 right-2 p-1 text-text-muted hover:text-white cursor-pointer">
               <X className="w-4 h-4" />
             </button>
-            <div className="w-14 h-14 mx-auto rounded-full bg-amber-400/15 flex items-center justify-center">
-              {won.kind === "CaseCode" ? <Box className="w-7 h-7 text-fuchsia-300" /> : <Ticket className="w-7 h-7 text-amber-300" />}
+            <div className="w-14 h-14 mx-auto rounded-full bg-caution/15 flex items-center justify-center">
+              {won.kind === "CaseCode" ? <Box className="w-7 h-7 text-highlight" /> : <Ticket className="w-7 h-7 text-caution" />}
             </div>
             <div>
               <p className="font-display text-xl font-bold">Đổi thành công!</p>
@@ -205,18 +205,18 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                   /* ignore */
                 }
               }}
-              className="w-full h-12 flex items-center justify-center gap-2 bg-black/40 border border-dashed border-amber-400/50 font-mono text-lg tracking-widest cursor-pointer"
+              className="w-full h-12 flex items-center justify-center gap-2 bg-black/40 border border-dashed border-caution/50 font-mono text-lg cursor-pointer"
             >
               {won.code} {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4 text-text-muted" />}
             </button>
             <p className="text-xs text-text-muted">Hạn dùng đến {formatDate(won.expiresAt)}</p>
             {won.kind === "CaseCode" && won.caseSlug ? (
-              <Link to={`/lucky-spin/${won.caseSlug}?code=${won.code}`} className="w-full h-11 inline-flex items-center justify-center bg-fuchsia-500 text-white text-sm font-bold">
+              <Link to={`/lucky-spin/${won.caseSlug}?code=${won.code}`} className="w-full h-11 inline-flex items-center justify-center bg-highlight text-white text-sm font-bold">
                 Mở hòm ngay
               </Link>
             ) : (
-              <Link to="/account/coupons" className="w-full h-11 inline-flex items-center justify-center bg-amber-400 text-bg-base text-sm font-bold">
-                Xem ví mã giảm giá — dùng khi thanh toán
+              <Link to="/account/coupons" className="w-full h-11 inline-flex items-center justify-center bg-caution text-bg-base text-sm font-bold">
+                Xem ví mã giảm giá, dùng khi thanh toán
               </Link>
             )}
           </div>

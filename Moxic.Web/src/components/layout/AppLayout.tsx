@@ -14,7 +14,7 @@ import RouteProgress from "../shared/RouteProgress";
 export default function AppLayout() {
   const { pathname } = useLocation();
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-bg-base text-text-primary flex flex-col relative overflow-x-clip">
       <DragonBorder />
       <Navbar />
       <main className="flex-1 relative z-10 w-full overflow-x-hidden">

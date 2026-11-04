@@ -35,7 +35,7 @@ export default function ReleaseCalendarPage() {
           <h1 className="font-display text-2xl md:text-4xl font-bold flex items-center gap-3">
             <CalendarDays className="w-7 h-7 text-accent" /> Lịch phát hành
           </h1>
-          <p className="text-sm text-text-muted mt-1">Game Xbox sắp ra mắt — đặt trước để chơi ngay ngày đầu tiên.</p>
+          <p className="text-sm text-text-muted mt-1">Game Xbox sắp ra mắt, đặt trước để chơi ngay ngày đầu tiên.</p>
         </div>
         <div className="flex border border-white/10">
           {[
@@ -74,7 +74,7 @@ export default function ReleaseCalendarPage() {
                       <Link to={`/games/${g.id}`} className="group flex items-center gap-3 sm:gap-4 p-2.5 bg-bg-surface border border-white/5 hover:border-white/20 transition-colors">
                         <div className="w-14 shrink-0 text-center border border-white/10 py-1.5">
                           <p className="font-display text-2xl font-extrabold leading-none">{String(d.getDate()).padStart(2, "0")}</p>
-                          <p className="text-[10px] uppercase tracking-wider text-text-muted mt-0.5">Th{d.getMonth() + 1}</p>
+                          <p className="text-[10px] text-text-muted mt-0.5">Th{d.getMonth() + 1}</p>
                         </div>
                         <div className="w-12 h-16 sm:w-14 sm:h-[72px] shrink-0 bg-bg-elevated overflow-hidden">
                           {g.coverImageUrl ? <img src={g.coverImageUrl} alt="" className="w-full h-full object-cover" loading="lazy" /> : <Gamepad2 className="w-6 h-6 m-auto mt-5 text-accent/40" />}
@@ -83,11 +83,11 @@ export default function ReleaseCalendarPage() {
                           <p className="font-semibold truncate group-hover:text-accent">{g.name}</p>
                           <p className="text-xs text-text-muted truncate">{g.genres.map((x) => x.name).slice(0, 3).join(" · ")}</p>
                           {days > 0 ? (
-                            <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300">
+                            <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-caution">
                               <Rocket className="w-3 h-3" /> còn {days} ngày
                             </p>
                           ) : days === 0 ? (
-                            <p className="mt-1 text-[11px] font-semibold text-emerald-300">Ra mắt hôm nay!</p>
+                            <p className="mt-1 text-[11px] font-semibold text-positive">Ra mắt hôm nay!</p>
                           ) : (
                             <p className="mt-1 text-[11px] text-text-muted">Đã ra mắt</p>
                           )}

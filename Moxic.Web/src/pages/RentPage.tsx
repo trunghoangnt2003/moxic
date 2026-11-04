@@ -22,13 +22,13 @@ export default function RentPage() {
   return (
     <div>
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.18),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--color-positive)_18%,transparent),transparent_60%)]" />
         <Container className="relative py-12 md:py-16">
-          <p className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          <p className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold bg-positive/15 text-positive border border-positive/30">
             <KeyRound className="w-3.5 h-3.5" /> Dịch vụ thuê game
           </p>
           <h1 className="font-display text-3xl md:text-5xl font-extrabold mt-4 max-w-2xl leading-tight">
-            Chơi game bom tấn Xbox <span className="bg-gradient-to-r from-emerald-300 to-accent bg-clip-text text-transparent">không cần mua đứt</span>
+            Chơi game bom tấn Xbox <span className="text-positive">không cần mua đứt</span>
           </h1>
           <p className="text-text-secondary mt-3 max-w-xl">
             Thuê theo ngày{cheapest != null ? <>, chỉ từ <b className="text-white">{formatPrice(cheapest)}</b></> : null}. Hết hứng thú thì thôi, muốn chơi tiếp thì gia hạn.
@@ -36,7 +36,7 @@ export default function RentPage() {
           <ol className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
             {STEPS.map((s, i) => (
               <li key={s.title} className="flex items-start gap-3 p-3 bg-black/30 border border-white/10">
-                <span className="w-9 h-9 shrink-0 flex items-center justify-center bg-emerald-500/15 text-emerald-300">
+                <span className="w-9 h-9 shrink-0 flex items-center justify-center bg-positive/15 text-positive">
                   <s.icon className="w-4 h-4" />
                 </span>
                 <span>
@@ -60,7 +60,7 @@ export default function RentPage() {
         {isLoading ? (
           <SectionLoader />
         ) : games.length === 0 ? (
-          <p className="text-center text-text-muted py-16 bg-black/40 border border-white/5">Chưa có game nào mở cho thuê — quay lại sau nhé!</p>
+          <p className="text-center text-text-muted py-16 bg-black/40 border border-white/5">Chưa có game nào mở cho thuê, quay lại sau nhé!</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
             {games.map((g) => (

@@ -27,30 +27,30 @@ export default function LuckySpinBanner() {
         className="absolute inset-0"
         style={{
           clipPath: chamferPolygon(CHAMFER),
-          background: "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)",
+          background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 50%, var(--color-spin-glow) 100%)",
         }}
       />
       <div
         className="relative m-px flex flex-col items-center gap-6 overflow-hidden px-5 py-7 md:flex-row md:gap-10 md:px-10 md:py-9"
         style={{
           clipPath: chamferPolygon(CHAMFER - 1),
-          background: "radial-gradient(ellipse at 70% 50%, #3b1d6e 0%, #1a0d33 55%, #0d0718 100%)",
+          background: "radial-gradient(ellipse at 70% 50%, var(--color-spin-panel) 0%, var(--color-spin-ink) 55%, var(--color-spin-void) 100%)",
         }}
       >
         {/* Copy */}
         <div className="relative z-10 flex-1 text-center md:text-left">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-fuchsia-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-[10px] font-semibold text-highlight">
             <Sparkles className="h-3 w-3" /> Sự kiện
           </span>
           <h2 className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">Vòng Quay May Mắn</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/70 md:mx-0">
-            Mở hòm bằng mã quay, miễn phí theo chu kỳ hoặc bằng điểm thưởng — cơ hội nhận game Xbox miễn phí và mã giảm giá
+            Mở hòm bằng mã quay, miễn phí theo chu kỳ hoặc bằng điểm thưởng, cơ hội nhận game Xbox miễn phí và mã giảm giá
           </p>
           <Link
             to="/lucky-spin"
-            className="mt-5 inline-flex items-center gap-2 rounded-sm px-6 py-3 font-display text-sm font-bold uppercase tracking-wider text-white transition-[filter] hover:brightness-110"
+            className="mt-5 inline-flex items-center gap-2 rounded-sm px-6 py-3 font-display text-sm font-bold text-white transition-[filter] hover:brightness-110"
             style={{
-              background: "linear-gradient(135deg, #a855f7 0%, #ec4899 100%)",
+              background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 100%)",
               boxShadow: "0 0 22px rgba(236, 72, 153, 0.35)",
             }}
           >

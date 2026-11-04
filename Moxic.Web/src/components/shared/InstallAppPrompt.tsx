@@ -76,7 +76,7 @@ export default function InstallAppPrompt() {
           <div className="pr-5 space-y-2 text-sm">
             <p className="font-display font-bold">Thêm Moxic vào màn hình chính</p>
             <p className="flex items-center gap-2 text-text-secondary">
-              1. Nhấn <Share className="w-4 h-4 text-sky-400" /> <b>Chia sẻ</b> ở thanh dưới Safari
+              1. Nhấn <Share className="w-4 h-4 text-info" /> <b>Chia sẻ</b> ở thanh dưới Safari
             </p>
             <p className="flex items-center gap-2 text-text-secondary">
               2. Chọn <SquarePlus className="w-4 h-4" /> <b>Thêm vào MH chính</b>

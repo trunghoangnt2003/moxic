@@ -60,7 +60,7 @@ export default function ConfirmationPage() {
     return (
       <Container className="py-20">
         <div className="text-center py-16 bg-bg-surface border border-white/10 max-w-[500px] mx-auto px-6">
-          <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-4 opacity-70" />
+          <AlertCircle className="w-14 h-14 text-negative mx-auto mb-4 opacity-70" />
           <h2 className="font-display text-xl text-text-primary mb-2">Không tìm thấy đơn hàng</h2>
           <p className="text-text-muted text-sm mb-6">Mã đơn hàng không tồn tại hoặc đã bị xóa.</p>
           <Link to="/games" className="inline-flex items-center gap-1 text-accent hover:text-accent-hover text-sm">
@@ -81,12 +81,12 @@ export default function ConfirmationPage() {
   const step: 0 | 1 | 2 | 3 = isPaid || order.status === "ActionRequired" ? 3 : 2;
 
   const header = isCancelled
-    ? { icon: <XCircle className="w-7 h-7 text-red-400" />, tone: "bg-red-500/15", title: "Đơn hàng đã hủy", sub: "Liên hệ Moxic nếu bạn đã chuyển khoản hoặc cần hỗ trợ." }
+    ? { icon: <XCircle className="w-7 h-7 text-negative" />, tone: "bg-negative/15", title: "Đơn hàng đã hủy", sub: "Liên hệ Moxic nếu bạn đã chuyển khoản hoặc cần hỗ trợ." }
     : isPaid
-      ? { icon: <CheckCircle2 className="w-7 h-7 text-emerald-300" />, tone: "bg-emerald-500/15", title: "Thanh toán thành công 🎉", sub: "Moxic đang cài game vào tài khoản Xbox của bạn — theo dõi trực tiếp bên dưới." }
+      ? { icon: <CheckCircle2 className="w-7 h-7 text-positive" />, tone: "bg-positive/15", title: "Thanh toán thành công 🎉", sub: "Moxic đang cài game vào tài khoản Xbox của bạn, theo dõi trực tiếp bên dưới." }
       : isAwaiting
-        ? { icon: <Clock className="w-7 h-7 text-sky-300" />, tone: "bg-sky-500/15", title: "Đang kiểm tra thanh toán", sub: "Moxic đã nhận ảnh chuyển khoản của bạn và đang đối soát." }
-        : { icon: <Smartphone className="w-7 h-7 text-accent" />, tone: "bg-accent/15", title: "Thanh toán đơn hàng", sub: auto ? "Quét mã QR bằng app ngân hàng — đơn tự xác nhận ngay khi tiền về." : "Chuyển khoản theo thông tin bên dưới để hoàn tất đơn." };
+        ? { icon: <Clock className="w-7 h-7 text-info" />, tone: "bg-info/15", title: "Đang kiểm tra thanh toán", sub: "Moxic đã nhận ảnh chuyển khoản của bạn và đang đối soát." }
+        : { icon: <Smartphone className="w-7 h-7 text-accent" />, tone: "bg-accent/15", title: "Thanh toán đơn hàng", sub: auto ? "Quét mã QR bằng app ngân hàng, đơn tự xác nhận ngay khi tiền về." : "Chuyển khoản theo thông tin bên dưới để hoàn tất đơn." };
 
   return (
     <Container className="py-8 md:py-12 mb-16">
@@ -125,7 +125,7 @@ export default function ConfirmationPage() {
 
                 <div className="p-4 sm:p-5">
                   <ol className="grid grid-cols-3 gap-2 mb-5 text-center">
-                    {["Mở app ngân hàng", "Quét mã QR", auto ? "Xong — tự xác nhận" : "Gửi ảnh chuyển khoản"].map((s, i) => (
+                    {["Mở app ngân hàng", "Quét mã QR", auto ? "Xong, tự xác nhận" : "Gửi ảnh chuyển khoản"].map((s, i) => (
                       <li key={s} className="px-2 py-2.5 bg-white/[0.03] border border-white/5">
                         <span className="block text-[10px] font-bold text-accent">BƯỚC {i + 1}</span>
                         <span className="block text-xs text-text-secondary mt-0.5">{s}</span>
@@ -184,7 +184,7 @@ export default function ConfirmationPage() {
                                   setSelectedFile(null);
                                 }}
                                 aria-label="Bỏ ảnh"
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer"
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-negative rounded-full flex items-center justify-center cursor-pointer"
                               >
                                 <X className="w-3 h-3 text-white" />
                               </button>
@@ -198,7 +198,7 @@ export default function ConfirmationPage() {
                           )}
                           <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                         </label>
-                        {uploadError && <p className="text-xs text-red-400 mt-2">{uploadError}</p>}
+                        {uploadError && <p className="text-xs text-negative mt-2">{uploadError}</p>}
                         <button
                           type="button"
                           onClick={handleUpload}
@@ -210,8 +210,8 @@ export default function ConfirmationPage() {
                         </button>
                       </>
                     ) : (
-                      <p className="flex items-center gap-2 text-sm text-emerald-300">
-                        <CheckCircle2 className="w-5 h-5" /> Đã gửi ảnh — Moxic sẽ kiểm tra và xác nhận sớm.
+                      <p className="flex items-center gap-2 text-sm text-positive">
+                        <CheckCircle2 className="w-5 h-5" /> Đã gửi ảnh, Moxic sẽ kiểm tra và xác nhận sớm.
                       </p>
                     )}
                   </div>
@@ -242,10 +242,10 @@ export default function ConfirmationPage() {
             />
             <div className="border border-white/10 bg-bg-surface p-4 space-y-2.5 text-sm">
               <p className="flex items-center gap-2 text-text-secondary">
-                <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" /> Game chính hãng, cài vào tài khoản của bạn
+                <ShieldCheck className="w-4 h-4 text-positive shrink-0" /> Game chính hãng, cài vào tài khoản của bạn
               </p>
               <p className="flex items-center gap-2 text-text-secondary">
-                <Clock className="w-4 h-4 text-accent shrink-0" /> Thường xong 15–30 phút sau khi nhận tiền
+                <Clock className="w-4 h-4 text-accent shrink-0" /> Thường xong 15 đến 30 phút sau khi nhận tiền
               </p>
               <button type="button" onClick={() => useChatUi.getState().openChat(order.orderCode)} className="flex items-center gap-2 text-accent hover:underline cursor-pointer">
                 <MessageCircleMore className="w-4 h-4 shrink-0" /> Cần hỗ trợ? Chat với Moxic về đơn này

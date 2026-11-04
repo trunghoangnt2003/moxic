@@ -112,7 +112,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
           aria-expanded={showPanel}
           aria-controls={listId}
           aria-autocomplete="list"
-          placeholder="Tìm kiếm game..."
+          placeholder="Tìm kiếm game…"
           value={text}
           onChange={(e) => {
             setText(e.target.value);
@@ -123,7 +123,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
           onKeyDown={onKeyDown}
           className={
             desktop
-              ? "bg-bg-elevated border border-border pl-10 pr-8 py-2 text-sm w-48 lg:w-56 focus:w-72 focus:outline-none focus:border-accent/50 text-text-primary placeholder:text-text-placeholder transition-all [&::-webkit-search-cancel-button]:hidden"
+              ? "bg-bg-elevated border border-border pl-10 pr-8 py-2 text-sm w-48 lg:w-56 focus:w-72 focus:outline-none focus:border-accent/50 text-text-primary placeholder:text-text-placeholder transition [&::-webkit-search-cancel-button]:hidden"
               : "w-full bg-bg-elevated border border-border pl-10 pr-10 py-2.5 text-base focus:outline-none focus:border-accent/50 text-text-primary placeholder:text-text-placeholder [&::-webkit-search-cancel-button]:hidden"
           }
         />

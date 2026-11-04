@@ -51,7 +51,7 @@ export default function ShareButton({ path, title, text, className = "", label =
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success(code ? "Đã copy link — bạn bè đăng ký qua link này, bạn được cộng điểm!" : "Đã copy link");
+      toast.success(code ? "Đã copy link, bạn bè đăng ký qua link này, bạn được cộng điểm!" : "Đã copy link");
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Không copy được, hãy copy thủ công: " + url);

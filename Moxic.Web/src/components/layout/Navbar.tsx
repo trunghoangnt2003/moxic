@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import NavExplore from "./NavExplore";
+import { Puzzle as PuzzleIcon, Trophy as TrophyIcon } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
 import HeaderSearch from "./HeaderSearch";
 import NotificationBell from "./NotificationBell";
@@ -80,7 +81,7 @@ export default function Navbar() {
           <div className="flex items-center gap-6 lg:gap-8 min-w-0">
             <Link
               to="/"
-              className="text-accent font-display text-xl tracking-wide flex-shrink-0"
+              className="text-accent font-display text-xl flex-shrink-0"
             >
               MOXIC
             </Link>
@@ -96,7 +97,7 @@ export default function Navbar() {
               <NavLink
                 to="/rent"
                 className={({ isActive }) =>
-                  `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-emerald-300" : "text-emerald-200/90 hover:text-emerald-300"}`
+                  `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-positive" : "text-positive/90 hover:text-positive"}`
                 }
               >
                 <KeyRound className="w-4 h-4" />
@@ -106,15 +107,15 @@ export default function Navbar() {
                 to="/lucky-spin"
                 className={({ isActive }) =>
                   `group relative inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${
-                    isActive ? "text-amber-300" : "text-amber-200/90 hover:text-amber-300"
+                    isActive ? "text-caution" : "text-caution/90 hover:text-caution"
                   }`
                 }
               >
                 <Gift className="w-4 h-4 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
                 Mở hòm
                 <span className="absolute -top-1.5 -right-3 flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75 motion-reduce:hidden" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-highlight opacity-75 motion-reduce:hidden" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-highlight" />
                 </span>
               </NavLink>
               <NavExplore />
@@ -135,11 +136,11 @@ export default function Navbar() {
               to="/wishlist"
               aria-label="Yêu thích"
               title="Yêu thích"
-              className="relative text-text-secondary hover:text-rose-400 transition-colors cursor-pointer"
+              className="relative text-text-secondary hover:text-negative transition-colors cursor-pointer"
             >
-              <Heart className={`w-5 h-5 ${wishlistCount > 0 ? "text-rose-400" : ""}`} />
+              <Heart className={`w-5 h-5 ${wishlistCount > 0 ? "text-negative" : ""}`} />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 bg-negative text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center">
                   {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
               )}
@@ -181,7 +182,7 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4" />
                   <span className="max-w-[120px] truncate">{me.displayName}</span>
-                  <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[11px] font-semibold text-amber-300" title="Điểm thưởng">
+                  <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-caution/30 bg-caution/10 px-1.5 py-0.5 text-[11px] font-semibold text-caution" title="Điểm thưởng">
                     <Coins className="w-3 h-3" />
                     {me.points.toLocaleString("vi-VN")}
                   </span>
@@ -192,7 +193,7 @@ export default function Navbar() {
                     <div className="px-4 py-3 border-b border-border">
                       <p className="text-sm font-semibold text-text-primary truncate">{me.displayName}</p>
                       <p className="text-xs text-text-muted truncate">{me.email}</p>
-                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-300">
+                      <p className="mt-1 flex items-center gap-1 text-xs text-caution">
                         <Coins className="w-3 h-3" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
                       </p>
                     </div>
@@ -227,7 +228,7 @@ export default function Navbar() {
                       to="/rewards"
                       role="menuitem"
                       onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-amber-200 hover:bg-bg-surface-hover hover:text-amber-100 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-caution hover:bg-bg-surface-hover hover:text-caution transition-colors"
                     >
                       <Crown className="w-4 h-4" />
                       Thành viên & điểm danh
@@ -303,27 +304,27 @@ export default function Navbar() {
             </Link>
             <Link
               to="/rent"
-              className="flex items-center gap-2 text-emerald-300 py-2 text-sm font-semibold"
+              className="flex items-center gap-2 text-positive py-2 text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
             >
               <KeyRound className="w-4 h-4" /> Thuê game
             </Link>
             <Link
               to="/lucky-spin"
-              className="flex items-center gap-2 text-amber-300 py-2 text-sm font-semibold"
+              className="flex items-center gap-2 text-caution py-2 text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
             >
               <Gift className="w-4 h-4" /> Mở hòm may mắn
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">HOT</span>
+              <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-highlight/20 text-highlight border border-highlight/40">HOT</span>
             </Link>
             <Link to="/release-calendar" className="block text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
               Lịch phát hành
             </Link>
             <Link to="/leaderboard" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
-              🏆 Bảng xếp hạng
+              <TrophyIcon className="w-4 h-4" aria-hidden="true" /> Bảng xếp hạng
             </Link>
             <Link to="/doan-game" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
-              🎮 Đoán game mỗi ngày
+              <PuzzleIcon className="w-4 h-4" aria-hidden="true" /> Đoán game mỗi ngày
             </Link>
             <div className="pt-2 border-t border-border space-y-1">
               {me ? (
@@ -332,7 +333,7 @@ export default function Navbar() {
                     <User className="inline w-4 h-4 mr-1.5 -mt-0.5" />
                     {me.displayName} <span className="text-text-muted text-xs">({me.email})</span>
                   </p>
-                  <p className="flex items-center gap-1.5 py-1 text-sm text-amber-300">
+                  <p className="flex items-center gap-1.5 py-1 text-sm text-caution">
                     <Coins className="w-4 h-4" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
                   </p>
                   <Link
@@ -362,7 +363,7 @@ export default function Navbar() {
                   <Link
                     to="/rewards"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 py-2 text-sm text-amber-200"
+                    className="flex items-center gap-2 py-2 text-sm text-caution"
                   >
                     <Crown className="w-4 h-4" />
                     Thành viên & điểm danh

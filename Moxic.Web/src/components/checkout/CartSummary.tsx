@@ -16,7 +16,7 @@ interface Props {
 export default function CartSummary({ items, total, quote, couponSlot }: Props) {
   return (
     <div className="bg-bg-surface border border-white/10 p-6 lg:sticky lg:top-20">
-      <h3 className="text-xs text-text-muted uppercase tracking-widest font-semibold mb-4 pb-3 border-b border-white/10">
+      <h3 className="text-xs text-text-muted font-semibold mb-4 pb-3 border-b border-white/10">
         Tóm tắt đơn hàng
       </h3>
       <div className="space-y-3">
@@ -45,12 +45,12 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
             <span className="min-w-0 truncate text-text-muted">
               Giảm giá (<span className="font-mono">{quote.code}</span>)
             </span>
-            <span className="flex-shrink-0 font-semibold text-green-400">−{formatPrice(quote.discountAmount)}</span>
+            <span className="flex-shrink-0 font-semibold text-positive">−{formatPrice(quote.discountAmount)}</span>
           </div>
         </div>
       )}
       <div className="flex items-center justify-between pt-5 mt-4 border-t border-white/10">
-        <span className="text-text-muted text-sm font-semibold uppercase tracking-wider">Tổng cộng</span>
+        <span className="text-text-muted text-sm font-semibold">Tổng cộng</span>
         <span className="font-display text-xl text-accent font-bold">{formatPrice(quote ? quote.total : total)}</span>
       </div>
       {(() => {

@@ -4,7 +4,7 @@ import { useGames } from "../../hooks/useGames";
 import { recentlyViewed } from "../../lib/localIds";
 import GameRail from "./GameRail";
 
-/** "Đã xem gần đây" — ids live in localStorage, game data (fresh covers/prices) is re-fetched. */
+/** "Đã xem gần đây", ids live in localStorage, game data (fresh covers/prices) is re-fetched. */
 export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
   const allIds = recentlyViewed.useIds();
   const ids = useMemo(() => allIds.filter((id) => id !== excludeId).slice(0, 10), [allIds, excludeId]);

@@ -29,9 +29,9 @@ import { formatPrice } from "../lib/utils";
 import PushToggle from "../components/shared/PushToggle";
 
 const INSTALL = {
-  Installed: { label: "Đã cài đặt", cls: "text-emerald-300 bg-emerald-500/15 border-emerald-500/40", icon: CheckCircle2 },
-  Installing: { label: "Đang cài đặt", cls: "text-sky-300 bg-sky-500/15 border-sky-500/40", icon: Wrench },
-  ActionRequired: { label: "Cần bạn xử lý", cls: "text-amber-300 bg-amber-500/15 border-amber-500/40", icon: Clock },
+  Installed: { label: "Đã cài đặt", cls: "text-positive bg-positive/15 border-positive/40", icon: CheckCircle2 },
+  Installing: { label: "Đang cài đặt", cls: "text-info bg-info/15 border-info/40", icon: Wrench },
+  ActionRequired: { label: "Cần bạn xử lý", cls: "text-caution bg-caution/15 border-caution/40", icon: Clock },
 } as const;
 
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("vi-VN") : "—");
@@ -49,7 +49,7 @@ function LibraryTab() {
           <Link to="/games" className="h-11 px-5 inline-flex items-center bg-accent text-bg-base text-sm font-bold">
             Mua game
           </Link>
-          <Link to="/rent" className="h-11 px-5 inline-flex items-center border border-emerald-500/50 text-emerald-300 text-sm font-bold">
+          <Link to="/rent" className="h-11 px-5 inline-flex items-center border border-positive/50 text-positive text-sm font-bold">
             Thuê game
           </Link>
         </div>
@@ -60,16 +60,16 @@ function LibraryTab() {
     <div className="space-y-8">
       {data.rentals.length > 0 && (
         <div>
-          <h3 className="text-xs uppercase tracking-widest text-emerald-300 font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs text-positive font-semibold mb-3 flex items-center gap-1.5">
             <KeyRound className="w-3.5 h-3.5" /> Đang thuê
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
             {data.rentals.map((r) => (
-              <Link key={r.code} to={`/account/rentals/${r.code}`} className="flex items-center gap-3 p-3 bg-bg-surface border border-emerald-500/30 hover:border-emerald-400/60">
+              <Link key={r.code} to={`/account/rentals/${r.code}`} className="flex items-center gap-3 p-3 bg-bg-surface border border-positive/30 hover:border-positive/60">
                 <div className="w-12 h-16 shrink-0 bg-bg-elevated overflow-hidden">{r.coverUrl && <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" />}</div>
                 <div className="min-w-0">
                   <p className="font-semibold truncate">{r.gameName}</p>
-                  <p className={`text-xs ${r.status === "Expired" ? "text-rose-300" : "text-text-muted"}`}>{r.status === "Expired" ? "Đã hết hạn — gia hạn ngay" : `Hết hạn ${day(r.endsAt)}`}</p>
+                  <p className={`text-xs ${r.status === "Expired" ? "text-negative" : "text-text-muted"}`}>{r.status === "Expired" ? "Đã hết hạn, gia hạn ngay" : `Hết hạn ${day(r.endsAt)}`}</p>
                 </div>
               </Link>
             ))}
@@ -78,7 +78,7 @@ function LibraryTab() {
       )}
       {data.owned.length > 0 && (
         <div>
-          <h3 className="text-xs uppercase tracking-widest text-text-muted font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs text-text-muted font-semibold mb-3 flex items-center gap-1.5">
             <LibraryIcon className="w-3.5 h-3.5" /> Đã mua ({data.owned.length})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -167,10 +167,10 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
         </form>
         <label className="flex items-center justify-between gap-3 pt-4 border-t border-white/5 cursor-pointer">
           <span className="flex items-center gap-2 text-sm">
-            <BellRing className="w-4 h-4 text-rose-400" /> Email khi game yêu thích giảm giá
+            <BellRing className="w-4 h-4 text-negative" /> Email khi game yêu thích giảm giá
           </span>
           <input type="checkbox" className="sr-only peer" checked={priceAlerts} onChange={(e) => save.mutate({ priceAlerts: e.target.checked })} />
-          <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-rose-500 after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+          <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-negative after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
         </label>
         <div className="pt-4 border-t border-white/5">
           <PushToggle />
@@ -179,7 +179,7 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
 
       <section className="bg-bg-surface border border-border p-5 space-y-4">
         <h3 className="font-display font-bold flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Đổi mật khẩu
+          <ShieldCheck className="w-4 h-4 text-positive" /> Đổi mật khẩu
         </h3>
         <form
           className="space-y-3"
@@ -195,7 +195,7 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
           <input type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Mật khẩu hiện tại" required className={input} />
           <input type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="Mật khẩu mới (≥ 8 ký tự, có chữ số)" minLength={8} required className={input} />
           <input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Nhập lại mật khẩu mới" required className={input} />
-          <button type="submit" disabled={pw.isPending} className="h-10 px-4 inline-flex items-center gap-2 border border-emerald-500/50 text-emerald-300 text-sm font-bold disabled:opacity-40 cursor-pointer">
+          <button type="submit" disabled={pw.isPending} className="h-10 px-4 inline-flex items-center gap-2 border border-positive/50 text-positive text-sm font-bold disabled:opacity-40 cursor-pointer">
             {pw.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />} Đổi mật khẩu
           </button>
         </form>
@@ -227,7 +227,7 @@ export default function AccountPage() {
       <section className="relative overflow-hidden border border-white/10 bg-bg-surface p-5 sm:p-7 mb-6">
         <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-          <span className="w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-accent to-amber-600 flex items-center justify-center font-display text-2xl font-extrabold text-bg-base">{initials}</span>
+          <span className="w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-accent to-caution flex items-center justify-center font-display text-2xl font-extrabold text-bg-base">{initials}</span>
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-2xl sm:text-3xl font-bold truncate">{p.displayName}</h1>
             <p className="text-sm text-text-muted truncate">
@@ -235,7 +235,7 @@ export default function AccountPage() {
             </p>
           </div>
           <div className="sm:text-right">
-            <p className="text-[11px] uppercase tracking-wider text-text-muted">Đã chi tiêu</p>
+            <p className="text-[11px] text-text-muted">Đã chi tiêu</p>
             <p className="font-display text-xl font-bold text-accent">{formatPrice(p.stats.spent)}</p>
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function AccountPage() {
         {savings && savings.badges.length > 0 && (
           <div className="relative flex flex-wrap gap-2 mt-4">
             {savings.badges.map((b) => (
-              <Link key={b} to="/leaderboard" className="px-2.5 py-1 text-xs font-semibold rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-200">
+              <Link key={b} to="/leaderboard" className="px-2.5 py-1 text-xs font-semibold rounded-full border border-caution/40 bg-caution/10 text-caution">
                 {b}
               </Link>
             ))}

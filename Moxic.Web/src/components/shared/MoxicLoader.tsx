@@ -57,7 +57,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
         {/* (1) MOXIC letters orbiting on a circle */}
         <svg
           viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full animate-moxic-orbit motion-reduce:animate-none drop-shadow-[0_0_6px_rgba(229,211,179,0.6)]"
+          className="absolute inset-0 h-full w-full animate-moxic-orbit motion-reduce:animate-none drop-shadow-[0_0_6px_var(--color-accent)]"
           aria-hidden="true"
         >
           <defs>
@@ -79,7 +79,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
         {/* (2) Counter-rotating dashed purple ring */}
         <svg
           viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full animate-moxic-orbit-reverse motion-reduce:animate-none drop-shadow-[0_0_6px_rgba(168,85,247,0.7)]"
+          className="absolute inset-0 h-full w-full animate-moxic-orbit-reverse motion-reduce:animate-none drop-shadow-[0_0_6px_var(--color-spin-glow)]"
           aria-hidden="true"
         >
           <circle cx={50} cy={50} r={26} fill="none" stroke="#a855f7" strokeWidth={2} strokeDasharray="4 6" opacity={0.8} />
@@ -95,13 +95,13 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
       </div>
 
       {label ? (
-        <p className="font-display text-xs sm:text-sm uppercase tracking-[0.3em] text-text-muted">{label}</p>
+        <p className="font-display text-xs sm:text-sm text-text-muted">{label}</p>
       ) : (
         <>
-          <span className="sr-only">Đang tải...</span>
+          <span className="sr-only">Đang tải…</span>
           {/* Under reduced motion the ring is static, so show the text visibly too. */}
-          <span aria-hidden="true" className="hidden motion-reduce:block font-display text-xs uppercase tracking-[0.3em] text-text-muted">
-            Đang tải...
+          <span aria-hidden="true" className="hidden motion-reduce:block font-display text-xs text-text-muted">
+            Đang tải…
           </span>
         </>
       )}
@@ -110,7 +110,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
 }
 
 /** Full-page loader (lazy routes, page-level queries). */
-export function PageLoader({ label = "Đang tải..." }: { label?: string }) {
+export function PageLoader({ label = "Đang tải…" }: { label?: string }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <MoxicWave width={240} label={label} />

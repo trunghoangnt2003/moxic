@@ -5,7 +5,7 @@ import { getAlsoBought, getForYou, getSimilar } from "../../lib/discoveryApi";
 import { recentlyViewed } from "../../lib/localIds";
 import { useMe } from "../../hooks/useAccount";
 
-/** Home: "Dành cho bạn" — personalised from recently viewed + (signed-in) wishlist/purchases. */
+/** Home: "Dành cho bạn", personalised from recently viewed + (signed-in) wishlist/purchases. */
 export function ForYouRail() {
   const seeds = recentlyViewed.useIds();
   const { data: me } = useMe();
@@ -19,7 +19,7 @@ export function ForYouRail() {
     <GameRail
       title={
         <>
-          <Sparkles className="w-6 h-6 text-fuchsia-400" /> {data.personalised ? "Dành cho bạn" : "Có thể bạn sẽ thích"}
+          <Sparkles className="w-6 h-6 text-highlight" /> {data.personalised ? "Dành cho bạn" : "Có thể bạn sẽ thích"}
         </>
       }
       games={data.items}

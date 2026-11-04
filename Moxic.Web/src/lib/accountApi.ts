@@ -146,13 +146,13 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
-  Pending: "bg-yellow-500/10 text-yellow-300 border-yellow-500/40",
-  AwaitingConfirmation: "bg-sky-500/10 text-sky-300 border-sky-500/40",
-  Verifying: "bg-indigo-500/10 text-indigo-300 border-indigo-500/40",
-  Installing: "bg-purple-500/10 text-purple-300 border-purple-500/40",
-  ActionRequired: "bg-orange-500/10 text-orange-300 border-orange-500/40",
-  Completed: "bg-green-500/10 text-green-300 border-green-500/40",
-  Cancelled: "bg-red-500/10 text-red-300 border-red-500/40",
+  Pending: "bg-caution/10 text-caution border-caution/40",
+  AwaitingConfirmation: "bg-info/10 text-info border-info/40",
+  Verifying: "bg-highlight/10 text-highlight border-highlight/40",
+  Installing: "bg-highlight/10 text-highlight border-highlight/40",
+  ActionRequired: "bg-caution/10 text-caution border-caution/40",
+  Completed: "bg-positive/10 text-positive border-positive/40",
+  Cancelled: "bg-negative/10 text-negative border-negative/40",
 };
 
 /**

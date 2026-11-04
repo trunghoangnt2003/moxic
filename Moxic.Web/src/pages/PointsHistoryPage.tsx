@@ -27,7 +27,7 @@ function LedgerRow({ tx }: { tx: PointsTransaction }) {
         <p className="mt-0.5 text-[11px] text-text-muted">{formatDateTime(tx.createdAt)}</p>
       </div>
       <div className="flex-shrink-0 text-right">
-        <p className={`font-mono text-sm font-bold ${positive ? "text-green-400" : "text-red-400"}`}>
+        <p className={`font-mono text-sm font-bold ${positive ? "text-positive" : "text-negative"}`}>
           {positive ? "+" : ""}
           {formatPoints(tx.delta)}
         </p>
@@ -48,11 +48,11 @@ export default function PointsHistoryPage() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-2 flex items-center gap-3">
             <Coins className="h-6 w-6 text-accent" />
-            <h1 className="font-display text-2xl uppercase tracking-wider text-text-primary md:text-3xl">Điểm thưởng</h1>
+            <h1 className="font-display text-2xl text-text-primary md:text-3xl">Điểm thưởng</h1>
           </div>
 
           <section className="mt-4 border border-white/10 bg-bg-surface p-5 sm:p-6">
-            <p className="text-xs uppercase tracking-widest text-text-muted">Số dư hiện tại</p>
+            <p className="text-xs text-text-muted">Số dư hiện tại</p>
             <p className="mt-1 font-display text-4xl font-bold text-accent md:text-5xl">
               {data ? formatPoints(data.balance) : "—"} <span className="text-base font-semibold text-text-secondary">điểm</span>
             </p>
@@ -71,13 +71,13 @@ export default function PointsHistoryPage() {
             </Link>
           </section>
 
-          <h2 className="mb-3 mt-8 font-display text-lg uppercase tracking-wider text-text-primary">Lịch sử điểm</h2>
+          <h2 className="mb-3 mt-8 font-display text-lg text-text-primary">Lịch sử điểm</h2>
 
           {isLoading ? (
-            <SectionLoader label="Đang tải lịch sử điểm..." />
+            <SectionLoader label="Đang tải lịch sử điểm…" />
           ) : isError ? (
             <div className="border border-white/10 bg-bg-surface p-8 text-center">
-              <p className="mb-4 text-sm text-red-400">Không thể tải lịch sử điểm. Vui lòng thử lại.</p>
+              <p className="mb-4 text-sm text-negative">Không thể tải lịch sử điểm. Vui lòng thử lại.</p>
               <button
                 onClick={() => void refetch()}
                 className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover"

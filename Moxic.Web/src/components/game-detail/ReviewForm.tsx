@@ -71,7 +71,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
             Đăng với tên <b className="text-text-primary">{mine?.displayName}</b>
             {mine?.purchased && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
                 <BadgeCheck className="w-3 h-3" /> Đã mua
               </span>
             )}
@@ -82,7 +82,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           </Link>
         )}
       </div>
-      {existing?.isHidden && <p className="mb-3 text-xs text-amber-300">Đánh giá của bạn đang bị ẩn do vi phạm tiêu chuẩn cộng đồng.</p>}
+      {existing?.isHidden && <p className="mb-3 text-xs text-caution">Đánh giá của bạn đang bị ẩn do vi phạm tiêu chuẩn cộng đồng.</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Rating stars */}
@@ -103,7 +103,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
                   size={22}
                   className={`transition-colors ${
                     s <= (hoverRating || rating)
-                      ? "text-yellow-400 fill-yellow-400"
+                      ? "text-caution fill-caution"
                       : "text-white/10"
                   }`}
                 />
@@ -165,7 +165,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, 500))}
-            placeholder="Chia sẻ trải nghiệm của bạn..."
+            placeholder="Chia sẻ trải nghiệm của bạn…"
             rows={3}
             className="w-full bg-bg-surface border border-border px-3 py-2.5 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-none"
             required
@@ -188,7 +188,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-accent text-white hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {submitting ? (
-              <><MoxicLoader size="sm" /> Đang gửi...</>
+              <><MoxicLoader size="sm" /> Đang gửi…</>
             ) : (
               <><Send size={14} /> {existing ? "Cập nhật đánh giá" : "Gửi đánh giá"}</>
             )}

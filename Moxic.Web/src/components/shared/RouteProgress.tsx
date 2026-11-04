@@ -33,7 +33,7 @@ export default function RouteProgress() {
   return (
     <>
       <div className="fixed top-[var(--sat)] inset-x-0 z-[120] h-[3px] overflow-hidden pointer-events-none">
-        <div className="h-full w-full origin-left bg-gradient-to-r from-transparent via-accent to-fuchsia-400" style={{ animation: "route-progress 1.1s ease-in-out infinite" }} />
+        <div className="h-full w-full origin-left bg-gradient-to-r from-transparent via-accent to-highlight" style={{ animation: "route-progress 1.1s ease-in-out infinite" }} />
       </div>
       <div className="fixed inset-0 z-[110] flex items-center justify-center bg-bg-base/55 backdrop-blur-[3px] animate-[fadeIn_0.2s_ease-out] pointer-events-none">
         <MoxicWave width={240} label="Đang mở trang" />

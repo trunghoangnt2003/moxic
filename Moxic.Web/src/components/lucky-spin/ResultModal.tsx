@@ -66,9 +66,9 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
 
       <div
         ref={dialogRef}
-        className="relative w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-sm border border-fuchsia-500/30 px-5 pb-6 pt-8 text-center sm:px-8"
+        className="relative w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-sm border border-highlight/30 px-5 pb-6 pt-8 text-center sm:px-8"
         style={{
-          background: "radial-gradient(ellipse at top, #3b1d6e 0%, #1a0d33 55%, #0d0718 100%)",
+          background: "radial-gradient(ellipse at top, var(--color-spin-panel) 0%, var(--color-spin-ink) 55%, var(--color-spin-void) 100%)",
           boxShadow: `0 0 60px ${color}40`,
         }}
       >
@@ -81,7 +81,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
           <X className="h-5 w-5" />
         </button>
 
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em]" style={{ color }}>
+        <p className="text-[11px] font-semibold" style={{ color }}>
           {RARITY_LABELS[prize.rarity]}
         </p>
         <p className="mt-1 text-xs text-white/50">{caseInfo.name}</p>
@@ -108,7 +108,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
               <div className="mt-4">
                 <p className="mb-1.5 text-xs text-white/60">Mã thưởng của bạn</p>
                 <div className="flex items-stretch overflow-hidden rounded-sm border border-white/15 bg-black/40">
-                  <span className="flex-1 select-all px-3 py-2.5 font-mono text-lg font-bold tracking-[0.2em] text-amber-300">
+                  <span className="flex-1 select-all px-3 py-2.5 font-mono text-lg font-bold text-caution">
                     {result.rewardCode}
                   </span>
                   <button
@@ -116,7 +116,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                     onClick={copyReward}
                     className="inline-flex items-center gap-1 border-l border-white/15 px-3 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
-                    {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                    {copied ? <Check className="h-4 w-4 text-positive" /> : <Copy className="h-4 w-4" />}
                     <span className="hidden sm:inline">{copied ? "Đã chép" : "Sao chép"}</span>
                   </button>
                 </div>
@@ -127,12 +127,12 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
               <>
                 <p className="mt-4 text-sm text-white/70">
                   Mã giảm giá đã được thêm vào ví của bạn
-                  {result.couponExpiresAt ? ` — hạn dùng đến ${formatDate(result.couponExpiresAt)}` : ""}. Dùng khi thanh toán.
+                  {result.couponExpiresAt ? `, hạn dùng đến ${formatDate(result.couponExpiresAt)}` : ""}. Dùng khi thanh toán.
                 </p>
                 <Link
                   to="/account/coupons"
                   onClick={onClose}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-amber-400 px-4 py-2.5 text-sm font-semibold text-[#1a0d33] transition-[filter] hover:brightness-110"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-caution px-4 py-2.5 text-sm font-semibold text-spin-ink transition-[filter] hover:brightness-110"
                 >
                   <TicketPercent className="h-4 w-4" /> Xem ví mã giảm giá
                 </Link>
@@ -143,7 +143,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                 <Link
                   to={`/account/coupons?claim=${encodeURIComponent(result.rewardCode)}`}
                   onClick={onClose}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-amber-400 px-4 py-2.5 text-sm font-semibold text-[#1a0d33] transition-[filter] hover:brightness-110"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-caution px-4 py-2.5 text-sm font-semibold text-spin-ink transition-[filter] hover:brightness-110"
                 >
                   <TicketPercent className="h-4 w-4" /> Nhận mã vào ví
                 </Link>
@@ -162,7 +162,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 rounded-sm px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
-                    style={{ background: "linear-gradient(135deg, #0099FF 0%, #A033FF 60%, #FF5280 100%)" }}
+                    style={{ background: "linear-gradient(135deg, var(--color-messenger-from) 0%, var(--color-messenger) 60%, var(--color-messenger-to) 100%)" }}
                   >
                     Nhắn Messenger
                   </a>
@@ -172,7 +172,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                     href={contact.zaloUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 rounded-sm bg-[#0068FF] px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+                    className="flex-1 rounded-sm bg-zalo px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
                   >
                     Nhắn Zalo
                   </a>
@@ -185,15 +185,15 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
         )}
 
         {caseInfo.openMethod === "Code" && result.remainingUses != null && result.remainingUses > 0 && (
-          <p className="mt-5 text-xs text-fuchsia-300">Mã của bạn còn {result.remainingUses} lượt quay</p>
+          <p className="mt-5 text-xs text-highlight">Mã của bạn còn {result.remainingUses} lượt quay</p>
         )}
         {caseInfo.openMethod === "Points" && result.pointsBalance != null && (
-          <p className="mt-5 text-xs text-amber-300">
+          <p className="mt-5 text-xs text-caution">
             Đã dùng {formatPoints(result.pointsSpent)} điểm · Số dư còn {formatPoints(result.pointsBalance)} điểm
           </p>
         )}
         {caseInfo.openMethod === "FreeInterval" && result.nextFreeOpenAt && (
-          <p className="mt-5 text-xs text-emerald-300">
+          <p className="mt-5 text-xs text-positive">
             Lượt miễn phí tiếp theo: {new Date(result.nextFreeOpenAt).toLocaleString("vi-VN")}
           </p>
         )}

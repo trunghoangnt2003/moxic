@@ -71,7 +71,7 @@ function CommentRow({ c, gameId, onReply }: { c: CommentItem; gameId: string; on
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="text-sm font-semibold text-text-primary">{c.displayName}</span>
           {c.isBuyer && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
               <BadgeCheck className="w-3 h-3" /> Đã mua
             </span>
           )}
@@ -85,7 +85,7 @@ function CommentRow({ c, gameId, onReply }: { c: CommentItem; gameId: string; on
             </button>
           )}
           {c.isMine ? (
-            <button type="button" onClick={() => del.mutate()} disabled={del.isPending} className="inline-flex items-center gap-1 hover:text-rose-300 cursor-pointer">
+            <button type="button" onClick={() => del.mutate()} disabled={del.isPending} className="inline-flex items-center gap-1 hover:text-negative cursor-pointer">
               <Trash2 className="w-3 h-3" /> Xóa
             </button>
           ) : (
@@ -134,7 +134,7 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
           <Loader2 className="w-5 h-5 animate-spin" />
         </div>
       ) : !data || data.items.length === 0 ? (
-        <p className="text-sm text-text-muted text-center py-8 border border-dashed border-white/10">Chưa có thảo luận nào — hãy là người đầu tiên!</p>
+        <p className="text-sm text-text-muted text-center py-8 border border-dashed border-white/10">Chưa có thảo luận nào, hãy là người đầu tiên!</p>
       ) : (
         <ul className="space-y-3">
           {data.items.map((t) => (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Check, CreditCard, Download, LogIn, PartyPopper, Receipt, XCircle } from "lucide-react";
+import { AlertTriangle, Banknote, Check, CreditCard, Download, LogIn, PartyPopper, Receipt, RefreshCw, XCircle } from "lucide-react";
 import { confetti, haptic } from "../../lib/fx";
 
 export interface TrackerOrder {
@@ -40,7 +40,7 @@ function since(iso: string | null | undefined, now: number) {
 }
 
 /**
- * Delivery-style live tracker: "Đã nhận tiền → Đăng nhập Xbox → Đang tải game → Xong 🎉".
+ * Delivery-style live tracker: "Đã nhận tiền Đăng nhập Xbox Đang tải game Xong 🎉".
  * The parent keeps polling the order; this animates each step as it lands and celebrates completion.
  */
 export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
@@ -82,15 +82,15 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
   const pct = cancelled ? 0 : (step / (STEPS.length - 1)) * 100;
 
   const headline = cancelled
-    ? { emoji: "❌", title: "Đơn đã bị hủy", sub: "Liên hệ Moxic nếu bạn cần hỗ trợ." }
+    ? { icon: XCircle, tone: "text-negative bg-negative/15", title: "Đơn đã bị hủy", sub: "Liên hệ Moxic nếu bạn cần hỗ trợ." }
     : action
-      ? { emoji: "⚠️", title: "Cần bạn kiểm tra tài khoản Xbox", sub: "Thông tin đăng nhập chưa đúng — cập nhật để Moxic cài tiếp." }
+      ? { icon: AlertTriangle, tone: "text-caution bg-caution/15", title: "Cần bạn kiểm tra tài khoản Xbox", sub: "Thông tin đăng nhập chưa đúng, cập nhật để Moxic cài tiếp." }
       : [
-          { emoji: "🧾", title: "Chờ thanh toán", sub: "Quét QR để thanh toán — hệ thống tự nhận diện khi tiền về." },
-          { emoji: "💸", title: "Đã nhận tiền!", sub: "Moxic sắp đăng nhập Xbox của bạn để cài game. Thường xong trong 15–30 phút." },
-          { emoji: "🔐", title: "Đang đăng nhập Xbox", sub: "Vui lòng KHÔNG đăng nhập tài khoản Xbox lúc này để tránh bị văng." },
-          { emoji: "⬇️", title: "Đang tải game", sub: "Game đang được thêm vào thư viện của bạn. Sắp xong rồi!" },
-          { emoji: "🎉", title: "Xong! Game đã vào tài khoản", sub: "Mở Xbox → Thư viện để tải về và chơi thôi. Chúc vui!" },
+          { icon: Receipt, tone: "text-accent bg-accent/15", title: "Chờ thanh toán", sub: "Quét QR để thanh toán, hệ thống tự nhận diện khi tiền về." },
+          { icon: Banknote, tone: "text-positive bg-positive/15", title: "Đã nhận tiền", sub: "Moxic sắp đăng nhập Xbox của bạn để cài game, thường xong trong 15 đến 30 phút." },
+          { icon: LogIn, tone: "text-info bg-info/15", title: "Đang đăng nhập Xbox", sub: "Vui lòng KHÔNG đăng nhập tài khoản Xbox lúc này để tránh bị văng." },
+          { icon: Download, tone: "text-info bg-info/15", title: "Đang tải game", sub: "Game đang được thêm vào thư viện của bạn. Sắp xong rồi!" },
+          { icon: PartyPopper, tone: "text-positive bg-positive/15", title: "Xong, game đã vào tài khoản", sub: "Mở Xbox, vào Thư viện để tải về và chơi. Chúc vui!" },
         ][step];
 
   const lastAt = times[step];
@@ -99,20 +99,17 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
     <div className="relative overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-4 sm:p-5">
       {/* Headline */}
       <div className="flex items-start gap-3" aria-live="polite">
-        <span key={`${order.status}-${step}`} className="text-3xl leading-none animate-[popIn_0.4s_ease-out]">
-          {headline.emoji}
+        <span key={`${order.status}-${step}`} className={`w-11 h-11 shrink-0 rounded-xl flex items-center justify-center animate-[popIn_0.4s_ease-out] ${headline.tone}`}>
+          <headline.icon className="w-5 h-5" />
         </span>
         <div className="flex-1 min-w-0">
           <p className="font-display text-lg font-bold leading-tight">{headline.title}</p>
           <p className="text-sm text-text-secondary mt-0.5">{headline.sub}</p>
         </div>
         {!done && !cancelled && step > 0 && (
-          <span className="shrink-0 inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            Trực tiếp
+          <span className="shrink-0 inline-flex items-center gap-1.5 text-xs text-text-muted">
+            <RefreshCw className="w-3.5 h-3.5 motion-safe:animate-spin [animation-duration:3s]" aria-hidden="true" />
+            Tự cập nhật
           </span>
         )}
       </div>
@@ -121,8 +118,8 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
       <div className="relative mt-6 mb-1 px-3 sm:px-4">
         <div className="absolute left-3 right-3 sm:left-4 sm:right-4 top-4 h-1 rounded-full bg-white/10" />
         <div
-          className={`absolute left-3 sm:left-4 top-4 h-1 rounded-full transition-[width] duration-1000 ease-out ${action ? "bg-orange-400" : "bg-gradient-to-r from-emerald-500 to-accent"}`}
-          style={{ width: `calc((100% - 1.5rem) * ${pct / 100})` }}
+          className={`absolute left-3 right-3 sm:left-4 sm:right-4 top-4 h-1 rounded-full origin-left transition-transform duration-1000 ease-out ${action ? "bg-caution" : "bg-gradient-to-r from-positive to-accent"}`}
+          style={{ transform: `scaleX(${pct / 100})` }}
         />
         <ol className="relative flex justify-between">
           {STEPS.map((s, i) => {
@@ -133,13 +130,13 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
             return (
               <li key={s.label} className="flex flex-col items-center w-0 grow">
                 <span
-                  className={`relative z-10 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${
+                  className={`relative z-10 w-9 h-9 rounded-full border-2 flex items-center justify-center transition duration-500 ${
                     warn
-                      ? "border-orange-400 bg-orange-500/20 text-orange-300"
+                      ? "border-caution bg-caution/20 text-caution"
                       : isDone
                         ? i === 4
-                          ? "border-accent bg-accent text-bg-base scale-110 shadow-[0_0_20px_rgba(201,169,110,.6)]"
-                          : "border-emerald-400 bg-emerald-500 text-bg-base"
+                          ? "border-accent bg-accent text-bg-base scale-110 shadow-lg shadow-accent/40"
+                          : "border-positive bg-positive text-bg-base"
                         : isNext
                           ? "border-accent bg-bg-base text-accent"
                           : "border-white/15 bg-bg-base text-text-muted"
@@ -157,7 +154,7 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
           })}
         </ol>
         {cancelled && (
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-red-300">
+          <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-negative">
             <XCircle className="w-4 h-4" /> Đơn đã hủy
           </p>
         )}

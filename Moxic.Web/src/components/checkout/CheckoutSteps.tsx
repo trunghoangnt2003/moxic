@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 
 const STEPS = ["Giỏ hàng", "Thông tin", "Thanh toán", "Hoàn tất"];
 
-/** Cart → Info → Payment → Done progress header shared by the purchase flow pages. */
+/** Cart Info Payment Done progress header shared by the purchase flow pages. */
 export default function CheckoutSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
   return (
     <ol className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 text-xs sm:text-sm" aria-label="Các bước mua hàng">
@@ -14,7 +14,7 @@ export default function CheckoutSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
             <span className="flex items-center gap-2 min-w-0">
               <span
                 className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  done ? "bg-emerald-500 text-bg-base" : active ? "bg-accent text-bg-base ring-4 ring-accent/20" : "bg-white/5 text-text-muted border border-white/10"
+                  done ? "bg-positive text-bg-base" : active ? "bg-accent text-bg-base ring-4 ring-accent/20" : "bg-white/5 text-text-muted border border-white/10"
                 }`}
               >
                 {done ? <Check className="w-4 h-4" strokeWidth={3} /> : i + 1}
@@ -23,7 +23,7 @@ export default function CheckoutSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
                 {label}
               </span>
             </span>
-            {i < STEPS.length - 1 && <span className={`flex-1 h-px min-w-3 ${done ? "bg-emerald-500/60" : "bg-white/10"}`} />}
+            {i < STEPS.length - 1 && <span className={`flex-1 h-px min-w-3 ${done ? "bg-positive/60" : "bg-white/10"}`} />}
           </li>
         );
       })}

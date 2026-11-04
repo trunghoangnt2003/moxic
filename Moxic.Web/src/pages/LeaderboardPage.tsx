@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Crown, Gamepad2, PenLine, Timer, Trophy, UserPlus } from "lucide-react";
+import { Crown, Flag, Gamepad2, PenLine, Timer, Trophy, UserPlus } from "lucide-react";
 import Container from "../components/layout/Container";
 import { SectionLoader } from "../components/shared/MoxicLoader";
 import { useMe } from "../hooks/useAccount";
@@ -38,7 +38,8 @@ const META: Record<Board["key"], { icon: typeof Trophy; unit: string; how: strin
   referrers: { icon: UserPlus, unit: "bạn", how: "Mỗi bạn bè đăng ký bằng mã của bạn và hoàn tất đơn đầu tiên = 1 điểm.", cta: { to: "/rewards", label: "Lấy link mời" } },
 };
 
-const MEDAL = ["🥇", "🥈", "🥉"];
+// Podium tints for ranks 1 to 3 (gold, silver, bronze), all role tokens.
+const MEDAL = ["bg-caution text-on-accent", "bg-text-secondary text-on-accent", "bg-accent-deep text-text-primary"];
 const ORDER: Board["key"][] = ["gamers", "reviewers", "referrers"];
 
 function Countdown({ to }: { to: string }) {
@@ -55,7 +56,7 @@ function Countdown({ to }: { to: string }) {
   const cell = (v: number, l: string) => (
     <span className="flex flex-col items-center min-w-[3rem] px-2 py-1.5 bg-black/40 border border-white/10">
       <span className="font-display text-xl font-bold tabular-nums">{String(v).padStart(2, "0")}</span>
-      <span className="text-[10px] text-text-muted uppercase">{l}</span>
+      <span className="text-[10px] text-text-muted">{l}</span>
     </span>
   );
   return (
@@ -70,7 +71,7 @@ function Countdown({ to }: { to: string }) {
 
 function Avatar({ name, size = "w-10 h-10 text-base" }: { name: string; size?: string }) {
   return (
-    <span className={`${size} shrink-0 rounded-full bg-gradient-to-br from-accent to-amber-700 flex items-center justify-center font-display font-extrabold text-bg-base`}>
+    <span className={`${size} shrink-0 rounded-full bg-gradient-to-br from-accent to-caution flex items-center justify-center font-display font-extrabold text-bg-base`}>
       {(name.trim()[0] ?? "?").toUpperCase()}
     </span>
   );
@@ -87,10 +88,10 @@ function Podium({ rows, unit, prizes }: { rows: Row[]; unit: string; prizes: num
         <div key={ranks[i]} className="flex flex-col items-center text-center min-w-0" style={{ animation: `popIn .5s ${[0.15, 0, 0.3][i]}s both ease-out` }}>
           {r ? (
             <>
-              <span className="text-2xl mb-1">{MEDAL[ranks[i] - 1]}</span>
-              <div className={`relative ${ranks[i] === 1 ? "ring-2 ring-amber-300 shadow-[0_0_30px_rgba(252,211,77,.35)]" : ""} rounded-full`}>
+              <span className={`w-7 h-7 mb-1 rounded-full flex items-center justify-center text-xs font-bold tabular-nums ${MEDAL[ranks[i] - 1]}`}>{ranks[i]}</span>
+              <div className={`relative ${ranks[i] === 1 ? "ring-2 ring-caution shadow-lg shadow-caution/30" : ""} rounded-full`}>
                 <Avatar name={r.displayName} size={ranks[i] === 1 ? "w-16 h-16 text-2xl" : "w-12 h-12 text-lg"} />
-                {ranks[i] === 1 && <Crown className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 text-amber-300" />}
+                {ranks[i] === 1 && <Crown className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 text-caution" />}
               </div>
               <p className={`mt-2 text-sm font-semibold truncate max-w-full ${r.isMe ? "text-accent" : ""}`}>
                 {r.displayName}
@@ -104,9 +105,9 @@ function Podium({ rows, unit, prizes }: { rows: Row[]; unit: string; prizes: num
             <p className="text-xs text-text-muted mb-2">Còn trống</p>
           )}
           <div
-            className={`mt-2 w-full ${heights[i]} border-t-2 ${ranks[i] === 1 ? "border-amber-300 bg-gradient-to-b from-amber-300/25" : ranks[i] === 2 ? "border-slate-300 bg-gradient-to-b from-slate-300/15" : "border-orange-400 bg-gradient-to-b from-orange-400/15"} to-transparent flex items-start justify-center pt-2`}
+            className={`mt-2 w-full ${heights[i]} border-t-2 ${ranks[i] === 1 ? "border-caution bg-gradient-to-b from-caution/25" : ranks[i] === 2 ? "border-text-muted bg-gradient-to-b from-text-muted/15" : "border-caution bg-gradient-to-b from-caution/15"} to-transparent flex items-start justify-center pt-2`}
           >
-            <span className="text-[11px] font-bold text-amber-200">+{prizes[ranks[i] - 1]} điểm</span>
+            <span className="text-[11px] font-bold text-caution">+{prizes[ranks[i] - 1]} điểm</span>
           </div>
         </div>
       ))}
@@ -133,9 +134,9 @@ export default function LeaderboardPage() {
   return (
     <Container className="mt-8 mb-24 max-w-4xl">
       {/* Hero */}
-      <section className="relative overflow-hidden border border-white/10 bg-gradient-to-br from-amber-500/15 via-bg-surface to-fuchsia-500/10 p-5 sm:p-7 text-center">
-        <Trophy className="absolute -left-6 -bottom-8 w-40 h-40 text-amber-300/10 -rotate-12" />
-        <p className="text-xs uppercase tracking-[0.3em] text-amber-300">Tháng {mm}/{yyyy}</p>
+      <section className="relative overflow-hidden border border-white/10 bg-gradient-to-br from-caution/15 via-bg-surface to-highlight/10 p-5 sm:p-7 text-center">
+        <Trophy className="absolute -left-6 -bottom-8 w-40 h-40 text-caution/10 -rotate-12" />
+        <p className="text-xs text-caution">Tháng {mm}/{yyyy}</p>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold mt-1">Bảng xếp hạng</h1>
         <p className="text-sm text-text-secondary mt-2">Top 3 mỗi bảng nhận điểm thưởng + huy hiệu hiển thị cạnh tên bạn.</p>
         <div className="flex justify-center mt-4">
@@ -170,7 +171,7 @@ export default function LeaderboardPage() {
 
         {board.top.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-4xl mb-2">🏁</p>
+            <Flag className="w-10 h-10 mx-auto mb-2 text-text-muted" aria-hidden="true" />
             <p className="font-semibold">Chưa ai ghi điểm tháng này</p>
             <p className="text-sm text-text-muted mb-4">Ghi điểm đầu tiên để lên ngay hạng 1!</p>
             <Link to={meta.cta.to} className="inline-flex h-10 px-5 items-center bg-accent text-bg-base text-sm font-bold">
@@ -190,7 +191,7 @@ export default function LeaderboardPage() {
                       {r.displayName}
                       {r.isMe && <span className="text-accent"> (bạn)</span>}
                     </p>
-                    {r.badges.length > 0 && <p className="text-[10px] text-amber-200/80 truncate">{r.badges[0]}</p>}
+                    {r.badges.length > 0 && <p className="text-[10px] text-caution/80 truncate">{r.badges[0]}</p>}
                   </div>
                   <span className="text-sm font-bold tabular-nums">
                     {r.score} <span className="text-xs text-text-muted font-normal">{meta.unit}</span>
@@ -223,7 +224,7 @@ export default function LeaderboardPage() {
           </div>
         ) : (
           <Link to="/login?redirect=/leaderboard" className="block text-center border border-accent/40 bg-bg-elevated/95 p-3 text-sm font-semibold text-accent">
-            Đăng nhập để tham gia đua top & nhận thưởng →
+            Đăng nhập để tham gia đua top & nhận thưởng
           </Link>
         )}
       </div>
@@ -232,7 +233,7 @@ export default function LeaderboardPage() {
       {data.lastMonth.winners.length > 0 && (
         <section className="mt-8">
           <h2 className="font-display text-lg font-bold mb-3">
-            🏆 Vinh danh tháng {data.lastMonth.month.slice(5)}/{data.lastMonth.month.slice(0, 4)}
+            <Trophy className="inline w-5 h-5 mr-1.5 -mt-0.5 text-caution" aria-hidden="true" />Vinh danh tháng {data.lastMonth.month.slice(5)}/{data.lastMonth.month.slice(0, 4)}
           </h2>
           <div className="grid sm:grid-cols-3 gap-3">
             {ORDER.map((k) => {
@@ -244,9 +245,9 @@ export default function LeaderboardPage() {
                   {ws.map((w) => (
                     <p key={w.rank} className="text-sm flex justify-between gap-2">
                       <span className="truncate">
-                        {MEDAL[w.rank - 1]} {w.displayName}
+                        <span className={`inline-flex w-5 h-5 mr-1.5 rounded-full items-center justify-center text-[10px] font-bold ${MEDAL[w.rank - 1]}`}>{w.rank}</span>{w.displayName}
                       </span>
-                      <span className="text-amber-200 text-xs shrink-0">+{w.points} điểm</span>
+                      <span className="text-caution text-xs shrink-0">+{w.points} điểm</span>
                     </p>
                   ))}
                 </div>

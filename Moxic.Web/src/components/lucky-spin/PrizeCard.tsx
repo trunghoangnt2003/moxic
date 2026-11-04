@@ -63,7 +63,7 @@ export default function PrizeCard({ prize, size = "reel", highlighted = false, c
     <div
       className={`relative flex-shrink-0 overflow-hidden rounded-[3px] select-none transition-[transform,box-shadow] duration-500 ease-out ${s.box} ${className}`}
       style={{
-        background: "linear-gradient(180deg, #241b3a 0%, #15101f 100%)",
+        background: "linear-gradient(180deg, var(--color-spin-card) 0%, var(--color-spin-card-2) 100%)",
         transform: highlighted ? "scale(1.06)" : undefined,
         boxShadow: highlighted
           ? `0 0 0 1px ${color}, 0 0 28px ${color}99, inset 0 0 24px ${color}33`
@@ -89,7 +89,7 @@ export default function PrizeCard({ prize, size = "reel", highlighted = false, c
                 decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#15101f] to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-spin-deep to-transparent" />
             </>
           ) : (
             <>

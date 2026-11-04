@@ -3,7 +3,7 @@ import { confetti, haptic } from "../lib/fx";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { CalendarCheck, Check, Copy, Crown, Flame, Gift, Loader2, Share2, Target, UserPlus } from "lucide-react";
+import { CalendarCheck, Check, Copy, Crown, Flame, Gift, Loader2, Share2, Target, Trophy, UserPlus } from "lucide-react";
 import Container from "../components/layout/Container";
 import { SectionLoader } from "../components/shared/MoxicLoader";
 import { useMe } from "../hooks/useAccount";
@@ -16,9 +16,9 @@ function Guest() {
   const { data } = useQuery({ queryKey: ["loyalty", "program"], queryFn: getLoyaltyProgram, staleTime: 60 * 60_000 });
   return (
     <Container className="mt-10 mb-20 max-w-4xl text-center">
-      <Crown className="w-12 h-12 mx-auto text-amber-300 mb-4" />
+      <Crown className="w-12 h-12 mx-auto text-caution mb-4" />
       <h1 className="font-display text-3xl md:text-5xl font-extrabold">Moxic Rewards</h1>
-      <p className="text-text-secondary mt-3 max-w-xl mx-auto">Điểm danh mỗi ngày, làm nhiệm vụ, mời bạn bè — đổi điểm mở hòm may mắn và lên hạng để nhận thêm điểm mỗi đơn.</p>
+      <p className="text-text-secondary mt-3 max-w-xl mx-auto">Điểm danh mỗi ngày, làm nhiệm vụ, mời bạn bè, đổi điểm mở hòm may mắn và lên hạng để nhận thêm điểm mỗi đơn.</p>
       <div className="flex justify-center gap-2 mt-6">
         <Link to="/register" className="h-12 px-6 inline-flex items-center bg-accent text-bg-base font-bold">
           Tạo tài khoản miễn phí
@@ -105,7 +105,7 @@ export default function RewardsPage() {
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Moxic GameStore", text: `Mua game Xbox rẻ hơn Store — dùng mã ${data.referral.code} để nhận ${data.referral.refereeReward} điểm!`, url: link });
+        await navigator.share({ title: "Moxic GameStore", text: `Mua game Xbox rẻ hơn Store, dùng mã ${data.referral.code} để nhận ${data.referral.refereeReward} điểm!`, url: link });
       } catch {
         /* cancelled */
       }
@@ -124,12 +124,12 @@ export default function RewardsPage() {
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs uppercase tracking-widest text-text-muted">Hạng thành viên</p>
+            <p className="text-xs text-text-muted">Hạng thành viên</p>
             <h1 className={`font-display text-3xl font-extrabold ${st.text}`}>{data.tier.name}</h1>
             <p className="text-sm text-text-secondary mt-0.5">{data.tier.perk}</p>
             <div className="mt-3">
               <div className="h-2 bg-white/10 overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${st.ring} transition-all duration-700`} style={{ width: `${progress}%` }} />
+                <div className={`h-full bg-gradient-to-r ${st.ring} transition duration-700`} style={{ width: `${progress}%` }} />
               </div>
               <p className="text-xs text-text-muted mt-1.5">
                 {data.next ? (
@@ -143,13 +143,13 @@ export default function RewardsPage() {
             </div>
           </div>
           <div className="sm:text-right">
-            <p className="text-xs uppercase tracking-widest text-text-muted">Điểm hiện có</p>
-            <p className="font-display text-4xl font-extrabold text-amber-300 tabular-nums">{data.points.toLocaleString("vi-VN")}</p>
+            <p className="text-xs text-text-muted">Điểm hiện có</p>
+            <p className="font-display text-4xl font-extrabold text-caution tabular-nums">{data.points.toLocaleString("vi-VN")}</p>
             <a href="#doi-diem" className="text-xs text-accent hover:underline">
-              Đổi điểm lấy quà →
+              Đổi điểm lấy quà
             </a>
-            <Link to="/leaderboard" className="block text-xs text-amber-300 hover:underline mt-1">
-              🏆 Đua top tháng →
+            <Link to="/leaderboard" className="block text-xs text-caution hover:underline mt-1">
+              <Trophy className="inline w-3.5 h-3.5 mr-1 -mt-0.5" aria-hidden="true" />Đua top tháng
             </Link>
           </div>
         </div>
@@ -159,9 +159,9 @@ export default function RewardsPage() {
       <section className="border border-white/10 bg-bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="font-display text-lg font-bold flex items-center gap-2">
-            <CalendarCheck className="w-5 h-5 text-emerald-400" /> Điểm danh hằng ngày
+            <CalendarCheck className="w-5 h-5 text-positive" /> Điểm danh hằng ngày
           </h2>
-          <span className="inline-flex items-center gap-1 text-sm text-orange-300">
+          <span className="inline-flex items-center gap-1 text-sm text-caution">
             <Flame className="w-4 h-4" /> Chuỗi {data.checkIn.streak} ngày
           </span>
         </div>
@@ -172,12 +172,12 @@ export default function RewardsPage() {
               <li
                 key={d.day}
                 className={`relative flex flex-col items-center justify-center py-2.5 sm:py-3 border text-center ${
-                  d.done ? "border-emerald-500/50 bg-emerald-500/10" : d.today ? "border-accent bg-accent/10 animate-pulse motion-reduce:animate-none" : "border-white/10"
+                  d.done ? "border-positive/50 bg-positive/10" : d.today ? "border-accent bg-accent/10 animate-pulse motion-reduce:animate-none" : "border-white/10"
                 }`}
               >
                 <span className="text-[10px] text-text-muted">Ngày {d.day}</span>
-                {d.done ? <Check className="w-5 h-5 text-emerald-300 my-0.5" /> : bonus ? <Gift className="w-5 h-5 text-amber-300 my-0.5" /> : <span className="font-bold my-0.5">+{d.reward}</span>}
-                <span className={`text-[10px] ${bonus ? "text-amber-300 font-bold" : "text-text-muted"}`}>{bonus ? `+${d.reward}` : "điểm"}</span>
+                {d.done ? <Check className="w-5 h-5 text-positive my-0.5" /> : bonus ? <Gift className="w-5 h-5 text-caution my-0.5" /> : <span className="font-bold my-0.5">+{d.reward}</span>}
+                <span className={`text-[10px] ${bonus ? "text-caution font-bold" : "text-text-muted"}`}>{bonus ? `+${d.reward}` : "điểm"}</span>
               </li>
             );
           })}
@@ -186,10 +186,10 @@ export default function RewardsPage() {
           type="button"
           onClick={() => doCheckIn.mutate()}
           disabled={data.checkIn.checkedToday || doCheckIn.isPending}
-          className="w-full h-12 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-bg-base font-bold disabled:bg-white/10 disabled:text-text-muted cursor-pointer disabled:cursor-default"
+          className="w-full h-12 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-bg-base font-bold disabled:bg-white/10 disabled:text-text-muted cursor-pointer disabled:cursor-default"
         >
           {doCheckIn.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarCheck className="w-4 h-4" />}
-          {data.checkIn.checkedToday ? "Đã điểm danh hôm nay — hẹn gặp lại ngày mai!" : `Điểm danh nhận +${data.checkIn.todayReward} điểm`}
+          {data.checkIn.checkedToday ? "Đã điểm danh hôm nay, hẹn gặp lại ngày mai!" : `Điểm danh nhận +${data.checkIn.todayReward} điểm`}
         </button>
       </section>
 
@@ -207,7 +207,7 @@ export default function RewardsPage() {
           <ul className="space-y-2">
             {data.missions.map((m) => (
               <li key={m.key} className={`flex items-center gap-3 p-3 border ${m.claimed ? "border-white/5 opacity-60" : m.done ? "border-accent/50 bg-accent/5" : "border-white/10"}`}>
-                <span className={`w-9 h-9 shrink-0 flex items-center justify-center ${m.claimed || m.done ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-text-muted"}`}>
+                <span className={`w-9 h-9 shrink-0 flex items-center justify-center ${m.claimed || m.done ? "bg-positive/15 text-positive" : "bg-white/5 text-text-muted"}`}>
                   {m.claimed || m.done ? <Check className="w-4 h-4" /> : <Target className="w-4 h-4" />}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -233,9 +233,9 @@ export default function RewardsPage() {
         </section>
 
         {/* Referral */}
-        <section className="lg:col-span-2 border border-white/10 bg-gradient-to-b from-fuchsia-500/10 to-transparent p-5 space-y-4">
+        <section className="lg:col-span-2 border border-white/10 bg-gradient-to-b from-highlight/10 to-transparent p-5 space-y-4">
           <h2 className="font-display text-lg font-bold flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-fuchsia-300" /> Mời bạn bè
+            <UserPlus className="w-5 h-5 text-highlight" /> Mời bạn bè
           </h2>
           <p className="text-sm text-text-secondary">
             Bạn nhận <b className="text-white">{data.referral.referrerReward} điểm</b>, bạn bè nhận <b className="text-white">{data.referral.refereeReward} điểm</b> khi họ hoàn tất đơn đầu tiên.
@@ -243,12 +243,12 @@ export default function RewardsPage() {
           {data.referral.code && (
             <>
               <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 h-12">
-                <span className="flex-1 font-mono text-lg font-bold tracking-widest">{data.referral.code}</span>
+                <span className="flex-1 font-mono text-lg font-bold">{data.referral.code}</span>
                 <button type="button" onClick={() => copy(data.referral.code!, "mã")} aria-label="Sao chép mã" className="p-2 text-text-muted hover:text-white cursor-pointer">
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
-              <button type="button" onClick={share} className="w-full h-11 inline-flex items-center justify-center gap-2 bg-fuchsia-500 hover:bg-fuchsia-400 text-white text-sm font-bold cursor-pointer">
+              <button type="button" onClick={share} className="w-full h-11 inline-flex items-center justify-center gap-2 bg-highlight hover:bg-highlight text-white text-sm font-bold cursor-pointer">
                 <Share2 className="w-4 h-4" /> Chia sẻ link mời
               </button>
             </>
@@ -271,8 +271,8 @@ export default function RewardsPage() {
                 if (refCode.trim()) refer.mutate(refCode.trim());
               }}
             >
-              <input value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} placeholder="Nhập mã người giới thiệu" maxLength={16} className="flex-1 min-w-0 h-10 bg-bg-base border border-border px-3 text-sm font-mono uppercase focus:outline-none focus:border-fuchsia-400" />
-              <button type="submit" disabled={refer.isPending} className="h-10 px-3 border border-fuchsia-400/60 text-fuchsia-200 text-sm font-semibold cursor-pointer">
+              <input value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} placeholder="Nhập mã người giới thiệu" maxLength={16} className="flex-1 min-w-0 h-10 bg-bg-base border border-border px-3 text-sm font-mono focus:outline-none focus:border-highlight" />
+              <button type="submit" disabled={refer.isPending} className="h-10 px-3 border border-highlight/60 text-highlight text-sm font-semibold cursor-pointer">
                 Áp dụng
               </button>
             </form>

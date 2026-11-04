@@ -53,7 +53,7 @@ export default function PriceListPage() {
 
   return (
     <Container className="mt-8 mb-20 max-w-5xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-accent">Cập nhật {today}</p>
+      <p className="text-xs text-accent">Cập nhật {today}</p>
       <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">Bảng giá game Xbox hôm nay</h1>
       <p className="text-text-secondary mt-2 max-w-2xl">
         So sánh giá niêm yết trên Xbox Store Việt Nam với giá tại Moxic cho {data.items.length} game. Giá Xbox Store được kiểm tra tự động hằng ngày
@@ -62,7 +62,7 @@ export default function PriceListPage() {
 
       <div className="grid grid-cols-3 gap-2 mt-5">
         <div className="border border-white/10 bg-bg-surface p-3 text-center">
-          <p className="font-display text-2xl font-bold text-emerald-300">-{data.avgSave}%</p>
+          <p className="font-display text-2xl font-bold text-positive">-{data.avgSave}%</p>
           <p className="text-[11px] text-text-muted">Tiết kiệm trung bình</p>
         </div>
         <div className="border border-white/10 bg-bg-surface p-3 text-center">
@@ -112,17 +112,17 @@ export default function PriceListPage() {
                   <Link to={`/games/${r.id}`} className="font-semibold hover:text-accent">
                     {r.name}
                   </Link>
-                  {r.status !== "Có sẵn" && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-sky-400/40 text-sky-300">{r.status}</span>}
+                  {r.status !== "Có sẵn" && <span className="ml-2 text-[10px] px-1.5 py-0.5 border border-info/40 text-info">{r.status}</span>}
                 </td>
                 <td className="px-3 py-2.5 text-right text-text-muted line-through whitespace-nowrap">{r.storePrice > r.moxicPrice ? formatPrice(r.storePrice) : "—"}</td>
                 <td className="px-3 py-2.5 text-right font-bold text-accent whitespace-nowrap">{formatPrice(r.moxicPrice)}</td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap">
                   {r.savePercent > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-300 font-semibold">
+                    <span className="inline-flex items-center gap-1 text-positive font-semibold">
                       <TrendingDown className="w-3.5 h-3.5" /> -{r.savePercent}%
                     </span>
                   ) : (
-                    <span className="text-text-muted">—</span>
+                    <span className="text-text-muted">Bằng giá</span>
                   )}
                 </td>
               </tr>

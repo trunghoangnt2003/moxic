@@ -50,13 +50,13 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
     return (
       <Link
         to={"/games/" + game.id}
-        className="group bg-bg-surface border border-border overflow-hidden cursor-pointer hover:bg-bg-surface-hover transition-all duration-300"
+        className="group bg-bg-surface border border-border overflow-hidden cursor-pointer hover:bg-bg-surface-hover transition duration-300"
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-bg-elevated">
-          <Cover src={game.coverImageUrl} name={game.name} className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-300" />
+          <Cover src={game.coverImageUrl} name={game.name} className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition duration-300" />
           <WishlistButton gameId={game.id} gameName={game.name} className="absolute top-2 right-2" />
           {(game.soldCount ?? 0) >= 5 && (
-            <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-orange-500/90 text-white">
+            <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-caution/90 text-white">
               <Flame className="w-3 h-3" /> Bán chạy
             </span>
           )}
@@ -64,12 +64,12 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
           {(type !== "Game" || game.region) && (
             <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
               {type !== "Game" && (
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${PRODUCT_TYPE_STYLES[type]}`}>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold ${PRODUCT_TYPE_STYLES[type]}`}>
                   {PRODUCT_TYPE_LABELS[type]}
                 </span>
               )}
               {game.region && game.region !== "Global" && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-black/70 text-white border border-white/20 backdrop-blur-sm">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-black/70 text-white border border-white/20 backdrop-blur-sm">
                   {game.region}
                 </span>
               )}
@@ -94,7 +94,7 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
             <span className={priceClass}>{priceDisplay}</span>
           </div>
           {game.rentFrom != null && (
-            <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300">
+            <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-positive">
               <KeyRound className="w-3 h-3" /> Thuê từ {formatPrice(game.rentFrom)}
             </p>
           )}
@@ -109,7 +109,7 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
   return (
     <Link
       to={"/games/" + game.id}
-      className="flex items-center gap-3 p-2 hover:bg-bg-surface-hover transition-all duration-300 cursor-pointer"
+      className="flex items-center gap-3 p-2 hover:bg-bg-surface-hover transition duration-300 cursor-pointer"
     >
       <div className="w-20 h-20 flex-shrink-0 overflow-hidden bg-bg-elevated">
         <Cover src={game.coverImageUrl} name={game.name} className="w-full h-full object-cover" />

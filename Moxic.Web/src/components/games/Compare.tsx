@@ -13,7 +13,7 @@ export function toggleCompare(id: string, name?: string) {
     return;
   }
   if (ids.length >= MAX) {
-    toast.error(`Chỉ so sánh tối đa ${MAX} game — bỏ bớt một game trước nhé`);
+    toast.error(`Chỉ so sánh tối đa ${MAX} game, bỏ bớt một game trước nhé`);
     return;
   }
   compareList.set([...ids, id]);
@@ -30,7 +30,7 @@ export function CompareButton({ gameId, gameName, className = "" }: { gameId: st
       aria-pressed={active}
       onClick={() => toggleCompare(gameId, gameName)}
       className={`inline-flex items-center justify-center gap-2 h-10 px-4 border text-sm font-semibold transition-colors cursor-pointer ${
-        active ? "border-sky-400/60 bg-sky-500/10 text-sky-300" : "border-white/15 text-text-secondary hover:text-white hover:border-white/30"
+        active ? "border-info/60 bg-info/10 text-info" : "border-white/15 text-text-secondary hover:text-white hover:border-white/30"
       } ${className}`}
     >
       <Columns3 className="w-4 h-4" /> {active ? "Đang so sánh" : "So sánh"}
@@ -48,7 +48,7 @@ export function CompareBar() {
 
   return (
     <div className="fixed bottom-[calc(0.75rem+var(--sab))] left-1/2 -translate-x-1/2 z-40 w-[calc(100vw-1.5rem)] max-w-md">
-      <div className="flex items-center gap-2 p-2 bg-bg-surface/95 backdrop-blur-md border border-sky-500/30 shadow-2xl shadow-black/60">
+      <div className="flex items-center gap-2 p-2 bg-bg-surface/95 backdrop-blur-md border border-info/30 shadow-2xl shadow-black/60">
         <div className="flex gap-1.5 flex-1 min-w-0">
           {Array.from({ length: MAX }).map((_, i) => {
             const g = games[i];
@@ -71,7 +71,7 @@ export function CompareBar() {
         </div>
         <Link
           to={`/compare?ids=${ids.join(",")}`}
-          className={`h-10 px-4 inline-flex items-center gap-1.5 text-sm font-bold ${ids.length >= 2 ? "bg-sky-500 text-bg-base" : "bg-white/10 text-text-muted pointer-events-none"}`}
+          className={`h-10 px-4 inline-flex items-center gap-1.5 text-sm font-bold ${ids.length >= 2 ? "bg-info text-bg-base" : "bg-white/10 text-text-muted pointer-events-none"}`}
         >
           <Columns3 className="w-4 h-4" /> So sánh {ids.length}/{MAX}
         </Link>

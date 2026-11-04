@@ -20,7 +20,7 @@ const discountOf = (g: GameDetail) => (g.originalPrice > 0 && g.salePrice < g.or
 
 const ROWS: Row[] = [
   { label: "Giá bán", render: (g) => <b className="text-accent">{g.salePrice > 0 ? formatPrice(g.salePrice) : "Liên hệ"}</b>, best: (gs) => minBy(gs.filter((g) => g.salePrice > 0), (g) => g.salePrice) },
-  { label: "Giảm so với Store", render: (g) => (discountOf(g) > 0 ? <span className="text-emerald-300 font-semibold">-{discountOf(g)}%</span> : "—"), best: (gs) => maxBy(gs, discountOf) },
+  { label: "Giảm so với Store", render: (g) => (discountOf(g) > 0 ? <span className="text-positive font-semibold">-{discountOf(g)}%</span> : "—"), best: (gs) => maxBy(gs, discountOf) },
   { label: "Phiên bản", render: (g) => (g.editions.length > 0 ? g.editions.map((e) => e.name).join(", ") : "Standard") },
   { label: "Loại", render: (g) => PRODUCT_TYPE_LABELS[g.productType] ?? g.productType },
   { label: "Trạng thái", render: (g) => (g.status === "Preorder" ? "Đặt trước" : "Sẵn có") },
@@ -31,7 +31,7 @@ const ROWS: Row[] = [
     label: "Đánh giá khách",
     render: (g) => (
       <span className="inline-flex items-center gap-1">
-        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> {g.storeRating.toFixed(1)} <span className="text-text-muted">({g.reviews.length})</span>
+        <Star className="w-3.5 h-3.5 text-caution fill-caution" /> {g.storeRating.toFixed(1)} <span className="text-text-muted">({g.reviews.length})</span>
       </span>
     ),
     best: (gs) => maxBy(gs, (g) => g.storeRating),
@@ -71,7 +71,7 @@ export default function ComparePage() {
   if (ids.length === 0) {
     return (
       <Container className="mt-12 mb-20 text-center py-16">
-        <Columns3 className="w-12 h-12 mx-auto text-sky-400/50 mb-4" />
+        <Columns3 className="w-12 h-12 mx-auto text-info/50 mb-4" />
         <p className="font-semibold mb-1">Chưa có game nào để so sánh</p>
         <p className="text-sm text-text-muted mb-6">Bấm “So sánh” ở trang game để thêm tối đa 3 game.</p>
         <Link to="/games" className="inline-flex h-11 items-center px-6 bg-accent text-bg-base text-sm font-bold">
@@ -87,7 +87,7 @@ export default function ComparePage() {
   return (
     <Container className="mt-8 mb-24">
       <h1 className="font-display text-2xl md:text-4xl font-bold flex items-center gap-3 mb-6">
-        <Columns3 className="w-7 h-7 text-sky-400" /> So sánh game
+        <Columns3 className="w-7 h-7 text-info" /> So sánh game
       </h1>
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
         <table className="w-full min-w-[640px] border-collapse text-sm">
@@ -136,14 +136,14 @@ export default function ComparePage() {
           <tbody>
             {ROWS.map((r, i) => (
               <tr key={r.label} className={i % 2 === 0 ? "bg-white/[0.02]" : ""}>
-                <td className="px-3 py-2.5 text-text-muted text-xs uppercase tracking-wider">{r.label}</td>
+                <td className="px-3 py-2.5 text-text-muted text-xs">{r.label}</td>
                 {games.map((g) => {
                   const isBest = bests[r.label] === g.id;
                   return (
-                    <td key={g.id} className={`px-3 py-2.5 text-text-secondary ${isBest ? "bg-emerald-500/[0.07]" : ""}`}>
+                    <td key={g.id} className={`px-3 py-2.5 text-text-secondary ${isBest ? "bg-positive/[0.07]" : ""}`}>
                       <span className="inline-flex items-center gap-1.5">
                         {r.render(g)}
-                        {isBest && <Crown className="w-3.5 h-3.5 text-amber-300" aria-label="Tốt nhất" />}
+                        {isBest && <Crown className="w-3.5 h-3.5 text-caution" aria-label="Tốt nhất" />}
                       </span>
                     </td>
                   );
@@ -152,7 +152,7 @@ export default function ComparePage() {
               </tr>
             ))}
             <tr>
-              <td className="px-3 py-2.5 text-text-muted text-xs uppercase tracking-wider">Có trong bản</td>
+              <td className="px-3 py-2.5 text-text-muted text-xs">Có trong bản</td>
               {games.map((g) => (
                 <td key={g.id} className="px-3 py-2.5">
                   {g.editions.length === 0 ? (
@@ -161,7 +161,7 @@ export default function ComparePage() {
                     <ul className="space-y-0.5 text-xs text-text-secondary">
                       {(g.editions.find((e) => e.isDefault) ?? g.editions[0]).includes.slice(0, 5).map((x) => (
                         <li key={x} className="flex items-start gap-1">
-                          <Check className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" /> {x}
+                          <Check className="w-3 h-3 text-positive mt-0.5 shrink-0" /> {x}
                         </li>
                       ))}
                     </ul>
@@ -174,7 +174,7 @@ export default function ComparePage() {
         </table>
       </div>
       <p className="mt-3 text-[11px] text-text-muted flex items-center gap-1">
-        <Crown className="w-3 h-3 text-amber-300" /> = tốt nhất trong các game đang so sánh
+        <Crown className="w-3 h-3 text-caution" /> = tốt nhất trong các game đang so sánh
       </p>
     </Container>
   );

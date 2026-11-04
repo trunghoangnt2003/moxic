@@ -43,7 +43,7 @@ export default function GiftLinkCard({ token, recipientName, claimedAt }: Props)
         <h3 className="font-display text-lg text-text-primary">Link quà tặng{recipientName ? ` cho ${recipientName}` : ""}</h3>
       </div>
       {claimedAt ? (
-        <p className="text-sm text-green-400">✓ Người nhận đã mở quà và nhập tài khoản Xbox.</p>
+        <p className="text-sm text-positive">✓ Người nhận đã mở quà và nhập tài khoản Xbox.</p>
       ) : (
         <p className="text-xs text-text-secondary leading-relaxed">
           Gửi link này cho người nhận. Họ mở link, nhập tài khoản Xbox của họ và Moxic sẽ cài game sau khi bạn thanh toán. Đừng chia sẻ link công khai.
@@ -52,7 +52,7 @@ export default function GiftLinkCard({ token, recipientName, claimedAt }: Props)
       <div className="flex items-stretch gap-2">
         <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="flex-1 min-w-0 bg-bg-base border border-white/10 px-3 py-2 text-xs text-text-primary font-mono" />
         <button type="button" onClick={copy} aria-label="Copy link quà" className="px-3 bg-accent/20 hover:bg-accent/30 text-accent cursor-pointer">
-          {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+          {copied ? <Check className="w-4 h-4 text-positive" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2">

@@ -31,7 +31,7 @@ export function SaleCountdownBadge({ endsAt, className = "" }: { endsAt: string;
   const t = useCountdownTo(endsAt);
   if (t.ms <= 0) return null;
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold tabular-nums bg-gradient-to-r from-rose-500 to-orange-500 text-white ${className}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold tabular-nums bg-gradient-to-r from-negative to-caution text-white ${className}`}>
       <Zap className="w-3 h-3 fill-white" />
       {t.d > 0 ? `${t.d} ngày ${t.h}h` : `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`}
     </span>
@@ -48,7 +48,7 @@ export function SaleCountdown({ endsAt, label = "Kết thúc sau" }: { endsAt: s
       <span className="text-xs text-text-secondary">{label}</span>
       <div className="flex gap-1">
         {parts.map(([v, l]) => (
-          <span key={l} className="min-w-9 px-1.5 py-1 bg-black/60 border border-rose-500/40 text-center leading-none">
+          <span key={l} className="min-w-9 px-1.5 py-1 bg-black/60 border border-negative/40 text-center leading-none">
             <span className="block font-display font-bold tabular-nums text-white">{pad(v as number)}</span>
             <span className="block text-[9px] text-text-muted mt-0.5">{l}</span>
           </span>
@@ -65,12 +65,12 @@ export function FlashSaleRail() {
   if (games.length === 0) return null;
   const firstEnd = games[0].saleEndsAt;
   return (
-    <section className="relative p-4 sm:p-6 border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-transparent to-orange-500/10">
+    <section className="relative p-4 sm:p-6 border border-negative/30 bg-gradient-to-br from-negative/10 via-transparent to-caution/10">
       <GameRail
         title={
           <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="flex items-center gap-2">
-              <Zap className="w-6 h-6 text-orange-400 fill-orange-400" /> Flash Sale
+              <Zap className="w-6 h-6 text-caution fill-caution" /> Flash Sale
             </span>
             {firstEnd && <SaleCountdown endsAt={firstEnd} />}
           </span>

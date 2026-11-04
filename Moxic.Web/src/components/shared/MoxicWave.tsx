@@ -1,7 +1,7 @@
 import { useId } from "react";
 
 /**
- * "MOXIC sóng sánh": the MOXIC wordmark filled with sloshing liquid gold — two offset waves
+ * "MOXIC sóng sánh": the MOXIC wordmark filled with sloshing liquid gold, two offset waves
  * scrolling sideways while the liquid level bobs up and down.
  */
 export default function MoxicWave({ width = 220, label }: { width?: number; label?: string }) {
@@ -17,7 +17,7 @@ export default function MoxicWave({ width = 220, label }: { width?: number; labe
 
   return (
     <div role="status" aria-live="polite" className="flex flex-col items-center gap-2">
-      <svg viewBox="0 0 300 90" width={width} height={(width * 90) / 300} aria-hidden="true" className="overflow-visible drop-shadow-[0_0_18px_rgba(201,169,110,0.35)]">
+      <svg viewBox="0 0 300 90" width={width} height={(width * 90) / 300} aria-hidden="true" className="overflow-visible drop-shadow-[0_0_18px_color-mix(in_oklab,var(--color-accent)_35%,transparent)]">
         <defs>
           <clipPath id={clip}>
             <text x="150" y="72" textAnchor="middle" fontSize="78" fontWeight="900" letterSpacing="2" className="font-display">
@@ -44,8 +44,8 @@ export default function MoxicWave({ width = 220, label }: { width?: number; labe
           </g>
         </g>
       </svg>
-      {label && <p className="font-display text-[11px] uppercase tracking-[0.35em] text-text-muted">{label}</p>}
-      <span className="sr-only">Đang tải...</span>
+      {label && <p className="font-display text-[11px] text-text-muted">{label}</p>}
+      <span className="sr-only">Đang tải…</span>
     </div>
   );
 }

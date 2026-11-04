@@ -16,12 +16,12 @@ function HorizontalGameCard({ game }: { game: GameListItem }) {
   return (
     <Link
       to={`/games/${game.id}`}
-      className="flex items-center gap-3 p-2 hover:bg-bg-surface-hover transition-all duration-300 cursor-pointer group border border-transparent hover:border-white/5"
+      className="flex items-center gap-3 p-2 hover:bg-bg-surface-hover transition duration-300 cursor-pointer group border border-transparent hover:border-white/5"
     >
       <img
         src={game.coverImageUrl || ""}
         alt={game.name}
-        className="w-[72px] h-[72px] object-cover flex-shrink-0 group-hover:brightness-110 group-hover:scale-105 transition-all duration-300 shadow-md"
+        className="w-[72px] h-[72px] object-cover flex-shrink-0 group-hover:brightness-110 group-hover:scale-105 transition duration-300 shadow-md"
         loading="lazy"
       />
       <div className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ export default function DiscoverySection({ games }: Props) {
       <div className="max-w-[1400px] mx-auto px-4">
         <h2 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-8 flex items-center gap-3">
           Khám Phá Nội Dung Mới
-          <span className="text-xs text-accent font-body font-bold bg-accent/10 border border-accent/20 px-2 py-0.5 uppercase tracking-wider">
+          <span className="text-xs text-accent font-body font-bold bg-accent/10 border border-accent/20 px-2 py-0.5">
             Nổi Bật
           </span>
         </h2>
@@ -82,11 +82,11 @@ export default function DiscoverySection({ games }: Props) {
                 "https://picsum.photos/seed/discovery/560/920"
               }
               alt="Khám Phá Nội Dung Mới"
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-              <span className="inline-block px-2 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] font-bold uppercase tracking-wider mb-3">
+              <span className="inline-block px-2 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] font-bold mb-3">
                 Tuyển Tập
               </span>
               <h3 className="font-display text-2xl font-bold text-white mb-2 drop-shadow-md group-hover:text-accent transition-colors">

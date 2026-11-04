@@ -27,7 +27,7 @@ export default function CheckoutPage() {
         <Container>
           <div className="text-center py-24 bg-bg-surface border border-white/10 max-w-4xl mx-auto">
             <ShoppingCart className="w-16 h-16 text-white/10 mx-auto mb-4" />
-            <h2 className="font-display text-xl text-text-primary mb-2 uppercase tracking-wider">Giỏ hàng trống</h2>
+            <h2 className="font-display text-xl text-text-primary mb-2">Giỏ hàng trống</h2>
             <p className="text-text-muted text-sm mb-6">Bạn chưa thêm game nào vào giỏ hàng.</p>
             <button
               onClick={() => navigate("/games")}
@@ -60,7 +60,7 @@ export default function CheckoutPage() {
             {/* Left: Form */}
             <div className="flex-1">
               <div className="bg-bg-surface border border-white/10 p-6">
-                <h3 className="font-display text-base text-text-primary uppercase tracking-wider mb-6 pb-4 border-b border-white/10">
+                <h3 className="font-display text-base text-text-primary mb-6 pb-4 border-b border-white/10">
                   Thông tin tài khoản Xbox
                 </h3>
                 <CheckoutForm

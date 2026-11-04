@@ -19,7 +19,7 @@ interface CaseCardProps {
 const METHOD_ICON = { Code: KeyRound, FreeInterval: Clock, Points: Coins } as const;
 
 function StatusLine({ c, now, loggedIn, points }: CaseCardProps) {
-  if (!c.available) return <span className="text-amber-300">Đang cập nhật</span>;
+  if (!c.available) return <span className="text-caution">Đang cập nhật</span>;
 
   if (c.openMethod === "FreeInterval") {
     if (!loggedIn) return <span className="text-white/60">Đăng nhập để mở</span>;
@@ -27,20 +27,20 @@ function StatusLine({ c, now, loggedIn, points }: CaseCardProps) {
     if (Number.isFinite(next) && next > now) {
       return (
         <span className="text-white/70">
-          Mở lại sau <span className="font-mono text-fuchsia-200">{formatCountdown(next - now)}</span>
+          Mở lại sau <span className="font-mono text-highlight">{formatCountdown(next - now)}</span>
         </span>
       );
     }
-    return <span className="text-emerald-300">Sẵn sàng mở</span>;
+    return <span className="text-positive">Sẵn sàng mở</span>;
   }
 
   if (c.openMethod === "Points") {
     if (!loggedIn) return <span className="text-white/60">Đăng nhập để mở</span>;
     const balance = points ?? 0;
     if (balance < c.pointsCost) {
-      return <span className="text-amber-300">Cần thêm {formatPoints(c.pointsCost - balance)} điểm</span>;
+      return <span className="text-caution">Cần thêm {formatPoints(c.pointsCost - balance)} điểm</span>;
     }
-    return <span className="text-emerald-300">Sẵn sàng mở</span>;
+    return <span className="text-positive">Sẵn sàng mở</span>;
   }
 
   return <span className="text-white/60">Nhập mã quay để mở</span>;
@@ -48,7 +48,7 @@ function StatusLine({ c, now, loggedIn, points }: CaseCardProps) {
 
 export default function CaseCard({ c, now, loggedIn, points }: CaseCardProps) {
   const rarest = c.previewPrizes[0];
-  const glow = rarest ? RARITY_COLORS[rarest.rarity] : "#a855f7";
+  const glow = rarest ? RARITY_COLORS[rarest.rarity] : "var(--color-spin-glow)";
   const Icon = METHOD_ICON[c.openMethod];
   const fan = c.previewPrizes.slice(0, 3);
   const fanOrder = [1, 0, 2].filter((i) => i < fan.length).map((i) => fan[i]);
@@ -64,14 +64,14 @@ export default function CaseCard({ c, now, loggedIn, points }: CaseCardProps) {
         className="absolute inset-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 opacity-70"
         style={{
           clipPath: chamferPolygon(CHAMFER),
-          background: "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)",
+          background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 50%, var(--color-spin-glow) 100%)",
         }}
       />
       <div
         className="relative m-px flex h-full flex-col overflow-hidden"
         style={{
           clipPath: chamferPolygon(CHAMFER - 1),
-          background: "radial-gradient(ellipse at 50% 30%, #3b1d6e 0%, #1a0d33 60%, #0d0718 100%)",
+          background: "radial-gradient(ellipse at 50% 30%, var(--color-spin-panel) 0%, var(--color-spin-ink) 60%, var(--color-spin-void) 100%)",
         }}
       >
         {/* Art */}
@@ -104,9 +104,9 @@ export default function CaseCard({ c, now, loggedIn, points }: CaseCardProps) {
               })}
             </div>
           ) : (
-            <Gift className="h-12 w-12 text-fuchsia-300/70" strokeWidth={1.5} />
+            <Gift className="h-12 w-12 text-highlight/70" strokeWidth={1.5} />
           )}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#1a0d33] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-spin-ink to-transparent" />
           {/* Method badge */}
           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-sm border border-white/15 bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
             <Icon className="h-3 w-3" /> {openMethodLabel(c)}

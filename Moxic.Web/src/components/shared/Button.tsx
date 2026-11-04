@@ -8,11 +8,11 @@ interface ButtonProps {
 }
 
 export default function Button({ variant = "primary", children, onClick, className = "" }: ButtonProps) {
-  const base = " text-sm font-semibold transition-all duration-300 cursor-pointer";
+  const base = " text-sm font-semibold transition duration-300 cursor-pointer";
   const styles = {
     primary: "bg-accent hover:bg-accent-hover text-white px-6 py-3",
     ghost: "bg-transparent hover:bg-white/10 text-text-secondary hover:text-text-primary px-4 py-2",
-    hero: "bg-white hover:bg-gray-100 text-black px-8 py-3",
+    hero: "bg-white hover:bg-text-primary text-on-accent px-8 py-3",
   };
 
   return (

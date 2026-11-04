@@ -37,13 +37,13 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
   };
 
   return (
-    <div className="relative bg-bg-surface border border-emerald-500/30 p-5 overflow-hidden">
-      <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+    <div className="relative bg-bg-surface border border-positive/30 p-5 overflow-hidden">
+      <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-positive/10 blur-2xl pointer-events-none" />
       <div className="relative flex items-center justify-between mb-3">
-        <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-emerald-300 font-semibold">
+        <span className="flex items-center gap-1.5 text-xs text-positive font-semibold">
           <KeyRound className="w-3.5 h-3.5" /> Thuê game
         </span>
-        <span className={`flex items-center gap-1 text-[11px] font-semibold ${soldOut ? "text-rose-300" : "text-emerald-300"}`}>
+        <span className={`flex items-center gap-1 text-[11px] font-semibold ${soldOut ? "text-negative" : "text-positive"}`}>
           <Users className="w-3.5 h-3.5" /> {soldOut ? "Tạm hết slot" : `Còn ${data.freeSlots} slot`}
         </span>
       </div>
@@ -58,9 +58,9 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
               role="radio"
               aria-checked={active}
               onClick={() => setPlanId(p.id)}
-              className={`px-3 py-2.5 border text-left transition-colors cursor-pointer ${active ? "border-emerald-400 bg-emerald-500/10" : "border-border hover:border-white/30"}`}
+              className={`px-3 py-2.5 border text-left transition-colors cursor-pointer ${active ? "border-positive bg-positive/10" : "border-border hover:border-white/30"}`}
             >
-              <span className={`block text-xs ${active ? "text-emerald-200" : "text-text-muted"}`}>{p.days} ngày</span>
+              <span className={`block text-xs ${active ? "text-positive" : "text-text-muted"}`}>{p.days} ngày</span>
               <span className={`block text-base font-bold ${active ? "text-white" : "text-text-primary"}`}>{formatPrice(p.price)}</span>
             </button>
           );
@@ -76,18 +76,18 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
         type="button"
         onClick={onRent}
         disabled={soldOut || rent.isPending}
-        className="relative w-full h-11 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-bg-base text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+        className="relative w-full h-11 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-bg-base text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
       >
         {rent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarClock className="w-4 h-4" />}
-        {soldOut ? "Hết slot — quay lại sau" : me ? `Thuê ${plan.days} ngày` : "Đăng nhập để thuê"}
+        {soldOut ? "Hết slot, quay lại sau" : me ? `Thuê ${plan.days} ngày` : "Đăng nhập để thuê"}
       </button>
 
       <ul className="relative mt-3 space-y-1 text-[11px] text-text-muted">
         <li className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Nhận tài khoản chơi {gameName} ngay sau khi xác nhận thanh toán
+          <ShieldCheck className="w-3.5 h-3.5 text-positive" /> Nhận tài khoản chơi {gameName} ngay sau khi xác nhận thanh toán
         </li>
         <li className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Nhắc trước khi hết hạn · gia hạn 1 chạm
+          <ShieldCheck className="w-3.5 h-3.5 text-positive" /> Nhắc trước khi hết hạn · gia hạn 1 chạm
         </li>
       </ul>
     </div>

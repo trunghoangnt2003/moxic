@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GridSkeleton } from "../components/shared/Skeleton";
 import { useSearchParams } from "react-router-dom";
-import { Search, X, SlidersHorizontal, ChevronDown, ChevronLeft, ChevronRight, Check, Tag as TagIcon, Percent } from "lucide-react";
+import { Search, X, SlidersHorizontal, ChevronDown, ChevronLeft, ChevronRight, Check, Tag as TagIcon, Percent, Star } from "lucide-react";
 import { useGameFacets, useGames } from "../hooks/useGames";
 import GameCard from "../components/games/GameCard";
 import Container from "../components/layout/Container";
@@ -17,11 +17,11 @@ const SORTS = [
   { value: "bestseller", label: "Bán chạy nhất" },
   { value: "discount", label: "Giảm giá nhiều nhất" },
   { value: "ending", label: "Sắp hết khuyến mãi" },
-  { value: "price-asc", label: "Giá: thấp → cao" },
-  { value: "price-desc", label: "Giá: cao → thấp" },
+  { value: "price-asc", label: "Giá: thấp cao" },
+  { value: "price-desc", label: "Giá: cao thấp" },
   { value: "release", label: "Ngày phát hành" },
-  { value: "name-asc", label: "Tên: A → Z" },
-  { value: "name-desc", label: "Tên: Z → A" },
+  { value: "name-asc", label: "Tên: A Z" },
+  { value: "name-desc", label: "Tên: Z A" },
 ];
 
 const PRICE_PRESETS: { label: string; min?: number; max?: number }[] = [
@@ -434,7 +434,7 @@ function Section({ title, children, defaultOpen = true }: { title: string; child
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-widest cursor-pointer hover:text-white"
+        className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-text-secondary cursor-pointer hover:text-white"
       >
         {title}
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -520,10 +520,10 @@ function FilterPanel({
                 type="button"
                 onClick={() => update({ rating: active ? undefined : r })}
                 className={`h-9 inline-flex items-center justify-center gap-1 text-xs border transition-colors cursor-pointer ${
-                  active ? "bg-amber-400/15 border-amber-400 text-amber-300" : "border-white/10 text-text-secondary hover:border-white/30 hover:text-white"
+                  active ? "bg-caution/15 border-caution text-caution" : "border-white/10 text-text-secondary hover:border-white/30 hover:text-white"
                 }`}
               >
-                <span className="text-amber-400">★</span> {r}+
+                <Star className="w-3.5 h-3.5 text-caution fill-current" aria-hidden="true" /> {r}+
               </button>
             );
           })}
@@ -730,7 +730,7 @@ function PriceFilter({
           aria-label="Giá thấp nhất"
           className="w-full min-w-0 h-9 bg-bg-base border border-white/10 px-2 text-xs focus:outline-none focus:border-accent text-text-primary placeholder:text-text-placeholder"
         />
-        <span className="text-text-muted">–</span>
+        <span className="text-text-muted text-xs">đến</span>
         <input
           inputMode="numeric"
           value={maxText}
@@ -746,7 +746,7 @@ function PriceFilter({
       </form>
       {(min != null || max != null) && (
         <p className="mt-2 text-[11px] text-text-muted">
-          {min != null ? formatPrice(min) : "0"} – {max != null ? formatPrice(max) : "∞"}
+          {min != null ? formatPrice(min) : "0"} đến {max != null ? formatPrice(max) : "∞"}
         </p>
       )}
     </div>

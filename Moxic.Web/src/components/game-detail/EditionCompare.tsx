@@ -57,7 +57,7 @@ export default function EditionCompare({
                 {editions.map((e) => (
                   <td key={e.id} className={`px-3 py-2.5 text-center ${e.id === selectedId ? "bg-accent/5" : ""}`}>
                     {has(e, item) ? (
-                      <Check className="w-4 h-4 mx-auto text-emerald-400" aria-label="Có" />
+                      <Check className="w-4 h-4 mx-auto text-positive" aria-label="Có" />
                     ) : (
                       <Minus className="w-4 h-4 mx-auto text-text-muted/50" aria-label="Không" />
                     )}

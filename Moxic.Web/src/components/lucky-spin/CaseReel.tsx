@@ -156,7 +156,7 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
           try {
             await animation.finished;
           } catch {
-            // Cancelled (unmount / new spin) — leave state as is.
+            // Cancelled (unmount / new spin), leave state as is.
             return;
           }
 
@@ -181,7 +181,7 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
         className="absolute inset-0"
         style={{
           clipPath: chamferPolygon(CHAMFER),
-          background: "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)",
+          background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 50%, var(--color-spin-glow) 100%)",
         }}
       />
       {/* Panel (inner clipped layer, inset 1px) */}
@@ -189,12 +189,12 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
         className="relative m-px py-5 md:py-7"
         style={{
           clipPath: chamferPolygon(CHAMFER - 1),
-          background: "radial-gradient(ellipse at center, #3b1d6e 0%, #1a0d33 55%, #0d0718 100%)",
+          background: "radial-gradient(ellipse at center, var(--color-spin-panel) 0%, var(--color-spin-ink) 55%, var(--color-spin-void) 100%)",
         }}
       >
         {/* Subtle top/bottom rails */}
-        <div className="pointer-events-none absolute inset-x-8 top-3 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent md:top-4" />
-        <div className="pointer-events-none absolute inset-x-8 bottom-3 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent md:bottom-4" />
+        <div className="pointer-events-none absolute inset-x-8 top-3 h-px bg-gradient-to-r from-transparent via-highlight/40 to-transparent md:top-4" />
+        <div className="pointer-events-none absolute inset-x-8 bottom-3 h-px bg-gradient-to-r from-transparent via-highlight/40 to-transparent md:bottom-4" />
 
         <div className="relative">
           {/* Reel viewport with horizontal edge fade */}
@@ -223,16 +223,16 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
           {/* Center marker: pink line + triangles, above the cards */}
           <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 -translate-x-1/2">
             <div
-              className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-[#ec4899]"
-              style={{ boxShadow: "0 0 8px #ec4899, 0 0 16px rgba(236, 72, 153, 0.6)" }}
+              className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-highlight"
+              style={{ boxShadow: "0 0 8px var(--color-spin-pink), 0 0 16px color-mix(in oklab, var(--color-spin-pink) 60%, transparent)" }}
             />
             <div
               className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2"
               style={{
                 borderLeft: "10px solid transparent",
                 borderRight: "10px solid transparent",
-                borderTop: "13px solid #ec4899",
-                filter: "drop-shadow(0 0 6px #ec4899)",
+                borderTop: "13px solid var(--color-spin-pink)",
+                filter: "drop-shadow(0 0 6px var(--color-spin-pink))",
               }}
             />
             <div
@@ -240,8 +240,8 @@ export default function CaseReel({ idleItems, ref }: CaseReelProps) {
               style={{
                 borderLeft: "10px solid transparent",
                 borderRight: "10px solid transparent",
-                borderBottom: "13px solid #ec4899",
-                filter: "drop-shadow(0 0 6px #ec4899)",
+                borderBottom: "13px solid var(--color-spin-pink)",
+                filter: "drop-shadow(0 0 6px var(--color-spin-pink))",
               }}
             />
           </div>

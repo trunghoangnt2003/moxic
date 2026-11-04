@@ -62,6 +62,7 @@ export default function HeroSplash({ featured, available }: Props) {
           <div className="absolute inset-0 z-0 bg-black">
             {mainImage?.endsWith('.mp4') ? (
               <video
+                poster={(hero as any).coverImageUrl}
                 src={mainImage}
                 autoPlay
                 muted
@@ -81,13 +82,13 @@ export default function HeroSplash({ featured, available }: Props) {
           {/* â•â•â• LEFT: GTA 6 Hero (65%) â•â•â• */}
           <div className="relative w-full md:w-[65%] h-[45vh] md:h-full flex flex-col justify-between p-6 md:p-12 z-10">
             {/* Gradient overlays for left side readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f11] md:from-[#0f0f11]/90 via-[#0f0f11]/60 to-transparent pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f11]/90 via-[#0f0f11]/40 to-transparent pointer-events-none hidden md:block" />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-base md:from-bg-base/90 via-bg-base/60 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-bg-base/90 via-bg-base/40 to-transparent pointer-events-none hidden md:block" />
 
             {/* Content overlay */}
             <div className="relative z-20 flex flex-col h-full justify-between">
               <div>
-                <span className="inline-block px-3 py-1 bg-preorder text-white text-xs font-bold uppercase tracking-wider mb-4 shadow-lg shadow-preorder/30">
+                <span className="inline-block px-3 py-1 bg-preorder text-white text-xs font-bold mb-4 shadow-lg shadow-preorder/30">
                   Bom tấn sắp ra mắt
                 </span>
                 <h1 className="font-display text-3xl md:text-6xl text-white leading-tight drop-shadow-2xl max-w-2xl">
@@ -101,7 +102,7 @@ export default function HeroSplash({ featured, available }: Props) {
               {/* Price, Button and Countdown in one unified box */}
               <div className="mt-4 md:mt-auto">
                 <div className="bg-black/80 md:bg-black/60 backdrop-blur-xl p-4 md:p-5 border border-white/10 flex flex-col items-start gap-2 md:gap-3 w-full md:w-max shadow-2xl">
-                  <div className="text-white/60 text-xs uppercase tracking-widest font-semibold">Giá Đặt Trước</div>
+                  <div className="text-white/60 text-xs font-semibold">Giá Đặt Trước</div>
 
                   <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-5 w-full">
                     <div className="flex items-baseline gap-2 md:gap-3 flex-wrap">
@@ -123,15 +124,15 @@ export default function HeroSplash({ featured, available }: Props) {
 
                     <Link
                       to={`/games/${hero.id}`}
-                      className="bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-12 md:h-12 transition-all flex items-center justify-center cursor-pointer shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-1 shrink-0 ml-auto md:ml-0"
+                      className="bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-12 md:h-12 transition flex items-center justify-center cursor-pointer shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-1 shrink-0 ml-auto md:ml-0"
                     >
                       <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
                     </Link>
                   </div>
 
                   {hero.releaseDate && (
-                    <div className="text-[10px] md:text-[11px] text-accent/80 font-mono tracking-widest mt-1 bg-accent/10 px-2 md:px-3 py-1 md:py-1.5 border border-accent/20 w-full md:w-auto text-center md:text-left">
-                      RA MẮT SAU: <Countdown date={hero.releaseDate} />
+                    <div className="text-xs text-accent/80 tabular-nums mt-1 bg-accent/10 px-2 md:px-3 py-1 md:py-1.5 border border-accent/20 w-full md:w-auto text-center md:text-left">
+                      Ra mắt sau: <Countdown date={hero.releaseDate} />
                     </div>
                   )}
                 </div>
@@ -142,7 +143,7 @@ export default function HeroSplash({ featured, available }: Props) {
           {/* â•â•â• RIGHT: 2-Column Scrolling List (35%) â•â•â• */}
           <div className="relative w-full md:w-[35%] h-[30vh] md:h-full z-10 border-t md:border-t-0 md:border-l border-white/10 bg-black/40 backdrop-blur-xl">
             {/* Fade overlay top/bottom to make scroll smooth */}
-            <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-b from-[#0f0f11] via-transparent to-[#0f0f11] opacity-90" />
+            <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-b from-bg-base via-transparent to-bg-base opacity-90" />
 
             <div className="flex gap-4 h-full p-4">
               {/* Column 1 - Scrolling UP */}

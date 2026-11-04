@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import OtpInput from "../components/account/OtpInput";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AlertCircle, MailCheck } from "lucide-react";
@@ -100,35 +101,29 @@ export default function VerifyEmailPage() {
             autoComplete="email"
           />
         )}
-        <AuthField
+        <OtpInput
           id="verify-code"
           label="Mã xác minh"
-          type="text"
           value={code}
-          onChange={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-          placeholder="••••••"
-          autoComplete="one-time-code"
-          inputMode="numeric"
-          maxLength={6}
-          className="text-center font-mono text-xl tracking-[0.6em]"
+          onChange={setCode}
           hint="Mã có hiệu lực trong 15 phút. Kiểm tra cả thư mục Spam."
         />
 
         {error && (
-          <div role="alert" className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-4 py-3">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <p className="text-red-400 text-xs">{error}</p>
+          <div role="alert" className="flex items-center gap-2 bg-negative/10 border border-negative/30 px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-negative flex-shrink-0" />
+            <p className="text-negative text-xs">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={verify.isPending}
-          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold h-12 text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {verify.isPending ? (
             <>
-              <MoxicLoader size="sm" /> Đang xác minh...
+              <MoxicLoader size="sm" /> Đang xác minh…
             </>
           ) : (
             "Xác minh"

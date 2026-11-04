@@ -17,9 +17,9 @@ interface AuthFieldProps {
 }
 
 const inputClass =
-  "w-full bg-bg-elevated border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 text-text-primary placeholder:text-text-muted transition-colors";
+  "w-full h-12 bg-bg-surface border border-white/15 px-4 text-base text-text-primary placeholder:text-text-placeholder transition-colors hover:border-white/25 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 aria-[invalid=true]:border-negative";
 
-/** Labelled input in the checkout's warm dark style; password fields get a show/hide toggle. */
+/** Labelled 48px input; password fields get a show/hide toggle. */
 export default function AuthField({
   id,
   label,
@@ -41,7 +41,7 @@ export default function AuthField({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-xs text-text-secondary font-semibold mb-1.5">
+      <label htmlFor={id} className="block text-sm text-text-primary font-medium mb-2">
         {label}
       </label>
       <div className="relative">
@@ -70,11 +70,11 @@ export default function AuthField({
         )}
       </div>
       {error ? (
-        <p id={`${id}-error`} className="text-red-400 text-xs mt-1">
+        <p id={`${id}-error`} role="alert" className="text-negative text-sm mt-1.5">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="text-text-muted text-xs mt-1">
+        <p id={`${id}-hint`} className="text-text-muted text-sm mt-1.5">
           {hint}
         </p>
       ) : null}

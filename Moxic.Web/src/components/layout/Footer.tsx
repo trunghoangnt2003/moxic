@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-3">
             <Gamepad2 className="w-6 h-6 text-accent" />
-            <span className="text-accent font-display text-xl tracking-wide">
+            <span className="text-accent font-display text-xl">
               MOXIC
             </span>
           </div>
@@ -41,7 +41,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <p className="text-text-muted text-xs">
-            Moxic GameStore — Game Xbox chính hãng giá rẻ hơn 30% so với Store
+            Moxic GameStore, Game Xbox chính hãng giá rẻ hơn 30% so với Store
           </p>
           <p className="text-text-muted text-xs">
             &copy; 2026 Moxic. All rights reserved.

@@ -59,8 +59,8 @@ export async function enterReferral(code: string) {
 }
 
 export const TIER_STYLES: Record<string, { ring: string; text: string; bg: string }> = {
-  member: { ring: "from-zinc-400 to-zinc-600", text: "text-zinc-200", bg: "bg-zinc-500/10" },
-  silver: { ring: "from-slate-200 to-slate-500", text: "text-slate-100", bg: "bg-slate-400/10" },
-  gold: { ring: "from-amber-200 to-amber-600", text: "text-amber-200", bg: "bg-amber-400/10" },
-  diamond: { ring: "from-cyan-200 via-sky-400 to-fuchsia-500", text: "text-cyan-200", bg: "bg-cyan-400/10" },
+  member: { ring: "from-text-muted to-text-muted", text: "text-text-muted", bg: "bg-text-muted/10" },
+  silver: { ring: "from-text-muted to-text-muted", text: "text-text-muted", bg: "bg-text-muted/10" },
+  gold: { ring: "from-caution to-caution", text: "text-caution", bg: "bg-caution/10" },
+  diamond: { ring: "from-info via-info to-highlight", text: "text-info", bg: "bg-info/10" },
 };

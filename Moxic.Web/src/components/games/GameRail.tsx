@@ -44,7 +44,7 @@ export default function GameRail({ title, games, action, ranked }: Props) {
         {games.map((g, i) => (
           <div key={g.id} className="relative shrink-0 snap-start w-[44%] sm:w-[30%] md:w-[23%] lg:w-[18.5%]">
             {ranked && (
-              <span className="absolute -left-1 -top-1 z-10 w-8 h-8 flex items-center justify-center font-display font-extrabold text-sm bg-gradient-to-br from-amber-300 to-orange-500 text-bg-base shadow-lg">
+              <span className="absolute -left-1 -top-1 z-10 w-8 h-8 flex items-center justify-center font-display font-extrabold text-sm bg-gradient-to-br from-caution to-caution text-bg-base shadow-lg">
                 {i + 1}
               </span>
             )}

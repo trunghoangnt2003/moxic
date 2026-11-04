@@ -81,19 +81,19 @@ export default function LuckySpinGalleryPage() {
     <Container className="mt-8 mb-16">
       {/* Heading */}
       <div className="mb-6 text-center md:mb-8">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-fuchsia-300">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-[11px] font-semibold text-highlight">
           <Sparkles className="h-3 w-3" /> Mở hòm
         </div>
         <h1 className="mt-3 font-display text-3xl font-bold text-text-primary md:text-4xl">Vòng Quay May Mắn</h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-text-muted">
-          Chọn hòm để mở bằng mã quay, lượt miễn phí theo chu kỳ hoặc điểm thưởng — cơ hội nhận game Xbox miễn phí và
+          Chọn hòm để mở bằng mã quay, lượt miễn phí theo chu kỳ hoặc điểm thưởng, cơ hội nhận game Xbox miễn phí và
           mã giảm giá.
         </p>
         <div className="mt-4 flex justify-center">
           {loggedIn ? (
             <Link
               to="/account/points"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-400/20"
+              className="inline-flex items-center gap-1.5 rounded-full border border-caution/30 bg-caution/10 px-3 py-1.5 text-xs font-semibold text-caution transition-colors hover:bg-caution/20"
             >
               <Coins className="h-3.5 w-3.5" /> Điểm của bạn: {formatPoints(me.points)}
             </Link>
@@ -116,7 +116,7 @@ export default function LuckySpinGalleryPage() {
         className="mx-auto mt-6 flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center"
         aria-label="Nhập mã quay"
       >
-        <label htmlFor="gallery-code" className="flex items-center gap-1.5 text-sm font-semibold text-fuchsia-200 sm:whitespace-nowrap">
+        <label htmlFor="gallery-code" className="flex items-center gap-1.5 text-sm font-semibold text-highlight sm:whitespace-nowrap">
           <KeyRound className="h-4 w-4" /> Có mã quay?
         </label>
         <input
@@ -128,13 +128,13 @@ export default function LuckySpinGalleryPage() {
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
-          className="h-11 flex-1 rounded-sm border border-fuchsia-500/30 bg-[#140b26] px-3 font-mono text-sm tracking-[0.2em] text-white placeholder:tracking-[0.12em] placeholder:text-white/30 outline-none transition-colors focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-500/30"
+          className="h-11 flex-1 rounded-sm border border-highlight/30 bg-spin-deep px-3 font-mono text-sm text-white placeholder: placeholder:text-white/30 outline-none transition-colors focus:border-highlight focus:ring-2 focus:ring-highlight/30"
         />
         <button
           type="submit"
           disabled={lookingUp || !code}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold uppercase tracking-wider text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-          style={{ background: "linear-gradient(135deg, #a855f7 0%, #ec4899 100%)" }}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 100%)" }}
         >
           {lookingUp ? <MoxicLoader size="sm" /> : null} Tìm hòm
         </button>
@@ -153,7 +153,7 @@ export default function LuckySpinGalleryPage() {
                 aria-pressed={active}
                 className={`flex-none rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                   active
-                    ? "border-fuchsia-400 bg-fuchsia-500/20 text-white"
+                    ? "border-highlight bg-highlight/20 text-white"
                     : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -167,10 +167,10 @@ export default function LuckySpinGalleryPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm hòm..."
+            placeholder="Tìm hòm…"
             maxLength={100}
             aria-label="Tìm hòm"
-            className="h-10 w-full rounded-sm border border-white/10 bg-[#140b26] pl-9 pr-3 text-sm text-white placeholder:text-white/35 outline-none focus:border-fuchsia-400"
+            className="h-10 w-full rounded-sm border border-white/10 bg-spin-deep pl-9 pr-3 text-sm text-white placeholder:text-white/35 outline-none focus:border-highlight"
           />
         </div>
       </div>
@@ -178,14 +178,14 @@ export default function LuckySpinGalleryPage() {
       {/* Grid */}
       <div className="mt-5">
         {isLoading ? (
-          <SectionLoader label="Đang tải hòm..." />
+          <SectionLoader label="Đang tải hòm…" />
         ) : isError ? (
           <div className="rounded-sm border border-white/10 bg-white/5 p-8 text-center">
-            <p className="mb-4 text-sm text-red-400">Không thể tải danh sách hòm. Vui lòng thử lại.</p>
+            <p className="mb-4 text-sm text-negative">Không thể tải danh sách hòm. Vui lòng thử lại.</p>
             <button
               type="button"
               onClick={() => void refetch()}
-              className="rounded-sm bg-fuchsia-600 px-5 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
+              className="rounded-sm bg-highlight px-5 py-2 text-sm font-semibold text-white hover:bg-highlight"
             >
               Thử lại
             </button>
@@ -207,7 +207,7 @@ export default function LuckySpinGalleryPage() {
                   type="button"
                   onClick={() => void fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  className="inline-flex items-center gap-2 rounded-sm border border-fuchsia-500/40 bg-fuchsia-500/10 px-6 py-2.5 text-sm font-semibold text-fuchsia-100 transition-colors hover:bg-fuchsia-500/20 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-sm border border-highlight/40 bg-highlight/10 px-6 py-2.5 text-sm font-semibold text-highlight transition-colors hover:bg-highlight/20 disabled:opacity-60"
                 >
                   {isFetchingNextPage ? <MoxicLoader size="sm" /> : null}
                   Xem thêm hòm

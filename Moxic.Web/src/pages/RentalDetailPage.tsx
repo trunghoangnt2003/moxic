@@ -42,7 +42,7 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
   };
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-wider text-text-muted mb-1">{label}</p>
+      <p className="text-[11px] text-text-muted mb-1">{label}</p>
       <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 h-11">
         <span className="flex-1 font-mono text-sm truncate select-all">{show ? value : "•".repeat(Math.min(12, value.length))}</span>
         {secret && (
@@ -51,7 +51,7 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
           </button>
         )}
         <button type="button" onClick={copy} aria-label={`Sao chép ${label}`} className="p-1.5 text-text-muted hover:text-white cursor-pointer">
-          {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+          {copied ? <Check className="w-4 h-4 text-positive" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
     </div>
@@ -70,11 +70,11 @@ function Timeline({ r }: { r: RentalDetail }) {
     <ol className="flex items-center gap-2">
       {steps.map((s, i) => (
         <li key={s.key} className="flex items-center gap-2 flex-1 last:flex-none">
-          <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${s.done ? "bg-emerald-500 text-bg-base" : "border border-white/20 text-text-muted"}`}>
+          <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${s.done ? "bg-positive text-bg-base" : "border border-white/20 text-text-muted"}`}>
             {s.done ? <Check className="w-3.5 h-3.5" /> : i + 1}
           </span>
           <span className={`text-xs whitespace-nowrap ${s.done ? "text-white" : "text-text-muted"}`}>{s.label}</span>
-          {i < steps.length - 1 && <span className={`hidden sm:block flex-1 h-px ${steps[i + 1].done ? "bg-emerald-500" : "bg-white/10"}`} />}
+          {i < steps.length - 1 && <span className={`hidden sm:block flex-1 h-px ${steps[i + 1].done ? "bg-positive" : "bg-white/10"}`} />}
         </li>
       ))}
     </ol>
@@ -88,12 +88,12 @@ function PayBox({ code, amount, payBefore, onPaid, onCancel, busy }: { code: str
   return (
     <div className="space-y-4">
       {left && (
-        <p className={`flex items-center gap-2 text-sm ${left.ms < 5 * 60_000 ? "text-rose-300" : "text-amber-300"}`}>
+        <p className={`flex items-center gap-2 text-sm ${left.ms < 5 * 60_000 ? "text-negative" : "text-caution"}`}>
           <Clock className="w-4 h-4" /> Giữ chỗ còn{" "}
           <b className="font-mono tabular-nums">
             {String(left.m).padStart(2, "0")}:{String(left.s).padStart(2, "0")}
-          </b>{" "}
-          — quá hạn đơn sẽ tự hủy để nhường slot.
+          </b>
+          . Quá hạn, đơn sẽ tự hủy để nhường slot.
         </p>
       )}
       <QRDisplay bankQrUrl={config?.bankQrUrl} cryptoQrUrl={config?.cryptoQrUrl} transferContent={code} amount={amount} />
@@ -142,7 +142,7 @@ export default function RentalDetailPage() {
   const extend = useMutation({
     mutationFn: (planId: string) => extendRental(code, planId),
     onSuccess: () => {
-      toast.success("Đã tạo yêu cầu gia hạn — vui lòng thanh toán");
+      toast.success("Đã tạo yêu cầu gia hạn, vui lòng thanh toán");
       refresh();
     },
     onError: (e) => toast.error(rentalError(e, "Không gia hạn được")),
@@ -177,7 +177,7 @@ export default function RentalDetailPage() {
           {r.coverUrl ? <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-8 h-8 m-auto mt-8 text-accent/40" />}
         </div>
         <div className="min-w-0 flex-1">
-          <span className={`inline-block px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider border ${st.cls}`}>{st.label}</span>
+          <span className={`inline-block px-2 py-0.5 text-[11px] font-bold border ${st.cls}`}>{st.label}</span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold mt-2 truncate">{r.gameName}</h1>
           <p className="text-sm text-text-muted mt-1">
             Mã đơn <span className="font-mono text-text-secondary">{r.code}</span> · {r.days} ngày · {formatPrice(r.price)}
@@ -198,8 +198,8 @@ export default function RentalDetailPage() {
         )}
 
         {r.status === "AwaitingConfirmation" && (
-          <section className="bg-sky-500/5 border border-sky-500/30 p-5 flex gap-3">
-            <Loader2 className="w-5 h-5 text-sky-300 animate-spin shrink-0 mt-0.5" />
+          <section className="bg-info/5 border border-info/30 p-5 flex gap-3">
+            <Loader2 className="w-5 h-5 text-info animate-spin shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Moxic đang xác nhận thanh toán</p>
               <p className="text-sm text-text-muted mt-1">Ngay khi xác nhận, thông tin tài khoản sẽ hiện tại đây và bạn nhận email thông báo. Trang tự cập nhật.</p>
@@ -208,18 +208,18 @@ export default function RentalDetailPage() {
         )}
 
         {r.status === "Active" && r.credentials && (
-          <section className="relative bg-bg-surface border border-emerald-500/30 p-5 overflow-hidden">
-            <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+          <section className="relative bg-bg-surface border border-positive/30 p-5 overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-positive/10 blur-3xl pointer-events-none" />
             <div className="relative flex flex-wrap items-end justify-between gap-4 mb-5">
               <div>
-                <p className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-emerald-300 font-semibold">
+                <p className="flex items-center gap-1.5 text-xs text-positive font-semibold">
                   <KeyRound className="w-3.5 h-3.5" /> Tài khoản chơi game
                 </p>
                 <p className="text-sm text-text-muted mt-1">Đăng nhập tài khoản này trên Xbox để chơi {r.gameName}.</p>
               </div>
               {left && (
                 <div className="text-right">
-                  <p className="text-[11px] uppercase tracking-wider text-text-muted">Còn lại</p>
+                  <p className="text-[11px] text-text-muted">Còn lại</p>
                   <p className="font-display text-2xl font-bold tabular-nums">
                     {left.d > 0 && <>{left.d}<span className="text-sm text-text-muted mx-0.5">ngày</span></>}
                     {left.h}<span className="text-sm text-text-muted mx-0.5">giờ</span>
@@ -241,8 +241,8 @@ export default function RentalDetailPage() {
         )}
 
         {r.status === "Expired" && (
-          <section className="bg-rose-500/5 border border-rose-500/30 p-5 flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-rose-300 shrink-0 mt-0.5" />
+          <section className="bg-negative/5 border border-negative/30 p-5 flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-negative shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Đơn thuê đã hết hạn lúc {fmt(r.endsAt)}</p>
               <p className="text-sm text-text-muted mt-1">Gia hạn ngay bên dưới để tiếp tục chơi trước khi tài khoản được thu hồi.</p>
@@ -275,12 +275,12 @@ export default function RentalDetailPage() {
               pendingExt.status === "PendingPayment" ? (
                 <>
                   <p className="text-sm text-text-muted mb-3">
-                    Yêu cầu gia hạn <b className="text-white">{pendingExt.days} ngày</b> — chuyển khoản với nội dung <span className="font-mono text-white">{pendingExt.code}</span>.
+                    Yêu cầu gia hạn <b className="text-white">{pendingExt.days} ngày</b>, chuyển khoản với nội dung <span className="font-mono text-white">{pendingExt.code}</span>.
                   </p>
                   <PayBox code={pendingExt.code} amount={pendingExt.price} busy={busy} onPaid={() => paid.mutate(pendingExt.code)} onCancel={() => cancel.mutate(pendingExt.code)} />
                 </>
               ) : (
-                <p className="flex items-center gap-2 text-sm text-sky-300">
+                <p className="flex items-center gap-2 text-sm text-info">
                   <Loader2 className="w-4 h-4 animate-spin" /> Đang xác nhận thanh toán gia hạn {pendingExt.days} ngày…
                 </p>
               )
@@ -326,7 +326,7 @@ export default function RentalDetailPage() {
             ["Gói", `${r.days} ngày · ${formatPrice(r.price)}`],
           ].map(([k, v]) => (
             <div key={k} className="bg-bg-base p-3">
-              <p className="text-[11px] uppercase tracking-wider text-text-muted">{k}</p>
+              <p className="text-[11px] text-text-muted">{k}</p>
               <p className="mt-0.5 text-text-primary">{v}</p>
             </div>
           ))}
@@ -334,7 +334,7 @@ export default function RentalDetailPage() {
 
         {r.extensions.length > 0 && (
           <section>
-            <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Lịch sử gia hạn</h3>
+            <h3 className="text-xs text-text-muted mb-2">Lịch sử gia hạn</h3>
             <ul className="divide-y divide-white/5 border border-white/10">
               {r.extensions.map((e) => (
                 <li key={e.code} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">

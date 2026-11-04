@@ -56,14 +56,14 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
         <p className="text-sm text-text-secondary">
           Tổng: <span className="font-bold text-accent">{formatPrice(order.totalAmount)}</span>
           {order.discountAmount > 0 && (
-            <span className="ml-1 text-xs text-green-400">(đã giảm {formatPrice(order.discountAmount)})</span>
+            <span className="ml-1 text-xs text-positive">(đã giảm {formatPrice(order.discountAmount)})</span>
           )}
         </p>
         <Link
           to={`/account/orders/${encodeURIComponent(order.orderCode)}`}
           className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
         >
-          Xem chi tiết →
+          Xem chi tiết
         </Link>
       </footer>
     </article>
@@ -83,7 +83,7 @@ export default function OrderHistoryPage() {
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-6 h-6 text-accent" />
-            <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-text-primary">
+            <h1 className="font-display text-2xl md:text-3xl text-text-primary">
               Lịch sử mua hàng
             </h1>
           </div>
@@ -95,10 +95,10 @@ export default function OrderHistoryPage() {
           )}
 
           {isLoading ? (
-            <SectionLoader label="Đang tải đơn hàng..." />
+            <SectionLoader label="Đang tải đơn hàng…" />
           ) : isError ? (
             <div className="bg-bg-surface border border-white/10 p-8 text-center">
-              <p className="text-sm text-red-400 mb-4">Không thể tải lịch sử mua hàng. Vui lòng thử lại.</p>
+              <p className="text-sm text-negative mb-4">Không thể tải lịch sử mua hàng. Vui lòng thử lại.</p>
               <button
                 onClick={() => void refetch()}
                 className="bg-accent hover:bg-accent-hover text-bg-base px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"

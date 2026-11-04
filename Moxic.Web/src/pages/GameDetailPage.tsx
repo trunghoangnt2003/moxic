@@ -12,6 +12,7 @@ import ReportButton from "../components/community/ReportButton";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import ShareButton from "../components/shared/ShareButton";
+import { Play as PlayIcon, Zap as ZapIcon } from "lucide-react";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
@@ -58,23 +59,23 @@ function RatingCard({
   const pct = (score / maxScore) * 100;
   const color =
     pct >= 80
-      ? "text-green-400 border-green-500/30 bg-green-500/10"
+      ? "text-positive border-positive/30 bg-positive/10"
       : pct >= 60
-        ? "text-yellow-400 border-yellow-500/30 bg-yellow-500/10"
-        : "text-red-400 border-red-500/30 bg-red-500/10";
+        ? "text-caution border-caution/30 bg-caution/10"
+        : "text-negative border-negative/30 bg-negative/10";
 
-  const barColor = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
+  const barColor = pct >= 80 ? "bg-positive" : pct >= 60 ? "bg-caution" : "bg-negative";
 
   return (
     <div className={`border p-4 ${color}`}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider opacity-80">
+        <span className="text-xs font-semibold opacity-80">
           {source}
         </span>
         <span className="text-2xl font-display font-bold leading-none">{score}</span>
       </div>
       <div className="w-full h-1.5 bg-white/10 mb-1.5 overflow-hidden">
-        <div className={`h-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full transition ${barColor}`} style={{ width: `${pct}%` }} />
       </div>
       <p className="text-[11px] opacity-60">{label}</p>
     </div>
@@ -97,7 +98,7 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
         <Star
           key={s}
           size={size}
-          className={s <= rating ? "text-yellow-400 fill-yellow-400" : "text-white/10"}
+          className={s <= rating ? "text-caution fill-caution" : "text-white/10"}
         />
       ))}
     </div>
@@ -152,6 +153,8 @@ export default function GameDetailPage() {
   const discount = original > 0 && price > 0
     ? Math.round((1 - price / original) * 100) : 0;
   const primaryImage = game.media[activeMedia]?.presignedUrl || game.media[0]?.presignedUrl;
+  // First still picture of the game, used as the poster frame for its videos.
+  const posterImage = game.media.find((m) => !m.presignedUrl?.includes(".mp4"))?.presignedUrl;
   const backgroundHeroImage = game.media[0]?.presignedUrl;
   const days = game.releaseDate ? daysUntil(game.releaseDate) : 0;
   const req = game.systemRequirements;
@@ -161,7 +164,7 @@ export default function GameDetailPage() {
     toast.success(edition ? `Đã thêm bản ${edition.name} vào giỏ hàng!` : "Đã thêm vào giỏ hàng!", { duration: 3000 });
     addItem({
       gameId: game.id,
-      name: edition ? game.name + " — " + edition.name : game.name,
+      name: edition ? game.name + ", " + edition.name : game.name,
       editionId: edition?.id ?? null,
       editionName: edition?.name ?? null,
       coverImageUrl: game.media[0]?.presignedUrl || "",
@@ -250,6 +253,7 @@ export default function GameDetailPage() {
                     <video
                       key={game.media[activeMedia].presignedUrl}
                       src={game.media[activeMedia].presignedUrl}
+                      poster={posterImage}
                       autoPlay muted loop playsInline
                       className="w-full h-full object-cover"
                     />
@@ -282,15 +286,15 @@ export default function GameDetailPage() {
                       <button
                         key={m.id}
                         onClick={() => setActiveMedia(i)}
-                        className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video overflow-hidden border-2 transition-all duration-200 cursor-pointer relative ${
+                        className={`flex-shrink-0 w-[100px] md:w-[120px] aspect-video overflow-hidden border-2 transition duration-200 cursor-pointer relative ${
                           i === activeMedia ? "border-accent brightness-100" : "border-transparent brightness-50 hover:brightness-75"
                         }`}
                       >
                         {isVideo ? (
                           <div className="w-full h-full relative bg-black flex items-center justify-center">
-                            <video src={m.presignedUrl} className="w-full h-full object-cover" muted playsInline />
+                            <video src={m.presignedUrl} poster={posterImage} preload="none" className="w-full h-full object-cover" muted playsInline />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                              <span className="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold">▶</span>
+                              <span className="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-on-accent"><PlayIcon className="w-3 h-3 fill-current" aria-hidden="true" /></span>
                             </div>
                           </div>
                         ) : (
@@ -374,7 +378,7 @@ export default function GameDetailPage() {
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="flex items-center gap-1.5 bg-bg-surface border border-border px-2.5 py-1.5 md:px-3 md:py-1.5">
                       <StarRating rating={Math.round(game.storeRating)} size={10} />
-                      <span className="font-display text-base md:text-lg text-yellow-400 font-bold">{game.storeRating}</span>
+                      <span className="font-display text-base md:text-lg text-caution font-bold">{game.storeRating}</span>
                       <span className="text-text-muted text-[10px] md:text-xs">/ 5</span>
                     </div>
                     <div className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center bg-bg-surface border border-border text-text-muted group-hover:text-text-primary transition-colors">
@@ -391,7 +395,7 @@ export default function GameDetailPage() {
               {(game.reviews.length > 0 || newReviews.length > 0) && (
                 <div
                   id="reviews-content"
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`overflow-hidden transition duration-300 ease-in-out ${
                     showReviews ? "max-h-[3000px] opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
@@ -410,12 +414,12 @@ export default function GameDetailPage() {
                             <div className="flex items-center gap-1.5 md:gap-2 mb-1 flex-wrap">
                               <span className="text-sm font-semibold text-text-primary">{review.userName}</span>
                               {review.isVerifiedPurchase && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
                                   <BadgeCheck className="w-3 h-3" /> Đã mua
                                 </span>
                               )}
                               {review.badges?.slice(0, 1).map((b) => (
-                                <Link key={b} to="/leaderboard" className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-400/10 text-amber-200 border border-amber-400/40">
+                                <Link key={b} to="/leaderboard" className="px-1.5 py-0.5 text-[10px] font-bold bg-caution/10 text-caution border border-caution/40">
                                   {b}
                                 </Link>
                               ))}
@@ -446,18 +450,18 @@ export default function GameDetailPage() {
             {/* Price card */}
             <div className="bg-bg-surface border border-border p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-text-muted text-xs uppercase tracking-wider">Giá bán</span>
+                <span className="text-text-muted text-xs">Giá bán</span>
                 {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
               </div>
               {game.saleEndsAt && (
-                <div className="mb-4 -mx-5 px-5 py-2.5 bg-gradient-to-r from-rose-500/15 to-orange-500/10 border-y border-rose-500/30">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-orange-300 mb-1.5">⚡ Flash Sale</p>
+                <div className="mb-4 -mx-5 px-5 py-2.5 bg-gradient-to-r from-negative/15 to-caution/10 border-y border-negative/30">
+                  <p className="inline-flex items-center gap-1 text-xs font-bold text-caution mb-1.5"><ZapIcon className="w-3.5 h-3.5" aria-hidden="true" /> Flash Sale</p>
                   <SaleCountdown endsAt={game.saleEndsAt} />
                 </div>
               )}
               {editions.length > 1 && (
                 <div className="mb-4 space-y-2" role="radiogroup" aria-label="Chọn phiên bản">
-                  <p className="text-[11px] uppercase tracking-wider text-text-muted">Chọn phiên bản</p>
+                  <p className="text-[11px] text-text-muted">Chọn phiên bản</p>
                   {editions.map((ed) => {
                     const active = ed.id === edition?.id;
                     const off = ed.originalPrice > ed.salePrice && ed.originalPrice > 0 ? Math.round((1 - ed.salePrice / ed.originalPrice) * 100) : 0;
@@ -530,7 +534,7 @@ export default function GameDetailPage() {
                   >
                     <Gift className="w-4 h-4" /> Tặng game
                   </button>
-                  <ShareButton path={`/games/${game.id}`} title={`${game.name} — giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
+                  <ShareButton path={`/games/${game.id}`} title={`${game.name}, giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
                 </div>
                 {game.xboxProductId && (
                   <a
@@ -548,7 +552,7 @@ export default function GameDetailPage() {
 
             {/* Game info */}
             <div className="bg-bg-surface border border-border p-5 space-y-3">
-              <h3 className="font-display text-sm text-text-primary uppercase tracking-wider">Thông tin game</h3>
+              <h3 className="font-display text-sm text-text-primary">Thông tin game</h3>
               <div className="text-sm space-y-2">
                 <div className="flex justify-between">
                   <span className="text-text-muted">Thể loại</span>
@@ -602,7 +606,7 @@ export default function GameDetailPage() {
 
             {/* Purchase guide */}
             <div className="bg-bg-surface border border-border p-5">
-              <h3 className="font-display text-sm text-text-primary uppercase tracking-wider mb-4">Cách mua hàng</h3>
+              <h3 className="font-display text-sm text-text-primary mb-4">Cách mua hàng</h3>
               <div className="space-y-4">
                 {[
                   { icon: ShoppingCart, step: "Chọn game", desc: "Thêm vào giỏ hàng" },

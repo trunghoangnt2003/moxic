@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Flame, HelpCircle, Lightbulb, RefreshCw, Search, ShoppingCart, Timer, X } from "lucide-react";
+import { Flame, Frown, Gamepad2, HelpCircle, Lightbulb, PartyPopper, RefreshCw, Search, ShoppingCart, Timer, X } from "lucide-react";
 import Container from "../components/layout/Container";
 import ShareButton from "../components/shared/ShareButton";
 import { SectionLoader } from "../components/shared/MoxicLoader";
@@ -30,14 +30,14 @@ function Countdown({ to }: { to: string }) {
 }
 
 function shareText(s: GuessState) {
-  const cells = s.guesses.map((g) => (g.correct ? "🟩" : "🟥")).join("");
-  const pad = s.solved ? "" : "";
-  return `Moxic Đoán Game #${s.number} 🎮\n${cells}${pad} ${s.solved ? `${s.tries}/${s.maxTries}` : `X/${s.maxTries}`}${s.streak > 1 ? ` 🔥${s.streak}` : ""}\nThử sức tại moxic.co/doan-game`;
+  const result = s.solved ? `Đoán đúng ở lần ${s.tries}/${s.maxTries}` : `Chưa đoán ra (${s.maxTries}/${s.maxTries} lượt)`;
+  const streak = s.streak > 1 ? `, chuỗi ${s.streak} ngày` : "";
+  return `Moxic Đoán Game #${s.number}: ${result}${streak}.\nThử sức tại moxic.co/doan-game`;
 }
 
 /** Daily "guess the game from a pixelated picture" puzzle. */
 export default function GuessGamePage() {
-  usePageMeta("Đoán game mỗi ngày", "Đoán tên game Xbox từ ảnh bị làm mờ — mỗi ngày một câu, đoán sớm nhận nhiều điểm.");
+  usePageMeta("Đoán game mỗi ngày", "Đoán tên game Xbox từ ảnh bị làm mờ, mỗi ngày một câu, đoán sớm nhận nhiều điểm.");
   const qc = useQueryClient();
   const { data: s, isLoading, error } = useQuery({ queryKey: ["guess", "today"], queryFn: getGuessToday, staleTime: 30_000 });
   const { data: options } = useQuery({ queryKey: ["guess", "options"], queryFn: getGuessOptions, staleTime: 10 * 60_000 });
@@ -67,7 +67,7 @@ export default function GuessGamePage() {
         haptic(60);
         setShake(true);
         window.setTimeout(() => setShake(false), 500);
-        if (r.state.finished) toast("Hết lượt rồi — xem đáp án bên dưới", { icon: "😢" });
+        if (r.state.finished) toast("Hết lượt rồi, xem đáp án bên dưới");
       }
     },
     onError: (e: any) => toast.error(e?.response?.data?.error || "Không gửi được, thử lại nhé"),
@@ -101,7 +101,7 @@ export default function GuessGamePage() {
   if (error || !s)
     return (
       <Container className="py-20 text-center">
-        <p className="text-4xl mb-3">🎮</p>
+        <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-text-muted" aria-hidden="true" />
         <p className="font-semibold">Câu đố hôm nay chưa sẵn sàng</p>
         <p className="text-sm text-text-muted">Quay lại sau ít phút nhé!</p>
       </Container>
@@ -120,12 +120,12 @@ export default function GuessGamePage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-accent">Mỗi ngày một câu</p>
+          <p className="text-xs text-accent">Mỗi ngày một câu</p>
           <h1 className="font-display text-2xl sm:text-3xl font-extrabold">Đoán Game #{s.number}</h1>
         </div>
         <div className="flex items-center gap-2">
           {s.signedIn && (
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 border text-sm font-bold ${s.streak > 0 ? "border-orange-400/50 bg-orange-500/10 text-orange-300" : "border-white/10 text-text-muted"}`} title="Chuỗi ngày đoán đúng">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 border text-sm font-bold ${s.streak > 0 ? "border-caution/50 bg-caution/10 text-caution" : "border-white/10 text-text-muted"}`} title="Chuỗi ngày đoán đúng">
               <Flame className="w-4 h-4" /> {s.streak}
             </span>
           )}
@@ -183,7 +183,7 @@ export default function GuessGamePage() {
           return (
             <span
               key={i}
-              className={`flex-1 h-2 rounded-full transition-colors duration-500 ${g ? (g.correct ? "bg-emerald-400" : "bg-red-500/80") : "bg-white/10"}`}
+              className={`flex-1 h-2 rounded-full transition-colors duration-500 ${g ? (g.correct ? "bg-positive" : "bg-negative/80") : "bg-white/10"}`}
             />
           );
         })}
@@ -252,7 +252,7 @@ export default function GuessGamePage() {
           {s.guesses
             .filter((g) => !g.correct)
             .map((g) => (
-              <li key={g.id} className="flex items-center gap-2 px-3 py-2 text-sm bg-red-500/10 border border-red-500/20 text-red-200 animate-[popIn_0.25s_ease-out]">
+              <li key={g.id} className="flex items-center gap-2 px-3 py-2 text-sm bg-negative/10 border border-negative/20 text-negative animate-[popIn_0.25s_ease-out]">
                 <X className="w-4 h-4 shrink-0" /> {g.name}
               </li>
             ))}
@@ -263,8 +263,8 @@ export default function GuessGamePage() {
       {s.hints.length > 0 && (
         <div className="mt-4 grid grid-cols-2 gap-2">
           {s.hints.map((h) => (
-            <div key={h.label} className="px-3 py-2 border border-amber-400/25 bg-amber-400/5 animate-[popIn_0.3s_ease-out]">
-              <p className="text-[10px] uppercase tracking-wider text-amber-300/80 flex items-center gap-1">
+            <div key={h.label} className="px-3 py-2 border border-caution/25 bg-caution/5 animate-[popIn_0.3s_ease-out]">
+              <p className="text-[10px] text-caution/80 flex items-center gap-1">
                 <Lightbulb className="w-3 h-3" /> {h.label}
               </p>
               <p className="text-sm font-semibold truncate">{h.value}</p>
@@ -282,11 +282,11 @@ export default function GuessGamePage() {
       {s.finished && (
         <section className="mt-5 border border-white/10 bg-bg-surface p-4 sm:p-5 space-y-4 animate-[popIn_0.4s_ease-out]">
           <div className="text-center">
-            <p className="text-4xl">{s.solved ? "🎉" : "😢"}</p>
+            {s.solved ? <PartyPopper className="w-10 h-10 mx-auto text-positive" aria-hidden="true" /> : <Frown className="w-10 h-10 mx-auto text-text-muted" aria-hidden="true" />}
             <p className="font-display text-xl font-bold mt-1">
               {s.solved ? `Đúng sau ${s.tries} lần đoán!` : "Hết lượt mất rồi"}
             </p>
-            {s.solved && s.points > 0 && <p className="text-amber-300 font-bold">+{s.points} điểm thưởng</p>}
+            {s.solved && s.points > 0 && <p className="text-caution font-bold">+{s.points} điểm thưởng</p>}
             {s.solved && !s.signedIn && (
               <p className="text-sm text-text-muted mt-1">
                 <Link to="/login?redirect=/doan-game" className="text-accent hover:underline">Đăng nhập</Link> để nhận điểm và giữ chuỗi ngày nhé.
@@ -302,7 +302,7 @@ export default function GuessGamePage() {
               to={`/games/${s.answer.id}`}
               className="flex items-center justify-center gap-2 h-12 bg-accent text-bg-base font-bold"
             >
-              <ShoppingCart className="w-4 h-4" /> Mua {s.answer.name.length > 24 ? s.answer.name.slice(0, 24) + "…" : s.answer.name} — {formatPrice(s.answer.salePrice)}
+              <ShoppingCart className="w-4 h-4" /> Mua {s.answer.name.length > 24 ? s.answer.name.slice(0, 24) + "…" : s.answer.name}, {formatPrice(s.answer.salePrice)}
               {discount > 0 && <span className="text-xs font-semibold">(-{discount}%)</span>}
             </Link>
           )}
@@ -313,14 +313,14 @@ export default function GuessGamePage() {
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(shareText(s));
-                  toast.success("Đã copy kết quả — dán vào Facebook/Zalo khoe bạn bè!");
+                  toast.success("Đã copy kết quả, dán vào Facebook/Zalo khoe bạn bè!");
                 } catch {
                   toast.error("Không copy được");
                 }
               }}
               className="h-10 border border-white/15 text-sm font-semibold cursor-pointer"
             >
-              {s.guesses.map((g) => (g.correct ? "🟩" : "🟥")).join("")} Copy kết quả
+              Copy kết quả
             </button>
             <ShareButton path="/doan-game" title={`Moxic Đoán Game #${s.number}`} text={shareText(s)} label="Thách bạn bè" />
           </div>
@@ -336,8 +336,8 @@ export default function GuessGamePage() {
                     <span className="w-3 text-text-muted">{i + 1}</span>
                     <div className="flex-1 h-4 bg-white/5">
                       <div
-                        className={`h-full ${s.solved && s.tries === i + 1 ? "bg-emerald-500" : "bg-white/20"} transition-[width] duration-700`}
-                        style={{ width: `${(n / maxDist) * 100}%` }}
+                        className={`h-full origin-left ${s.solved && s.tries === i + 1 ? "bg-positive" : "bg-white/20"} transition-transform duration-700`}
+                        style={{ transform: `scaleX(${n / maxDist})` }}
                       />
                     </div>
                     <span className="w-6 text-right tabular-nums">{n}</span>
@@ -353,7 +353,7 @@ export default function GuessGamePage() {
       <details className="mt-5 border border-white/10 bg-bg-surface/60 p-4 text-sm">
         <summary className="cursor-pointer font-semibold">Cách tính điểm</summary>
         <ul className="mt-2 space-y-1 text-text-secondary">
-          <li>Đoán đúng ở lần 1 → 6: {POINTS.join(" / ")} điểm.</li>
+          <li>Đoán đúng ở lần 1 6: {POINTS.join(" / ")} điểm.</li>
           <li>Chuỗi ngày đúng liên tiếp: +5 điểm mỗi ngày (tối đa +50).</li>
           <li>Câu đố mới mỗi ngày lúc 0h (giờ Việt Nam). Điểm chỉ tính cho tài khoản đã đăng nhập.</li>
         </ul>

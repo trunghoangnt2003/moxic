@@ -34,9 +34,9 @@ const primaryButtonStyle = {
   boxShadow: "0 0 24px rgba(236, 72, 153, 0.35)",
 };
 const primaryButtonClass =
-  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold uppercase tracking-wider text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold  text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
 const loginButtonClass =
-  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold uppercase tracking-wider text-[#1a1714] bg-amber-400 hover:bg-amber-300 transition-colors";
+  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold  text-on-accent bg-caution hover:bg-caution transition-colors";
 
 export default function LuckySpinPage() {
   const { slug = "" } = useParams();
@@ -136,7 +136,7 @@ export default function LuckySpinPage() {
   if (isError && isAxiosError(error) && error.response?.status === 404) {
     return (
       <Container className="mt-12 mb-16 text-center">
-        <Gift className="mx-auto h-12 w-12 text-fuchsia-300/60" />
+        <Gift className="mx-auto h-12 w-12 text-highlight/60" />
         <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">Không tìm thấy hòm</h1>
         <p className="mt-2 text-sm text-text-muted">Hòm này không tồn tại hoặc đã tạm ngừng.</p>
         <Link
@@ -154,7 +154,7 @@ export default function LuckySpinPage() {
   const loginHref = `/login?redirect=${encodeURIComponent(`/lucky-spin/${slug}`)}`;
   const points = viewer?.points ?? 0;
   const pointsShort = spinCase ? Math.max(0, spinCase.pointsCost - points) : 0;
-  const busyLabel = animating && !openCase.isPending ? "Đang mở..." : null;
+  const busyLabel = animating && !openCase.isPending ? "Đang mở…" : null;
 
   const muteToggle = music.hasTrack ? (
     <button
@@ -163,7 +163,7 @@ export default function LuckySpinPage() {
       aria-pressed={music.muted}
       title={music.muted ? "Bật nhạc" : "Tắt nhạc"}
       aria-label={music.muted ? "Bật nhạc" : "Tắt nhạc"}
-      className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-sm border border-fuchsia-500/30 bg-[#140b26] text-fuchsia-200 transition-colors hover:bg-fuchsia-500/15"
+      className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-sm border border-highlight/30 bg-spin-deep text-highlight transition-colors hover:bg-highlight/15"
     >
       {music.muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
     </button>
@@ -184,7 +184,7 @@ export default function LuckySpinPage() {
             spellCheck={false}
             disabled={!available || busy}
             aria-label="Mã quay"
-            className="h-12 flex-1 rounded-sm border border-fuchsia-500/30 bg-[#140b26] px-4 text-center font-mono text-base tracking-[0.25em] text-white placeholder:tracking-[0.15em] placeholder:text-white/30 outline-none transition-colors focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-500/30 disabled:opacity-60 sm:text-left"
+            className="h-12 flex-1 rounded-sm border border-highlight/30 bg-spin-deep px-4 text-center font-mono text-base text-white placeholder: placeholder:text-white/30 outline-none transition-colors focus:border-highlight focus:ring-2 focus:ring-highlight/30 disabled:opacity-60 sm:text-left"
           />
           <div className="flex gap-2">
             <button
@@ -211,7 +211,7 @@ export default function LuckySpinPage() {
           </div>
           <p className="text-xs text-text-muted">
             Chưa có tài khoản?{" "}
-            <Link to="/register" className="text-fuchsia-300 hover:text-fuchsia-200">
+            <Link to="/register" className="text-highlight hover:text-highlight">
               Đăng ký ngay
             </Link>
           </p>
@@ -245,7 +245,7 @@ export default function LuckySpinPage() {
           {inCooldown && (
             <p className="text-sm text-white/70" aria-live="polite">
               Lượt miễn phí tiếp theo sau{" "}
-              <span className="font-mono font-semibold text-fuchsia-200">{formatCountdown(cooldownLeft)}</span>
+              <span className="font-mono font-semibold text-highlight">{formatCountdown(cooldownLeft)}</span>
             </p>
           )}
         </div>
@@ -268,12 +268,12 @@ export default function LuckySpinPage() {
             {muteToggle}
           </div>
           <p className="text-sm text-white/70">
-            Số dư: <span className="font-semibold text-amber-300">{formatPoints(points)} điểm</span>
+            Số dư: <span className="font-semibold text-caution">{formatPoints(points)} điểm</span>
           </p>
           {short && (
-            <p className="text-xs text-amber-300">
+            <p className="text-xs text-caution">
               Bạn cần thêm {formatPoints(pointsShort)} điểm ·{" "}
-              <Link to="/account/points" className="underline hover:text-amber-200">
+              <Link to="/account/points" className="underline hover:text-caution">
                 Cách nhận điểm
               </Link>
             </p>
@@ -303,7 +303,7 @@ export default function LuckySpinPage() {
       <div className="mb-5 mt-3 text-center md:mb-6">
         {spinCase ? (
           <>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-fuchsia-300">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-[11px] font-semibold text-highlight">
               <MethodIcon className="h-3 w-3" /> {openMethodLabel(spinCase)}
             </div>
             <h1 className="mt-3 font-display text-3xl font-bold text-text-primary md:text-4xl">{spinCase.name}</h1>
@@ -321,7 +321,7 @@ export default function LuckySpinPage() {
       {/* Reel */}
       <div className="-mx-4 mt-5 sm:mx-0">
         {isLoading ? (
-          <div className="flex h-[190px] items-center justify-center bg-[#1a0d33]/60 md:h-[258px]">
+          <div className="flex h-[190px] items-center justify-center bg-spin-ink/60 md:h-[258px]">
             <MoxicWave width={170} />
           </div>
         ) : (
@@ -333,7 +333,7 @@ export default function LuckySpinPage() {
       <div className="mx-auto mt-6 flex max-w-xl justify-center md:mt-8">{actionPanel}</div>
 
       {!isLoading && (isError || (spinCase && !available)) && (
-        <p className="mx-auto mt-4 max-w-xl rounded-sm border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-300">
+        <p className="mx-auto mt-4 max-w-xl rounded-sm border border-caution/30 bg-caution/10 px-4 py-3 text-center text-sm text-caution">
           Hòm đang được cập nhật, vui lòng quay lại sau.
         </p>
       )}

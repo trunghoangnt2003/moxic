@@ -73,12 +73,12 @@ export default function PurchaseToast() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed left-3 bottom-[calc(0.75rem+var(--sab))] sm:left-5 sm:bottom-5 z-40 w-[calc(100vw-6rem)] max-w-[340px] transition-all duration-500 ${
+      className={`fixed left-3 bottom-[calc(0.75rem+var(--sab))] sm:left-5 sm:bottom-5 z-40 w-[calc(100vw-6rem)] max-w-[340px] transition duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
       }`}
     >
       <div className="relative flex items-center gap-3 p-2.5 pr-8 bg-bg-surface/95 backdrop-blur-md border border-white/10 shadow-2xl shadow-black/60">
-        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-400 to-accent" />
+        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-positive to-accent" />
         <Link to={`/games/${p.gameId}`} className="w-11 h-14 shrink-0 bg-bg-elevated overflow-hidden">
           {p.coverUrl && <img loading="lazy" decoding="async" src={p.coverUrl} alt="" className="w-full h-full object-cover" />}
         </Link>
@@ -90,7 +90,7 @@ export default function PurchaseToast() {
             {p.gameName}
           </Link>
           <p className="flex items-center gap-1 text-[11px] text-text-muted mt-0.5">
-            <BadgeCheck className="w-3 h-3 text-emerald-400" /> Đã xác thực · {ago(p.at, offset)}
+            <BadgeCheck className="w-3 h-3 text-positive" /> Đã xác thực · {ago(p.at, offset)}
           </p>
         </div>
         <button

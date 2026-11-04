@@ -98,7 +98,7 @@ export default function ChatPanel() {
       <div className="flex items-center gap-3 px-4 h-14 shrink-0 border-b border-white/10 bg-gradient-to-r from-accent/15 to-transparent">
         <div className="relative">
           <img loading="lazy" decoding="async" src="/icon-192.png" alt="" className="w-9 h-9 rounded-lg" />
-          <span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-bg-surface" />
+          <span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-positive ring-2 ring-bg-surface" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-display font-bold leading-tight">Moxic hỗ trợ</p>
@@ -166,15 +166,14 @@ export default function ChatPanel() {
               <div key={m.id}>
                 {showOrder && (
                   <p className="text-center text-[10px] text-text-muted my-2">
-                    — về đơn{" "}
+                    Về đơn{" "}
                     {me ? (
                       <Link to={`/account/orders/${m.orderCode}`} onClick={() => window.innerWidth < 640 && close()} className="font-mono hover:text-accent">
                         {m.orderCode}
                       </Link>
                     ) : (
                       <span className="font-mono">{m.orderCode}</span>
-                    )}{" "}
-                    —
+                    )}
                   </p>
                 )}
                 <div className={`flex ${m.fromAdmin ? "justify-start" : "justify-end"}`}>
@@ -207,7 +206,7 @@ export default function ChatPanel() {
             <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={100} placeholder="SĐT / Zalo *" className="h-9 px-3 bg-bg-base border border-border text-sm focus:outline-none focus:border-accent" />
           </div>
         )}
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-negative">{error}</p>}
         <div className="flex items-end gap-2">
           <textarea
             value={text}

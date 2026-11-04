@@ -57,7 +57,7 @@ export default function HomePage() {
             ranked
             title={
               <>
-                <Flame className="w-6 h-6 text-orange-500" /> Bán chạy nhất
+                <Flame className="w-6 h-6 text-caution" /> Bán chạy nhất
               </>
             }
             games={bestsellers}

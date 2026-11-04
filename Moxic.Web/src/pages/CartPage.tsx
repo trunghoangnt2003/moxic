@@ -105,7 +105,7 @@ export default function CartPage() {
 
                         <button
                           onClick={() => removeItem(item.gameId)}
-                          className="text-text-muted hover:text-red-400 transition-colors cursor-pointer min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0 flex items-center justify-center rounded hover:bg-white/5 lg:hover:bg-transparent"
+                          className="text-text-muted hover:text-negative transition-colors cursor-pointer min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0 flex items-center justify-center rounded hover:bg-white/5 lg:hover:bg-transparent"
                           aria-label={`Xóa ${item.name}`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -119,7 +119,7 @@ export default function CartPage() {
                 <div className="flex justify-between items-center pt-2">
                   <button
                     onClick={clearCart}
-                    className="text-sm text-text-muted hover:text-red-400 transition-colors cursor-pointer flex items-center gap-2"
+                    className="text-sm text-text-muted hover:text-negative transition-colors cursor-pointer flex items-center gap-2"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Xóa tất cả
@@ -137,7 +137,7 @@ export default function CartPage() {
               {/* Right: Summary */}
               <div className="w-full lg:w-[340px] flex-shrink-0">
                 <div className="bg-bg-surface border border-white/10 p-6 sticky top-20">
-                  <h3 className="text-xs text-text-muted uppercase tracking-widest font-semibold mb-4 pb-3 border-b border-white/10">
+                  <h3 className="text-xs text-text-muted font-semibold mb-4 pb-3 border-b border-white/10">
                     Tóm tắt đơn hàng
                   </h3>
 
@@ -149,14 +149,14 @@ export default function CartPage() {
                     {saved > 0 && (
                       <div className="flex justify-between">
                         <span className="text-text-secondary">Giảm giá</span>
-                        <span className="text-green-400">-{formatPrice(saved)}</span>
+                        <span className="text-positive">-{formatPrice(saved)}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="border-t border-white/10 pt-4 mb-6">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-text-secondary text-sm font-semibold uppercase tracking-wider">Tổng cộng</span>
+                      <span className="text-text-secondary text-sm font-semibold">Tổng cộng</span>
                       <span className="font-display text-2xl text-accent font-bold">{formatPrice(total)}</span>
                     </div>
                     {saved > 0 && (

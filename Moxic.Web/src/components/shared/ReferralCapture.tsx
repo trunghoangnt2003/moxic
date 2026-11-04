@@ -38,7 +38,7 @@ export default function ReferralCapture() {
     enterReferral(code)
       .then((r) => toast.success(r.message, { duration: 6000 }))
       .catch(() => {
-        /* not eligible (own code, old account, already referred) — stay silent */
+        /* not eligible (own code, old account, already referred), stay silent */
       });
   }, [me]);
 

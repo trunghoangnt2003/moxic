@@ -73,7 +73,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
     );
   }, [me, initialCode, key, mutate, onApplied]);
 
-  // Cart changed while a coupon is applied → re-validate on the server.
+  // Cart changed while a coupon is applied re-validate on the server.
   useEffect(() => {
     if (!applied || !me || !key) return;
     if (appliedKeyRef.current === key) return;
@@ -113,14 +113,14 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
   return (
     <div className="space-y-2.5">
       {applied ? (
-        <div className="flex items-start gap-2 border border-green-500/30 bg-green-500/10 px-3 py-2.5">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-400" />
+        <div className="flex items-start gap-2 border border-positive/30 bg-positive/10 px-3 py-2.5">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-positive" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-text-primary">
               Đã áp dụng <span className="font-mono font-semibold">{applied.code}</span>
-              <span className="text-text-secondary"> — {applied.name}</span>
+              <span className="text-text-secondary">, {applied.name}</span>
             </p>
-            <p className="mt-0.5 text-sm font-bold text-green-400">−{formatPrice(applied.discountAmount)}</p>
+            <p className="mt-0.5 text-sm font-bold text-positive">−{formatPrice(applied.discountAmount)}</p>
           </div>
           <button
             type="button"
@@ -129,7 +129,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
               setError("");
               onApplied(null);
             }}
-            className="flex flex-shrink-0 cursor-pointer items-center gap-1 px-1.5 py-1 text-xs text-text-secondary hover:text-red-400"
+            className="flex flex-shrink-0 cursor-pointer items-center gap-1 px-1.5 py-1 text-xs text-text-secondary hover:text-negative"
           >
             <X className="h-3.5 w-3.5" /> Bỏ mã
           </button>
@@ -150,7 +150,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
               maxLength={40}
               placeholder="Nhập mã giảm giá"
               aria-label="Mã giảm giá"
-              className="w-full border border-white/10 bg-bg-elevated py-2.5 pl-9 pr-3 font-mono text-sm uppercase text-text-primary placeholder:font-sans placeholder:normal-case placeholder:text-text-muted focus:border-accent/60 focus:outline-none"
+              className="w-full border border-white/10 bg-bg-elevated py-2.5 pl-9 pr-3 font-mono text-sm text-text-primary placeholder:font-sans placeholder:normal-case placeholder:text-text-muted focus:border-accent/60 focus:outline-none"
             />
           </div>
           <button
@@ -164,14 +164,14 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
       )}
 
       {error && (
-        <p className="flex items-start gap-1.5 text-xs text-red-400">
+        <p className="flex items-start gap-1.5 text-xs text-negative">
           <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" /> {error}
         </p>
       )}
 
       {usable.length > 0 && (
         <div>
-          <p className="mb-1.5 text-[11px] uppercase tracking-wider text-text-muted">Mã trong ví của bạn</p>
+          <p className="mb-1.5 text-[11px] text-text-muted">Mã trong ví của bạn</p>
           <div className="flex flex-wrap gap-1.5">
             {usable.map((c) => (
               <button

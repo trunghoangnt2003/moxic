@@ -1,4 +1,9 @@
-﻿@import "tailwindcss";
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full (app screens), restyle (home, game list, game detail)
+ * paper: oklch(14.5% 0.004 286) · accent: oklch(87.5% 0.04 80) · display: Outfit · body: Inter
+ * nav: kept · signature: the live order tracker and the price-vs-Xbox-Store figures · states: loading, empty, error, full
+ * axes: dark/geometric-sans/warm · posture: kept · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H3 E2 S3 R3 V3 · weakest: E, palette classes and tracked-caps labels spread through 90 files, swept to role tokens and sentence-case labels */
+@import "tailwindcss";
 
 @theme {
   --color-bg-base: #0f0f11;
@@ -19,6 +24,33 @@
   --color-success: #15803d;
   --color-danger: #dc2626;
 
+  /* Role colours for dark surfaces (status text, tints, rings). */
+  --color-positive: #5fd38d;
+  --color-negative: #f87171;
+  --color-caution: #f5b544;
+  --color-info: #7cc4f0;
+  --color-highlight: #d98ef0;
+  --color-focus: #e5d3b3;
+  --color-scrim: #050507;
+  --color-on-accent: #0f0f11;
+  --color-accent-deep: #8f7340;
+  /* Lucky-spin (case opening) surfaces */
+  --color-spin-ink: #1a0d33;
+  --color-spin-deep: #140b26;
+  --color-spin-void: #0d0718;
+  --color-spin-panel: #3b1d6e;
+  --color-spin-card: #241b3a;
+  --color-spin-card-2: #15101f;
+  --color-spin-glow: #a855f7;
+  --color-spin-pink: #ec4899;
+  --color-spin-gold-1: #2a1f0c;
+  --color-spin-gold-2: #160f05;
+  /* Third-party brand marks (contact buttons) */
+  --color-zalo: #0068ff;
+  --color-messenger: #a033ff;
+  --color-messenger-from: #0099ff;
+  --color-messenger-to: #ff5280;
+
   --font-display: "Outfit", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
 
@@ -31,6 +63,11 @@
 }
 
 @layer base {
+  html, body { overflow-x: clip; }
+  :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .num, td.num { font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+
   body {
     background-color: var(--color-bg-base);
     color: var(--color-text-secondary);
@@ -206,14 +243,14 @@ button:not(:disabled):active, a[class*="bg-accent"]:active, a[class*="h-10"]:act
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in oklab, var(--color-text-primary) 5%, transparent);
 }
 .skeleton::after {
   content: "";
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-text-primary) 6%, transparent), transparent);
   animation: shimmer 1.4s infinite;
 }
 
@@ -238,4 +275,8 @@ button:not(:disabled):active, a[class*="bg-accent"]:active, a[class*="h-10"]:act
 }
 @media (prefers-reduced-motion: reduce) {
   .moxic-wave-front, .moxic-wave-back, .moxic-wave-bob { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

@@ -11,8 +11,8 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
 /** Badge styling per product type (non-Game types are highlighted on cards). */
 export const PRODUCT_TYPE_STYLES: Record<ProductType, string> = {
   Game: "bg-white/10 text-white",
-  GamePass: "bg-emerald-500/90 text-white",
-  GiftCard: "bg-sky-500/90 text-white",
-  DLC: "bg-violet-500/90 text-white",
-  Bundle: "bg-amber-500/90 text-bg-base",
+  GamePass: "bg-positive/90 text-white",
+  GiftCard: "bg-info/90 text-white",
+  DLC: "bg-highlight/90 text-white",
+  Bundle: "bg-caution/90 text-bg-base",
 };

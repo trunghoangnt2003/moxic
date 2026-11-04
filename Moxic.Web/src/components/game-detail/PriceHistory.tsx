@@ -90,7 +90,7 @@ function StepChart({ points, now, currency, height = 160 }: { points: Point[]; n
           ))}
         </g>
         {/* lowest marker label */}
-        <text x={Math.min(W - 60, Math.max(pad.l + 4, x(changes[minIdx].t)))} y={y(changes[minIdx].v) + 16} fontSize="10" className="fill-emerald-300">
+        <text x={Math.min(W - 60, Math.max(pad.l + 4, x(changes[minIdx].t)))} y={y(changes[minIdx].v) + 16} fontSize="10" className="fill-positive">
           thấp nhất
         </text>
         <text x={pad.l} y={H - 6} fontSize="10" className="fill-text-muted">
@@ -137,11 +137,11 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
         <div className="lg:col-span-2 bg-bg-surface border border-border p-4">
           <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-text-muted">Giá Moxic hiện tại</p>
+              <p className="text-[11px] text-text-muted">Giá Moxic hiện tại</p>
               <p className="font-display text-2xl font-bold text-white">{formatPrice(data.current)}</p>
             </div>
             {atLowest ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold bg-positive/15 text-positive border border-positive/40">
                 <BadgeCheck className="w-4 h-4" /> Đang ở mức giá thấp nhất
               </span>
             ) : (
@@ -164,7 +164,7 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
         <div className="bg-bg-surface border border-border p-4 space-y-3">
           {xbox && xboxNow ? (
             <>
-              <p className="text-[11px] uppercase tracking-wider text-text-muted">Giá Xbox Store ({(xbox.region ?? "us").toUpperCase()})</p>
+              <p className="text-[11px] text-text-muted">Giá Xbox Store ({(xbox.region ?? "us").toUpperCase()})</p>
               <p className="font-display text-xl font-bold text-white">{money(xboxNow.sale, xbox.currency ?? "USD")}</p>
               {xboxNow.base > xboxNow.sale && <p className="text-xs text-text-muted line-through">{money(xboxNow.base, xbox.currency ?? "USD")}</p>}
               {xbox.lowest && (
@@ -177,7 +177,7 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
           ) : (
             <>
               <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <TrendingDown className="w-4 h-4 text-emerald-400" /> Rẻ hơn Store chính hãng
+                <TrendingDown className="w-4 h-4 text-positive" /> Rẻ hơn Store chính hãng
               </p>
               <p className="text-xs text-text-muted">
                 {data.original > data.current

@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { OrderSkeleton } from "../components/shared/Skeleton";
-import { AlertTriangle, Clock, Gamepad2, PackageX } from "lucide-react";
+import { AlertTriangle, Clock, Gamepad2, MessageCircleMore, PackageX } from "lucide-react";
 import Container from "../components/layout/Container";
 import OrderStatusBadge from "../components/account/OrderStatusBadge";
 import { useMyOrder } from "../hooks/useAccount";
@@ -18,7 +18,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 function BackLink() {
   return (
     <Link to="/account/orders" className="inline-block text-sm text-text-secondary hover:text-accent transition-colors mb-5">
-      ← Lịch sử mua hàng
+      Lịch sử mua hàng
     </Link>
   );
 }
@@ -26,7 +26,7 @@ function BackLink() {
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-4 py-2.5 border-b border-white/10 last:border-b-0">
-      <dt className="text-xs uppercase tracking-wide text-text-muted">{label}</dt>
+      <dt className="text-xs text-text-muted">{label}</dt>
       <dd className="text-sm text-text-primary break-all sm:text-right">{value}</dd>
     </div>
   );
@@ -46,7 +46,7 @@ export default function OrderHistoryDetailPage() {
             <BackLink />
             <div className="bg-bg-surface border border-white/10 p-10 text-center">
               <PackageX className="w-12 h-12 text-white/10 mx-auto mb-3" />
-              <p className="text-text-primary font-display uppercase tracking-wider">Không tìm thấy đơn hàng</p>
+              <p className="text-text-primary font-display">Không tìm thấy đơn hàng</p>
             </div>
           </div>
         </Container>
@@ -63,7 +63,7 @@ export default function OrderHistoryDetailPage() {
           <div className="bg-bg-surface border border-white/10 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-text-muted">Mã đơn hàng</p>
+                <p className="text-xs text-text-muted">Mã đơn hàng</p>
                 <h1 className="font-mono text-lg sm:text-xl text-text-primary break-all">{order.orderCode}</h1>
               </div>
               <OrderStatusBadge status={order.status} />
@@ -79,18 +79,18 @@ export default function OrderHistoryDetailPage() {
             )}
 
             {order.status === "Cancelled" && order.cancellationReason && (
-              <p className="mt-4 bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
+              <p className="mt-4 bg-negative/10 border border-negative/30 px-4 py-3 text-sm text-negative">
                 Lý do hủy: {order.cancellationReason}
               </p>
             )}
             {order.status === "AwaitingConfirmation" && (
-              <p className="mt-4 flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 px-4 py-3 text-sm text-sky-300">
+              <p className="mt-4 flex items-center gap-2 bg-info/10 border border-info/30 px-4 py-3 text-sm text-info">
                 <Clock className="w-4 h-4 flex-shrink-0" />
                 Chúng tôi đang kiểm tra thanh toán của bạn.
               </p>
             )}
             {order.status === "ActionRequired" && (
-              <p className="mt-4 flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 px-4 py-3 text-sm text-orange-300">
+              <p className="mt-4 flex items-center gap-2 bg-caution/10 border border-caution/30 px-4 py-3 text-sm text-caution">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 Vui lòng kiểm tra email hoặc liên hệ hỗ trợ để cập nhật thông tin.
               </p>
@@ -113,7 +113,7 @@ export default function OrderHistoryDetailPage() {
             onClick={() => useChatUi.getState().openChat(order.orderCode)}
             className="mt-4 w-full h-11 inline-flex items-center justify-center gap-2 border border-accent/40 text-accent text-sm font-semibold hover:bg-accent/10 cursor-pointer"
           >
-            💬 Chat với Moxic về đơn này
+            <MessageCircleMore className="w-4 h-4" aria-hidden="true" /> Chat với Moxic về đơn này
           </button>
 
           {order.giftToken && (
@@ -123,7 +123,7 @@ export default function OrderHistoryDetailPage() {
           )}
 
           <div className="mt-4 bg-bg-surface border border-white/10 p-5 sm:p-6">
-            <h2 className="font-display text-sm uppercase tracking-wider text-text-secondary mb-4">
+            <h2 className="font-display text-sm text-text-secondary mb-4">
               Game trong đơn ({order.items.length})
             </h2>
             <ul className="space-y-3">
@@ -161,7 +161,7 @@ export default function OrderHistoryDetailPage() {
                   <span className="min-w-0 truncate text-text-secondary">
                     Giảm giá{order.couponCode ? <> (<span className="font-mono">{order.couponCode}</span>)</> : null}
                   </span>
-                  <span className="flex-shrink-0 font-semibold text-green-400">−{formatPrice(order.discountAmount)}</span>
+                  <span className="flex-shrink-0 font-semibold text-positive">−{formatPrice(order.discountAmount)}</span>
                 </div>
               </div>
             )}
@@ -174,7 +174,7 @@ export default function OrderHistoryDetailPage() {
           {order.status === "Pending" && (
             <Link
               to={`/confirmation/${encodeURIComponent(order.orderCode)}`}
-              className="mt-4 block w-full text-center bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors"
+              className="mt-4 block w-full text-center bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm transition-colors"
             >
               Tiếp tục thanh toán
             </Link>

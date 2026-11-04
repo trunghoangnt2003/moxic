@@ -46,7 +46,7 @@ export default function LoginPage() {
         },
         onError: (err) => {
           if (isEmailNotVerifiedError(err)) {
-            toast(getAccountErrorMessage(err, "Email chưa được xác minh."), { icon: "✉️" });
+            toast(getAccountErrorMessage(err, "Email chưa được xác minh."));
             const qs = new URLSearchParams({ email: email.trim() });
             if (redirectParam) qs.set("redirect", redirect);
             navigate(`/verify-email?${qs.toString()}`);
@@ -103,20 +103,20 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div role="alert" className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-4 py-3">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <p className="text-red-400 text-xs">{error}</p>
+          <div role="alert" className="flex items-center gap-2 bg-negative/10 border border-negative/30 px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-negative flex-shrink-0" />
+            <p className="text-negative text-xs">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={login.isPending}
-          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold h-12 text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {login.isPending ? (
             <>
-              <MoxicLoader size="sm" /> Đang đăng nhập...
+              <MoxicLoader size="sm" /> Đang đăng nhập…
             </>
           ) : (
             "Đăng nhập"

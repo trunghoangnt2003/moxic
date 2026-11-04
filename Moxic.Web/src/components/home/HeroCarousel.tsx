@@ -27,7 +27,7 @@ const heroMeta: Record<string, HeroMeta> = {
   },
   "cod-black-ops-6": {
     title: "Chiến tranh hiện đại",
-    subtitle: "Black Ops 6 — Bùng nổ hành động với chiến dịch bom tấn nhất.",
+    subtitle: "Black Ops 6, Bùng nổ hành động với chiến dịch bom tấn nhất.",
   },
   "assassins-creed-shadows": {
     title: "Hành trình Samurai",
@@ -53,7 +53,7 @@ export default function HeroCarousel({ games }: Props) {
   const game = games[active];
   const meta = heroMeta[game.id] || {
     title: game.name,
-    subtitle: `${game.genres?.[0]?.name || ""} — ${formatPrice(game.salePrice)}`,
+    subtitle: `${game.genres?.[0]?.name || ""}, ${formatPrice(game.salePrice)}`,
   };
 
   return (
@@ -65,15 +65,15 @@ export default function HeroCarousel({ games }: Props) {
           <img
             src={game.coverImageUrl || "/placeholder.svg"}
             alt={game.name}
-            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out"
+            className="absolute inset-0 w-full h-full object-cover transition duration-700 ease-in-out"
           />
           {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg-base via-bg-base/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-transparent to-transparent" />
 
           {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 max-w-[85%]">
-            <p className="text-accent font-semibold text-xs md:text-sm uppercase tracking-widest mb-2">
+            <p className="text-accent font-semibold text-xs md:text-sm mb-2">
               {meta.title}
             </p>
             <h1 className="font-display text-2xl md:text-4xl lg:text-5xl text-text-primary mb-3 leading-tight">
@@ -84,7 +84,7 @@ export default function HeroCarousel({ games }: Props) {
             </p>
             <Link
               to={`/games/${game.id}`}
-              className="inline-block bg-white hover:bg-gray-100 text-black font-bold px-8 py-3 text-sm transition-all duration-300 cursor-pointer"
+              className="inline-block bg-white hover:bg-text-primary text-on-accent font-bold px-8 py-3 text-sm transition duration-300 cursor-pointer"
             >
               Tiết kiệm ngay
             </Link>
@@ -97,7 +97,7 @@ export default function HeroCarousel({ games }: Props) {
             <button
               key={g.id}
               onClick={() => setActive(i)}
-              className={`w-full flex items-center gap-3 p-3 text-left transition-all duration-200 cursor-pointer ${
+              className={`w-full flex items-center gap-3 p-3 text-left transition duration-200 cursor-pointer ${
                 i === active
                   ? "bg-white/10"
                   : "opacity-60 hover:opacity-100 hover:bg-white/5"

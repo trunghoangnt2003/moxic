@@ -26,11 +26,11 @@ export default function RentalsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <h1 className="font-display text-2xl md:text-4xl font-bold flex items-center gap-3">
-            <KeyRound className="w-7 h-7 text-emerald-400" /> Game đang thuê
+            <KeyRound className="w-7 h-7 text-positive" /> Game đang thuê
           </h1>
           <p className="text-sm text-text-muted mt-1">Thông tin tài khoản, hạn thuê và gia hạn.</p>
         </div>
-        <Link to="/rent" className="h-10 px-4 inline-flex items-center bg-emerald-500 text-bg-base text-sm font-bold">
+        <Link to="/rent" className="h-10 px-4 inline-flex items-center bg-positive text-bg-base text-sm font-bold">
           Thuê thêm game
         </Link>
       </div>
@@ -39,10 +39,10 @@ export default function RentalsPage() {
         <SectionLoader />
       ) : items.length === 0 ? (
         <div className="text-center py-20 bg-black/40 border border-white/5">
-          <Gamepad2 className="w-12 h-12 mx-auto text-emerald-400/50 mb-4" />
+          <Gamepad2 className="w-12 h-12 mx-auto text-positive/50 mb-4" />
           <p className="font-semibold mb-1">Bạn chưa thuê game nào</p>
           <p className="text-sm text-text-muted mb-6">Chơi game bom tấn chỉ với một phần nhỏ giá mua.</p>
-          <Link to="/rent" className="inline-flex h-11 items-center px-6 bg-emerald-500 text-bg-base text-sm font-bold">
+          <Link to="/rent" className="inline-flex h-11 items-center px-6 bg-positive text-bg-base text-sm font-bold">
             Xem game cho thuê
           </Link>
         </div>
@@ -58,7 +58,7 @@ export default function RentalsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase border ${st.cls}`}>{st.label}</span>
+                      <span className={`px-1.5 py-0.5 text-[10px] font-bold border ${st.cls}`}>{st.label}</span>
                       <span className="text-[11px] font-mono text-text-muted">{r.code}</span>
                     </div>
                     <p className="font-semibold truncate mt-1">{r.gameName}</p>

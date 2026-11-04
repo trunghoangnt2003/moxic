@@ -20,10 +20,10 @@ interface Note {
 
 const ICONS = { order: Package, rental: KeyRound, price: Tag, points: Coins, system: Info } as const;
 const TINT = {
-  order: "text-sky-300 bg-sky-500/15",
-  rental: "text-emerald-300 bg-emerald-500/15",
-  price: "text-rose-300 bg-rose-500/15",
-  points: "text-amber-300 bg-amber-500/15",
+  order: "text-info bg-info/15",
+  rental: "text-positive bg-positive/15",
+  price: "text-negative bg-negative/15",
+  points: "text-caution bg-caution/15",
   system: "text-text-secondary bg-white/10",
 } as const;
 
@@ -72,9 +72,9 @@ export default function NotificationBell() {
         aria-expanded={open}
         className="relative text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
       >
-        <Bell className={`w-5 h-5 ${unread > 0 ? "text-amber-300 origin-top animate-[bellRing_1.2s_ease-in-out_2]" : ""}`} />
+        <Bell className={`w-5 h-5 ${unread > 0 ? "text-caution origin-top animate-[bellRing_1.2s_ease-in-out_2]" : ""}`} />
         {unread > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 bg-negative text-white text-[10px] font-bold flex items-center justify-center">
             {unread > 9 ? "9+" : unread}
           </span>
         )}

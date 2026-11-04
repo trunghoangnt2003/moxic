@@ -7,7 +7,7 @@ import { getChatConfig, getChatUnread, useChatUi } from "../../lib/chatApi";
 import ChatPanel from "../chat/ChatPanel";
 
 function MessengerGlyph({ className = "" }: { className?: string }) {
-  // lucide 1.x has no brand icons — inline Messenger glyph.
+  // lucide 1.x has no brand icons, inline Messenger glyph.
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
       <path
@@ -15,7 +15,7 @@ function MessengerGlyph({ className = "" }: { className?: string }) {
         d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.88.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2z"
       />
       <path
-        fill="#A033FF"
+        fill="var(--color-messenger)"
         d="M5.99 14.54l2.94-4.66c.47-.74 1.47-.93 2.17-.4l2.34 1.75c.21.16.51.16.72 0l3.16-2.4c.42-.32.97.18.69.63l-2.94 4.66c-.47.74-1.47.93-2.17.4l-2.34-1.75a.6.6 0 00-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63z"
       />
     </svg>
@@ -93,7 +93,7 @@ export default function FloatingContact() {
       href: phoneHref,
       label: `Gọi ${data?.phoneNumber ?? ""}`.trim(),
       external: false,
-      className: "bg-emerald-500 hover:bg-emerald-400",
+      className: "bg-positive hover:bg-positive",
       content: <Phone className="h-5 w-5 text-white" strokeWidth={2.4} />,
     });
   }
@@ -103,7 +103,7 @@ export default function FloatingContact() {
       href: zaloUrl,
       label: "Chat Zalo",
       external: true,
-      className: "bg-[#0068FF] hover:brightness-110",
+      className: "bg-zalo hover:brightness-110",
       content: <span className="font-display text-[13px] font-black tracking-tight text-white">Zalo</span>,
     });
   }
@@ -113,7 +113,7 @@ export default function FloatingContact() {
       href: messengerUrl,
       label: "Chat Messenger",
       external: true,
-      className: "bg-gradient-to-br from-[#0099FF] via-[#A033FF] to-[#FF5280] hover:brightness-110",
+      className: "bg-gradient-to-br from-messenger-from via-messenger to-messenger-to hover:brightness-110",
       content: <MessengerGlyph className="h-6 w-6" />,
     });
   }
@@ -153,12 +153,12 @@ export default function FloatingContact() {
           type="button"
           onClick={() => openChat()}
           aria-label="Chat với Moxic"
-          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-bg-base shadow-[0_6px_20px_rgba(201,169,110,0.45)] transition-transform duration-200 hover:scale-105 cursor-pointer"
+          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-bg-base shadow-lg shadow-accent/40 transition-transform duration-200 hover:scale-105 cursor-pointer"
         >
           <span className="pointer-events-none absolute inset-0 rounded-full bg-accent/40 animate-ping [animation-duration:2.4s]" />
           <MessageCircleMore className="relative h-7 w-7" strokeWidth={2.2} />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-bg-base">
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-negative text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-bg-base">
               {unread > 9 ? "9+" : unread}
             </span>
           )}
@@ -172,10 +172,10 @@ export default function FloatingContact() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat Messenger"
-          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full shadow-[0_6px_20px_rgba(160,51,255,0.45)] transition-transform duration-200 hover:scale-105"
-          style={{ background: "linear-gradient(135deg, #0099FF 0%, #A033FF 60%, #FF5280 100%)" }}
+          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full shadow-lg shadow-messenger/40 transition-transform duration-200 hover:scale-105"
+          style={{ background: "linear-gradient(135deg, var(--color-messenger-from) 0%, var(--color-messenger) 60%, var(--color-messenger-to) 100%)" }}
         >
-          <span className="pointer-events-none absolute inset-0 rounded-full bg-[#A033FF]/40 animate-ping [animation-duration:2.4s]" />
+          <span className="pointer-events-none absolute inset-0 rounded-full bg-messenger/40 animate-ping [animation-duration:2.4s]" />
           <MessengerGlyph className="relative h-7 w-7" />
           <HoverLabel>Chat Messenger</HoverLabel>
         </a>

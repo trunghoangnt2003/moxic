@@ -50,12 +50,12 @@ export interface RentalDetail extends RentalSummary {
 }
 
 export const RENTAL_STATUS: Record<RentalStatus, { label: string; cls: string }> = {
-  PendingPayment: { label: "Chờ thanh toán", cls: "bg-amber-500/15 text-amber-300 border-amber-500/40" },
-  AwaitingConfirmation: { label: "Chờ xác nhận", cls: "bg-sky-500/15 text-sky-300 border-sky-500/40" },
-  Active: { label: "Đang thuê", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" },
-  Expired: { label: "Đã hết hạn", cls: "bg-rose-500/15 text-rose-300 border-rose-500/40" },
+  PendingPayment: { label: "Chờ thanh toán", cls: "bg-caution/15 text-caution border-caution/40" },
+  AwaitingConfirmation: { label: "Chờ xác nhận", cls: "bg-info/15 text-info border-info/40" },
+  Active: { label: "Đang thuê", cls: "bg-positive/15 text-positive border-positive/40" },
+  Expired: { label: "Đã hết hạn", cls: "bg-negative/15 text-negative border-negative/40" },
   Returned: { label: "Đã kết thúc", cls: "bg-white/5 text-text-muted border-white/15" },
-  Completed: { label: "Hoàn tất", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" },
+  Completed: { label: "Hoàn tất", cls: "bg-positive/15 text-positive border-positive/40" },
   Cancelled: { label: "Đã hủy", cls: "bg-white/5 text-text-muted border-white/15" },
 };
 
