@@ -41,6 +41,7 @@ public class RentalMaintenanceService : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
         var email = scope.ServiceProvider.GetRequiredService<IEmailService>();
+        var notify = scope.ServiceProvider.GetRequiredService<NotificationService>();
         var now = DateTime.UtcNow;
 
         // 1) Unpaid past the hold → cancelled.
@@ -63,6 +64,7 @@ public class RentalMaintenanceService : BackgroundService
             var claimed = await db.RentalOrders.Where(x => x.Id == r.Id && x.ReminderSentAt == null)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.ReminderSentAt, now), ct);
             if (claimed == 0) continue;
+            await notify.AddAsync(r.CustomerId, "rental", $"⏰ {r.GameName} sắp hết hạn thuê", $"Hết hạn lúc {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM}. Gia hạn ngay để không bị gián đoạn.", $"/account/rentals/{r.Code}");
             await SafeSend(email, r.CustomerEmail, "Sắp hết hạn thuê game — Moxic GameStore", "SẮP HẾT HẠN THUÊ",
                 $"Game {r.GameName} (đơn {r.Code}) sẽ hết hạn lúc {r.EndsAt!.Value.AddHours(7):HH:mm dd/MM/yyyy}.",
                 "Bạn có thể gia hạn ngay trong mục \"Game đang thuê\" trên moxic.co để không bị gián đoạn.");
@@ -77,6 +79,7 @@ public class RentalMaintenanceService : BackgroundService
             var done = await db.RentalOrders.Where(x => x.Id == r.Id && x.Status == RentalStatus.Active)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, RentalStatus.Expired).SetProperty(x => x.UpdatedAt, now), ct);
             if (done == 0) continue;
+            await notify.AddAsync(r.CustomerId, "rental", $"{r.GameName} đã hết hạn thuê", "Gia hạn trước khi tài khoản được thu hồi.", $"/account/rentals/{r.Code}");
             await SafeSend(email, r.CustomerEmail, "Đã hết hạn thuê game — Moxic GameStore", "ĐÃ HẾT HẠN THUÊ",
                 $"Đơn thuê {r.Code} ({r.GameName}) đã hết hạn. Moxic sẽ thu hồi tài khoản trong thời gian sớm nhất.",
                 "Muốn chơi tiếp? Gia hạn ngay trong mục \"Game đang thuê\" trước khi tài khoản được thu hồi.");

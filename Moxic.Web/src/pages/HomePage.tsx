@@ -10,6 +10,7 @@ import { ArrowRight, Flame } from "lucide-react";
 import GameRail from "../components/games/GameRail";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { ForYouRail } from "../components/games/DiscoveryRails";
+import { FlashSaleRail } from "../components/games/FlashSale";
 import { PageLoader } from "../components/shared/MoxicLoader";
 
 export default function HomePage() {
@@ -32,6 +33,11 @@ export default function HomePage() {
     <div>
       {/* ═══ HERO SPLASH ═══ */}
       <HeroSplash featured={featured || []} available={availableGames} />
+
+      {/* ═══ FLASH SALE ═══ */}
+      <Container className="mt-14 empty:hidden">
+        <FlashSaleRail />
+      </Container>
 
       {/* ═══ VONG QUAY MAY MAN ═══ */}
       <Container className="mt-14 empty:hidden">

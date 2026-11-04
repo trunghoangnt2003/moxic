@@ -20,6 +20,7 @@ export interface GameQuery {
   maxPrice?: number;
   onSale?: boolean;
   rentable?: boolean;
+  flashSale?: boolean;
   yearFrom?: number;
   yearTo?: number;
   minRating?: number;
@@ -42,6 +43,7 @@ export async function getGames(query: GameQuery = {}) {
   if (query.maxPrice != null) params.maxPrice = query.maxPrice;
   if (query.onSale) params.onSale = true;
   if (query.rentable) params.rentable = true;
+  if (query.flashSale) params.flashSale = true;
   if (query.yearFrom != null) params.yearFrom = query.yearFrom;
   if (query.yearTo != null) params.yearTo = query.yearTo;
   if (query.minRating != null) params.minRating = query.minRating;

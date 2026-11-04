@@ -22,12 +22,14 @@ public class AdminRentalsController : ControllerBase
     private readonly MoxicDbContext _db;
     private readonly RentalService _rentals;
     private readonly IBackgroundEmailQueue _emails;
+    private readonly NotificationService _notifications;
 
-    public AdminRentalsController(MoxicDbContext db, RentalService rentals, IBackgroundEmailQueue emails)
+    public AdminRentalsController(MoxicDbContext db, RentalService rentals, IBackgroundEmailQueue emails, NotificationService notifications)
     {
         _db = db;
         _rentals = rentals;
         _emails = emails;
+        _notifications = notifications;
     }
 
     // ───────────── Orders ─────────────
@@ -111,6 +113,10 @@ public class AdminRentalsController : ControllerBase
         await tx.CommitAsync();
 
         QueueEmail(r.CustomerEmail, "Thuê game — Moxic GameStore", r.Kind == "Extension" ? "GIA HẠN THÀNH CÔNG" : "ĐÃ BÀN GIAO GAME THUÊ", notice);
+        await _notifications.AddAsync(r.CustomerId, "rental",
+            r.Kind == "Extension" ? $"Đã gia hạn {r.GameName} thêm {r.Days} ngày" : $"🎮 {r.GameName} đã sẵn sàng để chơi",
+            r.Kind == "Extension" ? "Hạn thuê mới đã được cập nhật." : "Xem thông tin đăng nhập trong mục Game đang thuê.",
+            $"/account/rentals/{(r.Kind == "Extension" ? r.Parent!.Code : r.Code)}");
         return NoContent();
     }
 
@@ -143,6 +149,7 @@ public class AdminRentalsController : ControllerBase
         r.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         QueueEmail(r.CustomerEmail, "Đơn thuê đã hủy — Moxic GameStore", "ĐƠN THUÊ ĐÃ HỦY", $"Đơn {r.Code} ({r.GameName}) đã bị hủy. Lý do: {reason}.");
+        await _notifications.AddAsync(r.CustomerId, "rental", $"Đơn thuê {r.Code} đã bị hủy", reason, r.Kind == "Rental" ? $"/account/rentals/{r.Code}" : null);
         return NoContent();
     }
 

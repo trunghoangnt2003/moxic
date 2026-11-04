@@ -25,6 +25,7 @@ public class AdminOrdersController : ControllerBase
     private readonly IConfiguration _config;
     private readonly PointsService _points;
     private readonly CouponService _coupons;
+    private readonly NotificationService _notifications;
 
     public AdminOrdersController(
         MoxicDbContext db,
@@ -35,9 +36,11 @@ public class AdminOrdersController : ControllerBase
         ILogger<AdminOrdersController> logger,
         IConfiguration config,
         PointsService points,
-        CouponService coupons)
+        CouponService coupons,
+        NotificationService notifications)
     {
         _coupons = coupons;
+        _notifications = notifications;
         _db = db;
         _dataProtection = dataProtection;
         _minio = minio;
@@ -233,6 +236,23 @@ public class AdminOrdersController : ControllerBase
             await tx.CommitAsync();
         }
 
+        // In-app notification for the customer's bell.
+        var customerId = await _notifications.ResolveOrderCustomerAsync(order);
+        if (customerId != null)
+        {
+            var (title, body) = newStatus switch
+            {
+                OrderStatus.Verifying => ($"Đã nhận thanh toán đơn {order.OrderCode}", "Moxic đang xác minh và chuẩn bị cài đặt game cho bạn."),
+                OrderStatus.Installing => ($"Đơn {order.OrderCode} đang được cài đặt", "Vui lòng không đăng nhập tài khoản Xbox trong lúc cài đặt."),
+                OrderStatus.ActionRequired => ($"Đơn {order.OrderCode} cần bạn xử lý", request.Reason ?? "Thông tin tài khoản Xbox chưa chính xác — vui lòng kiểm tra."),
+                OrderStatus.Completed => ($"🎉 Đơn {order.OrderCode} đã hoàn tất", "Game đã được cài vào tài khoản Xbox của bạn. Chúc bạn chơi vui!"),
+                OrderStatus.Cancelled => ($"Đơn {order.OrderCode} đã bị hủy", request.Reason ?? "Liên hệ Moxic nếu bạn cần hỗ trợ."),
+                _ => (null as string, null as string),
+            };
+            if (title != null)
+                await _notifications.AddAsync(customerId, "order", title, body, $"/account/orders/{order.OrderCode}");
+        }
+
         // Enqueue email notification ? sent in background
         var _newStatus = newStatus;
         var _customerEmail = order.CustomerXboxEmail;
@@ -254,11 +274,11 @@ public class AdminOrdersController : ControllerBase
                         await svc.SendGameInstalledAsync(_customerEmail, _orderCode, _gameName);
                         break;
                     case OrderStatus.Cancelled:
-                        await svc.SendOrderCancelledAsync(_customerEmail, _orderCode, _reason ?? "Kh?ng c? l? do");
+                        await svc.SendOrderCancelledAsync(_customerEmail, _orderCode, _reason ?? "Không có lý do");
                         break;
                     case OrderStatus.ActionRequired:
                         await svc.SendActionRequiredAsync(_customerEmail, _orderCode,
-                            "Th?ng tin t?i kho?n Xbox kh?ng ch?nh x?c. Vui l?ng c?p nh?t.");
+                            "Thông tin tài khoản Xbox không chính xác. Vui lòng cập nhật.");
                         break;
                 }
             }

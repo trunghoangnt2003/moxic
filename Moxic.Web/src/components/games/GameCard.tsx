@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Flame, Gamepad2, KeyRound } from "lucide-react";
 import WishlistButton from "./WishlistButton";
 import { PRODUCT_TYPE_LABELS, PRODUCT_TYPE_STYLES } from "../../lib/productTypes";
+import { SaleCountdownBadge } from "./FlashSale";
 
 /** Cover image with a branded placeholder when the URL is missing or fails to load. */
 function Cover({ src, name, className }: { src?: string; name: string; className: string }) {
@@ -59,6 +60,7 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
               <Flame className="w-3 h-3" /> Bán chạy
             </span>
           )}
+          {game.saleEndsAt && <SaleCountdownBadge endsAt={game.saleEndsAt} className="absolute bottom-2 right-2" />}
           {(type !== "Game" || game.region) && (
             <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
               {type !== "Game" && (

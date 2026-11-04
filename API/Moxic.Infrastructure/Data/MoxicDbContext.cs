@@ -38,6 +38,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<RentalOrder> RentalOrders => Set<RentalOrder>();
     public DbSet<GamePriceSnapshot> GamePriceSnapshots => Set<GamePriceSnapshot>();
     public DbSet<GameComment> GameComments => Set<GameComment>();
+    public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -267,6 +268,17 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Body).HasMaxLength(500);
+            entity.Property(e => e.Link).HasMaxLength(300);
+            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+        });
+
         modelBuilder.Entity<GameComment>(entity =>
         {
             entity.HasKey(e => e.Id);

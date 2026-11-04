@@ -17,9 +17,11 @@ public class PointsService
     private readonly MoxicDbContext _db;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly ILogger<PointsService> _logger;
+    private readonly NotificationService _notifications;
 
-    public PointsService(MoxicDbContext db, UserManager<IdentityUser> userManager, ILogger<PointsService> logger)
+    public PointsService(MoxicDbContext db, UserManager<IdentityUser> userManager, ILogger<PointsService> logger, NotificationService notifications)
     {
+        _notifications = notifications;
         _db = db;
         _userManager = userManager;
         _logger = logger;
@@ -80,6 +82,7 @@ public class PointsService
             CreatedAt = now
         });
         await _db.SaveChangesAsync();
+        await _notifications.AddAsync(user.Id, "points", $"+{points} điểm thưởng", $"Từ đơn {order.OrderCode}" + (tier.PointsMultiplier > 1 ? $" (hạng {tier.Name} x{tier.PointsMultiplier:0.##})" : ""), "/rewards");
         return points;
     }
 
@@ -197,8 +200,10 @@ public class PointsService
             .Where(p => p.UserId == refereeId && p.ReferralRewardedAt == null)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.ReferralRewardedAt, now));
         if (claimed == 0) return;
-        await CreditOnceAsync(referrerId, LoyaltyRules.ReferrerReward, PointsReason.Referral, $"ref:referrer:{refereeId}", $"Bạn bè hoàn tất đơn {orderCode}");
-        await CreditOnceAsync(refereeId, LoyaltyRules.RefereeReward, PointsReason.Referral, $"ref:referee:{refereeId}", "Thưởng được giới thiệu");
+        if (await CreditOnceAsync(referrerId, LoyaltyRules.ReferrerReward, PointsReason.Referral, $"ref:referrer:{refereeId}", $"Bạn bè hoàn tất đơn {orderCode}") != null)
+            await _notifications.AddAsync(referrerId, "points", $"🎁 +{LoyaltyRules.ReferrerReward} điểm giới thiệu", "Bạn bè của bạn vừa hoàn tất đơn đầu tiên.", "/rewards");
+        if (await CreditOnceAsync(refereeId, LoyaltyRules.RefereeReward, PointsReason.Referral, $"ref:referee:{refereeId}", "Thưởng được giới thiệu") != null)
+            await _notifications.AddAsync(refereeId, "points", $"🎁 +{LoyaltyRules.RefereeReward} điểm chào mừng", "Thưởng vì được bạn bè giới thiệu.", "/rewards");
     }
 
     public async Task<int> GetBalanceAsync(string userId) =>

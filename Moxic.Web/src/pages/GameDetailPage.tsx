@@ -3,6 +3,7 @@ import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
 import RentPanel from "../components/rental/RentPanel";
 import { CompareButton } from "../components/games/Compare";
+import { SaleCountdown } from "../components/games/FlashSale";
 import { GamePageRails } from "../components/games/DiscoveryRails";
 import PriceHistory from "../components/game-detail/PriceHistory";
 import GameDiscussion from "../components/community/GameDiscussion";
@@ -429,6 +430,12 @@ export default function GameDetailPage() {
                 <span className="text-text-muted text-xs uppercase tracking-wider">Giá bán</span>
                 {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
               </div>
+              {game.saleEndsAt && (
+                <div className="mb-4 -mx-5 px-5 py-2.5 bg-gradient-to-r from-rose-500/15 to-orange-500/10 border-y border-rose-500/30">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-orange-300 mb-1.5">⚡ Flash Sale</p>
+                  <SaleCountdown endsAt={game.saleEndsAt} />
+                </div>
+              )}
               {editions.length > 1 && (
                 <div className="mb-4 space-y-2" role="radiogroup" aria-label="Chọn phiên bản">
                   <p className="text-[11px] uppercase tracking-wider text-text-muted">Chọn phiên bản</p>

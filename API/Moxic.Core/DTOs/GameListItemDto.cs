@@ -20,4 +20,6 @@ public class GameListItemDto
     public int EditionCount { get; set; }
     /// <summary>Cheapest active rental plan, when the game can be rented.</summary>
     public decimal? RentFrom { get; set; }
+    /// <summary>Flash sale end (only when still running and discounted).</summary>
+    public DateTime? SaleEndsAt { get; set; }
 }

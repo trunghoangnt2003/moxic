@@ -21,6 +21,7 @@ import {
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
 import HeaderSearch from "./HeaderSearch";
+import NotificationBell from "./NotificationBell";
 import { useWishlistIds } from "../../hooks/useWishlist";
 
 export default function Navbar() {
@@ -144,6 +145,8 @@ export default function Navbar() {
             <div className="hidden sm:block">
               <HeaderSearch variant="desktop" />
             </div>
+
+            {me && <NotificationBell />}
 
             {/* Wishlist */}
             <Link

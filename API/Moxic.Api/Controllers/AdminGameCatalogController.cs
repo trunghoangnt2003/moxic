@@ -8,7 +8,7 @@ namespace Moxic.Api.Controllers;
 
 public record AdminEditionDto(Guid? Id, string? Name, string? Includes, decimal OriginalPrice, decimal SalePrice, bool IsDefault, bool IsActive, int DisplayOrder);
 
-public record AdminGameCatalogDto(string ProductType, string? Region, string? Publisher, string? Developer, List<AdminEditionDto> Editions, string? XboxProductId = null, string? PriceRegion = null);
+public record AdminGameCatalogDto(string ProductType, string? Region, string? Publisher, string? Developer, List<AdminEditionDto> Editions, string? XboxProductId = null, string? PriceRegion = null, DateTime? SaleEndsAt = null);
 
 /// <summary>Product classification (type/region/publisher) and editions of a game.</summary>
 [Route("api/admin/games/{id:guid}/catalog")]
@@ -60,6 +60,7 @@ public class AdminGameCatalogController : ControllerBase
         game.Developer = Clean(dto.Developer, 100);
         game.XboxProductId = Clean(dto.XboxProductId, 20)?.ToUpperInvariant();
         game.PriceRegion = Clean(dto.PriceRegion, 5)?.ToLowerInvariant();
+        game.SaleEndsAt = dto.SaleEndsAt?.ToUniversalTime();
 
         // Replace editions: update matching ids, add new ones, remove the rest.
         var now = DateTime.UtcNow;
@@ -106,5 +107,5 @@ public class AdminGameCatalogController : ControllerBase
         g.Editions.OrderBy(e => e.DisplayOrder)
             .Select(e => new AdminEditionDto(e.Id, e.Name, e.Includes, e.OriginalPrice, e.SalePrice, e.IsDefault, e.IsActive, e.DisplayOrder))
             .ToList(),
-        g.XboxProductId, g.PriceRegion);
+        g.XboxProductId, g.PriceRegion, g.SaleEndsAt);
 }

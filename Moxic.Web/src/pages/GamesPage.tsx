@@ -15,6 +15,7 @@ const SORTS = [
   { value: "", label: "Nổi bật & mới nhất" },
   { value: "bestseller", label: "Bán chạy nhất" },
   { value: "discount", label: "Giảm giá nhiều nhất" },
+  { value: "ending", label: "Sắp hết khuyến mãi" },
   { value: "price-asc", label: "Giá: thấp → cao" },
   { value: "price-desc", label: "Giá: cao → thấp" },
   { value: "release", label: "Ngày phát hành" },

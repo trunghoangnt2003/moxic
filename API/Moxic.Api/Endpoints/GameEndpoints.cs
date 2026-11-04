@@ -27,6 +27,7 @@ public static class GameEndpoints
             decimal? maxPrice,
             bool? onSale,
             bool? rentable,
+            bool? flashSale,
             int? yearFrom,
             int? yearTo,
             double? minRating,
@@ -89,6 +90,11 @@ public static class GameEndpoints
             if (minPrice.HasValue) query = query.Where(g => g.SalePrice >= minPrice.Value);
             if (maxPrice.HasValue) query = query.Where(g => g.SalePrice <= maxPrice.Value);
             if (onSale == true) query = query.Where(g => g.SalePrice < g.OriginalPrice);
+            if (flashSale == true)
+            {
+                var nowUtc = DateTime.UtcNow;
+                query = query.Where(g => g.SaleEndsAt != null && g.SaleEndsAt > nowUtc && g.SalePrice < g.OriginalPrice);
+            }
             if (rentable == true)
                 query = query.Where(g => dbContext.RentalPlans.Any(p => p.GameId == g.Id && p.IsActive)
                                          && dbContext.RentalAssets.Any(a => a.IsActive && a.Games.Any(x => x.GameId == g.Id)));
@@ -102,6 +108,7 @@ public static class GameEndpoints
                 "discount" => query
                     .OrderByDescending(g => g.OriginalPrice > 0 ? (g.OriginalPrice - g.SalePrice) / g.OriginalPrice : 0)
                     .ThenBy(g => g.Name),
+                "ending" => query.OrderBy(g => g.SaleEndsAt == null).ThenBy(g => g.SaleEndsAt).ThenBy(g => g.Name),
                 "bestseller" => query
                     .OrderByDescending(g => dbContext.OrderDetails.Count(d => d.GameId == g.Id && SoldStatuses.Contains(d.Order.Status)))
                     .ThenByDescending(g => g.IsFeatured).ThenBy(g => g.Name),
@@ -158,7 +165,8 @@ public static class GameEndpoints
                     Region = game.Region,
                     Publisher = game.Publisher,
                     EditionCount = editionCounts.GetValueOrDefault(game.Id),
-                    RentFrom = rentFrom.TryGetValue(game.Id, out var rf) ? rf : null
+                    RentFrom = rentFrom.TryGetValue(game.Id, out var rf) ? rf : null,
+                    SaleEndsAt = game.SaleEndsAt > DateTime.UtcNow && game.SalePrice < game.OriginalPrice ? game.SaleEndsAt : null
                 });
             }
 
@@ -314,6 +322,7 @@ public static class GameEndpoints
                 Publisher = game.Publisher,
                 Developer = game.Developer,
                 XboxProductId = game.XboxProductId,
+                SaleEndsAt = game.SaleEndsAt > DateTime.UtcNow && game.SalePrice < game.OriginalPrice ? game.SaleEndsAt : null,
                 Editions = game.Editions
                     .Where(e => e.IsActive)
                     .OrderBy(e => e.DisplayOrder).ThenBy(e => e.SalePrice)

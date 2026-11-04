@@ -27,6 +27,7 @@ export interface GameListItem {
   publisher?: string | null;
   editionCount?: number;
   rentFrom?: number | null;
+  saleEndsAt?: string | null;
 }
 
 export type ProductType = "Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle";
@@ -104,6 +105,7 @@ export interface GameDetail {
   publisher: string | null;
   developer: string | null;
   xboxProductId?: string | null;
+  saleEndsAt?: string | null;
   editions: GameEdition[];
 }
 

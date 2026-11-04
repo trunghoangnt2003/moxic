@@ -22,6 +22,7 @@ interface Catalog {
   editions: Edition[];
   xboxProductId: string | null;
   priceRegion: string | null;
+  saleEndsAt: string | null;
 }
 
 const TYPES = [
@@ -31,6 +32,12 @@ const TYPES = [
   { value: "DLC", label: "DLC / Expansion" },
   { value: "Bundle", label: "Bundle" },
 ];
+
+const toLocal = (iso: string) => {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
 
 const REGIONS = ["Global", "US", "VN", "AR", "TR", "IN", "EU", "UK", "JP", "KR", "BR"];
 
@@ -158,6 +165,16 @@ export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: 
           <label className="block text-[11px] text-steam-muted mb-1">Xbox Store product ID (theo dõi giá)</label>
           <input value={data.xboxProductId ?? ""} onChange={(e) => set({ xboxProductId: e.target.value })} placeholder="VD: 9NBLGGH4R2R6" className="w-full steam-input text-xs font-mono uppercase" />
           <p className="text-[10px] text-steam-muted mt-0.5">Lấy từ link xbox.com/…/store/…/<b>9XXXXXXXXXXX</b></p>
+        </div>
+        <div>
+          <label className="block text-[11px] text-steam-muted mb-1">⚡ Flash sale kết thúc lúc (đếm ngược trên web)</label>
+          <input
+            type="datetime-local"
+            value={data.saleEndsAt ? toLocal(data.saleEndsAt) : ""}
+            onChange={(e) => set({ saleEndsAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+            className="w-full steam-input text-xs"
+          />
+          <p className="text-[10px] text-steam-muted mt-0.5">Chỉ hiện khi giá bán thấp hơn giá gốc. Hết giờ thì nhớ chỉnh lại giá.</p>
         </div>
         <div>
           <label className="block text-[11px] text-steam-muted mb-1">Region lấy giá Store</label>

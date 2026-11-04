@@ -22,6 +22,7 @@ public class GameDetailDto
     public string? Publisher { get; set; }
     public string? Developer { get; set; }
     public string? XboxProductId { get; set; }
+    public DateTime? SaleEndsAt { get; set; }
     public List<GameEditionDto> Editions { get; set; } = new();
 
     // Social proof fields

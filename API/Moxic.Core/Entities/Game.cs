@@ -26,6 +26,8 @@ public class Game
     public string? XboxProductId { get; set; }
     /// <summary>Store region used for the Xbox price reference (ISO-2, lower case). Default "us".</summary>
     public string? PriceRegion { get; set; }
+    /// <summary>Flash sale: when the current discount ends (UTC). Null = no countdown.</summary>
+    public DateTime? SaleEndsAt { get; set; }
     public ICollection<GameEdition> Editions { get; set; } = new List<GameEdition>();
     public SystemRequirementData? SystemRequirements { get; set; }
     public List<GameRating> Ratings { get; set; } = new();

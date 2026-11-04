@@ -16,13 +16,35 @@ interface Props {
   onCouponRejected?: () => void;
 }
 
+const SAVED_KEY = "moxic.checkout";
+type SavedCheckout = { phone: string; email: string; zalo: string };
+function readSavedCheckout(): SavedCheckout | null {
+  try {
+    const raw = localStorage.getItem(SAVED_KEY);
+    return raw ? (JSON.parse(raw) as SavedCheckout) : null;
+  } catch {
+    return null;
+  }
+}
+function writeSavedCheckout(v: SavedCheckout | null) {
+  try {
+    if (v) localStorage.setItem(SAVED_KEY, JSON.stringify(v));
+    else localStorage.removeItem(SAVED_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }: Props) {
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  // Remembered contact details (never the password) — per-device convenience.
+  const [saved] = useState(readSavedCheckout);
+  const [phone, setPhone] = useState(saved?.phone ?? "");
+  const [email, setEmail] = useState(saved?.email ?? "");
   const [password, setPassword] = useState("");
-  const [zalo, setZalo] = useState("");
+  const [zalo, setZalo] = useState(saved?.zalo ?? "");
+  const [remember, setRemember] = useState(saved != null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -69,6 +91,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         couponCode: couponCode || undefined,
       };
       const result = await createOrder(request);
+      writeSavedCheckout(remember ? { phone: phone.trim(), email: email.trim(), zalo: zalo.trim() } : null);
       clearCart();
       onSuccess(result.orderCode);
     } catch (err: any) {
@@ -154,6 +177,11 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         <input id="checkout-zalo" type="text" value={zalo} onChange={(e) => setZalo(e.target.value)}
           placeholder="Zalo hoặc Facebook để liên hệ" className={inputClass} />
       </div>
+
+      <label className="flex items-center gap-2 text-xs text-[#b5a898] cursor-pointer select-none">
+        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-[#c9a96e]" />
+        Ghi nhớ SĐT, email Xbox và Zalo trên thiết bị này cho lần mua sau (không lưu mật khẩu)
+      </label>
 
       {/* Privacy notice */}
       <PrivacyNotice />

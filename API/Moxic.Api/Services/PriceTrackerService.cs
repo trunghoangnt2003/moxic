@@ -35,9 +35,11 @@ public class PriceTrackerService
     private readonly IConfiguration _config;
     private readonly IEmailService _email;
     private readonly ILogger<PriceTrackerService> _logger;
+    private readonly NotificationService _notifications;
 
-    public PriceTrackerService(MoxicDbContext db, IHttpClientFactory http, IConfiguration config, IEmailService email, ILogger<PriceTrackerService> logger)
+    public PriceTrackerService(MoxicDbContext db, IHttpClientFactory http, IConfiguration config, IEmailService email, ILogger<PriceTrackerService> logger, NotificationService notifications)
     {
+        _notifications = notifications;
         _db = db;
         _http = http;
         _config = config;
@@ -297,9 +299,11 @@ public class PriceTrackerService
             // Claim the new price first so a failure never double-sends.
             await _db.WishlistItems.Where(w => w.UserId == r.UserId && w.GameId == r.GameId)
                 .ExecuteUpdateAsync(s => s.SetProperty(w => w.NotifiedPrice, r.SalePrice), ct);
-            if (!dropped || !r.Alerts || !r.EmailConfirmed || string.IsNullOrWhiteSpace(r.Email)) continue;
-
+            if (!dropped) continue;
             var pct = r.NotifiedPrice!.Value > 0 ? Math.Round((1 - r.SalePrice / r.NotifiedPrice.Value) * 100) : 0;
+            await _notifications.AddAsync(r.UserId, "price", $"💸 {r.Name} giảm còn {Vnd(r.SalePrice)}", $"Giảm {pct}% so với lúc bạn thêm vào Yêu thích.", $"/games/{r.GameId}");
+            if (!r.Alerts || !r.EmailConfirmed || string.IsNullOrWhiteSpace(r.Email)) continue;
+
             try
             {
                 await _email.SendNoticeAsync(r.Email!, $"{r.Name} vừa giảm giá — Moxic GameStore", "GAME YÊU THÍCH GIẢM GIÁ",

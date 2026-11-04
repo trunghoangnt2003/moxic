@@ -5,6 +5,7 @@ import OrderStatusBadge from "../components/account/OrderStatusBadge";
 import { PageLoader } from "../components/shared/MoxicLoader";
 import { useMyOrder } from "../hooks/useAccount";
 import { formatDate, formatPrice } from "../lib/utils";
+import OrderTimeline from "../components/account/OrderTimeline";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   Bank: "Chuyển khoản ngân hàng",
@@ -63,6 +64,10 @@ export default function OrderHistoryDetailPage() {
                 <h1 className="font-mono text-lg sm:text-xl text-[#ede6db] break-all">{order.orderCode}</h1>
               </div>
               <OrderStatusBadge status={order.status} />
+            </div>
+
+            <div className="mt-6 mb-2">
+              <OrderTimeline status={order.status} />
             </div>
 
             {order.status === "Cancelled" && order.cancellationReason && (

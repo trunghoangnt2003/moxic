@@ -168,6 +168,7 @@ public class DiscoveryController : ControllerBase
                 Genres = g.Genres.Select(x => new GenreDto(x.Id, x.Name)).ToList(),
                 Status = g.Status.ToString(), ReleaseDate = g.ReleaseDate, CoverImageUrl = cover,
                 ProductType = g.ProductType, Region = g.Region, Publisher = g.Publisher,
+                SaleEndsAt = g.SaleEndsAt > DateTime.UtcNow && g.SalePrice < g.OriginalPrice ? g.SaleEndsAt : null,
             });
         }
         return result;
