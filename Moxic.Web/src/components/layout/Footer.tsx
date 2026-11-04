@@ -18,12 +18,6 @@ export default function Footer() {
               Store
             </Link>
             <a href="#" className="hover:text-text-primary transition-colors">
-              Hỗ trợ
-            </a>
-            <a href="#" className="hover:text-text-primary transition-colors">
-              Phân phối
-            </a>
-            <a href="#" className="hover:text-text-primary transition-colors">
               Điều khoản
             </a>
             <a href="#" className="hover:text-text-primary transition-colors">
