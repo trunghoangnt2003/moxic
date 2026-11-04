@@ -99,6 +99,15 @@ public class AdminReportsController : ControllerBase
             .ToListAsync();
 
         var spins = await _db.SpinHistories.AsNoTracking().CountAsync(h => h.CreatedAt >= from);
+        var rentalQueue = new
+        {
+            awaiting = await _db.RentalOrders.AsNoTracking().CountAsync(r => r.Status == Moxic.Core.Entities.RentalStatus.AwaitingConfirmation),
+            expired = await _db.RentalOrders.AsNoTracking().CountAsync(r => r.Status == Moxic.Core.Entities.RentalStatus.Expired),
+            active = await _db.RentalOrders.AsNoTracking().CountAsync(r => r.Status == Moxic.Core.Entities.RentalStatus.Active),
+        };
+        var rentalRevenue = await _db.RentalOrders.AsNoTracking()
+            .Where(r => r.PaidAt != null && r.PaidAt >= from)
+            .SumAsync(r => (decimal?)r.Price) ?? 0m;
 
         return Ok(new
         {
@@ -127,6 +136,8 @@ public class AdminReportsController : ControllerBase
             topGames,
             byProductType,
             queue,
+            rentalQueue,
+            rentalRevenue,
         });
     }
 }

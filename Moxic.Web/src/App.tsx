@@ -11,6 +11,9 @@ import { Toaster } from "react-hot-toast";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GamesPage = lazy(() => import("./pages/GamesPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+const RentPage = lazy(() => import("./pages/RentPage"));
+const RentalsPage = lazy(() => import("./pages/RentalsPage"));
+const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage"));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage"));
 const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
@@ -46,6 +49,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/games" element={<GamesPage />} />
               <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/rent" element={<RentPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />
               <Route path="/cart" element={<CartPage />} />
@@ -62,6 +66,8 @@ export default function App() {
                 <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
                 <Route path="/account/points" element={<PointsHistoryPage />} />
                 <Route path="/account/coupons" element={<CouponWalletPage />} />
+                <Route path="/account/rentals" element={<RentalsPage />} />
+                <Route path="/account/rentals/:code" element={<RentalDetailPage />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Route>

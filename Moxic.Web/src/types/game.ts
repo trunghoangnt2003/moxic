@@ -26,6 +26,7 @@ export interface GameListItem {
   region?: string | null;
   publisher?: string | null;
   editionCount?: number;
+  rentFrom?: number | null;
 }
 
 export type ProductType = "Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle";

@@ -18,6 +18,7 @@ import {
   Music,
   Megaphone,
   LayoutDashboard,
+  KeyRound,
   TicketPercent,
 } from "lucide-react";
 import GameList from "./pages/GameList";
@@ -37,6 +38,7 @@ const SpinMusic = lazy(() => import("./pages/SpinMusic"));
 const Coupons = lazy(() => import("./pages/Coupons"));
 const Announcements = lazy(() => import("./pages/Announcements"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Rentals = lazy(() => import("./pages/Rentals"));
 
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -44,6 +46,7 @@ const navItems = [
   { to: "/genres", label: "Genres", icon: BookMarked },
   { to: "/tags", label: "Tags", icon: Tags },
   { to: "/orders", label: "Orders", icon: Package },
+  { to: "/rentals", label: "Thuê game", icon: KeyRound },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
   { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
@@ -243,6 +246,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/rentals" element={<Rentals />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />
                   <Route path="/games/:id/edit" element={<GameForm />} />

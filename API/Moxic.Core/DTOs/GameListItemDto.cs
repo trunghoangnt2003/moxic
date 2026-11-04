@@ -18,4 +18,6 @@ public class GameListItemDto
     public string? Publisher { get; set; }
     /// <summary>Number of active editions; &gt; 1 shows "Từ …" pricing.</summary>
     public int EditionCount { get; set; }
+    /// <summary>Cheapest active rental plan, when the game can be rented.</summary>
+    public decimal? RentFrom { get; set; }
 }

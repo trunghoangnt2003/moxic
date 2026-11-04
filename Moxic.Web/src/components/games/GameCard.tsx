@@ -3,7 +3,7 @@ import type { GameListItem } from "../../types/game";
 import Badge from "../shared/Badge";
 import { formatPrice } from "../../lib/utils";
 import { useState } from "react";
-import { Flame, Gamepad2 } from "lucide-react";
+import { Flame, Gamepad2, KeyRound } from "lucide-react";
 import WishlistButton from "./WishlistButton";
 import { PRODUCT_TYPE_LABELS, PRODUCT_TYPE_STYLES } from "../../lib/productTypes";
 
@@ -91,6 +91,11 @@ export default function GameCard({ game, variant = "horizontal" }: Props) {
             )}
             <span className={priceClass}>{priceDisplay}</span>
           </div>
+          {game.rentFrom != null && (
+            <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300">
+              <KeyRound className="w-3 h-3" /> Thuê từ {formatPrice(game.rentFrom)}
+            </p>
+          )}
           {(game.soldCount ?? 0) > 0 && (
             <p className="text-[11px] text-text-muted">Đã bán {game.soldCount!.toLocaleString("vi-VN")}</p>
           )}

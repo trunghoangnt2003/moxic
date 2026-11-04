@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
+import RentPanel from "../components/rental/RentPanel";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { recentlyViewed } from "../lib/localIds";
@@ -482,6 +483,8 @@ export default function GameDetailPage() {
                 </button>
                 <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
               </div>            </div>
+
+            <RentPanel gameId={game.id} gameName={game.name} buyPrice={price} />
 
             {/* Game info */}
             <div className="bg-bg-surface border border-border p-5 space-y-3">

@@ -106,6 +106,13 @@ public class EmailService : IEmailService
         && !string.IsNullOrWhiteSpace(_settings.Username)
         && !string.IsNullOrWhiteSpace(_settings.Password);
 
+    public Task SendNoticeAsync(string toEmail, string subject, string title, params string[] paragraphs)
+    {
+        var body = $"<h1 style=\"color:#d4a853\">{WebUtility.HtmlEncode(title)}</h1>"
+                   + string.Concat(paragraphs.Select(p => $"<p>{WebUtility.HtmlEncode(p)}</p>"));
+        return SendAsync(toEmail, subject, body);
+    }
+
     private async Task SendAsync(string to, string subject, string htmlBody)
     {
         if (!IsConfigured)

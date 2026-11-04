@@ -32,6 +32,10 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<GameEdition> GameEditions => Set<GameEdition>();
+    public DbSet<RentalPlan> RentalPlans => Set<RentalPlan>();
+    public DbSet<RentalAsset> RentalAssets => Set<RentalAsset>();
+    public DbSet<RentalAssetGame> RentalAssetGames => Set<RentalAssetGame>();
+    public DbSet<RentalOrder> RentalOrders => Set<RentalOrder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -258,6 +262,51 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<RentalPlan>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.GameId);
+        });
+
+        modelBuilder.Entity<RentalAsset>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Label).HasMaxLength(60).IsRequired();
+            entity.Property(e => e.LoginEmail).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.PasswordEncrypted).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.Notes).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<RentalAssetGame>(entity =>
+        {
+            entity.HasKey(e => new { e.AssetId, e.GameId });
+            entity.HasOne(e => e.Asset).WithMany(a => a.Games).HasForeignKey(e => e.AssetId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.GameId);
+        });
+
+        modelBuilder.Entity<RentalOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(40).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Kind).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.CustomerEmail).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.CustomerPhone).HasMaxLength(20);
+            entity.Property(e => e.GameName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Status).HasMaxLength(30).IsRequired();
+            entity.Property(e => e.AdminNote).HasMaxLength(500);
+            entity.Property(e => e.CancelReason).HasMaxLength(300);
+            entity.HasOne(e => e.Parent).WithMany().HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Asset).WithMany().HasForeignKey(e => e.AssetId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.CustomerId);
+            entity.HasIndex(e => new { e.AssetId, e.Status });
+        });
+
         modelBuilder.Entity<GameEdition>(entity =>
         {
             entity.HasKey(e => e.Id);

@@ -7,6 +7,7 @@ import {
   BarChart3,
   Clock,
   Gift,
+  KeyRound,
   Loader2,
   Package,
   Percent,
@@ -43,6 +44,8 @@ interface Overview {
   topGames: { gameId: string; name: string; quantity: number; revenue: number }[];
   byProductType: { type: string; quantity: number; revenue: number }[];
   queue: { status: string; count: number }[];
+  rentalQueue: { awaiting: number; expired: number; active: number };
+  rentalRevenue: number;
 }
 
 const RANGES = [
@@ -305,6 +308,28 @@ export default function Dashboard() {
             </Link>
           )}
 
+          {data.rentalQueue && data.rentalQueue.awaiting + data.rentalQueue.expired > 0 && (
+            <Link
+              to="/rentals"
+              className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2.5 rounded-sm border border-steam-green/30 bg-steam-green/5 hover:bg-steam-green/10 transition-colors"
+            >
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-steam-green">
+                <KeyRound size={13} /> Thuê game cần xử lý
+              </span>
+              {data.rentalQueue.awaiting > 0 && (
+                <span className="text-xs text-steam-text">
+                  Khách báo đã CK: <b className="text-white">{data.rentalQueue.awaiting}</b>
+                </span>
+              )}
+              {data.rentalQueue.expired > 0 && (
+                <span className="text-xs text-steam-text">
+                  Hết hạn cần thu hồi: <b className="text-white">{data.rentalQueue.expired}</b>
+                </span>
+              )}
+              <span className="text-xs text-steam-blue sm:ml-auto">Mở Thuê game →</span>
+            </Link>
+          )}
+
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Kpi icon={Wallet} label="Doanh thu" value={vnd(data.kpis.revenue)} now={data.kpis.revenue} prev={data.kpis.revenuePrev} />
@@ -315,6 +340,7 @@ export default function Dashboard() {
             <Kpi icon={Percent} label="Tỷ lệ thanh toán" value={`${data.kpis.conversionRate}%`} hint="đơn đã thanh toán / đơn tạo" />
             <Kpi icon={Percent} label="Đã giảm giá" value={vnd(data.kpis.discountGiven)} hint="tổng coupon trên đơn đã thanh toán" />
             <Kpi icon={Gift} label="Lượt mở hòm" value={String(data.kpis.spins)} hint="trong khoảng thời gian" />
+            <Kpi icon={KeyRound} label="Doanh thu thuê game" value={vnd(data.rentalRevenue ?? 0)} hint={`${data.rentalQueue?.active ?? 0} đơn đang thuê`} />
           </div>
 
           {/* Revenue over time */}

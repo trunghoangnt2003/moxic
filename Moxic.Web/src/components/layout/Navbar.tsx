@@ -15,6 +15,7 @@ import {
   TicketPercent,
   Gift,
   Heart,
+  KeyRound,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -88,6 +89,15 @@ export default function Navbar() {
                 }
               >
                 Store
+              </NavLink>
+              <NavLink
+                to="/rent"
+                className={({ isActive }) =>
+                  `inline-flex items-center gap-1.5 text-sm font-semibold transition-colors ${isActive ? "text-emerald-300" : "text-emerald-200/90 hover:text-emerald-300"}`
+                }
+              >
+                <KeyRound className="w-4 h-4" />
+                Thuê game
               </NavLink>
               <NavLink
                 to="/lucky-spin"
@@ -200,6 +210,15 @@ export default function Navbar() {
                       Lịch sử mua hàng
                     </Link>
                     <Link
+                      to="/account/rentals"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <KeyRound className="w-4 h-4" />
+                      Game đang thuê
+                    </Link>
+                    <Link
                       to="/account/points"
                       role="menuitem"
                       onClick={() => setAccountOpen(false)}
@@ -269,6 +288,13 @@ export default function Navbar() {
               Store
             </Link>
             <Link
+              to="/rent"
+              className="flex items-center gap-2 text-emerald-300 py-2 text-sm font-semibold"
+              onClick={() => setMenuOpen(false)}
+            >
+              <KeyRound className="w-4 h-4" /> Thuê game
+            </Link>
+            <Link
               to="/lucky-spin"
               className="flex items-center gap-2 text-amber-300 py-2 text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
@@ -299,6 +325,14 @@ export default function Navbar() {
                   >
                     <Package className="w-4 h-4" />
                     Lịch sử mua hàng
+                  </Link>
+                  <Link
+                    to="/account/rentals"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    Game đang thuê
                   </Link>
                   <Link
                     to="/account/points"

@@ -17,4 +17,6 @@ public interface IEmailService
     Task SendActionRequiredAsync(string toEmail, string orderCode, string message);
     Task SendEmailVerificationCodeAsync(string toEmail, string displayName, string code);
     Task SendPasswordResetCodeAsync(string toEmail, string code);
+    /// <summary>Simple notice: title + paragraphs (plain text, HTML-encoded by the service).</summary>
+    Task SendNoticeAsync(string toEmail, string subject, string title, params string[] paragraphs);
 }

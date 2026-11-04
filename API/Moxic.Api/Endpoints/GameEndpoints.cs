@@ -26,6 +26,7 @@ public static class GameEndpoints
             decimal? minPrice,
             decimal? maxPrice,
             bool? onSale,
+            bool? rentable,
             string? sort,
             int page = 1,
             int pageSize = 20) =>
@@ -69,6 +70,9 @@ public static class GameEndpoints
             if (minPrice.HasValue) query = query.Where(g => g.SalePrice >= minPrice.Value);
             if (maxPrice.HasValue) query = query.Where(g => g.SalePrice <= maxPrice.Value);
             if (onSale == true) query = query.Where(g => g.SalePrice < g.OriginalPrice);
+            if (rentable == true)
+                query = query.Where(g => dbContext.RentalPlans.Any(p => p.GameId == g.Id && p.IsActive)
+                                         && dbContext.RentalAssets.Any(a => a.IsActive && a.Games.Any(x => x.GameId == g.Id)));
 
             query = sort switch
             {
@@ -103,6 +107,12 @@ public static class GameEndpoints
                 .GroupBy(e => e.GameId)
                 .Select(g => new { g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.Key, x => x.Count);
+            var rentFrom = await dbContext.RentalPlans.AsNoTracking()
+                .Where(p => pageIds.Contains(p.GameId) && p.IsActive
+                            && dbContext.RentalAssets.Any(a => a.IsActive && a.Games.Any(x => x.GameId == p.GameId)))
+                .GroupBy(p => p.GameId)
+                .Select(g => new { g.Key, Min = g.Min(p => p.Price) })
+                .ToDictionaryAsync(x => x.Key, x => x.Min);
             var dtos = new List<GameListItemDto>();
             foreach (var game in items)
             {
@@ -128,7 +138,8 @@ public static class GameEndpoints
                     ProductType = game.ProductType,
                     Region = game.Region,
                     Publisher = game.Publisher,
-                    EditionCount = editionCounts.GetValueOrDefault(game.Id)
+                    EditionCount = editionCounts.GetValueOrDefault(game.Id),
+                    RentFrom = rentFrom.TryGetValue(game.Id, out var rf) ? rf : null
                 });
             }
 

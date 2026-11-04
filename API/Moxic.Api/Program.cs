@@ -88,6 +88,8 @@ builder.Services.AddScoped<CustomerOtpService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PointsService>();
 builder.Services.AddScoped<CouponService>();
+builder.Services.AddScoped<RentalService>();
+builder.Services.AddHostedService<RentalMaintenanceService>();
 builder.Services.AddSingleton<SpinUserRateLimiter>();
 
 // MinIO
@@ -261,6 +263,7 @@ using (var scope = app.Services.CreateScope())
         await CouponSchemaBootstrap.EnsureAsync(dbContext);
         await AnnouncementSchemaBootstrap.EnsureAsync(dbContext);
         await WishlistSchemaBootstrap.EnsureAsync(dbContext);
+        await RentalSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
