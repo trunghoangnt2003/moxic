@@ -339,11 +339,11 @@ public class CouponService
     {
         var usesLeft = IsTotalExhausted(c) ? 0 : Math.Max(0, c.MaxUsesPerCustomer - userActive);
         return new WalletCouponDto(
-            c.Id, c.Code, c.Name, c.Source, c.DiscountType, c.Value, c.MaxDiscountAmount, c.MinOrderAmount,
+            c.Id, c.Code, RequestLanguage.Pick(c.Name, c.NameEn), c.Source, c.DiscountType, c.Value, c.MaxDiscountAmount, c.MinOrderAmount,
             c.GameId, gameName, c.StartsAt, c.ExpiresAt, WalletStatus(c, userActive, now), usesLeft, c.CreatedAt);
     }
 
     public static CouponQuoteDto ToQuoteDto(Coupon c, CouponEvaluation e, string? gameName) =>
-        new(c.Code, c.Name, c.Source, c.DiscountType, c.Value, c.MaxDiscountAmount, c.MinOrderAmount,
+        new(c.Code, RequestLanguage.Pick(c.Name, c.NameEn), c.Source, c.DiscountType, c.Value, c.MaxDiscountAmount, c.MinOrderAmount,
             c.GameId, gameName, c.ExpiresAt, e.Subtotal, e.ApplicableAmount, e.DiscountAmount, e.Total);
 }

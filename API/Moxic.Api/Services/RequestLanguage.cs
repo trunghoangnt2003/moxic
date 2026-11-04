@@ -14,7 +14,9 @@ public static class RequestLanguage
     public static void Set(HttpContext ctx)
     {
         var header = ctx.Request.Headers.AcceptLanguage.ToString();
-        _english.Value = header.StartsWith("en", StringComparison.OrdinalIgnoreCase);
+        // The web sends exactly "vi" or "en". Browser defaults ("en-US,en;q=0.9") and bots keep Vietnamese,
+        // so admins with an English browser still see and edit the source text.
+        _english.Value = string.Equals(header.Trim(), "en", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>The English text on English requests when there is one, otherwise the Vietnamese source.</summary>

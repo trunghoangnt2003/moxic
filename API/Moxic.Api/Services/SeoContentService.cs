@@ -66,17 +66,18 @@ public class SeoContentService
         }) ?? new();
 
     public async Task<List<FaqRow>> FaqAsync() =>
-        await _cache.GetOrCreateAsync("seo:faq", async e =>
+        await _cache.GetOrCreateAsync(RequestLanguage.IsEnglish ? "seo:faq:en" : "seo:faq", async e =>
         {
             e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
-            return await _db.FaqItems.AsNoTracking().Where(f => f.IsActive).OrderBy(f => f.DisplayOrder)
-                .Select(f => new FaqRow(f.Question, f.Answer)).ToListAsync();
+            var rows = await _db.FaqItems.AsNoTracking().Where(f => f.IsActive).OrderBy(f => f.DisplayOrder).ToListAsync();
+            return rows.Select(f => new FaqRow(RequestLanguage.Pick(f.Question, f.QuestionEn), RequestLanguage.Pick(f.Answer, f.AnswerEn))).ToList();
         }) ?? new();
 
     public void Invalidate()
     {
         _cache.Remove("seo:prices");
         _cache.Remove("seo:faq");
+        _cache.Remove("seo:faq:en");
         _cache.Remove("seo:stats");
         foreach (var p in Pages) _cache.Remove($"seo:page:{p}");
         _cache.Remove("seo:llms");

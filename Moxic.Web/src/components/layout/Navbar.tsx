@@ -63,6 +63,16 @@ export default function Navbar() {
     };
   }, [accountOpen]);
 
+  // While the phone menu is open the page behind it does not scroll; the menu scrolls on its own.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
+
   const handleLogout = () => {
     setAccountOpen(false);
     setMenuOpen(false);
@@ -287,8 +297,8 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border bg-bg-surface">
-          <div className="max-w-[1200px] mx-auto px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-border bg-bg-surface max-h-[calc(100dvh-3.5rem-var(--sat))] overflow-y-auto overscroll-contain">
+          <div className="max-w-[1200px] mx-auto px-4 pt-4 pb-[calc(1.5rem+var(--sab))] space-y-3">
             <HeaderSearch variant="mobile" onNavigate={() => setMenuOpen(false)} />
             <Link
               to="/games"

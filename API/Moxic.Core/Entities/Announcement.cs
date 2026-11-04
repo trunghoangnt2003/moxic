@@ -14,6 +14,12 @@ public class Announcement
     public string Title { get; set; } = string.Empty;
     public string? Subtitle { get; set; }
     public string? Body { get; set; }
+    /// <summary>English text for /en; empty = use the Vietnamese.</summary>
+    public string? TitleEn { get; set; }
+    public string? SubtitleEn { get; set; }
+    public string? BodyEn { get; set; }
+    public string? CountdownLabelEn { get; set; }
+    public string? CtaLabelEn { get; set; }
 
     /// <summary>Banner image in MinIO. When empty and GameId is set, the game's cover is used.</summary>
     public string? ImageObjectKey { get; set; }

@@ -9,6 +9,9 @@ public class SpinCase
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
+    /// <summary>English text for /en; empty = use the Vietnamese.</summary>
+    public string? NameEn { get; set; }
+    public string? DescriptionEn { get; set; }
     public string? ImageObjectKey { get; set; }
     public SpinCaseOpenMethod OpenMethod { get; set; } = SpinCaseOpenMethod.Code;
 

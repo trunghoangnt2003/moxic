@@ -50,12 +50,14 @@ public static class AnnouncementMapper
         if (string.IsNullOrWhiteSpace(ctaUrl) && a.GameId.HasValue) ctaUrl = $"/games/{a.GameId}";
 
         return new AnnouncementDto(
-            a.Id, a.Kind, a.Title, a.Subtitle, a.Body, imageUrl,
-            a.GameId, a.Game?.Name, a.Game?.SalePrice, a.Game?.OriginalPrice,
-            a.CountdownTo, a.CountdownLabel, a.CtaLabel, ctaUrl,
+            a.Id, a.Kind, RequestLanguage.Pick(a.Title, a.TitleEn), PickOpt(a.Subtitle, a.SubtitleEn), PickOpt(a.Body, a.BodyEn), imageUrl,
+            a.GameId, a.Game == null ? null : RequestLanguage.Pick(a.Game.Name, a.Game.NameEn), a.Game?.SalePrice, a.Game?.OriginalPrice,
+            a.CountdownTo, PickOpt(a.CountdownLabel, a.CountdownLabelEn), PickOpt(a.CtaLabel, a.CtaLabelEn), ctaUrl,
             a.StartsAt, a.EndsAt, a.IsActive, a.Priority,
             !string.IsNullOrEmpty(a.ImageObjectKey), a.UpdatedAt);
     }
+
+    private static string? PickOpt(string? vi, string? en) => vi == null && string.IsNullOrWhiteSpace(en) ? null : RequestLanguage.Pick(vi ?? "", en);
 
     /// <summary>Only same-site paths or http(s) URLs may become links.</summary>
     public static bool IsSafeUrl(string url) =>

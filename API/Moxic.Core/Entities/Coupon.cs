@@ -14,6 +14,8 @@ public class Coupon
     public string Code { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
+    /// <summary>English name for /en (copied from the prize or reward that issued it).</summary>
+    public string? NameEn { get; set; }
     public CouponSource Source { get; set; } = CouponSource.Event;
     public CouponDiscountType DiscountType { get; set; } = CouponDiscountType.Percent;
 

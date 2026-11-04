@@ -24,6 +24,7 @@ import {
   ShoppingBag,
   MessagesSquare,
   CircleHelp,
+  Languages,
 } from "lucide-react";
 import GameList from "./pages/GameList";
 import GameForm from "./pages/GameForm";
@@ -47,6 +48,7 @@ const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Faq = lazy(() => import("./pages/Faq"));
+const Translations = lazy(() => import("./pages/Translations"));
 
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -66,6 +68,7 @@ const navItems = [
   { to: "/moderation", label: "Kiểm duyệt", icon: ShieldAlert },
   { to: "/contact-settings", label: "Contact", icon: MessageCircle },
   { to: "/faq", label: "Hỏi đáp (SEO)", icon: CircleHelp },
+  { to: "/translations", label: "Bản dịch tiếng Anh", icon: Languages },
 ];
 
 function App() {
@@ -276,6 +279,7 @@ function App() {
                   <Route path="/reward-shop" element={<RewardShop />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/faq" element={<Faq />} />
+                  <Route path="/translations" element={<Translations />} />
                   <Route path="/announcements" element={<Announcements />} />
                 </Routes>
               </Suspense>

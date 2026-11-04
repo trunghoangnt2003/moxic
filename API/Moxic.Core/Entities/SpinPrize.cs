@@ -10,6 +10,8 @@ public class SpinPrize
     public Guid CaseId { get; set; }
 
     public string Name { get; set; } = string.Empty;
+    /// <summary>English name for /en; empty = the game's English name (game prizes) or the Vietnamese.</summary>
+    public string? NameEn { get; set; }
     public SpinPrizeType Type { get; set; } = SpinPrizeType.Luck;
     public Guid? GameId { get; set; }
 

@@ -196,6 +196,7 @@ public static class CouponRules
             Id = Guid.NewGuid(),
             Code = code,
             Name = name,
+            NameEn = string.IsNullOrWhiteSpace(prize.NameEn) ? null : prize.NameEn.Trim(),
             Source = CouponSource.SpinReward,
             DiscountType = type,
             Value = prize.DiscountValue.Value,

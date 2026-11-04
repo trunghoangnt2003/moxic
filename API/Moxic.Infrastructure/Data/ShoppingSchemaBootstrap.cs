@@ -26,6 +26,19 @@ public static class ShoppingSchemaBootstrap
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "SaleEndsAt" timestamp with time zone;
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "NameEn" text;
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "DescriptionEn" text;
+        ALTER TABLE "FaqItems" ADD COLUMN IF NOT EXISTS "QuestionEn" text;
+        ALTER TABLE "FaqItems" ADD COLUMN IF NOT EXISTS "AnswerEn" text;
+        ALTER TABLE "Announcements" ADD COLUMN IF NOT EXISTS "TitleEn" text;
+        ALTER TABLE "Announcements" ADD COLUMN IF NOT EXISTS "SubtitleEn" text;
+        ALTER TABLE "Announcements" ADD COLUMN IF NOT EXISTS "BodyEn" text;
+        ALTER TABLE "Announcements" ADD COLUMN IF NOT EXISTS "CountdownLabelEn" text;
+        ALTER TABLE "Announcements" ADD COLUMN IF NOT EXISTS "CtaLabelEn" text;
+        ALTER TABLE "SpinCases" ADD COLUMN IF NOT EXISTS "NameEn" text;
+        ALTER TABLE "SpinCases" ADD COLUMN IF NOT EXISTS "DescriptionEn" text;
+        ALTER TABLE "SpinPrizes" ADD COLUMN IF NOT EXISTS "NameEn" text;
+        ALTER TABLE "RewardItems" ADD COLUMN IF NOT EXISTS "NameEn" text;
+        ALTER TABLE "RewardItems" ADD COLUMN IF NOT EXISTS "DescriptionEn" text;
+        ALTER TABLE "Coupons" ADD COLUMN IF NOT EXISTS "NameEn" text;
 
         CREATE TABLE IF NOT EXISTS "WebPushSubscriptions" (
             "Id" uuid NOT NULL,

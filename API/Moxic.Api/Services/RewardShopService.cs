@@ -93,6 +93,7 @@ public class RewardShopService
                 Id = Guid.NewGuid(),
                 Code = CouponRules.GenerateCode("PT"),
                 Name = item.Name.Length > 100 ? item.Name[..100] : item.Name,
+                NameEn = string.IsNullOrWhiteSpace(item.NameEn) ? null : item.NameEn,
                 Source = CouponSource.PointsReward,
                 DiscountType = item.DiscountType!.Value,
                 Value = item.DiscountValue!.Value,

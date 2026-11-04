@@ -482,8 +482,8 @@ public class LuckySpinController : ControllerBase
         return new PublicCaseSummaryDto(
             c.Id,
             c.Slug,
-            c.Name,
-            c.Description,
+            RequestLanguage.Pick(c.Name, c.NameEn),
+            c.Description == null && string.IsNullOrWhiteSpace(c.DescriptionEn) ? null : RequestLanguage.Pick(c.Description ?? "", c.DescriptionEn),
             imageUrl,
             c.OpenMethod,
             c.FreeIntervalHours,
@@ -512,6 +512,6 @@ public class LuckySpinController : ControllerBase
     }
 
     private static PublicPrizeDto ToPublic(SpinPrize p, IReadOnlyDictionary<Guid, string?> images) =>
-        new(p.Id, p.Name, p.Type, LuckySpinRules.RarityFor(p.Probability), p.GameId,
+        new(p.Id, RequestLanguage.Pick(p.Name, !string.IsNullOrWhiteSpace(p.NameEn) ? p.NameEn : p.Game?.NameEn), p.Type, LuckySpinRules.RarityFor(p.Probability), p.GameId,
             images.TryGetValue(p.Id, out var url) ? url : null);
 }

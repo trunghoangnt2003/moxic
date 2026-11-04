@@ -32,7 +32,7 @@ public class RewardShopController : ControllerBase
     {
         var list = ids.Where(i => i != null).Select(i => i!.Value).Distinct().ToList();
         if (list.Count == 0) return new();
-        return await _db.SpinCases.AsNoTracking().Where(c => list.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name);
+        return await _db.SpinCases.AsNoTracking().Where(c => list.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => RequestLanguage.Pick(c.Name, c.NameEn));
     }
 
     // GET /api/rewards/shop — public catalog; signed-in customers also get their balance + per-item usage
@@ -63,7 +63,7 @@ public class RewardShopController : ControllerBase
             balance,
             items = items.Select(i => new
             {
-                i.Id, i.Name, i.Description, Kind = i.Kind.ToString(), i.PointsCost,
+                i.Id, Name = RequestLanguage.Pick(i.Name, i.NameEn), Description = i.Description == null && string.IsNullOrWhiteSpace(i.DescriptionEn) ? null : RequestLanguage.Pick(i.Description ?? "", i.DescriptionEn), Kind = i.Kind.ToString(), i.PointsCost,
                 DiscountType = i.DiscountType?.ToString(), i.DiscountValue, i.DiscountMaxAmount, i.DiscountMinOrderAmount,
                 CaseName = i.SpinCaseId != null ? cases.GetValueOrDefault(i.SpinCaseId.Value) : null,
                 i.ValidDays,
