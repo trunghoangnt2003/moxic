@@ -17,7 +17,7 @@ interface AuthFieldProps {
 }
 
 const inputClass =
-  "w-full bg-[#2d261e] border border-[#3d352a] px-4 py-3 text-sm focus:outline-none focus:border-[#c9a96e]/60 text-[#ede6db] placeholder:text-[#7a6f63] transition-colors";
+  "w-full bg-bg-elevated border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 text-text-primary placeholder:text-text-muted transition-colors";
 
 /** Labelled input in the checkout's warm dark style; password fields get a show/hide toggle. */
 export default function AuthField({
@@ -41,7 +41,7 @@ export default function AuthField({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+      <label htmlFor={id} className="block text-xs text-text-secondary font-semibold mb-1.5">
         {label}
       </label>
       <div className="relative">
@@ -63,7 +63,7 @@ export default function AuthField({
             type="button"
             onClick={() => setVisible((v) => !v)}
             aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-            className="absolute right-0 top-0 h-full px-3 text-[#7a6f63] hover:text-[#ede6db] transition-colors cursor-pointer"
+            className="absolute right-0 top-0 h-full px-3 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
           >
             {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -74,7 +74,7 @@ export default function AuthField({
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="text-[#7a6f63] text-xs mt-1">
+        <p id={`${id}-hint`} className="text-text-muted text-xs mt-1">
           {hint}
         </p>
       ) : null}

@@ -1,44 +1,42 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { CheckCircle, AlertCircle, ArrowLeft, ShoppingCart, Upload, Banknote, X } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
+import { AlertCircle, ArrowLeft, CheckCircle2, ChevronDown, Clock, MessageCircleMore, ShieldCheck, ShoppingCart, Smartphone, Upload, X, XCircle } from "lucide-react";
 import Container from "../components/layout/Container";
 import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import ConfirmationContent from "../components/checkout/ConfirmationContent";
+import CheckoutSteps from "../components/checkout/CheckoutSteps";
 import GiftLinkCard from "../components/gift/GiftLinkCard";
 import LiveOrderTracker from "../components/account/LiveOrderTracker";
 import SavedCallout from "../components/shared/SavedCallout";
 import QRDisplay from "../components/checkout/QRDisplay";
 import { getOrder, uploadPaymentProof } from "../lib/api";
+import { useChatUi } from "../lib/chatApi";
 
+/** Payment + live status page for an order (QR while unpaid, live install tracker once paid). */
 export default function ConfirmationPage() {
   const { orderCode } = useParams<{ orderCode: string }>();
-  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [showUpload, setShowUpload] = useState(false);
 
   const { data: order, isLoading, error } = useQuery({
     queryKey: ["order", orderCode],
     queryFn: () => getOrder(orderCode!),
     enabled: !!orderCode,
     retry: 1,
-    // While unpaid, poll so the page flips to "đã nhận tiền" as soon as the bank webhook confirms it.
+    // Poll until finished so the page flips by itself when the bank webhook confirms payment, and while installing.
     refetchInterval: (q) => (q.state.data && !["Completed", "Cancelled"].includes(q.state.data.status) ? 5000 : false),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        setUploadError("File quá lớn (tối đa 50MB)");
-        return;
-      }
-      
-      setSelectedFile(file);
-      setUploadError("");
-    }
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) return setUploadError("File quá lớn (tối đa 50MB)");
+    setSelectedFile(file);
+    setUploadError("");
   };
 
   const handleUpload = async () => {
@@ -56,67 +54,183 @@ export default function ConfirmationPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#1a1714] py-12">
-        <Container className="mt-12">
-          <PageLoader label="Đang tải thông tin đơn hàng..." />
-        </Container>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader label="Đang tải đơn hàng" />;
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-[#1a1714] py-12">
-        <Container className="mt-20">
-          <div className="text-center py-24 bg-[#252019] border border-[#3d352a] max-w-[500px] mx-auto">
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4 opacity-60" />
-            <h2 className="font-display text-xl text-[#ede6db] mb-2">Không tìm thấy đơn hàng</h2>
-            <p className="text-[#7a6f63] text-sm mb-6">Mã đơn hàng không tồn tại hoặc đã bị xóa.</p>
-            <Link to="/games" className="inline-flex items-center gap-1 text-[#c9a96e] hover:text-[#d4b87a] text-sm transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Quay lại cửa hàng
-            </Link>
-          </div>
-        </Container>
-      </div>
+      <Container className="py-20">
+        <div className="text-center py-16 bg-bg-surface border border-white/10 max-w-[500px] mx-auto px-6">
+          <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-4 opacity-70" />
+          <h2 className="font-display text-xl text-text-primary mb-2">Không tìm thấy đơn hàng</h2>
+          <p className="text-text-muted text-sm mb-6">Mã đơn hàng không tồn tại hoặc đã bị xóa.</p>
+          <Link to="/games" className="inline-flex items-center gap-1 text-accent hover:text-accent-hover text-sm">
+            <ArrowLeft className="w-4 h-4" /> Quay lại cửa hàng
+          </Link>
+        </div>
+      </Container>
     );
   }
 
   const isPending = order.status === "Pending";
-  const isAwaitingConfirmation = order.status === "AwaitingConfirmation";
+  const isAwaiting = order.status === "AwaitingConfirmation";
   const isPaid = ["Verifying", "Installing", "Completed"].includes(order.status);
+  const isCancelled = order.status === "Cancelled";
+  const unpaid = isPending || isAwaiting;
   const paymentConfig = order.paymentConfig;
-  const hasBankInfo = paymentConfig?.bankName && paymentConfig?.bankAccountNumber;
+  const auto = !!order.autoConfirm && !!order.dynamicQrUrl;
+  const step: 0 | 1 | 2 | 3 = isPaid || order.status === "ActionRequired" ? 3 : 2;
+
+  const header = isCancelled
+    ? { icon: <XCircle className="w-7 h-7 text-red-400" />, tone: "bg-red-500/15", title: "Đơn hàng đã hủy", sub: "Liên hệ Moxic nếu bạn đã chuyển khoản hoặc cần hỗ trợ." }
+    : isPaid
+      ? { icon: <CheckCircle2 className="w-7 h-7 text-emerald-300" />, tone: "bg-emerald-500/15", title: "Thanh toán thành công 🎉", sub: "Moxic đang cài game vào tài khoản Xbox của bạn — theo dõi trực tiếp bên dưới." }
+      : isAwaiting
+        ? { icon: <Clock className="w-7 h-7 text-sky-300" />, tone: "bg-sky-500/15", title: "Đang kiểm tra thanh toán", sub: "Moxic đã nhận ảnh chuyển khoản của bạn và đang đối soát." }
+        : { icon: <Smartphone className="w-7 h-7 text-accent" />, tone: "bg-accent/15", title: "Thanh toán đơn hàng", sub: auto ? "Quét mã QR bằng app ngân hàng — đơn tự xác nhận ngay khi tiền về." : "Chuyển khoản theo thông tin bên dưới để hoàn tất đơn." };
 
   return (
-    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
-      <Container className="mt-8 mb-20">
-        <div className="max-w-[600px] mx-auto">
-          {/* Success header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-            <h1 className="font-display text-2xl md:text-3xl text-[#ede6db] mb-2">
-              Đặt hàng thành công!
-            </h1>
-            <p className="text-[#7a6f63] text-sm">
-              {isPaid
-                ? "Moxic đã nhận được thanh toán của bạn 🎉"
-                : isAwaitingConfirmation
-                ? "Đã nhận được ảnh xác nhận, vui lòng chờ admin duyệt."
-                : order.autoConfirm
-                ? "Quét mã QR bên dưới để thanh toán — hệ thống tự xác nhận khi tiền về."
-                : "Vui lòng chuyển khoản và xác nhận thanh toán bên dưới."}
-            </p>
+    <Container className="py-8 md:py-12 mb-16">
+      <div className="max-w-5xl mx-auto">
+        <CheckoutSteps current={step} />
+
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-6">
+          <span className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${header.tone}`}>{header.icon}</span>
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-text-primary leading-tight">{header.title}</h1>
+            <p className="text-sm text-text-secondary mt-1">{header.sub}</p>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+          {/* Main column */}
+          <div className="space-y-5 min-w-0">
+            {order.isGift && order.giftToken && <GiftLinkCard token={order.giftToken} recipientName={order.giftRecipientName} claimedAt={order.giftClaimedAt} />}
+
+            {(isPaid || order.status === "ActionRequired") && <LiveOrderTracker order={order} />}
+
+            {/* Payment */}
+            {paymentConfig && unpaid && (
+              <section className="border border-white/10 bg-bg-surface overflow-hidden">
+                {isPending && auto && (
+                  <div className="flex items-center gap-2.5 px-4 py-3 bg-accent/10 border-b border-accent/20 text-sm" aria-live="polite">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
+                    </span>
+                    <span className="text-text-primary font-medium">Đang chờ tiền về…</span>
+                    <span className="text-text-muted text-xs hidden sm:inline">trang tự cập nhật, không cần tải lại</span>
+                  </div>
+                )}
+
+                <div className="p-4 sm:p-5">
+                  <ol className="grid grid-cols-3 gap-2 mb-5 text-center">
+                    {["Mở app ngân hàng", "Quét mã QR", auto ? "Xong — tự xác nhận" : "Gửi ảnh chuyển khoản"].map((s, i) => (
+                      <li key={s} className="px-2 py-2.5 bg-white/[0.03] border border-white/5">
+                        <span className="block text-[10px] font-bold text-accent">BƯỚC {i + 1}</span>
+                        <span className="block text-xs text-text-secondary mt-0.5">{s}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <QRDisplay
+                    bankQrUrl={order.dynamicQrUrl ?? paymentConfig.bankQrUrl}
+                    cryptoQrUrl={paymentConfig.cryptoQrUrl}
+                    transferContent={order.transferContent || order.orderCode}
+                    autoConfirm={auto}
+                    amount={order.totalAmount}
+                    discounted={(order.discountAmount ?? 0) > 0}
+                  />
+
+                  {paymentConfig.bankName && paymentConfig.bankAccountNumber && (
+                    <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      {[
+                        ["Ngân hàng", paymentConfig.bankName],
+                        ["Số tài khoản", paymentConfig.bankAccountNumber],
+                        ["Chủ tài khoản", paymentConfig.bankAccountHolder],
+                      ].map(([k, v]) => (
+                        <div key={k} className="px-3 py-2 bg-white/[0.03] border border-white/5">
+                          <dt className="text-[11px] text-text-muted">{k}</dt>
+                          <dd className={`text-text-primary font-medium truncate ${k === "Số tài khoản" ? "font-mono" : ""}`}>{v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Manual proof: the main path without auto-confirm, a fallback with it */}
+            {isPending && (
+              <section className="border border-white/10 bg-bg-surface">
+                {auto && !showUpload ? (
+                  <button type="button" onClick={() => setShowUpload(true)} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm text-text-muted hover:text-text-primary cursor-pointer">
+                    <span>Đã chuyển hơn 10 phút mà chưa được xác nhận? Gửi ảnh chuyển khoản</span>
+                    <ChevronDown className="w-4 h-4 shrink-0" />
+                  </button>
+                ) : (
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-sm font-semibold text-text-primary mb-3">Gửi ảnh chuyển khoản</h3>
+                    {!uploaded ? (
+                      <>
+                        <label className="block border-2 border-dashed border-white/10 hover:border-accent/50 p-6 text-center transition-colors cursor-pointer">
+                          {selectedFile ? (
+                            <span className="relative inline-block">
+                              <img src={URL.createObjectURL(selectedFile)} alt="Ảnh đã chọn" className="max-h-[200px] mx-auto" />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setSelectedFile(null);
+                                }}
+                                aria-label="Bỏ ảnh"
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer"
+                              >
+                                <X className="w-3 h-3 text-white" />
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="block">
+                              <Upload className="w-7 h-7 text-text-muted mx-auto mb-2" />
+                              <span className="block text-sm text-text-secondary">Chọn ảnh chụp màn hình chuyển khoản</span>
+                              <span className="block text-xs text-text-muted mt-1">Mọi định dạng ảnh, tối đa 50MB</span>
+                            </span>
+                          )}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                        </label>
+                        {uploadError && <p className="text-xs text-red-400 mt-2">{uploadError}</p>}
+                        <button
+                          type="button"
+                          onClick={handleUpload}
+                          disabled={!selectedFile || uploading}
+                          className="mt-3 w-full h-11 bg-accent hover:bg-accent-hover text-bg-base text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          {uploading ? <MoxicLoader size="sm" /> : <Upload className="w-4 h-4" />}
+                          {uploading ? "Đang tải lên…" : "Gửi ảnh xác nhận"}
+                        </button>
+                      </>
+                    ) : (
+                      <p className="flex items-center gap-2 text-sm text-emerald-300">
+                        <CheckCircle2 className="w-5 h-5" /> Đã gửi ảnh — Moxic sẽ kiểm tra và xác nhận sớm.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {isAwaiting && order.paymentProofUrl && (
+              <section className="border border-white/10 bg-bg-surface p-4">
+                <h3 className="text-sm font-semibold text-text-primary mb-3">Ảnh chuyển khoản đã gửi</h3>
+                <img src={order.paymentProofUrl} alt="Ảnh chuyển khoản" className="max-h-[300px] mx-auto border border-white/10" />
+              </section>
+            )}
+
+            {!isCancelled && (order.savedAmount ?? 0) > 0 && <SavedCallout amount={order.savedAmount!} suffix="với đơn này" share={isPaid} />}
           </div>
 
-          {/* Order content */}
-          <div className="space-y-5">
-            {order.isGift && order.giftToken && (
-              <GiftLinkCard token={order.giftToken} recipientName={order.giftRecipientName} claimedAt={order.giftClaimedAt} />
-            )}
+          {/* Summary column */}
+          <aside className="space-y-4 lg:sticky lg:top-[calc(4.5rem+var(--sat))]">
             <ConfirmationContent
               orderCode={order.orderCode}
               items={order.items}
@@ -126,164 +240,23 @@ export default function ConfirmationPage() {
               discountAmount={order.discountAmount}
               couponCode={order.couponCode}
             />
-
-            {(isPaid || order.status === "ActionRequired") && <LiveOrderTracker order={order} />}
-            {order.status !== "Cancelled" && (order.savedAmount ?? 0) > 0 && (
-              <SavedCallout amount={order.savedAmount!} suffix="với đơn này" share={isPaid} />
-            )}
-
-            {/* Bank info + QR */}
-            {paymentConfig && !isPaid && order.status !== "Cancelled" && (
-              <>
-                {/* Bank account info */}
-                {hasBankInfo && (
-                  <div className="bg-[#252019] border border-[#3d352a] p-5">
-                    <h3 className="text-xs font-semibold text-[#c9a96e] uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <Banknote className="w-4 h-4" /> Thông tin chuyển khoản
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#7a6f63]">Ngân hàng</span>
-                        <span className="text-[#ede6db] font-medium">{paymentConfig.bankName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#7a6f63]">Số tài khoản</span>
-                        <span className="text-[#ede6db] font-mono font-medium">{paymentConfig.bankAccountNumber}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#7a6f63]">Chủ tài khoản</span>
-                        <span className="text-[#ede6db] font-medium">{paymentConfig.bankAccountHolder}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <QRDisplay
-                  bankQrUrl={order.dynamicQrUrl ?? paymentConfig.bankQrUrl}
-                  cryptoQrUrl={paymentConfig.cryptoQrUrl}
-                  transferContent={order.transferContent || order.orderCode}
-                  autoConfirm={order.autoConfirm && !!order.dynamicQrUrl}
-                  amount={order.totalAmount}
-                  discounted={(order.discountAmount ?? 0) > 0}
-                />
-              </>
-            )}
-
-            {/* Upload section — only when Pending */}
-            {isPending && (
-              <div className="bg-[#252019] border border-[#3d352a] p-5">
-                <h3 className="text-sm font-semibold text-[#ede6db] mb-1">Xác nhận thanh toán</h3>
-                {order.autoConfirm && (
-                  <p className="text-xs text-[#7a6f63] mb-3">
-                    Chuyển đúng số tiền và nội dung thì <b className="text-[#b5a898]">không cần gửi ảnh</b> — trang này tự cập nhật trong khoảng 1 phút. Chỉ gửi ảnh nếu chuyển sai nội dung.
-                  </p>
-                )}
-
-                {!uploaded ? (
-                  <>
-                    {/* File input */}
-                    <div className="border-2 border-dashed border-[#3d352a] p-6 text-center hover:border-[#c9a96e]/50 transition-colors cursor-pointer"
-                      onClick={() => document.getElementById("proof-upload")?.click()}>
-                      {selectedFile ? (
-                        <div className="relative inline-block">
-                          <img loading="lazy" decoding="async"
-                            src={URL.createObjectURL(selectedFile)}
-                            alt="Preview"
-                            className="max-h-[200px] mx-auto rounded"
-                          />
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
-                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/80 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
-                          >
-                            <X className="w-3 h-3 text-white" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          <Upload className="w-8 h-8 text-[#7a6f63] mx-auto mb-2" />
-                          <p className="text-sm text-[#7a6f63]">Click để chọn ảnh chuyển khoản</p>
-                          <p className="text-xs text-[#5a4f43] mt-1">Chấp nhận mọi định dạng ảnh (tối đa 50MB)</p>
-                        </div>
-                      )}
-                      <input
-                        id="proof-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                    </div>
-
-                    {uploadError && (
-                      <p className="text-xs text-red-400 mt-2">{uploadError}</p>
-                    )}
-
-                    {/* Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                      <button
-                        onClick={handleUpload}
-                        disabled={!selectedFile || uploading}
-                        className="flex-1 bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {uploading ? (
-                          <MoxicLoader size="sm" />
-                        ) : (
-                          <Upload className="w-4 h-4" />
-                        )}
-                        {uploading ? "Đang tải lên..." : "Tôi đã chuyển khoản"}
-                      </button>
-                      <button
-                        onClick={() => navigate("/games")}
-                        className="flex-1 bg-transparent border border-[#3d352a] hover:bg-[#2d261e] text-[#7a6f63] hover:text-[#ede6db] py-2.5 text-sm transition-colors"
-                      >
-                        Chuyển sau - chờ tư vấn
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  /* Upload success state */
-                  <div className="text-center py-4">
-                    <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-2" />
-                    <p className="text-sm text-[#ede6db] font-medium">Đã gửi ảnh xác nhận</p>
-                    <p className="text-xs text-[#7a6f63] mt-1">Vui lòng chờ admin duyệt đơn hàng.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Already submitted state */}
-            {isAwaitingConfirmation && order.paymentProofUrl && (
-              <div className="bg-[#252019] border border-[#3d352a] p-5">
-                <h3 className="text-sm font-semibold text-[#ede6db] mb-3">Ảnh chuyển khoản đã gửi</h3>
-                <img loading="lazy" decoding="async"
-                  src={order.paymentProofUrl}
-                  alt="Payment proof"
-                  className="max-h-[300px] mx-auto rounded border border-[#3d352a]"
-                />
-              </div>
-            )}
-
-            {/* Note */}
-            <div className="bg-[#2d261e]/50 border border-[#3d352a]/50 px-5 py-4">
-              <p className="text-xs text-[#7a6f63] leading-relaxed">
-                Sau khi chuyển khoản, vui lòng upload ảnh xác nhận hoặc chọn "Chuyển sau" để được tư vấn. 
-                Thời gian cài game: 15-30 phút từ khi xác nhận.
+            <div className="border border-white/10 bg-bg-surface p-4 space-y-2.5 text-sm">
+              <p className="flex items-center gap-2 text-text-secondary">
+                <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" /> Game chính hãng, cài vào tài khoản của bạn
               </p>
+              <p className="flex items-center gap-2 text-text-secondary">
+                <Clock className="w-4 h-4 text-accent shrink-0" /> Thường xong 15–30 phút sau khi nhận tiền
+              </p>
+              <button type="button" onClick={() => useChatUi.getState().openChat(order.orderCode)} className="flex items-center gap-2 text-accent hover:underline cursor-pointer">
+                <MessageCircleMore className="w-4 h-4 shrink-0" /> Cần hỗ trợ? Chat với Moxic về đơn này
+              </button>
             </div>
-
-            {/* Continue shopping */}
-            <div className="text-center pt-4">
-              <Link
-                to="/games"
-                className="inline-flex items-center gap-2 bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] px-8 py-3 text-sm font-semibold transition-colors"
-              >
-                <ShoppingCart className="w-4 h-4" /> Tiếp tục mua sắm
-              </Link>
-            </div>
-          </div>
+            <Link to="/games" className="flex items-center justify-center gap-2 h-11 border border-white/15 text-sm font-semibold text-text-secondary hover:text-text-primary hover:border-white/30">
+              <ShoppingCart className="w-4 h-4" /> Tiếp tục mua sắm
+            </Link>
+          </aside>
         </div>
-      </Container>
-    </div>
+      </div>
+    </Container>
   );
 }
-

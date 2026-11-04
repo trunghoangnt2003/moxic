@@ -178,10 +178,24 @@ public class TelegramOrderNotifier
             catch (Exception ex) { _logger.LogWarning(ex, "Proof URL failed"); }
         }
 
+        // One card per order per chat: later events (payment, proof, gift claim) are a short reply to the
+        // existing card — which is itself refreshed in place — instead of a duplicate card.
+        var existing = await _db.TelegramOrderMessages.AsNoTracking().Where(m => m.OrderId == o.Id)
+            .GroupBy(m => m.ChatId).Select(g => g.OrderByDescending(m => m.CreatedAt).First()).ToListAsync();
         var text = CardText(o, headline);
         var markup = Buttons(o);
         foreach (var a in admins)
         {
+            var card = existing.FirstOrDefault(m => m.ChatId == a.ChatId);
+            if (card != null)
+            {
+                await _bot.EditAsync(a.ChatId, card.MessageId, CardText(o, null), markup);
+                if (proofUrl != null)
+                    await _bot.SendPhotoAsync(a.ChatId, proofUrl, $"{H(headline)} · <code>{H(o.OrderCode)}</code>", card.MessageId, threadId: a.OrdersTopicId);
+                else
+                    await _bot.SendAsync(a.ChatId, $"{H(headline)} · <code>{H(o.OrderCode)}</code>", card.MessageId, threadId: a.OrdersTopicId);
+                continue;
+            }
             var mid = await _bot.SendAsync(a.ChatId, text, markup: markup, threadId: a.OrdersTopicId);
             if (mid == null) continue;
             _db.TelegramOrderMessages.Add(new TelegramOrderMessage { ChatId = a.ChatId, MessageId = mid.Value, OrderId = o.Id, CreatedAt = DateTime.UtcNow });

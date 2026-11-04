@@ -13,15 +13,8 @@ interface Props {
   couponCode?: string | null;
 }
 
-export default function ConfirmationContent({
-  orderCode,
-  items,
-  totalAmount,
-  createdAt,
-  subtotalAmount,
-  discountAmount = 0,
-  couponCode,
-}: Props) {
+/** Order summary card (code, lines, discount, total). */
+export default function ConfirmationContent({ orderCode, items, totalAmount, createdAt, subtotalAmount, discountAmount = 0, couponCode }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -29,70 +22,60 @@ export default function ConfirmationContent({
       await navigator.clipboard.writeText(orderCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   };
 
   return (
-    <div className="bg-[#252019] border border-[#3d352a] p-5 space-y-4">
-      {/* Order Code */}
-      <div>
-        <p className="text-xs text-[#7a6f63] uppercase tracking-wider mb-1">Mã đơn hàng</p>
+    <div className="bg-bg-surface border border-white/10">
+      <div className="px-4 py-3 border-b border-white/10">
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">Mã đơn hàng</p>
         <div className="flex items-center gap-2">
-          <h2 className="font-display text-2xl text-[#c9a96e]">{orderCode}</h2>
+          <span className="font-mono text-base font-semibold text-text-primary truncate">{orderCode}</span>
           <button
+            type="button"
             onClick={handleCopy}
-            className="w-7 h-7 bg-[#c9a96e]/20 hover:bg-[#c9a96e]/30 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-7 h-7 shrink-0 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Sao chép mã đơn hàng"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-[#c9a96e]" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-text-muted" />}
           </button>
         </div>
-        <p className="text-[#7a6f63] text-xs mt-1">{formatDate(createdAt)}</p>
+        <p className="text-text-muted text-xs">{formatDate(createdAt)}</p>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-[#3d352a]" />
-
-      {/* Items */}
-      <div className="space-y-2">
+      <ul className="px-4 py-3 space-y-2">
         {items.map((item, i) => (
-          <div key={i} className="flex items-center justify-between">
-            <span className="text-sm text-[#ede6db]">{item.gameName}</span>
-            <span className="text-sm text-[#b5a898]">{formatPrice(item.price)}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-[#3d352a]" />
-
-      {/* Discount */}
-      {discountAmount > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm text-[#b5a898]">Tạm tính</span>
-            <span className="text-sm text-[#ede6db]">{formatPrice(subtotalAmount ?? totalAmount + discountAmount)}</span>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="min-w-0 truncate text-sm text-[#b5a898]">
-              Giảm giá{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
+          <li key={i} className="flex items-start justify-between gap-3 text-sm">
+            <span className="text-text-primary min-w-0">{item.gameName}</span>
+            <span className="text-text-secondary shrink-0 tabular-nums">
+              {item.listPrice && item.listPrice > item.price && <s className="text-text-muted text-xs mr-1.5">{formatPrice(item.listPrice)}</s>}
+              {formatPrice(item.price)}
             </span>
-            <span className="flex-shrink-0 text-sm font-semibold text-green-400">−{formatPrice(discountAmount)}</span>
-          </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="px-4 py-3 border-t border-white/10 space-y-1.5 text-sm">
+        {discountAmount > 0 && (
+          <>
+            <div className="flex justify-between gap-3">
+              <span className="text-text-muted">Tạm tính</span>
+              <span className="text-text-secondary tabular-nums">{formatPrice(subtotalAmount ?? totalAmount + discountAmount)}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-text-muted truncate">
+                Giảm giá{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
+              </span>
+              <span className="text-emerald-400 font-semibold tabular-nums">−{formatPrice(discountAmount)}</span>
+            </div>
+          </>
+        )}
+        <div className="flex items-baseline justify-between gap-3 pt-1">
+          <span className="text-text-secondary font-semibold">Tổng cộng</span>
+          <span className="font-display text-xl font-bold text-accent tabular-nums">{formatPrice(totalAmount)}</span>
         </div>
-      )}
-
-      {/* Total */}
-      <div className="flex items-center justify-between">
-        <span className="text-[#b5a898] text-sm font-semibold">Tổng cộng</span>
-        <span className="font-display text-xl text-[#c9a96e]">{formatPrice(totalAmount)}</span>
-      </div>
-
-      {/* Instruction */}
-      <div className="bg-[#c9a96e]/5 border border-[#c9a96e]/10 px-4 py-3">
-        <p className="text-xs text-[#b5a898] leading-relaxed">
-          Vui lòng chuyển khoản đúng nội dung để đối soát. Nhân viên sẽ xác nhận và cài game trong 15-30 phút sau khi nhận được thanh toán.
-        </p>
       </div>
     </div>
   );

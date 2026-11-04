@@ -17,7 +17,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 
 function BackLink() {
   return (
-    <Link to="/account/orders" className="inline-block text-sm text-[#b5a898] hover:text-[#c9a96e] transition-colors mb-5">
+    <Link to="/account/orders" className="inline-block text-sm text-text-secondary hover:text-accent transition-colors mb-5">
       ← Lịch sử mua hàng
     </Link>
   );
@@ -25,9 +25,9 @@ function BackLink() {
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-4 py-2.5 border-b border-[#3d352a] last:border-b-0">
-      <dt className="text-xs uppercase tracking-wide text-[#7a6f63]">{label}</dt>
-      <dd className="text-sm text-[#ede6db] break-all sm:text-right">{value}</dd>
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-4 py-2.5 border-b border-white/10 last:border-b-0">
+      <dt className="text-xs uppercase tracking-wide text-text-muted">{label}</dt>
+      <dd className="text-sm text-text-primary break-all sm:text-right">{value}</dd>
     </div>
   );
 }
@@ -40,13 +40,13 @@ export default function OrderHistoryDetailPage() {
 
   if (isError || !order) {
     return (
-      <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+      <div className="min-h-screen bg-bg-base py-8 md:py-12">
         <Container>
           <div className="max-w-3xl mx-auto">
             <BackLink />
-            <div className="bg-[#252019] border border-[#3d352a] p-10 text-center">
-              <PackageX className="w-12 h-12 text-[#3d352a] mx-auto mb-3" />
-              <p className="text-[#ede6db] font-display uppercase tracking-wider">Không tìm thấy đơn hàng</p>
+            <div className="bg-bg-surface border border-white/10 p-10 text-center">
+              <PackageX className="w-12 h-12 text-white/10 mx-auto mb-3" />
+              <p className="text-text-primary font-display uppercase tracking-wider">Không tìm thấy đơn hàng</p>
             </div>
           </div>
         </Container>
@@ -55,16 +55,16 @@ export default function OrderHistoryDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+    <div className="min-h-screen bg-bg-base py-8 md:py-12">
       <Container>
         <div className="max-w-3xl mx-auto">
           <BackLink />
 
-          <div className="bg-[#252019] border border-[#3d352a] p-5 sm:p-6">
+          <div className="bg-bg-surface border border-white/10 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-[#7a6f63]">Mã đơn hàng</p>
-                <h1 className="font-mono text-lg sm:text-xl text-[#ede6db] break-all">{order.orderCode}</h1>
+                <p className="text-xs uppercase tracking-wide text-text-muted">Mã đơn hàng</p>
+                <h1 className="font-mono text-lg sm:text-xl text-text-primary break-all">{order.orderCode}</h1>
               </div>
               <OrderStatusBadge status={order.status} />
             </div>
@@ -111,7 +111,7 @@ export default function OrderHistoryDetailPage() {
           <button
             type="button"
             onClick={() => useChatUi.getState().openChat(order.orderCode)}
-            className="mt-4 w-full h-11 inline-flex items-center justify-center gap-2 border border-[#c9a96e]/40 text-[#c9a96e] text-sm font-semibold hover:bg-[#c9a96e]/10 cursor-pointer"
+            className="mt-4 w-full h-11 inline-flex items-center justify-center gap-2 border border-accent/40 text-accent text-sm font-semibold hover:bg-accent/10 cursor-pointer"
           >
             💬 Chat với Moxic về đơn này
           </button>
@@ -122,8 +122,8 @@ export default function OrderHistoryDetailPage() {
             </div>
           )}
 
-          <div className="mt-4 bg-[#252019] border border-[#3d352a] p-5 sm:p-6">
-            <h2 className="font-display text-sm uppercase tracking-wider text-[#b5a898] mb-4">
+          <div className="mt-4 bg-bg-surface border border-white/10 p-5 sm:p-6">
+            <h2 className="font-display text-sm uppercase tracking-wider text-text-secondary mb-4">
               Game trong đơn ({order.items.length})
             </h2>
             <ul className="space-y-3">
@@ -134,47 +134,47 @@ export default function OrderHistoryDetailPage() {
                       src={item.coverUrl}
                       alt=""
                       loading="lazy"
-                      className="w-12 h-16 object-cover flex-shrink-0 bg-[#2d261e]"
+                      className="w-12 h-16 object-cover flex-shrink-0 bg-bg-elevated"
                     />
                   ) : (
-                    <div className="w-12 h-16 flex-shrink-0 bg-[#2d261e] border border-[#3d352a] flex items-center justify-center">
-                      <Gamepad2 className="w-5 h-5 text-[#7a6f63]" />
+                    <div className="w-12 h-16 flex-shrink-0 bg-bg-elevated border border-white/10 flex items-center justify-center">
+                      <Gamepad2 className="w-5 h-5 text-text-muted" />
                     </div>
                   )}
                   <Link
                     to={`/games/${item.gameId}`}
-                    className="flex-1 min-w-0 truncate text-sm text-[#ede6db] hover:text-[#c9a96e] transition-colors"
+                    className="flex-1 min-w-0 truncate text-sm text-text-primary hover:text-accent transition-colors"
                   >
                     {item.gameName}
                   </Link>
-                  <span className="text-sm text-[#b5a898] flex-shrink-0">{formatPrice(item.price)}</span>
+                  <span className="text-sm text-text-secondary flex-shrink-0">{formatPrice(item.price)}</span>
                 </li>
               ))}
             </ul>
             {order.discountAmount > 0 && (
-              <div className="mt-5 pt-4 border-t border-[#3d352a] space-y-2 text-sm">
+              <div className="mt-5 pt-4 border-t border-white/10 space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#b5a898]">Tạm tính</span>
-                  <span className="text-[#ede6db]">{formatPrice(order.subtotalAmount)}</span>
+                  <span className="text-text-secondary">Tạm tính</span>
+                  <span className="text-text-primary">{formatPrice(order.subtotalAmount)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate text-[#b5a898]">
+                  <span className="min-w-0 truncate text-text-secondary">
                     Giảm giá{order.couponCode ? <> (<span className="font-mono">{order.couponCode}</span>)</> : null}
                   </span>
                   <span className="flex-shrink-0 font-semibold text-green-400">−{formatPrice(order.discountAmount)}</span>
                 </div>
               </div>
             )}
-            <div className="mt-5 pt-4 border-t border-[#3d352a] flex items-center justify-between">
-              <span className="text-sm text-[#b5a898]">Tổng cộng</span>
-              <span className="text-lg font-bold text-[#c9a96e]">{formatPrice(order.totalAmount)}</span>
+            <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+              <span className="text-sm text-text-secondary">Tổng cộng</span>
+              <span className="text-lg font-bold text-accent">{formatPrice(order.totalAmount)}</span>
             </div>
           </div>
 
           {order.status === "Pending" && (
             <Link
               to={`/confirmation/${encodeURIComponent(order.orderCode)}`}
-              className="mt-4 block w-full text-center bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-3.5 text-sm uppercase tracking-wider transition-colors"
+              className="mt-4 block w-full text-center bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors"
             >
               Tiếp tục thanh toán
             </Link>

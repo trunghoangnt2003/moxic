@@ -18,15 +18,15 @@ function ItemRow({ item }: { item: AccountOrderItem }) {
           src={item.coverUrl}
           alt=""
           loading="lazy"
-          className="w-10 h-[54px] object-cover flex-shrink-0 bg-[#2d261e]"
+          className="w-10 h-[54px] object-cover flex-shrink-0 bg-bg-elevated"
         />
       ) : (
-        <div className="w-10 h-[54px] flex-shrink-0 bg-[#2d261e] border border-[#3d352a] flex items-center justify-center">
-          <Gamepad2 className="w-4 h-4 text-[#7a6f63]" />
+        <div className="w-10 h-[54px] flex-shrink-0 bg-bg-elevated border border-white/10 flex items-center justify-center">
+          <Gamepad2 className="w-4 h-4 text-text-muted" />
         </div>
       )}
-      <p className="flex-1 min-w-0 truncate text-sm text-[#ede6db]">{item.gameName}</p>
-      <p className="text-sm text-[#b5a898] flex-shrink-0">{formatPrice(item.price)}</p>
+      <p className="flex-1 min-w-0 truncate text-sm text-text-primary">{item.gameName}</p>
+      <p className="text-sm text-text-secondary flex-shrink-0">{formatPrice(item.price)}</p>
     </div>
   );
 }
@@ -36,11 +36,11 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
   const extra = order.items.length - preview.length;
 
   return (
-    <article className="bg-[#252019] border border-[#3d352a] p-4 sm:p-5">
+    <article className="bg-bg-surface border border-white/10 p-4 sm:p-5">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-mono text-sm text-[#ede6db] break-all">{order.orderCode}</p>
-          <p className="text-xs text-[#7a6f63] mt-0.5">{formatDate(order.createdAt)}</p>
+          <p className="font-mono text-sm text-text-primary break-all">{order.orderCode}</p>
+          <p className="text-xs text-text-muted mt-0.5">{formatDate(order.createdAt)}</p>
         </div>
         <OrderStatusBadge status={order.status} />
       </header>
@@ -49,19 +49,19 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
         {preview.map((item) => (
           <ItemRow key={item.gameId} item={item} />
         ))}
-        {extra > 0 && <p className="text-xs text-[#7a6f63]">+{extra} game khác</p>}
+        {extra > 0 && <p className="text-xs text-text-muted">+{extra} game khác</p>}
       </div>
 
-      <footer className="mt-4 pt-4 border-t border-[#3d352a] flex items-center justify-between gap-3">
-        <p className="text-sm text-[#b5a898]">
-          Tổng: <span className="font-bold text-[#c9a96e]">{formatPrice(order.totalAmount)}</span>
+      <footer className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+        <p className="text-sm text-text-secondary">
+          Tổng: <span className="font-bold text-accent">{formatPrice(order.totalAmount)}</span>
           {order.discountAmount > 0 && (
             <span className="ml-1 text-xs text-green-400">(đã giảm {formatPrice(order.discountAmount)})</span>
           )}
         </p>
         <Link
           to={`/account/orders/${encodeURIComponent(order.orderCode)}`}
-          className="text-sm font-semibold text-[#c9a96e] hover:text-[#d4b87a] transition-colors"
+          className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
         >
           Xem chi tiết →
         </Link>
@@ -78,18 +78,18 @@ export default function OrderHistoryPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+    <div className="min-h-screen bg-bg-base py-8 md:py-12">
       <Container>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
-            <Package className="w-6 h-6 text-[#c9a96e]" />
-            <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-[#ede6db]">
+            <Package className="w-6 h-6 text-accent" />
+            <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-text-primary">
               Lịch sử mua hàng
             </h1>
           </div>
           {me && (
-            <p className="text-sm text-[#7a6f63] mb-6">
-              Các đơn hàng dùng email <strong className="text-[#b5a898] break-all">{me.email}</strong> (email tài
+            <p className="text-sm text-text-muted mb-6">
+              Các đơn hàng dùng email <strong className="text-text-secondary break-all">{me.email}</strong> (email tài
               khoản Xbox khi đặt hàng) hoặc đặt khi đã đăng nhập.
             </p>
           )}
@@ -97,22 +97,22 @@ export default function OrderHistoryPage() {
           {isLoading ? (
             <SectionLoader label="Đang tải đơn hàng..." />
           ) : isError ? (
-            <div className="bg-[#252019] border border-[#3d352a] p-8 text-center">
+            <div className="bg-bg-surface border border-white/10 p-8 text-center">
               <p className="text-sm text-red-400 mb-4">Không thể tải lịch sử mua hàng. Vui lòng thử lại.</p>
               <button
                 onClick={() => void refetch()}
-                className="bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
+                className="bg-accent hover:bg-accent-hover text-bg-base px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
               >
                 Thử lại
               </button>
             </div>
           ) : !data || data.items.length === 0 ? (
-            <div className="bg-[#252019] border border-[#3d352a] p-10 text-center">
-              <Package className="w-12 h-12 text-[#3d352a] mx-auto mb-3" />
-              <p className="text-[#b5a898] text-sm mb-5">Bạn chưa có đơn hàng nào.</p>
+            <div className="bg-bg-surface border border-white/10 p-10 text-center">
+              <Package className="w-12 h-12 text-white/10 mx-auto mb-3" />
+              <p className="text-text-secondary text-sm mb-5">Bạn chưa có đơn hàng nào.</p>
               <Link
                 to="/games"
-                className="inline-block bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] px-6 py-2.5 text-sm font-semibold transition-colors"
+                className="inline-block bg-accent hover:bg-accent-hover text-bg-base px-6 py-2.5 text-sm font-semibold transition-colors"
               >
                 Khám phá game
               </Link>
@@ -131,18 +131,18 @@ export default function OrderHistoryPage() {
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
                     aria-label="Trang trước"
-                    className="p-2 border border-[#3d352a] text-[#b5a898] hover:bg-[#2d261e] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="p-2 border border-white/10 text-text-secondary hover:bg-bg-elevated disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-sm text-[#b5a898]">
+                  <span className="text-sm text-text-secondary">
                     Trang {page} / {totalPages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
                     aria-label="Trang sau"
-                    className="p-2 border border-[#3d352a] text-[#b5a898] hover:bg-[#2d261e] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="p-2 border border-white/10 text-text-secondary hover:bg-bg-elevated disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

@@ -65,7 +65,7 @@ export default function LoginPage() {
       footer={
         <p>
           Chưa có tài khoản?{" "}
-          <Link to={`/register${carry ? `?${carry}` : ""}`} className="text-[#c9a96e] hover:underline font-semibold">
+          <Link to={`/register${carry ? `?${carry}` : ""}`} className="text-accent hover:underline font-semibold">
             Đăng ký
           </Link>
         </p>
@@ -96,7 +96,7 @@ export default function LoginPage() {
         <div className="flex justify-end">
           <Link
             to={`/forgot-password${email.trim() ? `?email=${encodeURIComponent(email.trim())}` : ""}`}
-            className="text-xs text-[#b5a898] hover:text-[#c9a96e] transition-colors"
+            className="text-xs text-text-secondary hover:text-accent transition-colors"
           >
             Quên mật khẩu?
           </Link>
@@ -112,7 +112,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={login.isPending}
-          className="w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {login.isPending ? (
             <>

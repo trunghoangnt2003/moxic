@@ -74,7 +74,7 @@ export default function RegisterPage() {
       footer={
         <p>
           Đã có tài khoản?{" "}
-          <Link to={loginHref} className="text-[#c9a96e] hover:underline font-semibold">
+          <Link to={loginHref} className="text-accent hover:underline font-semibold">
             Đăng nhập
           </Link>
         </p>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={register.isPending}
-          className="w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {register.isPending ? (
             <>

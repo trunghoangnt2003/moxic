@@ -122,27 +122,27 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
   };
 
   const inputClass =
-    "w-full bg-[#2d261e] border border-[#3d352a] px-4 py-3 text-sm focus:outline-none focus:border-[#c9a96e]/60 text-[#ede6db] placeholder:text-[#7a6f63] transition-colors";
+    "w-full bg-bg-elevated border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-accent/60 text-text-primary placeholder:text-text-muted transition-colors";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Account status */}
       {me ? (
-        <div className="flex items-start gap-2 bg-[#c9a96e]/10 border border-[#c9a96e]/30 px-4 py-3">
-          <UserCheck className="w-4 h-4 text-[#c9a96e] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#ede6db]">
-            Đang đăng nhập với <strong>{me.displayName}</strong> <span className="text-[#b5a898] break-all">({me.email})</span>.
+        <div className="flex items-start gap-2 bg-accent/10 border border-accent/30 px-4 py-3">
+          <UserCheck className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-text-primary">
+            Đang đăng nhập với <strong>{me.displayName}</strong> <span className="text-text-secondary break-all">({me.email})</span>.
             Đơn hàng sẽ được lưu vào{" "}
-            <Link to="/account/orders" className="text-[#c9a96e] hover:underline">
+            <Link to="/account/orders" className="text-accent hover:underline">
               Lịch sử mua hàng
             </Link>
             .
           </p>
         </div>
       ) : (
-        <p className="text-xs text-[#7a6f63]">
+        <p className="text-xs text-text-muted">
           Đã có tài khoản?{" "}
-          <Link to="/login?redirect=/checkout" className="text-[#c9a96e] hover:underline font-semibold">
+          <Link to="/login?redirect=/checkout" className="text-accent hover:underline font-semibold">
             Đăng nhập để theo dõi đơn hàng
           </Link>
         </p>
@@ -154,34 +154,34 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         onClick={() => setIsGift((v) => !v)}
         aria-pressed={isGift}
         className={`w-full flex items-center gap-3 px-4 py-3 border text-left transition-colors cursor-pointer ${
-          isGift ? "border-[#c9a96e] bg-[#c9a96e]/10" : "border-[#3d352a] hover:border-[#c9a96e]/50"
+          isGift ? "border-accent bg-accent/10" : "border-white/10 hover:border-accent/50"
         }`}
       >
-        <Gift className={`w-5 h-5 shrink-0 ${isGift ? "text-[#c9a96e]" : "text-[#b5a898]"}`} />
+        <Gift className={`w-5 h-5 shrink-0 ${isGift ? "text-accent" : "text-text-secondary"}`} />
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-semibold text-[#ede6db]">Mua làm quà tặng</span>
-          <span className="block text-xs text-[#7a6f63]">Bạn thanh toán, nhận link quà gửi cho bạn bè. Người nhận tự nhập tài khoản Xbox của họ.</span>
+          <span className="block text-sm font-semibold text-text-primary">Mua làm quà tặng</span>
+          <span className="block text-xs text-text-muted">Bạn thanh toán, nhận link quà gửi cho bạn bè. Người nhận tự nhập tài khoản Xbox của họ.</span>
         </span>
-        <span className={`w-10 h-6 rounded-full p-0.5 transition-colors shrink-0 ${isGift ? "bg-[#c9a96e]" : "bg-[#3d352a]"}`}>
+        <span className={`w-10 h-6 rounded-full p-0.5 transition-colors shrink-0 ${isGift ? "bg-accent" : "bg-white/10"}`}>
           <span className={`block w-5 h-5 rounded-full bg-white transition-transform ${isGift ? "translate-x-4" : ""}`} />
         </span>
       </button>
 
       {isGift && (
-        <div className="space-y-4 border-l-2 border-[#c9a96e]/50 pl-4">
+        <div className="space-y-4 border-l-2 border-accent/50 pl-4">
           <div>
-            <label htmlFor="gift-to" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+            <label htmlFor="gift-to" className="block text-xs text-text-secondary font-semibold mb-1.5">
               Tên người nhận <span className="text-red-400">*</span>
             </label>
             <input id="gift-to" maxLength={60} value={giftTo} onChange={(e) => setGiftTo(e.target.value)} placeholder="VD: Minh" className={inputClass} />
             {fieldErrors.giftTo && <p className="text-red-400 text-xs mt-1">{fieldErrors.giftTo}</p>}
           </div>
           <div>
-            <label htmlFor="gift-from" className="block text-xs text-[#b5a898] font-semibold mb-1.5">Tên người tặng</label>
+            <label htmlFor="gift-from" className="block text-xs text-text-secondary font-semibold mb-1.5">Tên người tặng</label>
             <input id="gift-from" maxLength={60} value={giftFrom} onChange={(e) => setGiftFrom(e.target.value)} placeholder={me?.displayName || "Tên của bạn"} className={inputClass} />
           </div>
           <div>
-            <label htmlFor="gift-msg" className="block text-xs text-[#b5a898] font-semibold mb-1.5">Lời nhắn <span className="text-[#7a6f63]">({giftMessage.length}/300)</span></label>
+            <label htmlFor="gift-msg" className="block text-xs text-text-secondary font-semibold mb-1.5">Lời nhắn <span className="text-text-muted">({giftMessage.length}/300)</span></label>
             <textarea id="gift-msg" rows={3} maxLength={300} value={giftMessage} onChange={(e) => setGiftMessage(e.target.value)} placeholder="Chúc mừng sinh nhật! Chơi vui nhé 🎮" className={`${inputClass} resize-none`} />
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
 
       {/* Phone */}
       <div>
-        <label htmlFor="checkout-phone" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+        <label htmlFor="checkout-phone" className="block text-xs text-text-secondary font-semibold mb-1.5">
           {isGift ? "Số điện thoại của bạn (người tặng)" : "Số điện thoại"} <span className="text-red-400">*</span>
         </label>
         <input id="checkout-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
@@ -200,7 +200,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
       {/* Xbox Email */}
       {!isGift && <>
       <div>
-        <label htmlFor="checkout-email" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+        <label htmlFor="checkout-email" className="block text-xs text-text-secondary font-semibold mb-1.5">
           Email tài khoản Xbox <span className="text-red-400">*</span>
         </label>
         <input id="checkout-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -208,13 +208,13 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
         {fieldErrors.email ? (
           <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
         ) : emailPrefilled && me && email === me.email ? (
-          <p className="text-[#7a6f63] text-xs mt-1">Đã điền sẵn email tài khoản — hãy đổi nếu email Xbox của bạn khác.</p>
+          <p className="text-text-muted text-xs mt-1">Đã điền sẵn email tài khoản — hãy đổi nếu email Xbox của bạn khác.</p>
         ) : null}
       </div>
 
       {/* Xbox Password */}
       <div>
-        <label htmlFor="checkout-password" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
+        <label htmlFor="checkout-password" className="block text-xs text-text-secondary font-semibold mb-1.5">
           Mật khẩu tài khoản Xbox <span className="text-red-400">*</span>
         </label>
         <input id="checkout-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
@@ -225,15 +225,15 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
 
       {/* Zalo/FB (optional) */}
       <div>
-        <label htmlFor="checkout-zalo" className="block text-xs text-[#b5a898] font-semibold mb-1.5">
-          Zalo / Facebook <span className="text-[#7a6f63]">(không bắt buộc)</span>
+        <label htmlFor="checkout-zalo" className="block text-xs text-text-secondary font-semibold mb-1.5">
+          Zalo / Facebook <span className="text-text-muted">(không bắt buộc)</span>
         </label>
         <input id="checkout-zalo" type="text" value={zalo} onChange={(e) => setZalo(e.target.value)}
           placeholder="Zalo hoặc Facebook để liên hệ" className={inputClass} />
       </div>
 
-      <label className="flex items-center gap-2 text-xs text-[#b5a898] cursor-pointer select-none">
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-[#c9a96e]" />
+      <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer select-none">
+        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-accent" />
         Ghi nhớ SĐT, email Xbox và Zalo trên thiết bị này cho lần mua sau (không lưu mật khẩu)
       </label>
 
@@ -252,7 +252,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected }
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-4 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+        className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-4 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {loading ? (
           <><MoxicLoader size="sm" /> Đang xử lý...</>

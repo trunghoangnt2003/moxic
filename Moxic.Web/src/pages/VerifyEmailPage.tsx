@@ -70,9 +70,9 @@ export default function VerifyEmailPage() {
       subtitle={
         initialEmail ? (
           <span className="flex items-start gap-2">
-            <MailCheck className="w-4 h-4 mt-0.5 text-[#c9a96e] flex-shrink-0" />
+            <MailCheck className="w-4 h-4 mt-0.5 text-accent flex-shrink-0" />
             <span>
-              Chúng tôi đã gửi mã 6 chữ số tới <strong className="text-[#ede6db] break-all">{initialEmail}</strong>.
+              Chúng tôi đã gửi mã 6 chữ số tới <strong className="text-text-primary break-all">{initialEmail}</strong>.
             </span>
           </span>
         ) : (
@@ -82,7 +82,7 @@ export default function VerifyEmailPage() {
       footer={
         <p>
           Đã xác minh?{" "}
-          <Link to={`/login?email=${encodeURIComponent(email.trim())}`} className="text-[#c9a96e] hover:underline font-semibold">
+          <Link to={`/login?email=${encodeURIComponent(email.trim())}`} className="text-accent hover:underline font-semibold">
             Đăng nhập
           </Link>
         </p>
@@ -124,7 +124,7 @@ export default function VerifyEmailPage() {
         <button
           type="submit"
           disabled={verify.isPending}
-          className="w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {verify.isPending ? (
             <>
@@ -139,7 +139,7 @@ export default function VerifyEmailPage() {
           type="button"
           onClick={handleResend}
           disabled={cooldown.active || resend.isPending}
-          className="w-full border border-[#3d352a] hover:bg-[#2d261e] text-[#b5a898] hover:text-[#ede6db] py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full border border-white/10 hover:bg-bg-elevated text-text-secondary hover:text-text-primary py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {resend.isPending && <MoxicLoader size="sm" />}
           {cooldown.active ? `Gửi lại mã (${cooldown.remaining}s)` : "Gửi lại mã"}

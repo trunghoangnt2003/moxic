@@ -40,18 +40,18 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
   };
 
   return (
-    <div className="bg-[#252019] border border-[#3d352a] p-5">
-      {/* Tabs */}
-      <div className="flex mb-5 border border-[#3d352a] overflow-hidden">
+    <div>
+      {/* Tabs (only when crypto is offered) */}
+      <div className={`flex mb-5 border border-white/10 overflow-hidden ${hasCrypto ? "" : "hidden"}`}>
         <button
           onClick={() => setMode("bank")}
-          className={`flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${mode === "bank" ? "text-[#c9a96e] border-b-2 border-[#c9a96e] bg-[#c9a96e]/5" : "text-[#7a6f63] hover:text-[#b5a898]"}`}
+          className={`flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${mode === "bank" ? "text-accent border-b-2 border-accent bg-accent/5" : "text-text-muted hover:text-text-secondary"}`}
         >
           <Banknote className="w-4 h-4" /> Chuyển khoản
         </button>
         <button
           onClick={() => setMode("crypto")}
-          className={`flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${mode === "crypto" ? "text-[#c9a96e] border-b-2 border-[#c9a96e] bg-[#c9a96e]/5" : "text-[#7a6f63] hover:text-[#b5a898]"}`}
+          className={`flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${mode === "crypto" ? "text-accent border-b-2 border-accent bg-accent/5" : "text-text-muted hover:text-text-secondary"}`}
           style={!hasCrypto ? { pointerEvents: "none", opacity: 0.4 } : {}}
         >
           <Bitcoin className="w-4 h-4" /> USDT/BTC
@@ -64,11 +64,11 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
           <img
             src={qrUrl}
             alt={`Mã QR ${mode === "bank" ? "ngân hàng" : "crypto"}`}
-            className="max-w-[280px] w-full aspect-square object-contain bg-white p-2"
+            className="max-w-[260px] w-full aspect-square object-contain bg-white p-3 rounded-2xl shadow-[0_10px_40px_rgba(229,211,179,0.15)]"
           />
         ) : (
-          <div className="max-w-[280px] w-full aspect-square bg-[#2d261e] flex items-center justify-center border border-dashed border-[#3d352a]">
-            <p className="text-[#7a6f63] text-xs">
+          <div className="max-w-[260px] w-full aspect-square bg-bg-elevated rounded-2xl flex items-center justify-center border border-dashed border-white/10">
+            <p className="text-text-muted text-xs">
               {mode === "bank" ? "Chưa có mã QR ngân hàng" : "Chưa có mã QR Crypto"}
             </p>
           </div>
@@ -87,44 +87,44 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
 
       {/* Amount */}
       {amount != null && (
-        <div className="mb-2 bg-[#c9a96e]/10 border border-[#c9a96e]/20 px-4 py-3">
+        <div className="mb-2 bg-accent/10 border border-accent/20 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[11px] text-[#7a6f63] uppercase tracking-wider mb-0.5">Số tiền cần chuyển</p>
-              <p className="text-[#c9a96e] font-display text-lg font-bold">{formatPrice(amount)}</p>
+              <p className="text-[11px] text-text-muted uppercase tracking-wider mb-0.5">Số tiền cần chuyển</p>
+              <p className="text-accent font-display text-lg font-bold">{formatPrice(amount)}</p>
               {discounted && <p className="text-[11px] text-green-400">Đã trừ mã giảm giá</p>}
             </div>
             <button
               onClick={handleCopyAmount}
-              className="flex-shrink-0 w-8 h-8 bg-[#c9a96e]/20 hover:bg-[#c9a96e]/30 flex items-center justify-center transition-colors cursor-pointer"
+              className="flex-shrink-0 w-8 h-8 bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Sao chép số tiền cần chuyển"
             >
-              {amountCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#c9a96e]" />}
+              {amountCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-accent" />}
             </button>
           </div>
         </div>
       )}
 
       {/* Transfer content */}
-      <div className="bg-[#c9a96e]/10 border border-[#c9a96e]/20 px-4 py-3">
+      <div className="bg-accent/10 border border-accent/20 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[11px] text-[#7a6f63] uppercase tracking-wider mb-0.5">
+            <p className="text-[11px] text-text-muted uppercase tracking-wider mb-0.5">
               Nội dung chuyển khoản
             </p>
-            <p className="text-[#c9a96e] font-mono text-sm font-semibold truncate">
+            <p className="text-accent font-mono text-sm font-semibold truncate">
               {transferContent}
             </p>
           </div>
           <button
             onClick={handleCopy}
-            className="flex-shrink-0 w-8 h-8 bg-[#c9a96e]/20 hover:bg-[#c9a96e]/30 flex items-center justify-center transition-colors cursor-pointer"
+            className="flex-shrink-0 w-8 h-8 bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Sao chép nội dung chuyển khoản"
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-400" />
             ) : (
-              <Copy className="w-4 h-4 text-[#c9a96e]" />
+              <Copy className="w-4 h-4 text-accent" />
             )}
           </button>
         </div>

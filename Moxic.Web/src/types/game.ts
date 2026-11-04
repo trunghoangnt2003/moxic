@@ -172,6 +172,8 @@ export interface OrderCreateResponse {
 export interface OrderConfirmationItem {
   gameName: string;
   price: number;
+  /** Xbox Store price at purchase time. */
+  listPrice?: number | null;
 }
 
 export interface PaymentConfigInfo {

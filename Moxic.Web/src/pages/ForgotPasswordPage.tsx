@@ -20,7 +20,7 @@ interface FieldErrors {
 }
 
 const primaryButton =
-  "w-full bg-[#c9a96e] hover:bg-[#d4b87a] text-[#1a1714] font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer";
+  "w-full bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer";
 
 export default function ForgotPasswordPage() {
   const [params] = useSearchParams();
@@ -98,14 +98,14 @@ export default function ForgotPasswordPage() {
           "Nhập email tài khoản, chúng tôi sẽ gửi mã 6 chữ số để đặt lại mật khẩu."
         ) : (
           <>
-            Nhập mã đã gửi tới <strong className="text-[#ede6db] break-all">{email.trim()}</strong> và mật khẩu mới.
+            Nhập mã đã gửi tới <strong className="text-text-primary break-all">{email.trim()}</strong> và mật khẩu mới.
           </>
         )
       }
       footer={
         <p>
           Nhớ mật khẩu rồi?{" "}
-          <Link to="/login" className="text-[#c9a96e] hover:underline font-semibold">
+          <Link to="/login" className="text-accent hover:underline font-semibold">
             Đăng nhập
           </Link>
         </p>
@@ -185,7 +185,7 @@ export default function ForgotPasswordPage() {
             type="button"
             onClick={() => requestCode()}
             disabled={cooldown.active || forgot.isPending}
-            className="w-full border border-[#3d352a] hover:bg-[#2d261e] text-[#b5a898] hover:text-[#ede6db] py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full border border-white/10 hover:bg-bg-elevated text-text-secondary hover:text-text-primary py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {forgot.isPending && <MoxicLoader size="sm" />}
             {cooldown.active ? `Gửi lại mã (${cooldown.remaining}s)` : "Gửi lại mã"}
@@ -197,7 +197,7 @@ export default function ForgotPasswordPage() {
               setError("");
               setFieldErrors({});
             }}
-            className="w-full text-xs text-[#7a6f63] hover:text-[#ede6db] transition-colors cursor-pointer"
+            className="w-full text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
           >
             Đổi email
           </button>

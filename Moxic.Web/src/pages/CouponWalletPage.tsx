@@ -52,18 +52,18 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
   };
 
   return (
-    <li className={`flex overflow-hidden border border-[#3d352a] bg-[#252019] ${dimmed ? "opacity-60" : ""}`}>
+    <li className={`flex overflow-hidden border border-white/10 bg-bg-surface ${dimmed ? "opacity-60" : ""}`}>
       {/* Stub */}
-      <div className="relative flex w-14 flex-shrink-0 items-center justify-center bg-[#c9a96e] sm:w-20">
-        <TicketPercent className="h-6 w-6 text-[#1a1714] sm:h-8 sm:w-8" />
-        <span className="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-[#1a1714]" />
-        <span className="absolute -bottom-2 -right-2 h-4 w-4 rounded-full bg-[#1a1714]" />
+      <div className="relative flex w-14 flex-shrink-0 items-center justify-center bg-accent sm:w-20">
+        <TicketPercent className="h-6 w-6 text-bg-base sm:h-8 sm:w-8" />
+        <span className="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-bg-base" />
+        <span className="absolute -bottom-2 -right-2 h-4 w-4 rounded-full bg-bg-base" />
       </div>
 
-      <div className="min-w-0 flex-1 border-l border-dashed border-[#3d352a] p-4">
+      <div className="min-w-0 flex-1 border-l border-dashed border-white/10 p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="min-w-0 truncate text-sm font-semibold text-[#ede6db]">{coupon.name}</p>
-          <span className="border border-[#c9a96e]/30 bg-[#c9a96e]/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#c9a96e]">
+          <p className="min-w-0 truncate text-sm font-semibold text-text-primary">{coupon.name}</p>
+          <span className="border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent">
             {coupon.source === "SpinReward" ? "Thưởng vòng quay" : coupon.source === "PointsReward" ? "Đổi điểm" : "Sự kiện"}
           </span>
           {coupon.status === "Inactive" && (
@@ -71,19 +71,19 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
           )}
         </div>
 
-        <p className="mt-1 font-display text-lg font-bold text-[#c9a96e] sm:text-xl">{describeCouponDiscount(coupon)}</p>
+        <p className="mt-1 font-display text-lg font-bold text-accent sm:text-xl">{describeCouponDiscount(coupon)}</p>
 
         {conditions.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {conditions.map((c) => (
-              <span key={c} className="bg-[#2d261e] px-2 py-0.5 text-[11px] text-[#b5a898]">
+              <span key={c} className="bg-bg-elevated px-2 py-0.5 text-[11px] text-text-secondary">
                 {c}
               </span>
             ))}
           </div>
         )}
 
-        <p className="mt-2 text-xs text-[#7a6f63]">
+        <p className="mt-2 text-xs text-text-muted">
           {coupon.status === "Upcoming" && coupon.startsAt
             ? `Bắt đầu từ ${formatDate(coupon.startsAt)}`
             : coupon.expiresAt
@@ -92,15 +92,15 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
         </p>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex min-w-0 items-stretch border border-[#3d352a] bg-[#1a1714]">
-            <span className="min-w-0 flex-1 select-all truncate px-3 py-2 font-mono text-sm font-bold tracking-widest text-[#ede6db]">
+          <div className="flex min-w-0 items-stretch border border-white/10 bg-bg-base">
+            <span className="min-w-0 flex-1 select-all truncate px-3 py-2 font-mono text-sm font-bold tracking-widest text-text-primary">
               {coupon.code}
             </span>
             <button
               type="button"
               onClick={copy}
               aria-label="Sao chép mã"
-              className="flex cursor-pointer items-center border-l border-[#3d352a] px-3 text-[#b5a898] hover:text-[#c9a96e]"
+              className="flex cursor-pointer items-center border-l border-white/10 px-3 text-text-secondary hover:text-accent"
             >
               {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
             </button>
@@ -110,7 +110,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
               type="button"
               disabled={!usable}
               onClick={() => navigate(`/checkout?coupon=${encodeURIComponent(coupon.code)}`)}
-              className="cursor-pointer bg-[#c9a96e] px-5 py-2 text-sm font-semibold text-[#1a1714] transition-colors hover:bg-[#d4b87a] disabled:cursor-not-allowed disabled:opacity-50 sm:ml-auto"
+              className="cursor-pointer bg-accent px-5 py-2 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 sm:ml-auto"
             >
               Dùng ngay
             </button>
@@ -158,18 +158,18 @@ export default function CouponWalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1714] py-8 md:py-12">
+    <div className="min-h-screen bg-bg-base py-8 md:py-12">
       <Container>
         <div className="mx-auto max-w-3xl">
           <div className="mb-2 flex items-center gap-3">
-            <TicketPercent className="h-6 w-6 text-[#c9a96e]" />
-            <h1 className="font-display text-2xl uppercase tracking-wider text-[#ede6db] md:text-3xl">Mã giảm giá của tôi</h1>
+            <TicketPercent className="h-6 w-6 text-accent" />
+            <h1 className="font-display text-2xl uppercase tracking-wider text-text-primary md:text-3xl">Mã giảm giá của tôi</h1>
           </div>
 
           {/* Claim */}
-          <section className="mt-4 border border-[#3d352a] bg-[#252019] p-5 sm:p-6">
-            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[#ede6db]">
-              <Gift className="h-4 w-4 text-[#c9a96e]" /> Nhập mã thưởng
+          <section className="mt-4 border border-white/10 bg-bg-surface p-5 sm:p-6">
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-text-primary">
+              <Gift className="h-4 w-4 text-accent" /> Nhập mã thưởng
             </h2>
             <form onSubmit={handleClaim} className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
@@ -178,12 +178,12 @@ export default function CouponWalletPage() {
                 maxLength={40}
                 placeholder="VD: MXABCD2345"
                 aria-label="Mã thưởng"
-                className="min-w-0 flex-1 border border-[#3d352a] bg-[#2d261e] px-4 py-2.5 font-mono text-sm uppercase tracking-widest text-[#ede6db] placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-[#7a6f63] focus:border-[#c9a96e]/60 focus:outline-none"
+                className="min-w-0 flex-1 border border-white/10 bg-bg-elevated px-4 py-2.5 font-mono text-sm uppercase tracking-widest text-text-primary placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-text-muted focus:border-accent/60 focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={claim.isPending}
-                className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 bg-[#c9a96e] px-5 py-2.5 text-sm font-semibold text-[#1a1714] transition-colors hover:bg-[#d4b87a] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {claim.isPending ? <MoxicLoader size="sm" /> : "Nhận vào ví"}
               </button>
@@ -193,13 +193,13 @@ export default function CouponWalletPage() {
                 <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" /> {claimError}
               </p>
             )}
-            <p className="mt-3 text-xs text-[#7a6f63]">
+            <p className="mt-3 text-xs text-text-muted">
               Mã thưởng giảm giá từ vòng quay sẽ tự vào ví nếu bạn đã đăng nhập khi mở hòm.
             </p>
           </section>
 
           {/* Tabs */}
-          <div className="mt-8 flex border-b border-[#3d352a]" role="tablist">
+          <div className="mt-8 flex border-b border-white/10" role="tablist">
             {TABS.map((t) => (
               <button
                 key={t.key}
@@ -209,11 +209,11 @@ export default function CouponWalletPage() {
                 onClick={() => setTab(t.key)}
                 className={`-mb-px flex-1 cursor-pointer border-b-2 px-2 py-2.5 text-xs font-semibold transition-colors sm:flex-none sm:px-5 sm:text-sm ${
                   tab === t.key
-                    ? "border-[#c9a96e] text-[#c9a96e]"
-                    : "border-transparent text-[#7a6f63] hover:text-[#b5a898]"
+                    ? "border-accent text-accent"
+                    : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
-                {t.label} <span className="text-[#7a6f63]">({counts[t.key]})</span>
+                {t.label} <span className="text-text-muted">({counts[t.key]})</span>
               </button>
             ))}
           </div>
@@ -222,19 +222,19 @@ export default function CouponWalletPage() {
             {isLoading ? (
               <SectionLoader label="Đang tải mã giảm giá..." />
             ) : isError ? (
-              <div className="border border-[#3d352a] bg-[#252019] p-8 text-center">
+              <div className="border border-white/10 bg-bg-surface p-8 text-center">
                 <p className="mb-4 text-sm text-red-400">Không thể tải mã giảm giá. Vui lòng thử lại.</p>
                 <button
                   onClick={() => void refetch()}
-                  className="cursor-pointer bg-[#c9a96e] px-6 py-2.5 text-sm font-semibold text-[#1a1714] transition-colors hover:bg-[#d4b87a]"
+                  className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover"
                 >
                   Thử lại
                 </button>
               </div>
             ) : visible.length === 0 ? (
-              <div className="border border-[#3d352a] bg-[#252019] p-10 text-center">
-                <TicketPercent className="mx-auto mb-3 h-12 w-12 text-[#3d352a]" />
-                <p className="text-sm text-[#b5a898]">{EMPTY_TEXT[tab]}</p>
+              <div className="border border-white/10 bg-bg-surface p-10 text-center">
+                <TicketPercent className="mx-auto mb-3 h-12 w-12 text-white/10" />
+                <p className="text-sm text-text-secondary">{EMPTY_TEXT[tab]}</p>
               </div>
             ) : (
               <ul className="space-y-3">

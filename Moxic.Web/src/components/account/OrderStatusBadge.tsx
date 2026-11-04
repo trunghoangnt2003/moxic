@@ -1,6 +1,6 @@
 import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES, type OrderStatus } from "../../lib/accountApi";
 
-const NEUTRAL = "bg-white/5 text-[#b5a898] border-[#3d352a]";
+const NEUTRAL = "bg-white/5 text-text-secondary border-white/10";
 
 export default function OrderStatusBadge({ status }: { status: string }) {
   const known = status in ORDER_STATUS_LABELS;
