@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Gamepad2 } from "lucide-react";
 import type { GameListItem } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
 import Badge from "../shared/Badge";
@@ -8,22 +10,30 @@ interface Props {
 }
 
 function HorizontalGameCard({ game }: { game: GameListItem }) {
+  const [broken, setBroken] = useState(false);
   const discount =
-    game.originalPrice > 0
+    game.originalPrice > 0 && game.salePrice > 0
       ? Math.round((1 - game.salePrice / game.originalPrice) * 100)
       : 0;
 
   return (
     <Link
       to={`/games/${game.id}`}
-      className="flex items-center gap-3 p-2 hover:bg-bg-surface-hover transition duration-300 cursor-pointer group border border-transparent hover:border-white/5"
+      className="flex items-center gap-3 p-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer group"
     >
-      <img
-        src={game.coverImageUrl || ""}
-        alt={game.name}
-        className="w-[72px] h-[72px] object-cover flex-shrink-0 group-hover:brightness-110 group-hover:scale-105 transition duration-300 shadow-md"
-        loading="lazy"
-      />
+      <div className="w-[60px] aspect-[3/4] shrink-0 overflow-hidden rounded-sm bg-bg-elevated flex items-center justify-center">
+        {game.coverImageUrl && !broken ? (
+          <img
+            src={game.coverImageUrl}
+            alt=""
+            onError={() => setBroken(true)}
+            className="w-full h-full object-cover group-hover:brightness-110 transition duration-300"
+            loading="lazy"
+          />
+        ) : (
+          <Gamepad2 className="w-5 h-5 text-text-muted" />
+        )}
+      </div>
       <div className="min-w-0 flex-1">
         <h3 className="font-body font-semibold text-sm text-text-primary truncate leading-tight group-hover:text-accent transition-colors">
           {game.name}
@@ -40,7 +50,7 @@ function HorizontalGameCard({ game }: { game: GameListItem }) {
               {formatPrice(game.originalPrice)}
             </span>
           )}
-          <span className="text-accent font-semibold text-sm">
+          <span className="text-text-primary font-bold text-sm num">
             {game.salePrice > 0 ? formatPrice(game.salePrice) : "Miễn phí"}
           </span>
         </div>
@@ -61,36 +71,25 @@ export default function DiscoverySection({ games }: Props) {
   }
 
   return (
-    <section className="py-8 md:py-12 bg-bg-base relative z-10">
-      <div className="max-w-[1400px] mx-auto px-4">
-        <h2 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-8 flex items-center gap-3">
-          Khám Phá Nội Dung Mới
-          <span className="text-xs text-accent font-body font-bold bg-accent/10 border border-accent/20 px-2 py-0.5">
-            Nổi Bật
-          </span>
-        </h2>
+    <section>
+      <div>
+        <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary mb-5">Mới lên kệ</h2>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ── Left: Feature Card ── */}
           <Link
             to="/games"
-            className="relative w-full lg:w-[320px] min-h-[300px] overflow-hidden group flex-shrink-0 cursor-pointer flex shadow-xl border border-white/5"
+            className="relative w-full lg:w-[300px] min-h-[280px] overflow-hidden rounded-md group shrink-0 cursor-pointer flex"
           >
             <img loading="lazy" decoding="async"
-              src={
-                games[0]?.coverImageUrl ||
-                "https://picsum.photos/seed/discovery/560/920"
-              }
-              alt="Khám Phá Nội Dung Mới"
+              src={games[0]?.coverImageUrl}
+              alt=""
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-              <span className="inline-block px-2 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] font-bold mb-3">
-                Tuyển Tập
-              </span>
               <h3 className="font-display text-2xl font-bold text-white mb-2 drop-shadow-md group-hover:text-accent transition-colors">
-                Khám Phá Nội Dung Mới
+                Xem cả cửa hàng
               </h3>
               <p className="text-white/70 text-sm font-medium">
                 Game Xbox mới nhất với giá ưu đãi
@@ -99,9 +98,9 @@ export default function DiscoverySection({ games }: Props) {
           </Link>
 
           {/* ── Right: 3-Column Grid ── */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
             {cols.map((colGames, colIdx) => (
-              <div key={colIdx} className="space-y-2">
+              <div key={colIdx} className="space-y-1">
                 {colGames.map((g) => (
                   <HorizontalGameCard key={g.id} game={g} />
                 ))}

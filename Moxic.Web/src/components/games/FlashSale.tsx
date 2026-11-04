@@ -31,7 +31,7 @@ export function SaleCountdownBadge({ endsAt, className = "" }: { endsAt: string;
   const t = useCountdownTo(endsAt);
   if (t.ms <= 0) return null;
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold tabular-nums bg-gradient-to-r from-negative to-caution text-white ${className}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-xs font-bold tabular-nums bg-gradient-to-r from-negative to-caution text-white ${className}`}>
       <Zap className="w-3 h-3 fill-white" />
       {t.d > 0 ? `${t.d} ngày ${t.h}h` : `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`}
     </span>

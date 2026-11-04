@@ -6,7 +6,6 @@ import DiscoverySection from "../components/home/DiscoverySection";
 import LuckySpinBanner from "../components/home/LuckySpinBanner";
 import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
-import GameCard from "../components/games/GameCard";
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
 import GameRail from "../components/games/GameRail";
@@ -32,25 +31,25 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* ═══ HERO SPLASH ═══ */}
+      {/* hero splash */}
       <HeroSplash featured={featured || []} available={availableGames} />
 
-      {/* ═══ DAILY GUESS ═══ */}
+      {/* daily guess */}
       <Container className="mt-8">
         <GuessTeaser />
       </Container>
 
-      {/* ═══ FLASH SALE ═══ */}
+      {/* flash sale */}
       <Container className="mt-14 empty:hidden">
         <FlashSaleRail />
       </Container>
 
-      {/* ═══ VONG QUAY MAY MAN ═══ */}
+      {/* vong quay may man */}
       <Container className="mt-14 empty:hidden">
         <LuckySpinBanner />
       </Container>
 
-      {/* ═══ BAN CHAY NHAT ═══ */}
+      {/* ban chay nhat */}
       {bestsellers.length > 0 && (
         <Container className="mt-14">
           <GameRail
@@ -70,27 +69,25 @@ export default function HomePage() {
         </Container>
       )}
 
-      {/* ═══ DANH CHO BAN ═══ */}
+      {/* danh cho ban */}
       <Container className="mt-14 empty:hidden">
         <ForYouRail />
       </Container>
 
-      {/* ═══ DA XEM GAN DAY ═══ */}
+      {/* da xem gan day */}
       <Container className="mt-14 empty:hidden">
         <RecentlyViewed />
       </Container>
 
-      {/* ═══ KHAM PHA NOI DUNG MOI ═══ */}
+      {/* kham pha noi dung moi */}
       <Container className="mt-14">
         <DiscoverySection games={availableGames.slice(0, 12)} />
       </Container>
 
-      {/* ═══ GAME NOI BAT ═══ */}
+      {/* game noi bat */}
       <Container className="mt-14">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-xl md:text-2xl text-text-primary">
-            Game Nổi Bật
-          </h2>
+          <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">Game nổi bật</h2>
           <Link
             to="/games"
             className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors"
@@ -98,16 +95,14 @@ export default function HomePage() {
             Xem tất cả <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <GameGrid games={availableGames.slice(0, 8)} variant="vertical" />
+        <GameGrid games={availableGames.slice(0, 10)} variant="vertical" />
       </Container>
 
-      {/* ═══ PREORDER SECTION ═══ */}
+      {/* preorder section */}
       {preorderGames.length > 0 && (
         <Container className="mt-14 mb-14">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-xl md:text-2xl text-text-primary">
-              Game Sắp Ra Mắt
-            </h2>
+            <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">Sắp ra mắt</h2>
             <Link
               to="/preorder"
               className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors"
@@ -115,15 +110,11 @@ export default function HomePage() {
               Xem tất cả <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {preorderGames.slice(0, 4).map((g) => (
-              <GameCard key={g.id} game={g} variant="vertical" />
-            ))}
-          </div>
+          <GameGrid games={preorderGames.slice(0, 5)} variant="vertical" />
         </Container>
       )}
 
-      {/* ═══ EMPTY STATE ═══ */}
+      {/* empty state */}
       {games.length === 0 && (
         <Container className="mt-12 text-center py-16">
           <p className="text-text-muted">Chưa có game nào</p>
