@@ -78,7 +78,7 @@ public class PriceTrackerService
     public async Task<(int Updated, string? Error)> SyncXboxAsync(CancellationToken ct = default)
     {
         var key = ApiKey;
-        if (key == null) return (0, "Chưa cấu hình Xbx:ApiKey");
+        if (key == null) return await SyncMicrosoftCatalogAsync(ct);
 
         var games = await _db.Games.AsNoTracking()
             .Where(g => g.XboxProductId != null && g.XboxProductId != "")
@@ -140,6 +140,93 @@ public class PriceTrackerService
         LastXboxSyncAt = now;
         LastXboxSyncResult = error ?? $"OK — {updated} giá mới / {games.Count} game";
         return (updated, error);
+    }
+
+    public string Source => ApiKey != null ? "XBXprices" : "Microsoft Store catalog";
+
+    /// <summary>
+    /// Free source: Microsoft's public display catalog (the endpoint the Store itself uses; undocumented).
+    /// Prices are in major units. Picks the first purchasable (non-zero) availability of the first SKU.
+    /// </summary>
+    private async Task<(int Updated, string? Error)> SyncMicrosoftCatalogAsync(CancellationToken ct)
+    {
+        var games = await _db.Games.AsNoTracking()
+            .Where(g => g.XboxProductId != null && g.XboxProductId != "")
+            .Select(g => new { g.Id, Pid = g.XboxProductId!.ToUpper(), Region = (g.PriceRegion ?? "us").ToLower() })
+            .ToListAsync(ct);
+        if (games.Count == 0) return (0, null);
+
+        var latest = await _db.GamePriceSnapshots.AsNoTracking()
+            .Where(s => s.Source == "XboxStore")
+            .GroupBy(s => new { s.GameId, s.Region })
+            .Select(g => g.OrderByDescending(s => s.CapturedAt).First())
+            .ToListAsync(ct);
+
+        var client = _http.CreateClient(HttpClientName);
+        var updated = 0;
+        string? error = null;
+        var now = DateTime.UtcNow;
+        foreach (var regionGroup in games.GroupBy(g => g.Region))
+        {
+            foreach (var chunk in regionGroup.Chunk(20))
+            {
+                var url = $"https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds={string.Join(",", chunk.Select(c => Uri.EscapeDataString(c.Pid)))}&market={regionGroup.Key.ToUpperInvariant()}&languages=en-us";
+                try
+                {
+                    using var res = await client.GetAsync(url, ct);
+                    if (!res.IsSuccessStatusCode) { error = $"Microsoft catalog {(int)res.StatusCode}"; continue; }
+                    using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
+                    if (!doc.RootElement.TryGetProperty("Products", out var products)) continue;
+                    foreach (var p in products.EnumerateArray())
+                    {
+                        var pid = p.TryGetProperty("ProductId", out var pidEl) ? pidEl.GetString() : null;
+                        var game = chunk.FirstOrDefault(c => string.Equals(c.Pid, pid, StringComparison.OrdinalIgnoreCase));
+                        if (game == null || !p.TryGetProperty("DisplaySkuAvailabilities", out var skus)) continue;
+                        var price = FirstPurchasePrice(skus);
+                        if (price == null) continue;
+                        var (basePrice, salePrice, currency) = price.Value;
+                        var last = latest.FirstOrDefault(s => s.GameId == game.Id && s.Region == regionGroup.Key);
+                        if (last != null && last.SalePrice == salePrice && last.BasePrice == basePrice) continue;
+                        _db.GamePriceSnapshots.Add(new GamePriceSnapshot
+                        {
+                            Id = Guid.NewGuid(), GameId = game.Id, Source = "XboxStore", Region = regionGroup.Key,
+                            Currency = currency, BasePrice = basePrice, SalePrice = salePrice, CapturedAt = now,
+                        });
+                        updated++;
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    error = ex.Message;
+                    _logger.LogWarning(ex, "Microsoft catalog request failed");
+                }
+                await Task.Delay(500, ct); // be polite
+            }
+        }
+        if (updated > 0) await _db.SaveChangesAsync(ct);
+        LastXboxSyncAt = now;
+        LastXboxSyncResult = error ?? $"OK (Microsoft Store) — {updated} giá mới / {games.Count} game";
+        return (updated, error);
+    }
+
+    private static (decimal Base, decimal Sale, string Currency)? FirstPurchasePrice(JsonElement skus)
+    {
+        foreach (var sku in skus.EnumerateArray())
+        {
+            if (!sku.TryGetProperty("Availabilities", out var avs)) continue;
+            foreach (var av in avs.EnumerateArray())
+            {
+                var purchasable = av.TryGetProperty("Actions", out var actions) && actions.ValueKind == JsonValueKind.Array
+                    && actions.EnumerateArray().Any(a => a.GetString() == "Purchase");
+                if (!purchasable || !av.TryGetProperty("OrderManagementData", out var omd) || !omd.TryGetProperty("Price", out var pr)) continue;
+                var list = pr.TryGetProperty("ListPrice", out var l) && l.TryGetDecimal(out var lv) ? lv : 0m;
+                var msrp = pr.TryGetProperty("MSRP", out var m) && m.TryGetDecimal(out var mv) ? mv : list;
+                if (list <= 0) continue;
+                var cur = pr.TryGetProperty("CurrencyCode", out var c) ? c.GetString() ?? "USD" : "USD";
+                return (Math.Max(msrp, list), list, cur.ToUpperInvariant());
+            }
+        }
+        return null;
     }
 
     private record XboxPrice(string XboxId, decimal Base, decimal Sale, string? Currency);
@@ -254,7 +341,7 @@ public class PriceTrackerJob : BackgroundService
                 await svc.RecordMoxicPricesAsync(stoppingToken);
                 var sent = await svc.ProcessPriceAlertsAsync(stoppingToken);
                 if (sent > 0) _logger.LogInformation("Price alerts sent: {sent}", sent);
-                if (DateTime.UtcNow - _lastXbox > TimeSpan.FromHours(24) && svc.ApiKey != null)
+                if (DateTime.UtcNow - _lastXbox > TimeSpan.FromHours(24))
                 {
                     _lastXbox = DateTime.UtcNow;
                     await svc.SyncXboxAsync(stoppingToken);

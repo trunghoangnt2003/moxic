@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
 import GameRail from "../components/games/GameRail";
 import RecentlyViewed from "../components/games/RecentlyViewed";
+import { ForYouRail } from "../components/games/DiscoveryRails";
 import { PageLoader } from "../components/shared/MoxicLoader";
 
 export default function HomePage() {
@@ -56,6 +57,11 @@ export default function HomePage() {
           />
         </Container>
       )}
+
+      {/* ═══ DANH CHO BAN ═══ */}
+      <Container className="mt-14 empty:hidden">
+        <ForYouRail />
+      </Container>
 
       {/* ═══ DA XEM GAN DAY ═══ */}
       <Container className="mt-14 empty:hidden">

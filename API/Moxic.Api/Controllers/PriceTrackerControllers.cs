@@ -72,7 +72,8 @@ public class AdminPriceTrackerController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Status() => Ok(new
     {
-        xboxConfigured = _tracker.ApiKey != null,
+        xboxConfigured = true,
+        xboxSource = _tracker.Source,
         trackedGames = await _db.Games.CountAsync(g => g.XboxProductId != null && g.XboxProductId != ""),
         snapshots = await _db.GamePriceSnapshots.CountAsync(),
         lastXboxSyncAt = PriceTrackerService.LastXboxSyncAt,

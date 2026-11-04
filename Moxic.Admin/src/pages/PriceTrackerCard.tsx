@@ -5,6 +5,7 @@ import { readApiError } from "../lib/luckySpinAdmin";
 
 interface Status {
   xboxConfigured: boolean;
+  xboxSource?: string;
   trackedGames: number;
   snapshots: number;
   lastXboxSyncAt: string | null;
@@ -59,7 +60,7 @@ export default function PriceTrackerCard() {
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-steam-text">
         <span>
           Xbox Store:{" "}
-          {status.xboxConfigured ? <b className="text-steam-green">đã kết nối XBXprices</b> : <b className="text-steam-gold">chưa có API key (Xbx__ApiKey)</b>}
+          <b className="text-steam-green">{status.xboxSource ?? "Microsoft Store catalog"}</b>
         </span>
         <span>
           Game gắn Xbox ID: <b className="text-white">{status.trackedGames}</b>

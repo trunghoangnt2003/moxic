@@ -313,6 +313,7 @@ public static class GameEndpoints
                 Region = game.Region,
                 Publisher = game.Publisher,
                 Developer = game.Developer,
+                XboxProductId = game.XboxProductId,
                 Editions = game.Editions
                     .Where(e => e.IsActive)
                     .OrderBy(e => e.DisplayOrder).ThenBy(e => e.SalePrice)

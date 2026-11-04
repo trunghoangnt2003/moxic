@@ -15,6 +15,8 @@ const RentPage = lazy(() => import("./pages/RentPage"));
 const RentalsPage = lazy(() => import("./pages/RentalsPage"));
 const RentalDetailPage = lazy(() => import("./pages/RentalDetailPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
+const ComparePage = lazy(() => import("./pages/ComparePage"));
+const ReleaseCalendarPage = lazy(() => import("./pages/ReleaseCalendarPage"));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage"));
 const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
@@ -51,6 +53,8 @@ export default function App() {
               <Route path="/games" element={<GamesPage />} />
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/rent" element={<RentPage />} />
+              <Route path="/compare" element={<ComparePage />} />
+              <Route path="/release-calendar" element={<ReleaseCalendarPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />
               <Route path="/cart" element={<CartPage />} />

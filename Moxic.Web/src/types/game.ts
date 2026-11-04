@@ -103,6 +103,7 @@ export interface GameDetail {
   region: string | null;
   publisher: string | null;
   developer: string | null;
+  xboxProductId?: string | null;
   editions: GameEdition[];
 }
 

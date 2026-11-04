@@ -114,6 +114,14 @@ export default function Navbar() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500" />
                 </span>
               </NavLink>
+              <NavLink
+                to="/release-calendar"
+                className={({ isActive }) =>
+                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
+                }
+              >
+                Sắp ra mắt
+              </NavLink>
               <a
                 href="#"
                 className="text-text-secondary hover:text-text-primary transition-colors text-sm"
@@ -310,6 +318,9 @@ export default function Navbar() {
             >
               <Gift className="w-4 h-4" /> Mở hòm may mắn
               <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">HOT</span>
+            </Link>
+            <Link to="/release-calendar" className="block text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
+              Lịch phát hành
             </Link>
             <a href="#" className="block text-text-secondary hover:text-text-primary py-2 text-sm">
               Hỗ trợ

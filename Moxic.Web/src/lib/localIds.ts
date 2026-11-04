@@ -59,3 +59,5 @@ function createIdStore(key: string, max: number) {
 
 export const guestWishlist = createIdStore("moxic.wishlist", 200);
 export const recentlyViewed = createIdStore("moxic.recentlyViewed", 12);
+/** Games picked for side-by-side comparison (max 3). */
+export const compareList = createIdStore("moxic.compare", 3);

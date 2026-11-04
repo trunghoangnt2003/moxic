@@ -2,6 +2,8 @@
 import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
 import RentPanel from "../components/rental/RentPanel";
+import { CompareButton } from "../components/games/Compare";
+import { GamePageRails } from "../components/games/DiscoveryRails";
 import PriceHistory from "../components/game-detail/PriceHistory";
 import GameDiscussion from "../components/community/GameDiscussion";
 import ReportButton from "../components/community/ReportButton";
@@ -9,11 +11,10 @@ import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
-import { useGameDetail, useGames } from "../hooks/useGames";
+import { useGameDetail } from "../hooks/useGames";
 import Container from "../components/layout/Container";
 import Button from "../components/shared/Button";
 import Badge from "../components/shared/Badge";
-import GameCard from "../components/games/GameCard";
 import type { GameReview } from "../types/game";
 import { PageLoader } from "../components/shared/MoxicLoader";
 import { formatPrice, formatDate, daysUntil, timeAgo } from "../lib/utils";
@@ -23,7 +24,6 @@ import {
   ShoppingCart,
   CreditCard,
   Gamepad2,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -104,9 +104,6 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { data: game, isLoading, error } = useGameDetail(id!);
 
-  const firstGenreId = game?.genres?.[0]?.id;
-  const { data: relatedGamesData } = useGames({ genres: firstGenreId ? [firstGenreId] : undefined, pageSize: 5 }, { enabled: !!game });
-  const relatedGames = relatedGamesData?.items?.filter(g => g.id !== game?.id).slice(0, 4) || [];
 
   const addItem = useCartStore((s) => s.addItem);
   const [activeMedia, setActiveMedia] = useState(0);
@@ -495,7 +492,20 @@ export default function GameDetailPage() {
                     <><ShoppingCart className="w-4 h-4" /> Thêm vào giỏ hàng</>
                   )}
                 </button>
-                <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
+                <div className="grid grid-cols-2 gap-2">
+                  <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
+                  <CompareButton gameId={game.id} gameName={game.name} className="w-full" />
+                </div>
+                {game.xboxProductId && (
+                  <a
+                    href={`https://www.xbox.com/vi-VN/games/store/x/${game.xboxProductId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-center text-xs text-text-muted hover:text-accent underline underline-offset-4 pt-1"
+                  >
+                    So giá trên Xbox Store chính hãng ↗
+                  </a>
+                )}
               </div>            </div>
 
             <RentPanel gameId={game.id} gameName={game.name} buyPrice={price} />
@@ -585,24 +595,9 @@ export default function GameDetailPage() {
         {/* ─── EDITION COMPARISON ─── */}
         {editions.length > 1 && <EditionCompare editions={editions} selectedId={edition?.id ?? null} onSelect={setEditionId} />}
 
-        {/* ─── RELATED GAMES ─── */}
-        {relatedGames.length > 0 && (
-          <div className="mt-12 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl text-text-primary flex items-center gap-2">
-                <Star className="w-5 h-5 text-accent" /> Game liên quan
-              </h2>
-              <Link to="/games" className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors">
-                Xem tất cả <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {relatedGames.map((g) => (
-                <GameCard key={g.id} game={g} variant="vertical" />
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="mt-12">
+          <GamePageRails gameId={game.id} />
+        </div>
 
         <div className="mt-12 mb-8">
           <RecentlyViewed excludeId={game.id} />
