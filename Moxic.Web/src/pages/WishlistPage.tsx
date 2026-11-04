@@ -51,14 +51,12 @@ export default function WishlistPage() {
       <div>
         <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl md:text-4xl font-bold flex items-center gap-3">
-              <Heart className="w-7 h-7 text-negative fill-negative" /> Yêu thích
-            </h1>
+            <h1 className="font-display text-3xl font-bold text-text-primary">Yêu thích</h1>
             <p className="text-sm text-text-muted mt-1">
               {games.length > 0 ? `${games.length} game đang chờ bạn` : "Lưu những game bạn muốn mua để không bỏ lỡ ưu đãi"}
               {!loggedIn && games.length > 0 && (
                 <>
-                  {" · "}
+                  {", "}
                   <Link to="/login?redirect=/wishlist" className="text-accent hover:underline">
                     Đăng nhập
                   </Link>{" "}
@@ -83,15 +81,15 @@ export default function WishlistPage() {
           {games.length > 0 && (
             <div className="flex items-center gap-4 bg-bg-surface border border-white/10 px-4 py-3">
               <div className="text-right">
-                <p className="text-[11px] text-text-muted">Tổng</p>
+                <p className="text-xs text-text-muted">Tổng</p>
                 <p className="font-bold text-lg">{formatPrice(total)}</p>
-                {saved > 0 && <p className="text-[11px] text-positive">Tiết kiệm {formatPrice(saved)}</p>}
+                {saved > 0 && <p className="text-xs text-positive">Tiết kiệm {formatPrice(saved)}</p>}
               </div>
               <button
                 type="button"
                 onClick={addAll}
                 disabled={notInCart.length === 0}
-                className="h-11 px-4 inline-flex items-center gap-2 bg-accent text-bg-base text-sm font-bold disabled:opacity-40 cursor-pointer disabled:cursor-default"
+                className="h-11 px-4 inline-flex items-center gap-2 bg-accent text-on-accent text-sm font-bold disabled:opacity-40 cursor-pointer disabled:cursor-default"
               >
                 <ShoppingCart className="w-4 h-4" /> {notInCart.length === 0 ? "Đã có trong giỏ" : "Thêm tất cả vào giỏ"}
               </button>
@@ -109,7 +107,7 @@ export default function WishlistPage() {
             </div>
             <p className="font-semibold mb-1">Danh sách yêu thích đang trống</p>
             <p className="text-sm text-text-muted mb-6">Nhấn biểu tượng ♥ trên game bất kỳ để lưu lại.</p>
-            <Link to="/games" className="inline-flex h-11 items-center px-6 bg-accent text-bg-base text-sm font-bold">
+            <Link to="/games" className="inline-flex h-11 items-center px-6 bg-accent text-on-accent text-sm font-bold">
               Khám phá cửa hàng
             </Link>
           </div>

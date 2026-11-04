@@ -5,6 +5,7 @@ import MoxicWave from "./components/shared/MoxicWave";
 import AppLayout from "./components/layout/AppLayout";
 import GlobalLoader from "./components/shared/GlobalLoader";
 import RequireCustomer from "./components/account/RequireCustomer";
+import AccountLayout from "./components/account/AccountLayout";
 import { NotFoundPage } from "./components/shared/EmptyStates";
 import { Toaster } from "react-hot-toast";
 
@@ -76,10 +77,8 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/games" element={<GamesPage />} />
-              <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/rent" element={<RentPage />} />
               <Route path="/compare" element={<ComparePage />} />
-              <Route path="/rewards" element={<RewardsPage />} />
               <Route path="/release-calendar" element={<ReleaseCalendarPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />
@@ -97,14 +96,18 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route element={<RequireCustomer />}>
-                <Route path="/account/orders" element={<OrderHistoryPage />} />
-                <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
-                <Route path="/account/points" element={<PointsHistoryPage />} />
-                <Route path="/account/coupons" element={<CouponWalletPage />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/account/rentals" element={<RentalsPage />} />
-                <Route path="/account/rentals/:code" element={<RentalDetailPage />} />
+              <Route element={<AccountLayout />}>
+                <Route path="/wishlist" element={<WishlistPage />} />
+                <Route path="/rewards" element={<RewardsPage />} />
+                <Route element={<RequireCustomer />}>
+                  <Route path="/account/orders" element={<OrderHistoryPage />} />
+                  <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
+                  <Route path="/account/points" element={<PointsHistoryPage />} />
+                  <Route path="/account/coupons" element={<CouponWalletPage />} />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/account/rentals" element={<RentalsPage />} />
+                  <Route path="/account/rentals/:code" element={<RentalDetailPage />} />
+                </Route>
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Route>

@@ -81,7 +81,7 @@ export default function ReleaseCalendarPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold truncate group-hover:text-accent">{g.name}</p>
-                          <p className="text-xs text-text-muted truncate">{g.genres.map((x) => x.name).slice(0, 3).join(" · ")}</p>
+                          <p className="text-xs text-text-muted truncate">{g.genres.map((x) => x.name).slice(0, 3).join(", ")}</p>
                           {days > 0 ? (
                             <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-caution">
                               <Rocket className="w-3 h-3" /> còn {days} ngày

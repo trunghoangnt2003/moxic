@@ -8,7 +8,7 @@ export default function OrderStatusBadge({ status }: { status: string }) {
   const style = known ? ORDER_STATUS_STYLES[status as OrderStatus] : NEUTRAL;
 
   return (
-    <span className={`inline-flex items-center border px-2.5 py-0.5 text-[11px] font-semibold ${style}`}>
+    <span className={`inline-flex items-center border px-2.5 py-0.5 text-xs font-semibold ${style}`}>
       {label}
     </span>
   );

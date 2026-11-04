@@ -90,7 +90,7 @@ export default function PurchaseToast() {
             {p.gameName}
           </Link>
           <p className="flex items-center gap-1 text-[11px] text-text-muted mt-0.5">
-            <BadgeCheck className="w-3 h-3 text-positive" /> Đã xác thực · {ago(p.at, offset)}
+            <BadgeCheck className="w-3 h-3 text-positive" /> Đã xác thực, {ago(p.at, offset)}
           </p>
         </div>
         <button

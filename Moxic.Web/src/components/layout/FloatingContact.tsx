@@ -44,6 +44,8 @@ export default function FloatingContact() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const onGameDetail = useMatch("/games/:id");
+  const onCart = useMatch("/cart");
+  const onCheckout = useMatch("/checkout");
   const chatOpen = useChatUi((s) => s.open);
   const openChat = useChatUi((s) => s.openChat);
   const { data: chatCfg } = useQuery({ queryKey: ["chat", "config"], queryFn: getChatConfig, staleTime: 5 * 60_000 });
@@ -119,7 +121,8 @@ export default function FloatingContact() {
   }
   const hasSecondary = secondary.length > 0;
 
-  const position = onGameDetail
+  // Pages with a phone bottom bar (buy bar, cart total, checkout submit) lift the buttons above it.
+  const position = onGameDetail || onCart || onCheckout
     ? "right-4 bottom-[calc(6rem+var(--sab))] lg:bottom-6 md:right-6"
     : "right-4 bottom-[calc(1rem+var(--sab))] md:right-6 md:bottom-6";
 

@@ -42,7 +42,7 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
   };
   return (
     <div>
-      <p className="text-[11px] text-text-muted mb-1">{label}</p>
+      <p className="text-xs text-text-muted mb-1">{label}</p>
       <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 h-11">
         <span className="flex-1 font-mono text-sm truncate select-all">{show ? value : "•".repeat(Math.min(12, value.length))}</span>
         {secret && (
@@ -70,7 +70,7 @@ function Timeline({ r }: { r: RentalDetail }) {
     <ol className="flex items-center gap-2">
       {steps.map((s, i) => (
         <li key={s.key} className="flex items-center gap-2 flex-1 last:flex-none">
-          <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${s.done ? "bg-positive text-bg-base" : "border border-white/20 text-text-muted"}`}>
+          <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${s.done ? "bg-positive text-on-accent" : "border border-white/20 text-text-muted"}`}>
             {s.done ? <Check className="w-3.5 h-3.5" /> : i + 1}
           </span>
           <span className={`text-xs whitespace-nowrap ${s.done ? "text-white" : "text-text-muted"}`}>{s.label}</span>
@@ -98,7 +98,7 @@ function PayBox({ code, amount, payBefore, onPaid, onCancel, busy }: { code: str
       )}
       <QRDisplay bankQrUrl={config?.bankQrUrl} cryptoQrUrl={config?.cryptoQrUrl} transferContent={code} amount={amount} />
       <div className="flex flex-col sm:flex-row gap-2">
-        <button type="button" onClick={onPaid} disabled={busy} className="h-12 flex-[2] inline-flex items-center justify-center gap-2 bg-accent text-bg-base text-sm font-bold disabled:opacity-50 cursor-pointer">
+        <button type="button" onClick={onPaid} disabled={busy} className="h-12 flex-[2] inline-flex items-center justify-center gap-2 bg-accent text-on-accent text-sm font-bold disabled:opacity-50 cursor-pointer">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Tôi đã chuyển khoản
         </button>
         {onCancel && (
@@ -177,10 +177,10 @@ export default function RentalDetailPage() {
           {r.coverUrl ? <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-8 h-8 m-auto mt-8 text-accent/40" />}
         </div>
         <div className="min-w-0 flex-1">
-          <span className={`inline-block px-2 py-0.5 text-[11px] font-bold border ${st.cls}`}>{st.label}</span>
+          <span className={`inline-block px-2 py-0.5 text-xs font-bold border ${st.cls}`}>{st.label}</span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold mt-2 truncate">{r.gameName}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Mã đơn <span className="font-mono text-text-secondary">{r.code}</span> · {r.days} ngày · {formatPrice(r.price)}
+            Mã đơn <span className="font-mono text-text-secondary">{r.code}</span>, {r.days} ngày, {formatPrice(r.price)}
           </p>
         </div>
       </div>
@@ -219,13 +219,13 @@ export default function RentalDetailPage() {
               </div>
               {left && (
                 <div className="text-right">
-                  <p className="text-[11px] text-text-muted">Còn lại</p>
+                  <p className="text-xs text-text-muted">Còn lại</p>
                   <p className="font-display text-2xl font-bold tabular-nums">
                     {left.d > 0 && <>{left.d}<span className="text-sm text-text-muted mx-0.5">ngày</span></>}
                     {left.h}<span className="text-sm text-text-muted mx-0.5">giờ</span>
                     {String(left.m).padStart(2, "0")}<span className="text-sm text-text-muted ml-0.5">phút</span>
                   </p>
-                  <p className="text-[11px] text-text-muted">Hết hạn {fmt(r.endsAt)}</p>
+                  <p className="text-xs text-text-muted">Hết hạn {fmt(r.endsAt)}</p>
                 </div>
               )}
             </div>
@@ -308,7 +308,7 @@ export default function RentalDetailPage() {
                   type="button"
                   onClick={() => extend.mutate(extPlan ?? r.plans[0].id)}
                   disabled={extend.isPending || !r.canExtend}
-                  className="h-12 sm:h-auto px-6 bg-accent text-bg-base text-sm font-bold disabled:opacity-40 cursor-pointer"
+                  className="h-12 sm:h-auto px-6 bg-accent text-on-accent text-sm font-bold disabled:opacity-40 cursor-pointer"
                 >
                   {extend.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Gia hạn"}
                 </button>
@@ -323,10 +323,10 @@ export default function RentalDetailPage() {
             ["Đặt lúc", fmt(r.createdAt)],
             ["Bắt đầu", fmt(r.startsAt)],
             ["Hết hạn", fmt(r.endsAt)],
-            ["Gói", `${r.days} ngày · ${formatPrice(r.price)}`],
+            ["Gói", `${r.days} ngày, ${formatPrice(r.price)}`],
           ].map(([k, v]) => (
             <div key={k} className="bg-bg-base p-3">
-              <p className="text-[11px] text-text-muted">{k}</p>
+              <p className="text-xs text-text-muted">{k}</p>
               <p className="mt-0.5 text-text-primary">{v}</p>
             </div>
           ))}
@@ -339,8 +339,8 @@ export default function RentalDetailPage() {
               {r.extensions.map((e) => (
                 <li key={e.code} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                   <span className="font-mono text-text-secondary">{e.code}</span>
-                  <span>+{e.days} ngày · {formatPrice(e.price)}</span>
-                  <span className={`px-1.5 py-0.5 text-[10px] font-bold border ${RENTAL_STATUS[e.status].cls}`}>{RENTAL_STATUS[e.status].label}</span>
+                  <span>+{e.days} ngày, {formatPrice(e.price)}</span>
+                  <span className={`px-1.5 py-0.5 text-xs font-bold border ${RENTAL_STATUS[e.status].cls}`}>{RENTAL_STATUS[e.status].label}</span>
                 </li>
               ))}
             </ul>

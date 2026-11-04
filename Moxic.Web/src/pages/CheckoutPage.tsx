@@ -23,56 +23,50 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-bg-base py-12">
-        <Container>
-          <div className="text-center py-24 bg-bg-surface border border-white/10 max-w-4xl mx-auto">
-            <ShoppingCart className="w-16 h-16 text-white/10 mx-auto mb-4" />
-            <h2 className="font-display text-xl text-text-primary mb-2">Giỏ hàng trống</h2>
-            <p className="text-text-muted text-sm mb-6">Bạn chưa thêm game nào vào giỏ hàng.</p>
-            <button
-              onClick={() => navigate("/games")}
-              className="bg-accent hover:bg-accent-hover text-bg-base px-8 py-3 text-sm font-semibold transition-colors cursor-pointer"
-            >
-              Tiếp tục mua sắm
-            </button>
+      <Container className="py-16 md:py-24">
+        <div className="max-w-md mx-auto text-center">
+          <div className="w-20 h-20 mx-auto rounded-full bg-bg-surface border border-white/10 flex items-center justify-center">
+            <ShoppingCart className="w-9 h-9 text-text-muted" />
           </div>
-        </Container>
-      </div>
+          <h1 className="mt-6 font-display text-3xl font-bold text-text-primary">Giỏ hàng đang trống</h1>
+          <p className="mt-2 text-text-secondary">Bạn chưa thêm game nào vào giỏ hàng.</p>
+          <button
+            onClick={() => navigate("/games")}
+            className="mt-8 h-12 px-8 bg-accent hover:bg-accent-hover text-on-accent font-semibold transition-colors cursor-pointer"
+          >
+            Tiếp tục mua sắm
+          </button>
+        </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 md:py-12">
+    <div className="py-8 md:py-12 pb-32 lg:pb-12">
       <Container>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <CheckoutSteps current={1} />
-          <div className="flex items-center justify-between gap-3 mb-6">
-            <h1 className="font-display text-2xl md:text-3xl font-bold text-text-primary">Thông tin đặt hàng</h1>
+          <div className="flex items-end justify-between gap-3 mb-8">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary">Thông tin đặt hàng</h1>
             <button
               onClick={() => navigate("/cart")}
-              className="flex items-center gap-1 text-text-muted hover:text-accent text-sm transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-text-secondary hover:text-accent text-sm transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" /> Giỏ hàng
             </button>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left: Form */}
-            <div className="flex-1">
-              <div className="bg-bg-surface border border-white/10 p-6">
-                <h3 className="font-display text-base text-text-primary mb-6 pb-4 border-b border-white/10">
-                  Thông tin tài khoản Xbox
-                </h3>
-                <CheckoutForm
-                  onSuccess={handleSuccess}
-                  couponCode={coupon?.code}
-                  onCouponRejected={() => setCoupon(null)}
-                />
-              </div>
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-10 lg:gap-14 items-start">
+            <div className="max-w-xl">
+              <CheckoutForm
+                onSuccess={handleSuccess}
+                couponCode={coupon?.code}
+                onCouponRejected={() => setCoupon(null)}
+                total={coupon ? coupon.total : total}
+              />
             </div>
 
-            {/* Right: Summary */}
-            <div className="w-full lg:w-[360px] flex-shrink-0 order-first lg:order-none">
+            <div className="order-first lg:order-none">
               <CartSummary
                 items={items}
                 total={total}

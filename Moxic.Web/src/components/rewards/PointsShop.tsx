@@ -23,7 +23,7 @@ function terms(i: RewardShopItem) {
     t.push("1 lượt mở");
   }
   t.push(`HSD ${i.validDays} ngày`);
-  return t.join(" · ");
+  return t.join(", ");
 }
 
 const pts = (n: number) => n.toLocaleString("vi-VN");
@@ -135,7 +135,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                 <div className="flex-1 min-w-0">
                   <p className="truncate">{h.itemName}</p>
                   <p className="text-[11px] text-text-muted">
-                    {formatDate(h.createdAt)} · -{pts(h.pointsSpent)} điểm
+                    {formatDate(h.createdAt)}, -{pts(h.pointsSpent)} điểm
                   </p>
                 </div>
                 <span className={`font-mono text-xs ${h.used ? "line-through text-text-muted" : "text-white"}`}>{h.code}</span>

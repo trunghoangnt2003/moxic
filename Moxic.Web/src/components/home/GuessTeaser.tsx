@@ -19,7 +19,7 @@ export default function GuessTeaser() {
           {s.finished ? (s.solved ? "Bạn đã đoán đúng hôm nay 🎉" : "Hôm nay khó quá 😅") : "Đây là game gì?"}
         </p>
         <p className="text-xs text-text-muted mt-0.5">
-          {s.finished ? "Câu mới lúc 0h, giữ chuỗi nhé!" : `Đoán đúng ngay lần đầu: +100 điểm · ${s.stats.players} người đã chơi`}
+          {s.finished ? "Câu mới lúc 0h, giữ chuỗi nhé!" : `Đoán đúng ngay lần đầu: +100 điểm, ${s.stats.players} người đã chơi`}
         </p>
       </div>
       {s.streak > 0 && (

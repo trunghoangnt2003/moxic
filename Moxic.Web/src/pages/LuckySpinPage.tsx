@@ -263,7 +263,7 @@ export default function LuckySpinPage() {
               style={primaryButtonStyle}
             >
               {busy ? <MoxicLoader size="sm" /> : <Coins className="h-4 w-4" />}
-              {busyLabel ?? `Mở hòm · ${formatPoints(spinCase.pointsCost)} điểm`}
+              {busyLabel ?? `Mở hòm (${formatPoints(spinCase.pointsCost)} điểm)`}
             </button>
             {muteToggle}
           </div>
@@ -272,7 +272,7 @@ export default function LuckySpinPage() {
           </p>
           {short && (
             <p className="text-xs text-caution">
-              Bạn cần thêm {formatPoints(pointsShort)} điểm ·{" "}
+              Bạn cần thêm {formatPoints(pointsShort)} điểm,{" "}
               <Link to="/account/points" className="underline hover:text-caution">
                 Cách nhận điểm
               </Link>

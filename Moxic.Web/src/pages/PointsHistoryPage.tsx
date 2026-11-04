@@ -24,14 +24,14 @@ function LedgerRow({ tx }: { tx: PointsTransaction }) {
       <div className="min-w-0">
         <p className="text-sm font-semibold text-text-primary">{POINTS_REASON_LABELS[tx.reason] ?? tx.reason}</p>
         {tx.note && <p className="mt-0.5 break-words text-xs text-text-secondary">{tx.note}</p>}
-        <p className="mt-0.5 text-[11px] text-text-muted">{formatDateTime(tx.createdAt)}</p>
+        <p className="mt-0.5 text-xs text-text-muted">{formatDateTime(tx.createdAt)}</p>
       </div>
       <div className="flex-shrink-0 text-right">
         <p className={`font-mono text-sm font-bold ${positive ? "text-positive" : "text-negative"}`}>
           {positive ? "+" : ""}
           {formatPoints(tx.delta)}
         </p>
-        <p className="mt-0.5 text-[11px] text-text-muted">Số dư {formatPoints(tx.balanceAfter)}</p>
+        <p className="mt-0.5 text-xs text-text-muted">Số dư {formatPoints(tx.balanceAfter)}</p>
       </div>
     </li>
   );
@@ -43,13 +43,10 @@ export default function PointsHistoryPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 md:py-12">
+    <div>
       <Container>
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-2 flex items-center gap-3">
-            <Coins className="h-6 w-6 text-accent" />
-            <h1 className="font-display text-2xl text-text-primary md:text-3xl">Điểm thưởng</h1>
-          </div>
+        <div className="max-w-4xl">
+          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">Điểm thưởng</h1>
 
           <section className="mt-4 border border-white/10 bg-bg-surface p-5 sm:p-6">
             <p className="text-xs text-text-muted">Số dư hiện tại</p>
@@ -65,7 +62,7 @@ export default function PointsHistoryPage() {
             </p>
             <Link
               to="/lucky-spin"
-              className="mt-4 inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover"
+              className="mt-4 inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
             >
               <Sparkles className="h-4 w-4" /> Mở hòm ngay
             </Link>
@@ -80,7 +77,7 @@ export default function PointsHistoryPage() {
               <p className="mb-4 text-sm text-negative">Không thể tải lịch sử điểm. Vui lòng thử lại.</p>
               <button
                 onClick={() => void refetch()}
-                className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover"
+                className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
               >
                 Thử lại
               </button>

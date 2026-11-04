@@ -69,7 +69,7 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
 
       <p className="relative text-[11px] text-text-muted mb-3">
         ≈ {formatPrice(perDay)}/ngày
-        {buyPrice > 0 && plan.price < buyPrice && <> · tiết kiệm {Math.round((1 - plan.price / buyPrice) * 100)}% so với mua</>}
+        {buyPrice > 0 && plan.price < buyPrice && <>, tiết kiệm {Math.round((1 - plan.price / buyPrice) * 100)}% so với mua</>}
       </p>
 
       <button
@@ -87,7 +87,7 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
           <ShieldCheck className="w-3.5 h-3.5 text-positive" /> Nhận tài khoản chơi {gameName} ngay sau khi xác nhận thanh toán
         </li>
         <li className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-positive" /> Nhắc trước khi hết hạn · gia hạn 1 chạm
+          <ShieldCheck className="w-3.5 h-3.5 text-positive" /> Nhắc trước khi hết hạn, gia hạn 1 chạm
         </li>
       </ul>
     </div>

@@ -12,7 +12,7 @@ const SLIDE_MS = 450;
 function DropCard({ drop, featured = false }: { drop: LiveDrop; featured?: boolean }) {
   const color = RARITY_COLORS[drop.rarity] ?? RARITY_COLORS.common;
   const Icon = drop.prizeType === "Discount" ? TicketPercent : Gift;
-  const title = `${drop.prizeName} · ${drop.caseName} · ${drop.winnerName} · ${timeAgo(drop.createdAt)}`;
+  const title = `${drop.prizeName}, ${drop.caseName}, ${drop.winnerName}, ${timeAgo(drop.createdAt)}`;
 
   const body = (
     <div

@@ -123,7 +123,7 @@ export default function ChatPanel() {
             {attached && !orders?.items.some((o) => o.orderCode === attached) && <option value={attached}>{attached}</option>}
             {orders?.items.map((o) => (
               <option key={o.orderCode} value={o.orderCode}>
-                {o.orderCode} · {o.items[0]?.gameName ?? ""}
+                {o.orderCode}, {o.items[0]?.gameName ?? ""}
               </option>
             ))}
           </select>

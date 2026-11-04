@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
               {board.me ? (
                 <>
                   Bạn đang hạng <b className="text-accent">#{board.me.rank}</b> với <b>{board.me.score}</b> {meta.unit}
-                  {board.me.rank > 3 && board.top[2] && <span className="text-text-muted"> · cần {board.top[2].score - board.me.score + 1} nữa để vào top 3</span>}
+                  {board.me.rank > 3 && board.top[2] && <span className="text-text-muted">, cần {board.top[2].score - board.me.score + 1} nữa để vào top 3</span>}
                 </>
               ) : (
                 <span className="text-text-secondary">Bạn chưa có điểm ở bảng này tháng này.</span>

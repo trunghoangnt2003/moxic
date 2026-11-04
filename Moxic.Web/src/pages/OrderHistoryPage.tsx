@@ -5,68 +5,61 @@ import Container from "../components/layout/Container";
 import OrderStatusBadge from "../components/account/OrderStatusBadge";
 import { SectionLoader } from "../components/shared/MoxicLoader";
 import { useMe, useMyOrders } from "../hooks/useAccount";
-import type { AccountOrderItem, AccountOrderSummary } from "../lib/accountApi";
+import type { AccountOrderSummary } from "../lib/accountApi";
 import { formatDate, formatPrice } from "../lib/utils";
 
-const MAX_ITEMS_PREVIEW = 3;
-
-function ItemRow({ item }: { item: AccountOrderItem }) {
-  return (
-    <div className="flex items-center gap-3">
-      {item.coverUrl ? (
-        <img
-          src={item.coverUrl}
-          alt=""
-          loading="lazy"
-          className="w-10 h-[54px] object-cover flex-shrink-0 bg-bg-elevated"
-        />
-      ) : (
-        <div className="w-10 h-[54px] flex-shrink-0 bg-bg-elevated border border-white/10 flex items-center justify-center">
-          <Gamepad2 className="w-4 h-4 text-text-muted" />
-        </div>
-      )}
-      <p className="flex-1 min-w-0 truncate text-sm text-text-primary">{item.gameName}</p>
-      <p className="text-sm text-text-secondary flex-shrink-0">{formatPrice(item.price)}</p>
-    </div>
-  );
-}
+const MAX_COVERS = 3;
 
 function OrderCard({ order }: { order: AccountOrderSummary }) {
-  const preview = order.items.slice(0, MAX_ITEMS_PREVIEW);
-  const extra = order.items.length - preview.length;
+  const covers = order.items.slice(0, MAX_COVERS);
+  const extra = order.items.length - 1;
 
   return (
-    <article className="bg-bg-surface border border-white/10 p-4 sm:p-5">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="font-mono text-sm text-text-primary break-all">{order.orderCode}</p>
-          <p className="text-xs text-text-muted mt-0.5">{formatDate(order.createdAt)}</p>
-        </div>
-        <OrderStatusBadge status={order.status} />
-      </header>
-
-      <div className="mt-4 space-y-2.5">
-        {preview.map((item) => (
-          <ItemRow key={item.gameId} item={item} />
-        ))}
-        {extra > 0 && <p className="text-xs text-text-muted">+{extra} game khác</p>}
+    <Link
+      to={`/account/orders/${encodeURIComponent(order.orderCode)}`}
+      className="group grid grid-cols-[auto_minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 bg-bg-surface border border-white/10 p-4 hover:border-white/25 transition-colors"
+    >
+      <div className="flex -space-x-6">
+        {covers.map((item, i) =>
+          item.coverUrl ? (
+            <img
+              key={item.gameId + i}
+              src={item.coverUrl}
+              alt=""
+              loading="lazy"
+              className="w-14 h-[74px] object-cover bg-bg-elevated ring-2 ring-bg-surface"
+            />
+          ) : (
+            <div key={item.gameId + i} className="w-14 h-[74px] bg-bg-elevated ring-2 ring-bg-surface flex items-center justify-center">
+              <Gamepad2 className="w-5 h-5 text-text-muted" />
+            </div>
+          ),
+        )}
       </div>
 
-      <footer className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-        <p className="text-sm text-text-secondary">
-          Tổng: <span className="font-bold text-accent">{formatPrice(order.totalAmount)}</span>
-          {order.discountAmount > 0 && (
-            <span className="ml-1 text-xs text-positive">(đã giảm {formatPrice(order.discountAmount)})</span>
-          )}
+      <div className="min-w-0">
+        <p className="font-semibold text-text-primary truncate group-hover:text-accent transition-colors">
+          {order.items[0]?.gameName ?? "Đơn hàng"}
+          {extra > 0 && <span className="text-text-muted font-normal"> và {extra} game khác</span>}
         </p>
-        <Link
-          to={`/account/orders/${encodeURIComponent(order.orderCode)}`}
-          className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
-        >
-          Xem chi tiết
-        </Link>
-      </footer>
-    </article>
+        <p className="mt-1 text-sm text-text-muted">
+          <span className="font-mono">{order.orderCode}</span>, {formatDate(order.createdAt)}
+        </p>
+        <div className="mt-2 sm:hidden">
+          <OrderStatusBadge status={order.status} />
+        </div>
+      </div>
+
+      <div className="col-span-2 sm:col-span-1 flex sm:flex-col items-center sm:items-end justify-between gap-2 pt-3 sm:pt-0 border-t sm:border-0 border-white/10">
+        <div className="hidden sm:block">
+          <OrderStatusBadge status={order.status} />
+        </div>
+        <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(order.totalAmount)}</p>
+        <span className="sm:hidden inline-flex items-center gap-1 text-sm text-accent">
+          Chi tiết <ChevronRight className="w-4 h-4" />
+        </span>
+      </div>
+    </Link>
   );
 }
 
@@ -78,15 +71,10 @@ export default function OrderHistoryPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 md:py-12">
+    <div>
       <Container>
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <Package className="w-6 h-6 text-accent" />
-            <h1 className="font-display text-2xl md:text-3xl text-text-primary">
-              Lịch sử mua hàng
-            </h1>
-          </div>
+        <div className="max-w-4xl">
+          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">Đơn hàng</h1>
           {me && (
             <p className="text-sm text-text-muted mb-6">
               Các đơn hàng dùng email <strong className="text-text-secondary break-all">{me.email}</strong> (email tài
@@ -112,14 +100,14 @@ export default function OrderHistoryPage() {
               <p className="text-text-secondary text-sm mb-5">Bạn chưa có đơn hàng nào.</p>
               <Link
                 to="/games"
-                className="inline-block bg-accent hover:bg-accent-hover text-bg-base px-6 py-2.5 text-sm font-semibold transition-colors"
+                className="inline-flex h-11 items-center bg-accent hover:bg-accent-hover text-on-accent px-6 text-sm font-semibold transition-colors"
               >
                 Khám phá game
               </Link>
             </div>
           ) : (
             <>
-              <div className={`space-y-4 transition-opacity ${isFetching ? "opacity-70" : ""}`}>
+              <div className={`space-y-3 transition-opacity ${isFetching ? "opacity-70" : ""}`}>
                 {data.items.map((order) => (
                   <OrderCard key={order.orderCode} order={order} />
                 ))}

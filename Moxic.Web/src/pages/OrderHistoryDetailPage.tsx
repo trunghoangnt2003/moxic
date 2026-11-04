@@ -40,9 +40,9 @@ export default function OrderHistoryDetailPage() {
 
   if (isError || !order) {
     return (
-      <div className="min-h-screen bg-bg-base py-8 md:py-12">
+      <div>
         <Container>
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl">
             <BackLink />
             <div className="bg-bg-surface border border-white/10 p-10 text-center">
               <PackageX className="w-12 h-12 text-white/10 mx-auto mb-3" />
@@ -55,9 +55,9 @@ export default function OrderHistoryDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 md:py-12">
+    <div>
       <Container>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl">
           <BackLink />
 
           <div className="bg-bg-surface border border-white/10 p-5 sm:p-6">
@@ -101,7 +101,7 @@ export default function OrderHistoryDetailPage() {
               <InfoRow label="Cập nhật" value={formatDate(order.updatedAt)} />
               <InfoRow label="Thanh toán" value={PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod} />
               {order.isGift ? (
-                <InfoRow label="Quà tặng cho" value={`${order.giftRecipientName ?? "—"}${order.giftClaimedAt ? " · đã nhận" : " · chưa nhận"}`} />
+                <InfoRow label="Quà tặng cho" value={`${order.giftRecipientName ?? "—"}${order.giftClaimedAt ? ", đã nhận" : ", chưa nhận"}`} />
               ) : (
                 <InfoRow label="Email Xbox" value={order.xboxEmail} />
               )}
@@ -174,7 +174,7 @@ export default function OrderHistoryDetailPage() {
           {order.status === "Pending" && (
             <Link
               to={`/confirmation/${encodeURIComponent(order.orderCode)}`}
-              className="mt-4 block w-full text-center bg-accent hover:bg-accent-hover text-bg-base font-bold py-3.5 text-sm transition-colors"
+              className="mt-4 block w-full text-center bg-accent hover:bg-accent-hover text-on-accent font-bold py-3.5 text-sm transition-colors"
             >
               Tiếp tục thanh toán
             </Link>

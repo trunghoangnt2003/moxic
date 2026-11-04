@@ -20,7 +20,7 @@ function Guest() {
       <h1 className="font-display text-3xl md:text-5xl font-extrabold">Moxic Rewards</h1>
       <p className="text-text-secondary mt-3 max-w-xl mx-auto">Điểm danh mỗi ngày, làm nhiệm vụ, mời bạn bè, đổi điểm mở hòm may mắn và lên hạng để nhận thêm điểm mỗi đơn.</p>
       <div className="flex justify-center gap-2 mt-6">
-        <Link to="/register" className="h-12 px-6 inline-flex items-center bg-accent text-bg-base font-bold">
+        <Link to="/register" className="h-12 px-6 inline-flex items-center bg-accent text-on-accent font-bold">
           Tạo tài khoản miễn phí
         </Link>
         <Link to="/login?redirect=/rewards" className="h-12 px-6 inline-flex items-center border border-white/15 font-semibold">
@@ -63,7 +63,7 @@ export default function RewardsPage() {
     onSuccess: (r) => {
       haptic([15, 40, 15]);
       if (r.weekly) confetti({ particles: 90 });
-      toast.success(r.weekly ? `🔥 Chuỗi ${r.streak} ngày! +${r.reward} điểm thưởng tuần` : `Điểm danh thành công +${r.reward} điểm`);
+      toast.success(r.weekly ? `Chuỗi ${r.streak} ngày! +${r.reward} điểm thưởng tuần` : `Điểm danh thành công +${r.reward} điểm`);
       refresh();
     },
     onError: (e) => toast.error(apiError(e, "Không điểm danh được")),
@@ -113,7 +113,7 @@ export default function RewardsPage() {
   };
 
   return (
-    <Container className="mt-8 mb-20 max-w-5xl space-y-6">
+    <Container className="mt-8 mb-20 max-w-5xl space-y-8">
       {/* Tier */}
       <section className="relative overflow-hidden border border-white/10 bg-bg-surface p-5 sm:p-7">
         <div className={`absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br ${st.ring} opacity-20 blur-3xl pointer-events-none`} />
@@ -129,12 +129,12 @@ export default function RewardsPage() {
             <p className="text-sm text-text-secondary mt-0.5">{data.tier.perk}</p>
             <div className="mt-3">
               <div className="h-2 bg-white/10 overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${st.ring} transition duration-700`} style={{ width: `${progress}%` }} />
+                <div className={`h-full origin-left bg-gradient-to-r ${st.ring} transition-transform duration-700`} style={{ transform: `scaleX(${progress / 100})` }} />
               </div>
               <p className="text-xs text-text-muted mt-1.5">
                 {data.next ? (
                   <>
-                    Chi tiêu {formatPrice(data.spent)} · còn <b className="text-white">{formatPrice(data.next.remaining)}</b> để lên hạng <b className="text-white">{data.next.name}</b>
+                    Chi tiêu {formatPrice(data.spent)}, còn <b className="text-white">{formatPrice(data.next.remaining)}</b> để lên hạng <b className="text-white">{data.next.name}</b>
                   </>
                 ) : (
                   "Bạn đã đạt hạng cao nhất. Cảm ơn bạn đã đồng hành cùng Moxic!"
@@ -175,9 +175,9 @@ export default function RewardsPage() {
                   d.done ? "border-positive/50 bg-positive/10" : d.today ? "border-accent bg-accent/10 animate-pulse motion-reduce:animate-none" : "border-white/10"
                 }`}
               >
-                <span className="text-[10px] text-text-muted">Ngày {d.day}</span>
+                <span className="text-xs text-text-muted">Ngày {d.day}</span>
                 {d.done ? <Check className="w-5 h-5 text-positive my-0.5" /> : bonus ? <Gift className="w-5 h-5 text-caution my-0.5" /> : <span className="font-bold my-0.5">+{d.reward}</span>}
-                <span className={`text-[10px] ${bonus ? "text-caution font-bold" : "text-text-muted"}`}>{bonus ? `+${d.reward}` : "điểm"}</span>
+                <span className={`text-xs ${bonus ? "text-caution font-bold" : "text-text-muted"}`}>{bonus ? `+${d.reward}` : "điểm"}</span>
               </li>
             );
           })}
@@ -186,7 +186,7 @@ export default function RewardsPage() {
           type="button"
           onClick={() => doCheckIn.mutate()}
           disabled={data.checkIn.checkedToday || doCheckIn.isPending}
-          className="w-full h-12 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-bg-base font-bold disabled:bg-white/10 disabled:text-text-muted cursor-pointer disabled:cursor-default"
+          className="w-full h-12 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-on-accent font-bold disabled:bg-white/10 disabled:text-text-muted cursor-pointer disabled:cursor-default"
         >
           {doCheckIn.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarCheck className="w-4 h-4" />}
           {data.checkIn.checkedToday ? "Đã điểm danh hôm nay, hẹn gặp lại ngày mai!" : `Điểm danh nhận +${data.checkIn.todayReward} điểm`}
@@ -202,7 +202,7 @@ export default function RewardsPage() {
         <section className="lg:col-span-3 border border-white/10 bg-bg-surface p-5">
           <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
             <Target className="w-5 h-5 text-accent" /> Nhiệm vụ
-            {unclaimed > 0 && <span className="px-1.5 py-0.5 text-[10px] font-bold bg-accent text-bg-base">{unclaimed} chờ nhận</span>}
+            {unclaimed > 0 && <span className="px-1.5 py-0.5 text-xs font-bold bg-accent text-on-accent">{unclaimed} chờ nhận</span>}
           </h2>
           <ul className="space-y-2">
             {data.missions.map((m) => (
@@ -212,17 +212,17 @@ export default function RewardsPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">{m.title}</p>
-                  <p className="text-xs text-text-muted truncate">{m.description}</p>
+                  <p className="text-sm text-text-muted line-clamp-2">{m.description}</p>
                 </div>
                 {m.claimed ? (
                   <span className="text-xs text-text-muted">Đã nhận</span>
                 ) : m.done ? (
-                  <button type="button" onClick={() => claim.mutate(m.key)} disabled={claim.isPending} className="h-9 px-3 bg-accent text-bg-base text-xs font-bold cursor-pointer">
+                  <button type="button" onClick={() => claim.mutate(m.key)} disabled={claim.isPending} className="h-10 px-4 bg-accent hover:bg-accent-hover text-on-accent text-sm font-bold transition-colors cursor-pointer">
                     Nhận +{m.points}
                   </button>
                 ) : m.link ? (
-                  <Link to={m.link} className="h-9 px-3 inline-flex items-center border border-white/15 text-xs font-semibold hover:border-white/30">
-                    +{m.points} · Làm ngay
+                  <Link to={m.link} className="h-10 px-4 inline-flex items-center whitespace-nowrap border border-white/15 text-sm font-semibold hover:border-white/30 transition-colors">
+                    Làm ngay +{m.points}
                   </Link>
                 ) : (
                   <span className="text-xs font-semibold text-text-muted">+{m.points}</span>
@@ -242,7 +242,7 @@ export default function RewardsPage() {
           </p>
           {data.referral.code && (
             <>
-              <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 h-12">
+              <div className="flex items-center gap-2 bg-bg-base border border-white/15 pl-4 pr-1 h-12">
                 <span className="flex-1 font-mono text-lg font-bold">{data.referral.code}</span>
                 <button type="button" onClick={() => copy(data.referral.code!, "mã")} aria-label="Sao chép mã" className="p-2 text-text-muted hover:text-white cursor-pointer">
                   <Copy className="w-4 h-4" />
@@ -253,16 +253,16 @@ export default function RewardsPage() {
               </button>
             </>
           )}
-          <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-3 bg-black/30 border border-white/5">
-              <p className="font-bold text-xl">{data.referral.invited}</p>
-              <p className="text-[11px] text-text-muted">Đã mời</p>
+          <dl className="grid grid-cols-2 divide-x divide-white/10 border-y border-white/10 py-3 text-center">
+            <div>
+              <dd className="font-display font-bold text-2xl num">{data.referral.invited}</dd>
+              <dt className="text-sm text-text-muted">Đã mời</dt>
             </div>
-            <div className="p-3 bg-black/30 border border-white/5">
-              <p className="font-bold text-xl">{data.referral.rewarded}</p>
-              <p className="text-[11px] text-text-muted">Đã nhận thưởng</p>
+            <div>
+              <dd className="font-display font-bold text-2xl num">{data.referral.rewarded}</dd>
+              <dt className="text-sm text-text-muted">Đã nhận thưởng</dt>
             </div>
-          </div>
+          </dl>
           {data.referral.canEnterCode && (
             <form
               className="flex gap-2 pt-2 border-t border-white/10"
@@ -271,8 +271,8 @@ export default function RewardsPage() {
                 if (refCode.trim()) refer.mutate(refCode.trim());
               }}
             >
-              <input value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} placeholder="Nhập mã người giới thiệu" maxLength={16} className="flex-1 min-w-0 h-10 bg-bg-base border border-border px-3 text-sm font-mono focus:outline-none focus:border-highlight" />
-              <button type="submit" disabled={refer.isPending} className="h-10 px-3 border border-highlight/60 text-highlight text-sm font-semibold cursor-pointer">
+              <input value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} placeholder="Nhập mã người giới thiệu" maxLength={16} className="flex-1 min-w-0 h-11 bg-bg-base border border-white/15 px-3 text-base font-mono focus:outline-none focus:border-highlight" />
+              <button type="submit" disabled={refer.isPending} className="h-11 px-4 border border-highlight/60 text-highlight text-sm font-semibold hover:bg-highlight/10 transition-colors cursor-pointer">
                 Áp dụng
               </button>
             </form>

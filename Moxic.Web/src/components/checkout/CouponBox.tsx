@@ -95,16 +95,13 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
 
   if (!loggedIn) {
     return (
-      <div className="flex items-center gap-2 border border-dashed border-white/10 px-3 py-2.5 text-xs">
-        <TicketPercent className="h-4 w-4 flex-shrink-0 text-accent" />
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border border-dashed border-white/15 px-4 py-3 text-sm">
+        <TicketPercent className="h-4 w-4 shrink-0 text-accent" />
         <span className="text-text-secondary">Có mã giảm giá?</span>
-        <Link
-          to={`/login?redirect=${encodeURIComponent("/checkout")}`}
-          className="ml-auto text-right font-semibold text-accent hover:underline"
-        >
-          Đăng nhập để dùng mã giảm giá
+        <Link to={`/login?redirect=${encodeURIComponent("/checkout")}`} className="font-semibold text-accent hover:underline">
+          Đăng nhập để dùng
         </Link>
-      </div>
+      </p>
     );
   }
 
@@ -150,13 +147,13 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
               maxLength={40}
               placeholder="Nhập mã giảm giá"
               aria-label="Mã giảm giá"
-              className="w-full border border-white/10 bg-bg-elevated py-2.5 pl-9 pr-3 font-mono text-sm text-text-primary placeholder:font-sans placeholder:normal-case placeholder:text-text-muted focus:border-accent/60 focus:outline-none"
+              className="w-full h-11 border border-white/15 bg-bg-base pl-9 pr-3 font-mono text-base text-text-primary placeholder:font-sans placeholder:normal-case placeholder:text-text-muted focus:border-accent focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={isPending}
-            className="flex min-w-[84px] flex-shrink-0 cursor-pointer items-center justify-center bg-accent px-4 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-11 min-w-[88px] shrink-0 cursor-pointer items-center justify-center border border-accent px-4 text-sm font-semibold text-accent hover:text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <MoxicLoader size="sm" /> : "Áp dụng"}
           </button>
@@ -171,7 +168,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
 
       {usable.length > 0 && (
         <div>
-          <p className="mb-1.5 text-[11px] text-text-muted">Mã trong ví của bạn</p>
+          <p className="mb-2 text-sm text-text-muted">Mã trong ví của bạn</p>
           <div className="flex flex-wrap gap-1.5">
             {usable.map((c) => (
               <button
@@ -179,9 +176,9 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
                 type="button"
                 disabled={isPending}
                 onClick={() => apply(c.code)}
-                className="cursor-pointer border border-accent/30 bg-accent/10 px-2 py-1 text-[11px] text-accent transition-colors hover:bg-accent/20 disabled:opacity-60"
+                className="cursor-pointer border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs text-accent transition-colors hover:bg-accent/20 disabled:opacity-60"
               >
-                <span className="font-mono font-semibold">{c.code}</span> · {shortCouponDiscount(c)}
+                <span className="font-mono font-semibold">{c.code}</span> {shortCouponDiscount(c)}
               </button>
             ))}
           </div>

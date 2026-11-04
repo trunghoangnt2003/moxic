@@ -328,7 +328,7 @@ export default function GuessGamePage() {
           {s.stats.players > 0 && (
             <div>
               <p className="text-xs text-text-muted mb-2">
-                {s.stats.players} người đã chơi · {Math.round((s.stats.solved / s.stats.players) * 100)}% đoán đúng
+                {s.stats.players} người đã chơi, {Math.round((s.stats.solved / s.stats.players) * 100)}% đoán đúng
               </p>
               <div className="space-y-1">
                 {s.stats.distribution.map((n, i) => (

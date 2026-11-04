@@ -162,7 +162,7 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
 
       {!done && !cancelled && step > 0 && lastAt && (
         <p className="mt-3 text-center text-[11px] text-text-muted">
-          Cập nhật {since(lastAt, now)} · trang tự cập nhật, không cần tải lại
+          Cập nhật {since(lastAt, now)}, trang tự cập nhật, không cần tải lại
         </p>
       )}
     </div>

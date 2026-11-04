@@ -177,7 +177,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{g.name}</p>
                   <p className="text-[11px] text-text-muted truncate">
-                    {g.status === "Preorder" ? "Đặt trước" : g.genres.map((x) => x.name).slice(0, 2).join(" · ")}
+                    {g.status === "Preorder" ? "Đặt trước" : g.genres.map((x) => x.name).slice(0, 2).join(", ")}
                   </p>
                 </div>
                 <div className="text-right shrink-0">

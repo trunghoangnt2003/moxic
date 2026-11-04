@@ -189,7 +189,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
         )}
         {caseInfo.openMethod === "Points" && result.pointsBalance != null && (
           <p className="mt-5 text-xs text-caution">
-            Đã dùng {formatPoints(result.pointsSpent)} điểm · Số dư còn {formatPoints(result.pointsBalance)} điểm
+            Đã dùng {formatPoints(result.pointsSpent)} điểm, Số dư còn {formatPoints(result.pointsBalance)} điểm
           </p>
         )}
         {caseInfo.openMethod === "FreeInterval" && result.nextFreeOpenAt && (

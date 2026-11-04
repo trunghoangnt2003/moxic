@@ -29,9 +29,9 @@ import { formatPrice } from "../lib/utils";
 import PushToggle from "../components/shared/PushToggle";
 
 const INSTALL = {
-  Installed: { label: "Đã cài đặt", cls: "text-positive bg-positive/15 border-positive/40", icon: CheckCircle2 },
-  Installing: { label: "Đang cài đặt", cls: "text-info bg-info/15 border-info/40", icon: Wrench },
-  ActionRequired: { label: "Cần bạn xử lý", cls: "text-caution bg-caution/15 border-caution/40", icon: Clock },
+  Installed: { label: "Đã cài đặt", cls: "text-positive border-positive/50", icon: CheckCircle2 },
+  Installing: { label: "Đang cài đặt", cls: "text-info border-info/50", icon: Wrench },
+  ActionRequired: { label: "Cần bạn xử lý", cls: "text-caution border-caution/50", icon: Clock },
 } as const;
 
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("vi-VN") : "—");
@@ -41,12 +41,12 @@ function LibraryTab() {
   if (isLoading) return <SectionLoader />;
   if (!data || (data.owned.length === 0 && data.rentals.length === 0)) {
     return (
-      <div className="text-center py-16 bg-black/40 border border-white/5">
+      <div className="text-center py-16 border border-dashed border-white/15">
         <Gamepad2 className="w-12 h-12 mx-auto text-accent/40 mb-4" />
         <p className="font-semibold mb-1">Thư viện đang trống</p>
         <p className="text-sm text-text-muted mb-6">Game bạn mua hoặc thuê sẽ xuất hiện ở đây.</p>
         <div className="flex justify-center gap-2">
-          <Link to="/games" className="h-11 px-5 inline-flex items-center bg-accent text-bg-base text-sm font-bold">
+          <Link to="/games" className="h-11 px-5 inline-flex items-center bg-accent text-on-accent text-sm font-bold">
             Mua game
           </Link>
           <Link to="/rent" className="h-11 px-5 inline-flex items-center border border-positive/50 text-positive text-sm font-bold">
@@ -60,7 +60,7 @@ function LibraryTab() {
     <div className="space-y-8">
       {data.rentals.length > 0 && (
         <div>
-          <h3 className="text-xs text-positive font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-sm text-positive font-semibold mb-3 flex items-center gap-1.5">
             <KeyRound className="w-3.5 h-3.5" /> Đang thuê
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -78,7 +78,7 @@ function LibraryTab() {
       )}
       {data.owned.length > 0 && (
         <div>
-          <h3 className="text-xs text-text-muted font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-sm text-text-secondary font-semibold mb-3 flex items-center gap-1.5">
             <LibraryIcon className="w-3.5 h-3.5" /> Đã mua ({data.owned.length})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -92,17 +92,17 @@ function LibraryTab() {
                     ) : (
                       <Gamepad2 className="w-8 h-8 m-auto mt-16 text-accent/40" />
                     )}
-                    <span className={`absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold border backdrop-blur-sm ${st.cls}`}>
+                    <span className={`absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold border bg-bg-base/90 ${st.cls}`}>
                       <st.icon className="w-3 h-3" /> {st.label}
                     </span>
                   </Link>
                   <div className="p-3">
                     <p className="text-sm font-semibold truncate">{g.name}</p>
-                    <p className="text-[11px] text-text-muted truncate">
-                      {g.editionName ? `${g.editionName} · ` : ""}
+                    <p className="text-xs text-text-muted truncate">
+                      {g.editionName ? `${g.editionName}, ` : ""}
                       {day(g.purchasedAt)}
                     </p>
-                    <Link to={`/account/orders/${g.orderCode}`} className="text-[11px] text-accent hover:underline">
+                    <Link to={`/account/orders/${g.orderCode}`} className="text-xs text-accent hover:underline">
                       Đơn {g.orderCode}
                     </Link>
                   </div>
@@ -143,7 +143,7 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
     onError: (e) => toast.error(apiError(e, "Không đổi được mật khẩu")),
   });
 
-  const input = "w-full h-11 bg-bg-base border border-border px-3 text-sm focus:outline-none focus:border-accent/60";
+  const input = "w-full h-12 bg-bg-base border border-white/15 px-4 text-base focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25";
   return (
     <div className="grid lg:grid-cols-2 gap-4">
       <section className="bg-bg-surface border border-border p-5 space-y-4">
@@ -157,11 +157,11 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
             save.mutate({ displayName: name.trim() });
           }}
         >
-          <label className="block text-xs text-text-muted">
+          <label className="block text-sm text-text-secondary">
             Tên hiển thị (dùng cho đánh giá, thảo luận)
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={50} minLength={2} required className={`${input} mt-1`} />
           </label>
-          <button type="submit" disabled={save.isPending || name.trim() === displayName} className="h-10 px-4 inline-flex items-center gap-2 bg-accent text-bg-base text-sm font-bold disabled:opacity-40 cursor-pointer">
+          <button type="submit" disabled={save.isPending || name.trim() === displayName} className="h-10 px-4 inline-flex items-center gap-2 bg-accent text-on-accent text-sm font-bold disabled:opacity-40 cursor-pointer">
             {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Lưu tên
           </button>
         </form>
@@ -211,7 +211,6 @@ export default function AccountPage() {
   const { data: savings } = useQuery({ queryKey: ["account", "savings"], queryFn: getSavings, staleTime: 60_000 });
 
   if (isLoading || !p) return <SectionLoader />;
-  const initials = p.displayName.trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase() || "M";
 
   const stats = [
     { icon: Package, label: "Đơn hàng", value: p.stats.orders, to: "/account/orders" },
@@ -223,69 +222,68 @@ export default function AccountPage() {
   ];
 
   return (
-    <Container className="mt-8 mb-20">
-      <section className="relative overflow-hidden border border-white/10 bg-bg-surface p-5 sm:p-7 mb-6">
-        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-          <span className="w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-accent to-caution flex items-center justify-center font-display text-2xl font-extrabold text-bg-base">{initials}</span>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl sm:text-3xl font-bold truncate">{p.displayName}</h1>
-            <p className="text-sm text-text-muted truncate">
-              {p.email} · thành viên từ {day(p.memberSince)}
-            </p>
-          </div>
-          <div className="sm:text-right">
-            <p className="text-[11px] text-text-muted">Đã chi tiêu</p>
-            <p className="font-display text-xl font-bold text-accent">{formatPrice(p.stats.spent)}</p>
-          </div>
+    <Container>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl font-bold text-text-primary">Xin chào, {p.displayName}</h1>
+          <p className="mt-1 text-sm text-text-muted">Thành viên từ {day(p.memberSince)}</p>
         </div>
-        <div className="relative grid grid-cols-3 sm:grid-cols-6 gap-2 mt-6">
-          {stats.map((s) => {
-            const body = (
-              <>
-                <s.icon className="w-4 h-4 text-text-muted mx-auto" />
-                <p className="font-bold mt-1">{s.value}</p>
-                <p className="text-[11px] text-text-muted">{s.label}</p>
-              </>
-            );
-            return s.to ? (
-              <Link key={s.label} to={s.to} className="text-center py-3 bg-black/30 border border-white/5 hover:border-white/20 transition-colors">
-                {body}
-              </Link>
-            ) : (
-              <div key={s.label} className="text-center py-3 bg-black/30 border border-white/5">
-                {body}
-              </div>
-            );
-          })}
+        <div className="sm:text-right">
+          <p className="text-sm text-text-muted">Đã chi tiêu</p>
+          <p className="font-display text-2xl font-bold text-accent num">{formatPrice(p.stats.spent)}</p>
         </div>
-        {savings && savings.badges.length > 0 && (
-          <div className="relative flex flex-wrap gap-2 mt-4">
-            {savings.badges.map((b) => (
-              <Link key={b} to="/leaderboard" className="px-2.5 py-1 text-xs font-semibold rounded-full border border-caution/40 bg-caution/10 text-caution">
-                {b}
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+      </header>
+
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 border-t border-l border-white/10">
+        {stats.map((s) => {
+          const body = (
+            <>
+              <s.icon className="w-4 h-4 text-text-muted" />
+              <p className="mt-3 font-display text-2xl font-bold text-text-primary num">{s.value}</p>
+              <p className="text-sm text-text-muted">{s.label}</p>
+            </>
+          );
+          const cls = "block p-4 border-r border-b border-white/10";
+          return s.to ? (
+            <Link key={s.label} to={s.to} className={`${cls} hover:bg-white/[0.03] transition-colors`}>
+              {body}
+            </Link>
+          ) : (
+            <div key={s.label} className={cls}>
+              {body}
+            </div>
+          );
+        })}
+      </div>
+
+      {savings && savings.badges.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {savings.badges.map((b) => (
+            <Link key={b} to="/leaderboard" className="px-3 py-1 text-sm font-medium rounded-full border border-caution/40 bg-caution/10 text-caution">
+              {b}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {savings && savings.saved > 0 && (
-        <div className="mb-6">
+        <div className="mt-6">
           <SavedCallout amount={savings.saved} suffix={`qua ${savings.games} game`} share />
         </div>
       )}
 
-      <div className="flex border-b border-white/10 mb-6">
+      <div role="tablist" className="flex border-b border-white/10 mt-10 mb-6">
         {[
           { key: "library", label: "Thư viện game", icon: LibraryIcon },
-          { key: "settings", label: "Hồ sơ & bảo mật", icon: UserCog },
+          { key: "settings", label: "Hồ sơ và bảo mật", icon: UserCog },
         ].map((t) => (
           <button
             key={t.key}
             type="button"
+            role="tab"
+            aria-selected={tab === t.key}
             onClick={() => setParams(t.key === "library" ? {} : { tab: t.key }, { replace: true })}
-            className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 -mb-px cursor-pointer ${tab === t.key ? "border-accent text-white" : "border-transparent text-text-muted hover:text-white"}`}
+            className={`inline-flex items-center gap-2 h-12 px-4 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer ${tab === t.key ? "border-accent text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"}`}
           >
             <t.icon className="w-4 h-4" /> {t.label}
           </button>

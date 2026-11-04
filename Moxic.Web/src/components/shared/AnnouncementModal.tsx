@@ -216,7 +216,7 @@ export default function AnnouncementModal() {
                 <CalendarDays className="w-3.5 h-3.5" />
                 {a.countdownLabel || (a.kind === "Event" ? "Sự kiện bắt đầu sau" : "Ra mắt sau")}
                 <span className="text-text-muted">
-                  · {new Date(a.countdownTo).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  , {new Date(a.countdownTo).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
                 </span>
               </p>
               <Countdown target={a.countdownTo} offsetMs={offsetMs} accent={meta.accent} />

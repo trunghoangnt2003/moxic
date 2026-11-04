@@ -1,28 +1,27 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronDown, ShieldCheck } from "lucide-react";
 
 export default function PrivacyNotice() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-bg-elevated/50 border border-white/5">
+    <div className="border-l-2 border-positive/60 bg-positive/5">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left cursor-pointer hover:bg-bg-elevated transition-colors"
+        aria-expanded={open}
+        className="w-full flex items-start gap-3 px-4 py-3 text-left cursor-pointer"
       >
-        <ShieldCheck className="w-4 h-4 text-accent flex-shrink-0" />
-        <span className="text-xs text-text-secondary flex-1">
-          Thông tin tài khoản Xbox của bạn được mã hóa AES-256 và chỉ dùng để cài game.
-        </span>
-        {open ? <ChevronDown className="w-3 h-3 text-text-muted" /> : <ChevronRight className="w-3 h-3 text-text-muted" />}
+        <ShieldCheck className="w-5 h-5 text-positive shrink-0" />
+        <span className="text-sm text-text-secondary flex-1">Mật khẩu được mã hóa AES-256 và chỉ dùng để cài game.</span>
+        <ChevronDown className={`w-4 h-4 mt-0.5 text-text-muted shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="px-4 pb-4 pt-1 text-xs text-text-muted space-y-2 leading-relaxed border-t border-white/5">
-          <p>&bull; Mật khẩu của bạn được mã hóa AES-256 ngay khi gửi và chỉ nhân viên có quyền mới xử lý được.</p>
-          <p>&bull; Sau khi cài game xong, dữ liệu tài khoản sẽ được xóa khỏi hệ thống.</p>
-          <p>&bull; Bạn nên đổi mật khẩu Xbox sau khi game được cài đặt để đảm bảo an toàn.</p>
-        </div>
+        <ul className="px-4 pb-4 pl-12 text-sm text-text-muted space-y-1.5 leading-relaxed list-disc">
+          <li>Mật khẩu được mã hóa ngay khi gửi, chỉ nhân viên có quyền mới xử lý được.</li>
+          <li>Cài game xong, dữ liệu tài khoản được xóa khỏi hệ thống.</li>
+          <li>Bạn nên đổi mật khẩu Xbox sau khi game được cài để an toàn hơn.</li>
+        </ul>
       )}
     </div>
   );

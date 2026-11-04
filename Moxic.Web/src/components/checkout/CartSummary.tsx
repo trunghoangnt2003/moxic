@@ -14,54 +14,66 @@ interface Props {
 }
 
 export default function CartSummary({ items, total, quote, couponSlot }: Props) {
+  const list = items.reduce((s, i) => s + (i.originalPrice || i.price) * i.quantity, 0);
+  const pay = quote ? quote.total : total;
+  const saved = list - pay;
+
   return (
-    <div className="bg-bg-surface border border-white/10 p-6 lg:sticky lg:top-20">
-      <h3 className="text-xs text-text-muted font-semibold mb-4 pb-3 border-b border-white/10">
-        Tóm tắt đơn hàng
-      </h3>
-      <div className="space-y-3">
+    <aside className="bg-bg-surface border border-white/10 p-5 sm:p-6 lg:sticky lg:top-20">
+      <h2 className="font-display text-lg font-semibold text-text-primary">Đơn hàng của bạn</h2>
+
+      <ul className="mt-4 space-y-3">
         {items.map((item) => (
-          <div key={item.gameId} className="flex items-center gap-3 pb-3 border-b border-white/5 last:border-0">
-            <img loading="lazy" decoding="async"
-              src={item.coverImageUrl || ""}
-              alt={item.name}
-              className="w-16 h-9 object-cover flex-shrink-0"
-            />
+          <li key={`${item.gameId}-${item.editionId ?? ""}`} className="flex items-center gap-3">
+            <img loading="lazy" decoding="async" src={item.coverImageUrl || ""} alt="" className="w-20 aspect-video object-cover shrink-0 bg-bg-elevated" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-text-primary font-semibold truncate">{item.name}</p>
+              <p className="text-sm text-text-primary font-medium line-clamp-2 leading-snug">{item.name}</p>
+              {(item.editionName || item.quantity > 1) && (
+                <p className="text-xs text-text-muted mt-0.5">
+                  {item.editionName}
+                  {item.editionName && item.quantity > 1 ? ", " : ""}
+                  {item.quantity > 1 ? `số lượng ${item.quantity}` : ""}
+                </p>
+              )}
             </div>
-            <p className="text-text-secondary font-semibold text-sm">{formatPrice(item.price * item.quantity)}</p>
-          </div>
+            <p className="text-sm text-text-primary font-semibold num shrink-0">{formatPrice(item.price * item.quantity)}</p>
+          </li>
         ))}
+      </ul>
+
+      {couponSlot && <div className="mt-5">{couponSlot}</div>}
+
+      <dl className="mt-5 pt-5 border-t border-white/10 space-y-2.5 text-sm">
+        {quote ? (
+          <>
+            <div className="flex justify-between gap-3">
+              <dt className="text-text-secondary">Tạm tính</dt>
+              <dd className="text-text-primary num">{formatPrice(quote.subtotal)}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="min-w-0 truncate text-text-secondary">
+                Mã <span className="font-mono">{quote.code}</span>
+              </dt>
+              <dd className="shrink-0 text-positive num">-{formatPrice(quote.discountAmount)}</dd>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between gap-3">
+            <dt className="text-text-secondary">Tạm tính</dt>
+            <dd className="text-text-primary num">{formatPrice(total)}</dd>
+          </div>
+        )}
+      </dl>
+
+      <div className="mt-4 pt-4 border-t border-white/10 flex items-baseline justify-between gap-3">
+        <span className="text-text-secondary">Tổng cộng</span>
+        <span className="font-display text-2xl sm:text-3xl text-accent font-bold num">{formatPrice(pay)}</span>
       </div>
-      {couponSlot && <div className="pt-4 mt-1 border-t border-white/10">{couponSlot}</div>}
-      {quote && (
-        <div className="pt-4 mt-4 border-t border-white/10 space-y-2 text-sm">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-text-muted">Tạm tính</span>
-            <span className="text-text-secondary font-semibold">{formatPrice(quote.subtotal)}</span>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="min-w-0 truncate text-text-muted">
-              Giảm giá (<span className="font-mono">{quote.code}</span>)
-            </span>
-            <span className="flex-shrink-0 font-semibold text-positive">−{formatPrice(quote.discountAmount)}</span>
-          </div>
+      {saved > 0 && (
+        <div className="mt-3">
+          <SavedCallout amount={saved} compact />
         </div>
       )}
-      <div className="flex items-center justify-between pt-5 mt-4 border-t border-white/10">
-        <span className="text-text-muted text-sm font-semibold">Tổng cộng</span>
-        <span className="font-display text-xl text-accent font-bold">{formatPrice(quote ? quote.total : total)}</span>
-      </div>
-      {(() => {
-        const list = items.reduce((s, i) => s + (i.originalPrice || i.price) * i.quantity, 0);
-        const saved = list - (quote ? quote.total : total);
-        return saved > 0 ? (
-          <div className="mt-3">
-            <SavedCallout amount={saved} compact />
-          </div>
-        ) : null;
-      })()}
-    </div>
+    </aside>
   );
 }

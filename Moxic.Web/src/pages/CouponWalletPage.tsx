@@ -55,7 +55,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
     <li className={`flex overflow-hidden border border-white/10 bg-bg-surface ${dimmed ? "opacity-60" : ""}`}>
       {/* Stub */}
       <div className="relative flex w-14 flex-shrink-0 items-center justify-center bg-accent sm:w-20">
-        <TicketPercent className="h-6 w-6 text-bg-base sm:h-8 sm:w-8" />
+        <TicketPercent className="h-6 w-6 text-on-accent sm:h-8 sm:w-8" />
         <span className="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-bg-base" />
         <span className="absolute -bottom-2 -right-2 h-4 w-4 rounded-full bg-bg-base" />
       </div>
@@ -63,11 +63,11 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
       <div className="min-w-0 flex-1 border-l border-dashed border-white/10 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <p className="min-w-0 truncate text-sm font-semibold text-text-primary">{coupon.name}</p>
-          <span className="border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+          <span className="border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-xs font-semibold text-accent">
             {coupon.source === "SpinReward" ? "Thưởng vòng quay" : coupon.source === "PointsReward" ? "Đổi điểm" : "Sự kiện"}
           </span>
           {coupon.status === "Inactive" && (
-            <span className="border border-negative/30 bg-negative/10 px-1.5 py-0.5 text-[10px] font-semibold text-negative">Đã vô hiệu</span>
+            <span className="border border-negative/30 bg-negative/10 px-1.5 py-0.5 text-xs font-semibold text-negative">Đã vô hiệu</span>
           )}
         </div>
 
@@ -76,7 +76,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
         {conditions.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {conditions.map((c) => (
-              <span key={c} className="bg-bg-elevated px-2 py-0.5 text-[11px] text-text-secondary">
+              <span key={c} className="bg-bg-elevated px-2 py-0.5 text-xs text-text-secondary">
                 {c}
               </span>
             ))}
@@ -110,7 +110,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
               type="button"
               disabled={!usable}
               onClick={() => navigate(`/checkout?coupon=${encodeURIComponent(coupon.code)}`)}
-              className="cursor-pointer bg-accent px-5 py-2 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 sm:ml-auto"
+              className="cursor-pointer bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 sm:ml-auto"
             >
               Dùng ngay
             </button>
@@ -158,13 +158,10 @@ export default function CouponWalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 md:py-12">
+    <div>
       <Container>
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-2 flex items-center gap-3">
-            <TicketPercent className="h-6 w-6 text-accent" />
-            <h1 className="font-display text-2xl text-text-primary md:text-3xl">Mã giảm giá của tôi</h1>
-          </div>
+        <div className="max-w-4xl">
+          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">Mã giảm giá của tôi</h1>
 
           {/* Claim */}
           <section className="mt-4 border border-white/10 bg-bg-surface p-5 sm:p-6">
@@ -183,7 +180,7 @@ export default function CouponWalletPage() {
               <button
                 type="submit"
                 disabled={claim.isPending}
-                className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {claim.isPending ? <MoxicLoader size="sm" /> : "Nhận vào ví"}
               </button>
@@ -226,7 +223,7 @@ export default function CouponWalletPage() {
                 <p className="mb-4 text-sm text-negative">Không thể tải mã giảm giá. Vui lòng thử lại.</p>
                 <button
                   onClick={() => void refetch()}
-                  className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-bg-base transition-colors hover:bg-accent-hover"
+                  className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
                 >
                   Thử lại
                 </button>
