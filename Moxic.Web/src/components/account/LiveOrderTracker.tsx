@@ -135,8 +135,8 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
                       ? "border-caution bg-caution/20 text-caution"
                       : isDone
                         ? i === 4
-                          ? "border-accent bg-accent text-bg-base scale-110 shadow-lg shadow-accent/40"
-                          : "border-positive bg-positive text-bg-base"
+                          ? "border-accent bg-accent text-on-accent scale-110 shadow-lg shadow-accent/40"
+                          : "border-positive bg-positive text-on-accent"
                         : isNext
                           ? "border-accent bg-bg-base text-accent"
                           : "border-white/15 bg-bg-base text-text-muted"

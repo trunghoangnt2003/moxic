@@ -41,7 +41,7 @@ export default function EditionCompare({
                       <span className={`block font-display font-bold ${active ? "text-white" : "text-text-secondary"}`}>{e.name}</span>
                       {e.originalPrice > e.salePrice && <span className="block text-[11px] text-text-muted line-through">{formatPrice(e.originalPrice)}</span>}
                       <span className={`block text-base font-bold ${active ? "text-accent" : "text-text-primary"}`}>{formatPrice(e.salePrice)}</span>
-                      <span className={`mt-2 inline-block px-2 py-0.5 text-[11px] font-semibold ${active ? "bg-accent text-bg-base" : "border border-white/15 text-text-muted"}`}>
+                      <span className={`mt-2 inline-block px-2 py-0.5 text-[11px] font-semibold ${active ? "bg-accent text-on-accent" : "border border-white/15 text-text-muted"}`}>
                         {active ? "Đang chọn" : "Chọn bản này"}
                       </span>
                     </button>

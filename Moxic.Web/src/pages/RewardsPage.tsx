@@ -248,7 +248,7 @@ export default function RewardsPage() {
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
-              <button type="button" onClick={share} className="w-full h-11 inline-flex items-center justify-center gap-2 bg-highlight hover:bg-highlight text-white text-sm font-bold cursor-pointer">
+              <button type="button" onClick={share} className="w-full h-11 inline-flex items-center justify-center gap-2 bg-highlight hover:bg-highlight text-on-solid text-sm font-bold cursor-pointer">
                 <Share2 className="w-4 h-4" /> Chia sẻ link mời
               </button>
             </>

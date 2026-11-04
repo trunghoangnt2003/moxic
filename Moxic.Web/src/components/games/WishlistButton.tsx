@@ -45,7 +45,7 @@ export default function WishlistButton({ gameId, gameName, variant = "overlay", 
       title={active ? "Bỏ khỏi Yêu thích" : "Thêm vào Yêu thích"}
       className={`w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md border transition cursor-pointer ${
         active
-          ? "bg-negative/90 border-negative text-white opacity-100"
+          ? "bg-negative/90 border-negative text-on-solid opacity-100"
           : "bg-black/50 border-white/20 text-white hover:bg-black/75 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
       } ${className}`}
     >

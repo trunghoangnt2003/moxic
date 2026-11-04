@@ -73,7 +73,7 @@ export default function WishlistPage() {
                   disabled={toggleAlerts.isPending}
                   onChange={(e) => toggleAlerts.mutate(e.target.checked)}
                 />
-                <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-negative after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+                <span className="relative shrink-0 w-9 h-5 bg-white/20 transition-colors peer-checked:bg-negative after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-on-solid after:transition-transform peer-checked:after:translate-x-4" />
                 <BellRing className="w-4 h-4 text-negative" /> Email cho tôi khi game yêu thích giảm giá
               </label>
             )}

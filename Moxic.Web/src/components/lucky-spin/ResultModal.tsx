@@ -161,7 +161,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                     href={contact.messengerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 rounded-sm px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+                    className="flex-1 rounded-sm px-4 py-2.5 text-sm font-semibold text-on-solid transition-[filter] hover:brightness-110"
                     style={{ background: "linear-gradient(135deg, var(--color-messenger-from) 0%, var(--color-messenger) 60%, var(--color-messenger-to) 100%)" }}
                   >
                     Nhắn Messenger
@@ -172,7 +172,7 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
                     href={contact.zaloUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 rounded-sm bg-zalo px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+                    className="flex-1 rounded-sm bg-zalo px-4 py-2.5 text-sm font-semibold text-on-solid transition-[filter] hover:brightness-110"
                   >
                     Nhắn Zalo
                   </a>

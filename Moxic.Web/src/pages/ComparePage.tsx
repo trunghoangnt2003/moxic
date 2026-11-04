@@ -74,7 +74,7 @@ export default function ComparePage() {
         <Columns3 className="w-12 h-12 mx-auto text-info/50 mb-4" />
         <p className="font-semibold mb-1">Chưa có game nào để so sánh</p>
         <p className="text-sm text-text-muted mb-6">Bấm “So sánh” ở trang game để thêm tối đa 3 game.</p>
-        <Link to="/games" className="inline-flex h-11 items-center px-6 bg-accent text-bg-base text-sm font-bold">
+        <Link to="/games" className="inline-flex h-11 items-center px-6 bg-accent text-on-accent text-sm font-bold">
           Đến cửa hàng
         </Link>
       </Container>
@@ -118,7 +118,7 @@ export default function ComparePage() {
                       addItem({ gameId: g.id, name: g.name, coverImageUrl: g.media[0]?.presignedUrl || "", price: g.salePrice, originalPrice: g.originalPrice, status: g.status, quantity: 1 });
                       toast.success(`Đã thêm ${g.name} vào giỏ`);
                     }}
-                    className="mt-2 h-9 px-3 inline-flex items-center gap-1.5 bg-accent text-bg-base text-xs font-bold cursor-pointer"
+                    className="mt-2 h-9 px-3 inline-flex items-center gap-1.5 bg-accent text-on-accent text-xs font-bold cursor-pointer"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" /> Thêm vào giỏ
                   </button>

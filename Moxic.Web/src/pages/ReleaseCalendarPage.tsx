@@ -46,7 +46,7 @@ export default function ReleaseCalendarPage() {
               key={k}
               type="button"
               onClick={() => setTab(k as "upcoming" | "recent")}
-              className={`px-4 h-10 text-sm font-semibold cursor-pointer ${tab === k ? "bg-accent text-bg-base" : "text-text-secondary hover:text-white"}`}
+              className={`px-4 h-10 text-sm font-semibold cursor-pointer ${tab === k ? "bg-accent text-on-accent" : "text-text-secondary hover:text-white"}`}
             >
               {l}
             </button>

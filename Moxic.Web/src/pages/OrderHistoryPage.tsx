@@ -89,7 +89,7 @@ export default function OrderHistoryPage() {
               <p className="text-sm text-negative mb-4">Không thể tải lịch sử mua hàng. Vui lòng thử lại.</p>
               <button
                 onClick={() => void refetch()}
-                className="bg-accent hover:bg-accent-hover text-bg-base px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
+                className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
               >
                 Thử lại
               </button>

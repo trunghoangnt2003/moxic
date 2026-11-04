@@ -71,7 +71,7 @@ function Countdown({ to }: { to: string }) {
 
 function Avatar({ name, size = "w-10 h-10 text-base" }: { name: string; size?: string }) {
   return (
-    <span className={`${size} shrink-0 rounded-full bg-gradient-to-br from-accent to-caution flex items-center justify-center font-display font-extrabold text-bg-base`}>
+    <span className={`${size} shrink-0 rounded-full bg-gradient-to-br from-accent to-caution flex items-center justify-center font-display font-extrabold text-on-accent`}>
       {(name.trim()[0] ?? "?").toUpperCase()}
     </span>
   );
@@ -174,7 +174,7 @@ export default function LeaderboardPage() {
             <Flag className="w-10 h-10 mx-auto mb-2 text-text-muted" aria-hidden="true" />
             <p className="font-semibold">Chưa ai ghi điểm tháng này</p>
             <p className="text-sm text-text-muted mb-4">Ghi điểm đầu tiên để lên ngay hạng 1!</p>
-            <Link to={meta.cta.to} className="inline-flex h-10 px-5 items-center bg-accent text-bg-base text-sm font-bold">
+            <Link to={meta.cta.to} className="inline-flex h-10 px-5 items-center bg-accent text-on-accent text-sm font-bold">
               {meta.cta.label}
             </Link>
           </div>
@@ -218,7 +218,7 @@ export default function LeaderboardPage() {
                 <span className="text-text-secondary">Bạn chưa có điểm ở bảng này tháng này.</span>
               )}
             </p>
-            <Link to={meta.cta.to} className="shrink-0 h-9 px-3 inline-flex items-center bg-accent text-bg-base text-xs font-bold">
+            <Link to={meta.cta.to} className="shrink-0 h-9 px-3 inline-flex items-center bg-accent text-on-accent text-xs font-bold">
               {meta.cta.label}
             </Link>
           </div>

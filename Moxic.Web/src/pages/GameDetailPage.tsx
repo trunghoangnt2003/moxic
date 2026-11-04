@@ -664,7 +664,7 @@ export default function GameDetailPage() {
           </div>
           <button
             onClick={handleBuyNow}
-            className="bg-accent hover:bg-accent-hover text-white px-6 py-3 text-sm font-bold transition-colors cursor-pointer whitespace-nowrap"
+            className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-3 text-sm font-bold transition-colors cursor-pointer whitespace-nowrap"
           >
             {isPreorder ? "Đặt trước" : "Mua ngay"}
           </button>

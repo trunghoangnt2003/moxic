@@ -6,10 +6,10 @@ interface BadgeProps {
 }
 
 const variants = {
-  discount: "bg-discount text-white",
-  preorder: "bg-preorder text-white",
-  available: "bg-success text-white",
-  hot: "bg-danger text-white",
+  discount: "bg-discount text-on-solid",
+  preorder: "bg-preorder text-on-solid",
+  available: "bg-success text-on-solid",
+  hot: "bg-danger text-on-solid",
 };
 
 export default function Badge({ variant, children }: BadgeProps) {

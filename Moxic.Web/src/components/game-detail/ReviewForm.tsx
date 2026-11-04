@@ -185,7 +185,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           <button
             type="submit"
             disabled={!canSubmit || submitting}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-accent text-white hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-accent text-on-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {submitting ? (
               <><MoxicLoader size="sm" /> Đang gửi…</>

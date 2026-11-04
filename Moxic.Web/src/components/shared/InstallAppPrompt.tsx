@@ -67,7 +67,7 @@ export default function InstallAppPrompt() {
                 if (ok) setVisible(false);
                 else dismiss();
               }}
-              className="h-10 px-3 shrink-0 inline-flex items-center gap-1.5 bg-accent text-bg-base text-sm font-bold cursor-pointer"
+              className="h-10 px-3 shrink-0 inline-flex items-center gap-1.5 bg-accent text-on-accent text-sm font-bold cursor-pointer"
             >
               <Download className="w-4 h-4" /> Cài
             </button>

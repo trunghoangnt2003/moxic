@@ -133,7 +133,7 @@ export default function LuckySpinGalleryPage() {
         <button
           type="submit"
           disabled={lookingUp || !code}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold text-on-solid transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 100%)" }}
         >
           {lookingUp ? <MoxicLoader size="sm" /> : null} Tìm hòm
@@ -185,7 +185,7 @@ export default function LuckySpinGalleryPage() {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="rounded-sm bg-highlight px-5 py-2 text-sm font-semibold text-white hover:bg-highlight"
+              className="rounded-sm bg-highlight px-5 py-2 text-sm font-semibold text-on-solid hover:bg-highlight"
             >
               Thử lại
             </button>

@@ -48,7 +48,7 @@ export default function LuckySpinBanner() {
           </p>
           <Link
             to="/lucky-spin"
-            className="mt-5 inline-flex items-center gap-2 rounded-sm px-6 py-3 font-display text-sm font-bold text-white transition-[filter] hover:brightness-110"
+            className="mt-5 inline-flex items-center gap-2 rounded-sm px-6 py-3 font-display text-sm font-bold text-on-solid transition-[filter] hover:brightness-110"
             style={{
               background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 100%)",
               boxShadow: "0 0 22px rgba(236, 72, 153, 0.35)",

@@ -273,7 +273,7 @@ export default function GamesPage() {
             <SlidersHorizontal className="w-4 h-4 text-accent" />
             Lọc
             {filterCount > 0 && (
-              <span className="min-w-5 h-5 px-1 flex items-center justify-center bg-accent text-bg-base text-[11px] font-bold">
+              <span className="min-w-5 h-5 px-1 flex items-center justify-center bg-accent text-on-accent text-[11px] font-bold">
                 {filterCount}
               </span>
             )}
@@ -331,7 +331,7 @@ export default function GamesPage() {
           {error ? (
             <div className="text-center py-20 bg-black/40 border border-white/5">
               <p className="text-danger mb-4">Không thể tải danh sách game</p>
-              <button onClick={() => refetch()} className="bg-accent hover:bg-accent-hover text-bg-base px-6 py-3 text-sm font-semibold cursor-pointer">
+              <button onClick={() => refetch()} className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-3 text-sm font-semibold cursor-pointer">
                 Thử lại
               </button>
             </div>
@@ -396,7 +396,7 @@ export default function GamesPage() {
             <button
               type="button"
               onClick={() => setSheetOpen(false)}
-              className="flex-[2] h-12 bg-accent text-bg-base text-sm font-bold cursor-pointer"
+              className="flex-[2] h-12 bg-accent text-on-accent text-sm font-bold cursor-pointer"
             >
               {isFetching ? "Đang lọc…" : `Xem ${data?.total ?? 0} kết quả`}
             </button>
@@ -470,11 +470,11 @@ function FilterPanel({
                 type="button"
                 onClick={() => update({ status: s.value })}
                 className={`py-2 text-xs font-semibold transition-colors cursor-pointer border-r border-white/10 last:border-r-0 ${
-                  active ? "bg-accent text-bg-base" : "text-text-muted hover:text-white hover:bg-white/5"
+                  active ? "bg-accent text-on-accent" : "text-text-muted hover:text-white hover:bg-white/5"
                 }`}
               >
                 {s.label}
-                {count != null && <span className={`block text-[10px] font-normal ${active ? "text-bg-base/70" : "text-text-muted"}`}>{count}</span>}
+                {count != null && <span className={`block text-[10px] font-normal ${active ? "text-on-accent/70" : "text-text-muted"}`}>{count}</span>}
               </button>
             );
           })}
@@ -486,7 +486,7 @@ function FilterPanel({
             {facets && <span className="text-text-muted text-xs">({facets.onSale})</span>}
           </span>
           <input type="checkbox" className="sr-only peer" checked={filters.sale} onChange={(e) => update({ sale: e.target.checked })} />
-          <span className="shrink-0 w-9 h-5 bg-white/10 relative transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+          <span className="shrink-0 w-9 h-5 bg-white/20 relative transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-on-solid after:transition-transform peer-checked:after:translate-x-4" />
         </label>
       </Section>
 
@@ -613,7 +613,7 @@ function CheckList({
                   checked ? "bg-accent border-accent" : "border-white/25"
                 }`}
               >
-                {checked && <Check className="w-3 h-3 text-bg-base" strokeWidth={3} />}
+                {checked && <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />}
               </span>
               <span className={`flex-1 truncate ${checked ? "text-white" : "text-text-secondary"}`}>{o.name}</span>
               <span className="text-xs text-text-muted tabular-nums">{o.count}</span>
@@ -831,7 +831,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
             type="button"
             aria-current={p === page ? "page" : undefined}
             onClick={() => onChange(p)}
-            className={`${btn} cursor-pointer ${p === page ? "bg-accent text-bg-base border-accent" : "border-white/10 hover:border-accent text-white"}`}
+            className={`${btn} cursor-pointer ${p === page ? "bg-accent text-on-accent border-accent" : "border-white/10 hover:border-accent text-white"}`}
           >
             {p}
           </button>

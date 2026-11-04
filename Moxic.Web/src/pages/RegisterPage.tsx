@@ -134,7 +134,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={register.isPending}
-          className="w-full bg-accent hover:bg-accent-hover text-bg-base font-bold h-12 text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-accent hover:bg-accent-hover text-on-accent font-bold h-12 text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {register.isPending ? (
             <>

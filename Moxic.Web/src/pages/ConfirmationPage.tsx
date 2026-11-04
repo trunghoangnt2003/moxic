@@ -203,7 +203,7 @@ export default function ConfirmationPage() {
                           type="button"
                           onClick={handleUpload}
                           disabled={!selectedFile || uploading}
-                          className="mt-3 w-full h-11 bg-accent hover:bg-accent-hover text-bg-base text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+                          className="mt-3 w-full h-11 bg-accent hover:bg-accent-hover text-on-accent text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
                         >
                           {uploading ? <MoxicLoader size="sm" /> : <Upload className="w-4 h-4" />}
                           {uploading ? "Đang tải lên…" : "Gửi ảnh xác nhận"}

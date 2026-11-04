@@ -32,7 +32,7 @@ export default function MoxicWave({ width = 220, label }: { width?: number; labe
         </defs>
 
         {/* Empty glass: faint outline of the letters */}
-        <text x="150" y="72" textAnchor="middle" fontSize="78" fontWeight="900" letterSpacing="2" className="font-display" fill="rgba(229,211,179,0.07)" stroke="rgba(229,211,179,0.35)" strokeWidth="1.2">
+        <text x="150" y="72" textAnchor="middle" fontSize="78" fontWeight="900" letterSpacing="2" className="font-display" strokeWidth="1.2" style={{ fill: "color-mix(in oklab, var(--color-accent) 7%, transparent)", stroke: "color-mix(in oklab, var(--color-accent) 40%, transparent)" }}>
           MOXIC
         </text>
 

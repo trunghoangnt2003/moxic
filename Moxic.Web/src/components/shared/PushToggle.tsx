@@ -60,7 +60,7 @@ export default function PushToggle({ compact = false }: { compact?: boolean }) {
         {state === "denied" && <span className="text-xs text-negative">(đang bị chặn)</span>}
       </span>
       <input type="checkbox" className="sr-only peer" checked={state === "on"} disabled={busy || state === "denied"} onChange={toggle} />
-      <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+      <span className="relative shrink-0 w-9 h-5 bg-white/20 transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-on-solid after:transition-transform peer-checked:after:translate-x-4" />
     </label>
   );
 }

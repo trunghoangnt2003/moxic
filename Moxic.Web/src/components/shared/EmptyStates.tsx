@@ -11,7 +11,7 @@ export function EmptyCart() {
       </p>
       <Link
         to="/games"
-        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded transition-colors"
+        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-on-accent text-sm font-semibold rounded transition-colors"
       >
         Khám phá game
       </Link>
@@ -29,7 +29,7 @@ export function EmptySearch({ onClear }: { onClear: () => void }) {
       </p>
       <button
         onClick={onClear}
-        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded transition-colors cursor-pointer"
+        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-on-accent text-sm font-semibold rounded transition-colors cursor-pointer"
       >
         Xóa bộ lọc
       </button>
@@ -60,7 +60,7 @@ export function NotFoundPage() {
       </p>
       <Link
         to="/"
-        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded transition-colors"
+        className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-on-accent text-sm font-semibold rounded transition-colors"
       >
         Quay lại cửa hàng
       </Link>

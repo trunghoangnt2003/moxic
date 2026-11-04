@@ -34,7 +34,7 @@ const primaryButtonStyle = {
   boxShadow: "0 0 24px rgba(236, 72, 153, 0.35)",
 };
 const primaryButtonClass =
-  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold  text-white transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold  text-on-solid transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
 const loginButtonClass =
   "h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-sm px-8 font-display font-bold  text-on-accent bg-caution hover:bg-caution transition-colors";
 

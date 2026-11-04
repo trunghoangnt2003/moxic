@@ -56,7 +56,7 @@ export default function GiftLinkCard({ token, recipientName, claimedAt }: Props)
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <button type="button" onClick={share} className="h-10 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-bg-base text-sm font-bold cursor-pointer">
+        <button type="button" onClick={share} className="h-10 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-on-accent text-sm font-bold cursor-pointer">
           <Send className="w-4 h-4" /> Gửi quà
         </button>
         <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer" className="h-10 inline-flex items-center justify-center gap-2 border border-white/10 hover:border-accent/50 text-sm text-text-primary">

@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import {
   Menu,
   X,
-  Globe,
   Download,
   ChevronDown,
   ShoppingCart,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import NavExplore from "./NavExplore";
+import { ThemeMenuButton, ThemeSegmented } from "./ThemeToggle";
 import { Puzzle as PuzzleIcon, Trophy as TrophyIcon } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
 import HeaderSearch from "./HeaderSearch";
@@ -140,7 +140,7 @@ export default function Navbar() {
             >
               <Heart className={`w-5 h-5 ${wishlistCount > 0 ? "text-negative" : ""}`} />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-negative text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 bg-negative text-on-solid text-[10px] font-bold w-4 h-4 flex items-center justify-center">
                   {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
               )}
@@ -155,18 +155,16 @@ export default function Navbar() {
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-[10px] font-bold w-4 h-4  flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 bg-accent text-on-accent text-[10px] font-bold w-4 h-4  flex items-center justify-center">
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
             </Link>
 
-            {/* Language */}
-            <button className="hidden sm:flex items-center gap-1 text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer">
-              <Globe className="w-4 h-4" />
-              <span className="text-xs">VI</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
+            {/* Light / dark */}
+            <div className="hidden sm:block">
+              <ThemeMenuButton />
+            </div>
 
             {/* Auth */}
             {meLoading ? (
@@ -274,7 +272,7 @@ export default function Navbar() {
             )}
 
             {/* Download */}
-            <button className="bg-accent hover:bg-accent-hover text-white px-4 py-2 text-sm font-bold transition-colors items-center gap-2 cursor-pointer hidden xl:flex whitespace-nowrap">
+            <button className="bg-accent hover:bg-accent-hover text-on-accent px-4 py-2 text-sm font-bold transition-colors items-center gap-2 cursor-pointer hidden xl:flex whitespace-nowrap">
               <Download className="w-4 h-4" />
               Tải về
             </button>
@@ -413,11 +411,10 @@ export default function Navbar() {
                 </>
               ) : null}
             </div>
-            <div className="flex items-center gap-2 pt-2 border-t border-border">
-              <Globe className="w-4 h-4 text-text-secondary" />
-              <span className="text-text-secondary text-sm">Tiếng Việt</span>
+            <div className="pt-3 border-t border-border">
+              <ThemeSegmented />
             </div>
-            <button className="w-full bg-accent hover:bg-accent-hover text-white py-3  text-sm font-bold flex items-center justify-center gap-2 cursor-pointer">
+            <button className="w-full bg-accent hover:bg-accent-hover text-on-accent py-3  text-sm font-bold flex items-center justify-center gap-2 cursor-pointer">
               <Download className="w-4 h-4" />
               Tải về
             </button>

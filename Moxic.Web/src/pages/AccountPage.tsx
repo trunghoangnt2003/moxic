@@ -170,7 +170,7 @@ function SettingsTab({ displayName, priceAlerts }: { displayName: string; priceA
             <BellRing className="w-4 h-4 text-negative" /> Email khi game yêu thích giảm giá
           </span>
           <input type="checkbox" className="sr-only peer" checked={priceAlerts} onChange={(e) => save.mutate({ priceAlerts: e.target.checked })} />
-          <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-negative after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+          <span className="relative shrink-0 w-9 h-5 bg-white/20 transition-colors peer-checked:bg-negative after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-on-solid after:transition-transform peer-checked:after:translate-x-4" />
         </label>
         <div className="pt-4 border-t border-white/5">
           <PushToggle />

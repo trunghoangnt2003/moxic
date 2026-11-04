@@ -50,7 +50,7 @@ function Composer({ gameId, parentId, onDone, autoFocus, placeholder }: { gameId
           if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && text.trim().length >= 2) send.mutate();
         }}
       />
-      <button type="submit" disabled={send.isPending || text.trim().length < 2} aria-label="Gửi" className="self-end h-10 w-10 shrink-0 flex items-center justify-center bg-accent text-bg-base disabled:opacity-40 cursor-pointer">
+      <button type="submit" disabled={send.isPending || text.trim().length < 2} aria-label="Gửi" className="self-end h-10 w-10 shrink-0 flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
         {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
       </button>
     </form>

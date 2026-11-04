@@ -1,7 +1,7 @@
 /* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full (app screens), restyle (home, game list, game detail)
  * paper: oklch(14.5% 0.004 286) · accent: oklch(87.5% 0.04 80) · display: Outfit · body: Inter
  * nav: kept · signature: the live order tracker and the price-vs-Xbox-Store figures · states: loading, empty, error, full
- * axes: dark/geometric-sans/warm · posture: kept · contrast: pass · v2.0.0 */
+ * axes: dark/geometric-sans/warm · modes: dark+light · posture: kept · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H3 E2 S3 R3 V3 · weakest: E, palette classes and tracked-caps labels spread through 90 files, swept to role tokens and sentence-case labels */
 @import "tailwindcss";
 
@@ -33,6 +33,8 @@
   --color-focus: #e5d3b3;
   --color-scrim: #050507;
   --color-on-accent: #0f0f11;
+  /* Text on a saturated fill (discount, status, brand buttons): white in both modes. */
+  --color-on-solid: #ffffff;
   --color-accent-deep: #8f7340;
   /* Lucky-spin (case opening) surfaces */
   --color-spin-ink: #1a0d33;
@@ -61,6 +63,56 @@
   --animate-moxic-orbit-reverse: moxic-orbit 2.4s linear infinite reverse;
   --animate-moxic-pulse: moxic-pulse 1.6s ease-in-out infinite;
 }
+
+/*
+ * Light mode: a second, designed rendering of the same tokens (not an inversion).
+ * Dark stays the default. Surfaces step lighter towards the reader (canvas off-white, cards white);
+ * the gold accent drops in lightness so it reads as text on white; role colours move from pastel
+ * (for dark grounds) to their deeper steps. Hue never moves.
+ * white/black are rebound to ink/paper: across the app they mean "foreground hairline / tint" and
+ * "sunken panel", not literal colours. Literal white on a coloured fill uses --color-on-solid.
+ */
+:root { color-scheme: dark; }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg-base: #f5f4f0;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-hover: #f0eee8;
+  --color-bg-elevated: #ebe8e1;
+  --color-border: #d6d2c8;
+  --color-border-hover: #b9b3a6;
+  --color-text-primary: #1b1b1f;
+  --color-text-secondary: #3d3d45;
+  --color-text-muted: #63636c;
+  --color-text-placeholder: #8a8a92;
+  --color-accent: #84652f;
+  --color-accent-hover: #6e5326;
+  --color-accent-muted: #b09a72;
+  --color-discount: #15803d;
+  --color-success: #15803d;
+  --color-positive: #157a3c;
+  --color-negative: #c42b2b;
+  --color-caution: #a35a00;
+  --color-info: #0b6a9f;
+  --color-highlight: #9b2a99;
+  --color-focus: #84652f;
+  --color-on-accent: #ffffff;
+  --color-accent-deep: #6b5226;
+  --color-spin-ink: #ece3ff;
+  --color-spin-deep: #f3edff;
+  --color-spin-void: #faf7ff;
+  --color-spin-panel: #d9cbfa;
+  --color-spin-card: #ebe2fb;
+  --color-spin-card-2: #f5f0fd;
+  --color-spin-glow: #9333ea;
+  --color-spin-pink: #db2777;
+  --color-spin-gold-1: #f5ead2;
+  --color-spin-gold-2: #fbf5e7;
+  --color-white: #1b1b1f;
+  --color-black: #ffffff;
+}
+/* Switching modes: no colour transitions for one frame, so nothing animates through a half-mixed state. */
+:root[data-theme-switching] *, :root[data-theme-switching] *::before, :root[data-theme-switching] *::after { transition: none !important; }
 
 @layer base {
   html, body { overflow-x: clip; }

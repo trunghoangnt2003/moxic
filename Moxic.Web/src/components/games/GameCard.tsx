@@ -75,7 +75,7 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
           {game.saleEndsAt && <SaleCountdownBadge endsAt={game.saleEndsAt} className="absolute bottom-2 right-2" />}
           {(type !== "Game" || (game.region && game.region !== "Global") || isPreorder) && (
             <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-              {isPreorder && <span className="px-2 py-0.5 rounded-sm text-xs font-bold bg-preorder text-white">Sắp ra mắt</span>}
+              {isPreorder && <span className="px-2 py-0.5 rounded-sm text-xs font-bold bg-preorder text-on-solid">Sắp ra mắt</span>}
               {type !== "Game" && (
                 <span className={`px-2 py-0.5 rounded-sm text-xs font-bold ${PRODUCT_TYPE_STYLES[type]}`}>{PRODUCT_TYPE_LABELS[type]}</span>
               )}
@@ -91,7 +91,7 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
             {game.name}
           </h3>
           <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-xs font-bold bg-discount text-white num">-{discount}%</span>}
+            {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-xs font-bold bg-discount text-on-solid num">-{discount}%</span>}
             {game.originalPrice > 0 && game.salePrice > 0 && discount > 0 && (
               <span className="text-text-muted text-sm line-through num">{formatPrice(game.originalPrice)}</span>
             )}

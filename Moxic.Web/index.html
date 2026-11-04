@@ -6,6 +6,16 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#0f0f11" />
+    <script>
+      // Theme before first paint (no flash): saved choice, else dark; "system" follows the OS.
+      (function () {
+        var p = "dark";
+        try { p = localStorage.getItem("moxic.theme") || "dark"; } catch (e) {}
+        var t = p === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : p === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+        if (t === "light") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f5f4f0");
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -31,7 +41,9 @@
     <div id="root">
       <!-- Shown instantly, before the app's JS loads; React replaces it on first render. -->
       <style>
-        #boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0f0f11;z-index:9999}
+        #boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0f0f11;z-index:9999;--glass:rgba(229,211,179,.07);--rim:rgba(229,211,179,.35)}
+        html[data-theme=light] #boot{background:#f5f4f0;--glass:rgba(132,101,47,.06);--rim:rgba(132,101,47,.45)}
+        #boot .glass{fill:var(--glass);stroke:var(--rim)}
         #boot svg{width:240px;height:72px;overflow:visible;filter:drop-shadow(0 0 18px rgba(201,169,110,.35))}
         @keyframes bx{to{transform:translateX(-150px)}}@keyframes bxr{from{transform:translateX(-150px)}to{transform:translateX(0)}}
         @keyframes bb{0%,100%{transform:translateY(6px)}50%{transform:translateY(-8px)}}
@@ -44,7 +56,7 @@
             <clipPath id="bootc"><text x="150" y="72" text-anchor="middle" font-size="78" font-weight="900" letter-spacing="2" font-family="Outfit, system-ui, sans-serif">MOXIC</text></clipPath>
             <linearGradient id="bootg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f5e6c4"/><stop offset="55%" stop-color="#c9a96e"/><stop offset="100%" stop-color="#8f7340"/></linearGradient>
           </defs>
-          <text x="150" y="72" text-anchor="middle" font-size="78" font-weight="900" letter-spacing="2" font-family="Outfit, system-ui, sans-serif" fill="rgba(229,211,179,.07)" stroke="rgba(229,211,179,.35)" stroke-width="1.2">MOXIC</text>
+          <text x="150" y="72" text-anchor="middle" font-size="78" font-weight="900" letter-spacing="2" font-family="Outfit, system-ui, sans-serif" class="glass" stroke-width="1.2">MOXIC</text>
           <g clip-path="url(#bootc)"><g class="y">
             <path class="b" d="M0 48 Q 37.5 39 75 48 Q 112.5 57 150 48 Q 187.5 39 225 48 Q 262.5 57 300 48 Q 337.5 39 375 48 Q 412.5 57 450 48 Q 487.5 39 525 48 Q 562.5 57 600 48 V 100 H 0 Z" fill="#a855f7" opacity=".45"/>
             <path class="f" d="M0 46 Q 37.5 38 75 46 Q 112.5 54 150 46 Q 187.5 38 225 46 Q 262.5 54 300 46 Q 337.5 38 375 46 Q 412.5 54 450 46 Q 487.5 38 525 46 Q 562.5 54 600 46 V 100 H 0 Z" fill="url(#bootg)"/>

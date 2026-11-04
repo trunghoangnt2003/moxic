@@ -50,7 +50,7 @@ export default function FaqPage() {
       <div className="mt-8 flex flex-wrap items-center gap-3 border border-accent/30 bg-accent/5 p-4">
         <MessageCircleMore className="w-6 h-6 text-accent" />
         <p className="flex-1 text-sm">Chưa thấy câu bạn cần? Hỏi Moxic trực tiếp, thường trả lời trong vài phút.</p>
-        <button type="button" onClick={() => useChatUi.getState().openChat()} className="h-10 px-4 bg-accent text-bg-base text-sm font-bold cursor-pointer">
+        <button type="button" onClick={() => useChatUi.getState().openChat()} className="h-10 px-4 bg-accent text-on-accent text-sm font-bold cursor-pointer">
           Chat ngay
         </button>
       </div>

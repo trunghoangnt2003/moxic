@@ -96,7 +96,7 @@ export default function FloatingContact() {
       label: `Gọi ${data?.phoneNumber ?? ""}`.trim(),
       external: false,
       className: "bg-positive hover:bg-positive",
-      content: <Phone className="h-5 w-5 text-white" strokeWidth={2.4} />,
+      content: <Phone className="h-5 w-5 text-on-solid" strokeWidth={2.4} />,
     });
   }
   if (zaloUrl) {
@@ -106,7 +106,7 @@ export default function FloatingContact() {
       label: "Chat Zalo",
       external: true,
       className: "bg-zalo hover:brightness-110",
-      content: <span className="font-display text-[13px] font-black tracking-tight text-white">Zalo</span>,
+      content: <span className="font-display text-[13px] font-black tracking-tight text-on-solid">Zalo</span>,
     });
   }
   if (chatEnabled && messengerUrl) {
@@ -156,12 +156,12 @@ export default function FloatingContact() {
           type="button"
           onClick={() => openChat()}
           aria-label="Chat với Moxic"
-          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-bg-base shadow-lg shadow-accent/40 transition-transform duration-200 hover:scale-105 cursor-pointer"
+          className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-on-accent shadow-lg shadow-accent/40 transition-transform duration-200 hover:scale-105 cursor-pointer"
         >
           <span className="pointer-events-none absolute inset-0 rounded-full bg-accent/40 animate-ping [animation-duration:2.4s]" />
           <MessageCircleMore className="relative h-7 w-7" strokeWidth={2.2} />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-negative text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-bg-base">
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-negative text-on-solid text-[11px] font-bold flex items-center justify-center ring-2 ring-bg-base">
               {unread > 9 ? "9+" : unread}
             </span>
           )}
@@ -192,7 +192,7 @@ export default function FloatingContact() {
           aria-label={open ? "Thu gọn" : "Mở thêm liên hệ"}
           className={`pointer-events-auto mr-1 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-colors duration-200 ${
             open
-              ? "border-white/20 bg-bg-elevated text-white"
+              ? "border-white/20 bg-bg-elevated text-text-primary"
               : "border-border bg-bg-surface/95 text-text-primary backdrop-blur-sm hover:bg-bg-elevated"
           }`}
         >

@@ -212,7 +212,7 @@ export default function GiftPage() {
                       <AlertCircle className="w-4 h-4 shrink-0" /> {formError}
                     </p>
                   )}
-                  <button type="submit" disabled={claim.isPending} className="w-full h-12 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-bg-base font-bold disabled:opacity-50 cursor-pointer">
+                  <button type="submit" disabled={claim.isPending} className="w-full h-12 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-on-accent font-bold disabled:opacity-50 cursor-pointer">
                     {claim.isPending ? <><MoxicLoader size="sm" /> Đang gửi…</> : <><Gift className="w-4 h-4" /> Nhận quà</>}
                   </button>
                 </form>

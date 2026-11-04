@@ -227,7 +227,7 @@ export default function AnnouncementModal() {
 
           {a.gamePrice != null && (
             <div className="flex items-baseline gap-2">
-              {discount > 0 && <span className="px-1.5 py-0.5 text-xs font-bold bg-discount text-white">-{discount}%</span>}
+              {discount > 0 && <span className="px-1.5 py-0.5 text-xs font-bold bg-discount text-on-solid">-{discount}%</span>}
               {discount > 0 && <span className="text-sm text-text-muted line-through">{formatPrice(a.gameOriginalPrice!)}</span>}
               <span className="text-xl font-bold text-white">{a.gamePrice === 0 ? "Miễn phí" : formatPrice(a.gamePrice)}</span>
             </div>
@@ -241,7 +241,7 @@ export default function AnnouncementModal() {
               <button
                 type="button"
                 onClick={go}
-                className={`group relative h-12 sm:flex-[2] overflow-hidden bg-gradient-to-r ${meta.accent} text-bg-base text-sm font-extrabold cursor-pointer`}
+                className={`group relative h-12 sm:flex-[2] overflow-hidden bg-gradient-to-r ${meta.accent} text-on-accent text-sm font-extrabold cursor-pointer`}
               >
                 <span className="relative z-10">{a.ctaLabel || (a.kind === "GameLaunch" ? "Đặt trước ngay" : "Xem chi tiết")}</span>
                 <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent" />

@@ -76,7 +76,7 @@ export default function RentPanel({ gameId, gameName, buyPrice }: { gameId: stri
         type="button"
         onClick={onRent}
         disabled={soldOut || rent.isPending}
-        className="relative w-full h-11 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-bg-base text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+        className="relative w-full h-11 inline-flex items-center justify-center gap-2 bg-positive hover:bg-positive text-on-accent text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
       >
         {rent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarClock className="w-4 h-4" />}
         {soldOut ? "Hết slot, quay lại sau" : me ? `Thuê ${plan.days} ngày` : "Đăng nhập để thuê"}

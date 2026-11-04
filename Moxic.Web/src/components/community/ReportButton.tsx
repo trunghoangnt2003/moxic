@@ -71,7 +71,7 @@ export default function ReportButton({ targetType, targetId }: { targetType: "Re
               placeholder="Mô tả thêm (không bắt buộc)"
               className="w-full bg-bg-base border border-border px-3 py-2 text-sm focus:outline-none focus:border-negative/60 resize-none"
             />
-            <button type="button" onClick={submit} disabled={busy} className="w-full h-11 bg-negative hover:bg-negative text-white text-sm font-bold disabled:opacity-50 cursor-pointer">
+            <button type="button" onClick={submit} disabled={busy} className="w-full h-11 bg-negative hover:bg-negative text-on-solid text-sm font-bold disabled:opacity-50 cursor-pointer">
               {busy ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Gửi báo cáo"}
             </button>
           </div>

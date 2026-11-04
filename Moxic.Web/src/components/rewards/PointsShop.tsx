@@ -110,7 +110,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                     type="button"
                     disabled={disabled}
                     onClick={() => setConfirm(i)}
-                    className="w-full h-10 inline-flex items-center justify-center gap-1.5 text-sm font-bold bg-caution text-bg-base hover:bg-caution disabled:bg-white/5 disabled:text-text-muted disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full h-10 inline-flex items-center justify-center gap-1.5 text-sm font-bold bg-caution text-on-accent hover:bg-caution disabled:bg-white/5 disabled:text-text-muted disabled:cursor-not-allowed cursor-pointer"
                   >
                     {soldOut ? "Hết quà" : limitHit ? "Đã đổi tối đa" : `${pts(i.pointsCost)} điểm`}
                   </button>
@@ -169,7 +169,7 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
                 type="button"
                 disabled={redeem.isPending}
                 onClick={() => redeem.mutate(confirm)}
-                className="h-11 inline-flex items-center justify-center gap-2 bg-caution text-bg-base text-sm font-bold cursor-pointer"
+                className="h-11 inline-flex items-center justify-center gap-2 bg-caution text-on-accent text-sm font-bold cursor-pointer"
               >
                 {redeem.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Đổi ngay
               </button>
@@ -211,11 +211,11 @@ export default function PointsShop({ signedIn }: { signedIn: boolean }) {
             </button>
             <p className="text-xs text-text-muted">Hạn dùng đến {formatDate(won.expiresAt)}</p>
             {won.kind === "CaseCode" && won.caseSlug ? (
-              <Link to={`/lucky-spin/${won.caseSlug}?code=${won.code}`} className="w-full h-11 inline-flex items-center justify-center bg-highlight text-white text-sm font-bold">
+              <Link to={`/lucky-spin/${won.caseSlug}?code=${won.code}`} className="w-full h-11 inline-flex items-center justify-center bg-highlight text-on-solid text-sm font-bold">
                 Mở hòm ngay
               </Link>
             ) : (
-              <Link to="/account/coupons" className="w-full h-11 inline-flex items-center justify-center bg-caution text-bg-base text-sm font-bold">
+              <Link to="/account/coupons" className="w-full h-11 inline-flex items-center justify-center bg-caution text-on-accent text-sm font-bold">
                 Xem ví mã giảm giá, dùng khi thanh toán
               </Link>
             )}

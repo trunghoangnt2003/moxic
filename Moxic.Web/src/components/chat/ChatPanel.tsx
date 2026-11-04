@@ -179,11 +179,11 @@ export default function ChatPanel() {
                 <div className={`flex ${m.fromAdmin ? "justify-start" : "justify-end"}`}>
                   <div
                     className={`max-w-[85%] px-3 py-2 text-sm whitespace-pre-wrap break-words rounded-2xl ${
-                      m.fromAdmin ? "bg-bg-elevated border border-white/5 rounded-tl-sm" : "bg-accent text-bg-base rounded-tr-sm"
+                      m.fromAdmin ? "bg-bg-elevated border border-white/5 rounded-tl-sm" : "bg-accent text-on-accent rounded-tr-sm"
                     } ${m.id.startsWith("tmp-") ? "opacity-60" : ""}`}
                   >
                     {m.text}
-                    <span className={`block text-[10px] mt-0.5 ${m.fromAdmin ? "text-text-muted" : "text-bg-base/60"}`}>{time(m.createdAt)}</span>
+                    <span className={`block text-[10px] mt-0.5 ${m.fromAdmin ? "text-text-muted" : "text-on-accent/60"}`}>{time(m.createdAt)}</span>
                   </div>
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function ChatPanel() {
             placeholder="Nhập tin nhắn…"
             className="flex-1 min-h-[40px] max-h-32 resize-none px-3 py-2 bg-bg-base border border-border text-[16px] sm:text-sm focus:outline-none focus:border-accent"
           />
-          <button type="submit" disabled={!text.trim() || send.isPending} aria-label="Gửi" className="h-10 w-10 shrink-0 inline-flex items-center justify-center bg-accent text-bg-base disabled:opacity-40 cursor-pointer">
+          <button type="submit" disabled={!text.trim() || send.isPending} aria-label="Gửi" className="h-10 w-10 shrink-0 inline-flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
             {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>

@@ -62,7 +62,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <GlobalLoader />
       <Toaster position="top-right" toastOptions={{
-        style: { background: "#18181b", color: "#f4f4f5", border: "1px solid #3f3f46" },
+        style: { background: "var(--color-bg-surface)", color: "var(--color-text-primary)", border: "1px solid var(--color-border)" },
         duration: 4000,
       }} />
       <BrowserRouter>

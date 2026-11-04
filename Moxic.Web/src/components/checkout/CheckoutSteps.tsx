@@ -14,7 +14,7 @@ export default function CheckoutSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
             <span className="flex items-center gap-2 min-w-0">
               <span
                 className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  done ? "bg-positive text-bg-base" : active ? "bg-accent text-bg-base ring-4 ring-accent/20" : "bg-white/5 text-text-muted border border-white/10"
+                  done ? "bg-positive text-on-accent" : active ? "bg-accent text-on-accent ring-4 ring-accent/20" : "bg-white/5 text-text-muted border border-white/10"
                 }`}
               >
                 {done ? <Check className="w-4 h-4" strokeWidth={3} /> : i + 1}

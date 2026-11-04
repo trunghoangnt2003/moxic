@@ -153,7 +153,7 @@ export default function GuessGamePage() {
         {(imgFailed || slow) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 text-center p-4">
             <p className="text-sm text-text-secondary">{imgFailed ? "Không tải được ảnh." : "Ảnh đang tải hơi lâu…"}</p>
-            <button type="button" onClick={reloadImage} className="inline-flex items-center gap-2 h-10 px-4 bg-accent text-bg-base text-sm font-bold cursor-pointer">
+            <button type="button" onClick={reloadImage} className="inline-flex items-center gap-2 h-10 px-4 bg-accent text-on-accent text-sm font-bold cursor-pointer">
               <RefreshCw className="w-4 h-4" /> Tải lại ảnh
             </button>
           </div>
@@ -300,7 +300,7 @@ export default function GuessGamePage() {
           {s.answer && (
             <Link
               to={`/games/${s.answer.id}`}
-              className="flex items-center justify-center gap-2 h-12 bg-accent text-bg-base font-bold"
+              className="flex items-center justify-center gap-2 h-12 bg-accent text-on-accent font-bold"
             >
               <ShoppingCart className="w-4 h-4" /> Mua {s.answer.name.length > 24 ? s.answer.name.slice(0, 24) + "…" : s.answer.name}, {formatPrice(s.answer.salePrice)}
               {discount > 0 && <span className="text-xs font-semibold">(-{discount}%)</span>}

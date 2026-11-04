@@ -90,7 +90,7 @@ export default function HeroSplash({ featured, available }: Props) {
           </div>
 
           {/* Left: the featured game (65%) */}
-          <div className="relative w-full md:w-[65%] h-[45vh] md:h-full flex flex-col justify-between p-6 md:p-12 z-10">
+          <div className="relative w-full md:w-[65%] min-h-[45vh] md:h-full flex flex-col justify-between p-6 md:p-12 z-10">
             {/* Gradient overlays for left side readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-bg-base md:from-bg-base/90 via-bg-base/60 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-bg-base/90 via-bg-base/40 to-transparent pointer-events-none hidden md:block" />
@@ -99,7 +99,7 @@ export default function HeroSplash({ featured, available }: Props) {
             <div className="relative z-20 flex flex-col h-full justify-between gap-6">
               <div>
                 {isPreorder && (
-                  <span className="inline-block px-2.5 py-1 rounded-sm bg-preorder text-white text-xs font-bold mb-4">Bom tấn sắp ra mắt</span>
+                  <span className="inline-block px-2.5 py-1 rounded-sm bg-preorder text-on-solid text-xs font-bold mb-4">Bom tấn sắp ra mắt</span>
                 )}
                 <h1 className="font-display text-4xl md:text-6xl font-extrabold text-white leading-[1.05] drop-shadow-2xl max-w-2xl">{hero.name}</h1>
                 {hero.description && (
@@ -112,7 +112,7 @@ export default function HeroSplash({ featured, available }: Props) {
                   <div>
                     <p className="text-sm text-white/70">{isPreorder ? "Giá đặt trước" : "Giá tại Moxic"}</p>
                     <div className="mt-1 flex items-baseline gap-3 flex-wrap">
-                      {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-sm font-bold bg-discount text-white num">-{discount}%</span>}
+                      {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-sm font-bold bg-discount text-on-solid num">-{discount}%</span>}
                       {discount > 0 && <span className="text-white/50 line-through text-sm num">{formatPrice(hero.originalPrice)}</span>}
                       <span className="text-accent font-display text-3xl md:text-4xl font-bold num drop-shadow-md">{formatPrice(price)}</span>
                     </div>

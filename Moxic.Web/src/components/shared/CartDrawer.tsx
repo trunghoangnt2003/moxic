@@ -124,7 +124,7 @@ export default function CartDrawer() {
               </button>
               <button
                 onClick={handleCheckout}
-                className="flex-1 py-2.5  bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors cursor-pointer"
+                className="flex-1 py-2.5  bg-accent hover:bg-accent-hover text-on-accent text-sm font-semibold transition-colors cursor-pointer"
               >
                 Thanh to\u00e1n
               </button>

@@ -71,7 +71,7 @@ export function CompareBar() {
         </div>
         <Link
           to={`/compare?ids=${ids.join(",")}`}
-          className={`h-10 px-4 inline-flex items-center gap-1.5 text-sm font-bold ${ids.length >= 2 ? "bg-info text-bg-base" : "bg-white/10 text-text-muted pointer-events-none"}`}
+          className={`h-10 px-4 inline-flex items-center gap-1.5 text-sm font-bold ${ids.length >= 2 ? "bg-info text-on-accent" : "bg-white/10 text-text-muted pointer-events-none"}`}
         >
           <Columns3 className="w-4 h-4" /> So sánh {ids.length}/{MAX}
         </Link>
