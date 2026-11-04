@@ -207,6 +207,13 @@ public static class ShoppingSchemaBootstrap
             CONSTRAINT "PK_GuessPuzzles" PRIMARY KEY ("Date")
         );
         CREATE INDEX IF NOT EXISTS "IX_GuessPuzzles_GameId" ON "GuessPuzzles" ("GameId");
+        CREATE TABLE IF NOT EXISTS "GuessImages" (
+            "Date" character varying(10) NOT NULL,
+            "Level" integer NOT NULL,
+            "Data" bytea NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_GuessImages" PRIMARY KEY ("Date", "Level")
+        );
         CREATE TABLE IF NOT EXISTS "GuessPlays" (
             "Id" uuid NOT NULL,
             "Date" character varying(10) NOT NULL,

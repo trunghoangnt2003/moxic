@@ -33,10 +33,12 @@ public class GuessGameService
     private readonly IDataProtector _protector;
     private readonly PointsService _points;
     private readonly ILogger<GuessGameService> _logger;
+    private readonly IServiceScopeFactory _scopes;
 
     public GuessGameService(MoxicDbContext db, IMinioService minio, IHttpClientFactory http, IMemoryCache cache,
-        IDataProtectionProvider dp, PointsService points, ILogger<GuessGameService> logger)
+        IDataProtectionProvider dp, PointsService points, ILogger<GuessGameService> logger, IServiceScopeFactory scopes)
     {
+        _scopes = scopes;
         _db = db;
         _minio = minio;
         _http = http;
@@ -89,6 +91,7 @@ public class GuessGameService
         {
             await _db.SaveChangesAsync();
             _logger.LogInformation("Guess puzzle {Date}: game {Game}", today, gameId);
+            PrerenderInBackground(today);
             return puzzle;
         }
         catch (DbUpdateException)
@@ -116,7 +119,6 @@ public class GuessGameService
         }
     }
 
-    /// <summary>Pixelated JPEG for a level (PixelSizes.Length = clear). Cached per (date, level).</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> RenderLocks = new();
 
     /// <summary>
@@ -125,6 +127,7 @@ public class GuessGameService
     /// </summary>
     public async Task<byte[]?> ImageAsync(string date, int level)
     {
+        level = Math.Clamp(level, 0, ClearLevel);
         var key = $"guess-img:{date}:{level}";
         if (_cache.TryGetValue(key, out byte[]? hit) && hit != null) return hit;
 
@@ -133,10 +136,23 @@ public class GuessGameService
         try
         {
             if (_cache.TryGetValue(key, out hit) && hit != null) return hit;
+
+            // Rendered once per day and stored — survives restarts.
+            var stored = await _db.GuessImages.AsNoTracking().Where(x => x.Date == date && x.Level == level).Select(x => x.Data).FirstOrDefaultAsync();
+            if (stored != null)
+            {
+                _cache.Set(key, stored, TimeSpan.FromHours(30));
+                return stored;
+            }
+
             var src = await SourceAsync(date);
             if (src == null) return null;
             var bytes = Render(src, level);
-            if (bytes != null) _cache.Set(key, bytes, TimeSpan.FromHours(30));
+            if (bytes == null) return null;
+            _db.GuessImages.Add(new GuessImage { Date = date, Level = level, Data = bytes, CreatedAt = DateTime.UtcNow });
+            try { await _db.SaveChangesAsync(); }
+            catch (DbUpdateException) { _db.ChangeTracker.Clear(); } // saved concurrently elsewhere — fine
+            _cache.Set(key, bytes, TimeSpan.FromHours(30));
             return bytes;
         }
         catch (Exception ex)
@@ -149,6 +165,25 @@ public class GuessGameService
             gate.Release();
         }
     }
+
+    /// <summary>Index of the un-pixelated picture (shown after the game is over).</summary>
+    public static int ClearLevel => PixelSizes.Length;
+
+    /// <summary>Renders every level of a new puzzle right away and drops pictures older than a week.</summary>
+    private void PrerenderInBackground(string date) =>
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _scopes.CreateScope();
+                var svc = scope.ServiceProvider.GetRequiredService<GuessGameService>();
+                for (var level = 0; level <= ClearLevel; level++) await svc.ImageAsync(date, level);
+                var cutoff = (DateTime.UtcNow + Vn).AddDays(-7).ToString("yyyy-MM-dd");
+                var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
+                await db.GuessImages.Where(x => string.Compare(x.Date, cutoff) < 0).ExecuteDeleteAsync();
+            }
+            catch (Exception ex) { _logger.LogWarning(ex, "Guess prerender failed for {Date}", date); }
+        });
 
     /// <summary>Original picture bytes for a day (cached; fetched with retries).</summary>
     private async Task<byte[]?> SourceAsync(string date)

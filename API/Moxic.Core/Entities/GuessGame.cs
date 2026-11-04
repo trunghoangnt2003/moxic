@@ -31,3 +31,12 @@ public class GuessPlay
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
+
+/// <summary>Pre-rendered picture of a day's puzzle at one level (stored so it is rendered once per day, even across restarts).</summary>
+public class GuessImage
+{
+    public string Date { get; set; } = string.Empty;
+    public int Level { get; set; }
+    public byte[] Data { get; set; } = [];
+    public DateTime CreatedAt { get; set; }
+}

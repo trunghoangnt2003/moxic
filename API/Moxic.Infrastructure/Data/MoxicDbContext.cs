@@ -18,6 +18,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
     public DbSet<GuessPuzzle> GuessPuzzles => Set<GuessPuzzle>();
     public DbSet<GuessPlay> GuessPlays => Set<GuessPlay>();
+    public DbSet<GuessImage> GuessImages => Set<GuessImage>();
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<GameReview> GameReviews => Set<GameReview>();
@@ -215,6 +216,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.Date).HasMaxLength(10);
             entity.Property(e => e.ObjectKey).HasMaxLength(500).IsRequired();
             entity.HasIndex(e => e.GameId);
+        });
+        modelBuilder.Entity<GuessImage>(entity =>
+        {
+            entity.HasKey(e => new { e.Date, e.Level });
+            entity.Property(e => e.Date).HasMaxLength(10);
         });
         modelBuilder.Entity<GuessPlay>(entity =>
         {

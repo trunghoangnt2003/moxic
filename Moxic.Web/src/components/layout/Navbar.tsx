@@ -19,6 +19,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
+import NavExplore from "./NavExplore";
 import { useLogout, useMe } from "../../hooks/useAccount";
 import HeaderSearch from "./HeaderSearch";
 import NotificationBell from "./NotificationBell";
@@ -76,18 +77,18 @@ export default function Navbar() {
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo + Primary Nav */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6 lg:gap-8 min-w-0">
             <Link
               to="/"
               className="text-accent font-display text-xl tracking-wide flex-shrink-0"
             >
               MOXIC
             </Link>
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-5 lg:gap-6">
               <NavLink
                 to="/games"
                 className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
+                  `whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
                 }
               >
                 Store
@@ -95,7 +96,7 @@ export default function Navbar() {
               <NavLink
                 to="/rent"
                 className={({ isActive }) =>
-                  `inline-flex items-center gap-1.5 text-sm font-semibold transition-colors ${isActive ? "text-emerald-300" : "text-emerald-200/90 hover:text-emerald-300"}`
+                  `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-emerald-300" : "text-emerald-200/90 hover:text-emerald-300"}`
                 }
               >
                 <KeyRound className="w-4 h-4" />
@@ -104,7 +105,7 @@ export default function Navbar() {
               <NavLink
                 to="/lucky-spin"
                 className={({ isActive }) =>
-                  `group relative inline-flex items-center gap-1.5 text-sm font-semibold transition-colors ${
+                  `group relative inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${
                     isActive ? "text-amber-300" : "text-amber-200/90 hover:text-amber-300"
                   }`
                 }
@@ -116,30 +117,7 @@ export default function Navbar() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500" />
                 </span>
               </NavLink>
-              <NavLink
-                to="/release-calendar"
-                className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
-                }
-              >
-                Sắp ra mắt
-              </NavLink>
-              <NavLink
-                to="/leaderboard"
-                className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
-                }
-              >
-                Xếp hạng
-              </NavLink>
-              <NavLink
-                to="/doan-game"
-                className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
-                }
-              >
-                Đoán game
-              </NavLink>
+              <NavExplore />
             </div>
           </div>
 
@@ -295,7 +273,7 @@ export default function Navbar() {
             )}
 
             {/* Download */}
-            <button className="bg-accent hover:bg-accent-hover text-white px-5 py-2  text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer hidden sm:flex">
+            <button className="bg-accent hover:bg-accent-hover text-white px-4 py-2 text-sm font-bold transition-colors items-center gap-2 cursor-pointer hidden xl:flex whitespace-nowrap">
               <Download className="w-4 h-4" />
               Tải về
             </button>
