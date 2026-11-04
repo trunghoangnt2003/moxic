@@ -24,6 +24,9 @@ public enum PointsReason
     /// <summary>Spent in the points shop (RefId = redeem:{redemptionId}).</summary>
     Redeem,
 
+    /// <summary>Daily "Đoán game" win (RefId = guess:{yyyy-MM-dd}:{userId}).</summary>
+    DailyGuess,
+
     /// <summary>Monthly leaderboard prize (RefId = lb:{yyyy-MM}:{board}:{rank}).</summary>
     Leaderboard
 }

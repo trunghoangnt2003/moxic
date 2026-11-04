@@ -167,7 +167,7 @@ export function safeRedirect(raw: string | null, fallback = "/"): string {
 
 // ───────────────────────── Loyalty points ─────────────────────────
 
-export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem" | "Leaderboard";
+export type PointsReason = "OrderCompleted" | "CaseOpen" | "AdminAdjust" | "CheckIn" | "Mission" | "Referral" | "Redeem" | "Leaderboard" | "DailyGuess";
 
 export interface PointsTransaction {
   id: string;
@@ -200,4 +200,5 @@ export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
   Referral: "Giới thiệu bạn bè",
   Redeem: "Đổi điểm",
   Leaderboard: "Thưởng bảng xếp hạng",
+  DailyGuess: "Đoán game mỗi ngày",
 };

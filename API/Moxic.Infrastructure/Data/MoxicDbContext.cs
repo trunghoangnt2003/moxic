@@ -16,6 +16,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
+    public DbSet<GuessPuzzle> GuessPuzzles => Set<GuessPuzzle>();
+    public DbSet<GuessPlay> GuessPlays => Set<GuessPlay>();
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<GameReview> GameReviews => Set<GameReview>();
@@ -206,6 +208,23 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.CryptoQrObjectKey).HasMaxLength(500);
             entity.Property(e => e.TransferSyntaxTemplate).HasMaxLength(256).IsRequired();
             entity.Property(e => e.BankCode).HasMaxLength(20);
+        });
+        modelBuilder.Entity<GuessPuzzle>(entity =>
+        {
+            entity.HasKey(e => e.Date);
+            entity.Property(e => e.Date).HasMaxLength(10);
+            entity.Property(e => e.ObjectKey).HasMaxLength(500).IsRequired();
+            entity.HasIndex(e => e.GameId);
+        });
+        modelBuilder.Entity<GuessPlay>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Date).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.PlayerKey).HasMaxLength(80).IsRequired();
+            entity.Property(e => e.UserId).HasMaxLength(450);
+            entity.Property(e => e.Guesses).HasMaxLength(400).IsRequired();
+            entity.HasIndex(e => new { e.Date, e.PlayerKey }).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.Date });
         });
         modelBuilder.Entity<LeaderboardAward>(entity =>
         {

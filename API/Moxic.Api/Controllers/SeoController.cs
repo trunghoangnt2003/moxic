@@ -158,7 +158,7 @@ public class SeoController : ControllerBase
     {
         var games = await _db.Games.AsNoTracking().OrderByDescending(g => g.UpdatedAt).Select(g => new { g.Id, g.UpdatedAt }).ToListAsync();
         var sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
-        foreach (var (path, freq, prio) in new[] { ("/", "daily", "1.0"), ("/games", "daily", "0.9"), ("/rent", "daily", "0.8"), ("/release-calendar", "weekly", "0.7"), ("/lucky-spin", "weekly", "0.6"), ("/rewards", "monthly", "0.5"), ("/leaderboard", "daily", "0.5") })
+        foreach (var (path, freq, prio) in new[] { ("/", "daily", "1.0"), ("/games", "daily", "0.9"), ("/rent", "daily", "0.8"), ("/release-calendar", "weekly", "0.7"), ("/lucky-spin", "weekly", "0.6"), ("/rewards", "monthly", "0.5"), ("/leaderboard", "daily", "0.5"), ("/doan-game", "daily", "0.6") })
             sb.Append($"<url><loc>{_site}{path}</loc><changefreq>{freq}</changefreq><priority>{prio}</priority></url>");
         foreach (var g in games)
             sb.Append($"<url><loc>{_site}/games/{g.Id}</loc><lastmod>{g.UpdatedAt:yyyy-MM-dd}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>");

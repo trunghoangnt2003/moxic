@@ -1,4 +1,5 @@
 import { useGames, useFeaturedGames } from "../hooks/useGames";
+import GuessTeaser from "../components/home/GuessTeaser";
 import { HomeSkeleton } from "../components/shared/Skeleton";
 import HeroSplash from "../components/home/HeroSplash";
 import DiscoverySection from "../components/home/DiscoverySection";
@@ -33,6 +34,11 @@ export default function HomePage() {
     <div>
       {/* ═══ HERO SPLASH ═══ */}
       <HeroSplash featured={featured || []} available={availableGames} />
+
+      {/* ═══ DAILY GUESS ═══ */}
+      <Container className="mt-8">
+        <GuessTeaser />
+      </Container>
 
       {/* ═══ FLASH SALE ═══ */}
       <Container className="mt-14 empty:hidden">

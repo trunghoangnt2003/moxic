@@ -132,6 +132,14 @@ export default function Navbar() {
               >
                 Xếp hạng
               </NavLink>
+              <NavLink
+                to="/doan-game"
+                className={({ isActive }) =>
+                  `text-sm font-semibold transition-colors ${isActive ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`
+                }
+              >
+                Đoán game
+              </NavLink>
             </div>
           </div>
 
@@ -335,6 +343,9 @@ export default function Navbar() {
             </Link>
             <Link to="/leaderboard" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
               🏆 Bảng xếp hạng
+            </Link>
+            <Link to="/doan-game" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
+              🎮 Đoán game mỗi ngày
             </Link>
             <div className="pt-2 border-t border-border space-y-1">
               {me ? (

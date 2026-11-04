@@ -102,6 +102,7 @@ builder.Services.AddScoped<TelegramOrderNotifier>();
 builder.Services.AddScoped<OrderStatusService>();
 builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<LeaderboardService>();
+builder.Services.AddScoped<GuessGameService>();
 builder.Services.AddHostedService<LeaderboardAwardJob>();
 builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddHostedService<TelegramChatCleanup>();

@@ -199,6 +199,31 @@ public static class ShoppingSchemaBootstrap
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_LeaderboardAwards_Month_Board_Rank" ON "LeaderboardAwards" ("Month", "Board", "Rank");
         CREATE INDEX IF NOT EXISTS "IX_LeaderboardAwards_UserId" ON "LeaderboardAwards" ("UserId");
 
+        CREATE TABLE IF NOT EXISTS "GuessPuzzles" (
+            "Date" character varying(10) NOT NULL,
+            "GameId" uuid NOT NULL,
+            "ObjectKey" character varying(500) NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_GuessPuzzles" PRIMARY KEY ("Date")
+        );
+        CREATE INDEX IF NOT EXISTS "IX_GuessPuzzles_GameId" ON "GuessPuzzles" ("GameId");
+        CREATE TABLE IF NOT EXISTS "GuessPlays" (
+            "Id" uuid NOT NULL,
+            "Date" character varying(10) NOT NULL,
+            "PlayerKey" character varying(80) NOT NULL,
+            "UserId" character varying(450),
+            "Guesses" character varying(400) NOT NULL,
+            "Tries" integer NOT NULL,
+            "Solved" boolean NOT NULL,
+            "Finished" boolean NOT NULL,
+            "Points" integer NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "UpdatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_GuessPlays" PRIMARY KEY ("Id")
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_GuessPlays_Date_PlayerKey" ON "GuessPlays" ("Date", "PlayerKey");
+        CREATE INDEX IF NOT EXISTS "IX_GuessPlays_UserId_Date" ON "GuessPlays" ("UserId", "Date");
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES
