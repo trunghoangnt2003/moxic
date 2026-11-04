@@ -45,6 +45,9 @@ interface Filters {
   publishers: string[];
   min?: number;
   max?: number;
+  yearFrom?: number;
+  yearTo?: number;
+  rating?: number;
   sale: boolean;
   sort: string;
   page: number;
@@ -68,6 +71,9 @@ function readFilters(sp: URLSearchParams): Filters {
     publishers: list("publisher"),
     min: num("min"),
     max: num("max"),
+    yearFrom: num("yfrom"),
+    yearTo: num("yto"),
+    rating: num("rating"),
     sale: sp.get("sale") === "1",
     sort: sp.get("sort") ?? "",
     page: Math.max(1, num("page") ?? 1),
@@ -85,6 +91,9 @@ function writeFilters(f: Filters): URLSearchParams {
   if (f.publishers.length) sp.set("publisher", f.publishers.join(","));
   if (f.min != null) sp.set("min", String(f.min));
   if (f.max != null) sp.set("max", String(f.max));
+  if (f.yearFrom != null) sp.set("yfrom", String(f.yearFrom));
+  if (f.yearTo != null) sp.set("yto", String(f.yearTo));
+  if (f.rating != null) sp.set("rating", String(f.rating));
   if (f.sale) sp.set("sale", "1");
   if (f.sort) sp.set("sort", f.sort);
   if (f.page > 1) sp.set("page", String(f.page));
@@ -135,6 +144,9 @@ export default function GamesPage() {
       minPrice: filters.min,
       maxPrice: filters.max,
       onSale: filters.sale,
+      yearFrom: filters.yearFrom,
+      yearTo: filters.yearTo,
+      minRating: filters.rating,
       sort: filters.sort || undefined,
       page: filters.page,
       pageSize: PAGE_SIZE,
@@ -150,6 +162,15 @@ export default function GamesPage() {
   if (filters.q) chips.push({ key: "q", label: <>“{filters.q}”</>, onRemove: () => update({ q: "" }) });
   if (filters.status)
     chips.push({ key: "st", label: STATUSES.find((s) => s.value === filters.status)?.label, onRemove: () => update({ status: "" }) });
+  if (filters.yearFrom != null || filters.yearTo != null)
+    chips.push({
+      key: "year",
+      label: filters.yearFrom != null && filters.yearTo != null
+        ? filters.yearFrom === filters.yearTo ? `Năm ${filters.yearFrom}` : `${filters.yearFrom}–${filters.yearTo}`
+        : filters.yearFrom != null ? `Từ ${filters.yearFrom}` : `Trước ${filters.yearTo! + 1}`,
+      onRemove: () => update({ yearFrom: undefined, yearTo: undefined }),
+    });
+  if (filters.rating != null) chips.push({ key: "rating", label: `${filters.rating}★ trở lên`, onRemove: () => update({ rating: undefined }) });
   if (filters.sale) chips.push({ key: "sale", label: "Đang giảm giá", onRemove: () => update({ sale: false }) });
   for (const id of filters.genres)
     chips.push({ key: `g${id}`, label: nameOf(facets?.genres, id), onRemove: () => update({ genres: filters.genres.filter((x) => x !== id) }) });
@@ -487,6 +508,32 @@ function FilterPanel({
         />
       </Section>
 
+      <Section title="Đánh giá" defaultOpen={filters.rating != null}>
+        <div className="grid grid-cols-2 gap-1.5">
+          {[4.5, 4, 3.5, 3].map((r) => {
+            const active = filters.rating === r;
+            return (
+              <button
+                key={r}
+                type="button"
+                onClick={() => update({ rating: active ? undefined : r })}
+                className={`h-9 inline-flex items-center justify-center gap-1 text-xs border transition-colors cursor-pointer ${
+                  active ? "bg-amber-400/15 border-amber-400 text-amber-300" : "border-white/10 text-text-secondary hover:border-white/30 hover:text-white"
+                }`}
+              >
+                <span className="text-amber-400">★</span> {r}+
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
+      {facets && facets.years.length > 0 && (
+        <Section title="Năm phát hành" defaultOpen={filters.yearFrom != null || filters.yearTo != null}>
+          <YearFilter years={facets.years} from={filters.yearFrom} to={filters.yearTo} onChange={(yearFrom, yearTo) => update({ yearFrom, yearTo })} />
+        </Section>
+      )}
+
       <Section title="Khoảng giá">
         <PriceFilter min={filters.min} max={filters.max} bounds={facets?.price} onChange={(min, max) => update({ min, max })} />
       </Section>
@@ -700,6 +747,50 @@ function PriceFilter({
           {min != null ? formatPrice(min) : "0"} – {max != null ? formatPrice(max) : "∞"}
         </p>
       )}
+    </div>
+  );
+}
+
+function YearFilter({ years, from, to, onChange }: { years: number[]; from?: number; to?: number; onChange: (from?: number, to?: number) => void }) {
+  const newest = years[0];
+  const presets: { label: string; from?: number; to?: number }[] = [
+    { label: `Mới nhất (${newest})`, from: newest, to: newest },
+    { label: `${newest - 2}–${newest}`, from: newest - 2, to: newest },
+    { label: `${newest - 6}–${newest - 3}`, from: newest - 6, to: newest - 3 },
+    { label: `Trước ${newest - 6}`, to: newest - 7 },
+  ];
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-1.5">
+        {presets.map((p) => {
+          const active = p.from === from && p.to === to;
+          return (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => (active ? onChange(undefined, undefined) : onChange(p.from, p.to))}
+              className={`h-9 text-xs border transition-colors cursor-pointer ${
+                active ? "bg-accent/15 border-accent text-accent" : "border-white/10 text-text-secondary hover:border-white/30 hover:text-white"
+              }`}
+            >
+              {p.label}
+            </button>
+          );
+        })}
+      </div>
+      <select
+        aria-label="Chọn năm"
+        value={from != null && from === to ? String(from) : ""}
+        onChange={(e) => (e.target.value ? onChange(Number(e.target.value), Number(e.target.value)) : onChange(undefined, undefined))}
+        className="w-full h-9 bg-bg-base border border-white/10 px-2 text-xs text-text-primary focus:outline-none focus:border-accent cursor-pointer"
+      >
+        <option value="">Chọn một năm…</option>
+        {years.map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

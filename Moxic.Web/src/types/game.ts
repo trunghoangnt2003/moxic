@@ -75,6 +75,8 @@ export interface GameReview {
   rating: number;
   content: string;
   createdAt: string;
+  isVerifiedPurchase?: boolean;
+  isMine?: boolean;
 }
 
 export interface GameDetail {
@@ -126,6 +128,7 @@ export interface GameFacets {
   types: FacetOption[];
   regions: FacetOption[];
   publishers: FacetOption[];
+  years: number[];
 }
 
 export interface ActivePaymentConfig {

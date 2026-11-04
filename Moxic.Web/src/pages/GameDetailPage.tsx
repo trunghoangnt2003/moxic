@@ -3,6 +3,8 @@ import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
 import RentPanel from "../components/rental/RentPanel";
 import PriceHistory from "../components/game-detail/PriceHistory";
+import GameDiscussion from "../components/community/GameDiscussion";
+import ReportButton from "../components/community/ReportButton";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { recentlyViewed } from "../lib/localIds";
@@ -32,6 +34,7 @@ import {
   Flame,
   MessageCircle,
   User,
+  BadgeCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -381,7 +384,7 @@ export default function GameDetailPage() {
                   }`}
                 >
                   <div className="space-y-3">
-                    {[...newReviews, ...game.reviews].map((review) => (
+                    {[...newReviews, ...game.reviews.filter((r) => !newReviews.some((n) => n.id === r.id))].map((review) => (
                       <div key={review.id} className="bg-bg-surface border border-border p-3 md:p-4">
                         <div className="flex items-start gap-2.5 md:gap-3">
                           <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-bg-elevated flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -394,10 +397,20 @@ export default function GameDetailPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 md:gap-2 mb-1 flex-wrap">
                               <span className="text-sm font-semibold text-text-primary">{review.userName}</span>
+                              {review.isVerifiedPurchase && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+                                  <BadgeCheck className="w-3 h-3" /> Đã mua
+                                </span>
+                              )}
                               <StarRating rating={review.rating} size={10} />
                               <span className="text-[10px] md:text-[11px] text-text-muted ml-auto flex-shrink-0 whitespace-nowrap">{timeAgo(review.createdAt)}</span>
                             </div>
                             <p className="text-sm text-text-secondary leading-relaxed break-words">{review.content}</p>
+                            {!review.isMine && (
+                              <div className="flex justify-end -mb-1">
+                                <ReportButton targetType="Review" targetId={review.id} />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -407,7 +420,7 @@ export default function GameDetailPage() {
               )}
 
               {/* Review form */}
-              <ReviewForm gameId={game.id} onReviewAdded={(r) => setNewReviews((prev) => [r, ...prev])} />
+              <ReviewForm gameId={game.id} onReviewAdded={(r) => setNewReviews((prev) => [r, ...prev.filter((x) => x.id !== r.id)])} />
             </div>
 
           </div>
@@ -566,6 +579,8 @@ export default function GameDetailPage() {
         </div>
 
         <PriceHistory gameId={game.id} />
+
+        <GameDiscussion gameId={game.id} />
 
         {/* ─── EDITION COMPARISON ─── */}
         {editions.length > 1 && <EditionCompare editions={editions} selectedId={edition?.id ?? null} onSelect={setEditionId} />}

@@ -56,4 +56,7 @@ public class GameReviewDto
     public int Rating { get; set; }
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public bool IsVerifiedPurchase { get; set; }
+    /// <summary>Set on the author's own submit response.</summary>
+    public bool IsMine { get; set; }
 }

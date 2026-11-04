@@ -1,20 +1,15 @@
 ﻿import { useState } from "react";
-import { Star, Send, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Star, Send, User, BadgeCheck } from "lucide-react";
 import { MoxicLoader } from "../shared/MoxicLoader";
 import { createReview } from "../../lib/api";
+import { getMyReview } from "../../lib/communityApi";
+import type { GameReview } from "../../types/game";
 
 interface ReviewFormProps {
   gameId: string;
   onReviewAdded: (review: GameReview) => void;
-}
-
-interface GameReview {
-  id: string;
-  userName: string;
-  avatarUrl: string | null;
-  rating: number;
-  content: string;
-  createdAt: string;
 }
 
 export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
@@ -25,6 +20,17 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const qc = useQueryClient();
+  const { data: mine } = useQuery({ queryKey: ["my-review", gameId], queryFn: () => getMyReview(gameId), staleTime: 60_000 });
+  const signedIn = !!mine?.signedIn;
+  const existing = mine?.review ?? null;
+  // Prefill once with the customer's existing review.
+  const [prefilled, setPrefilled] = useState<string | null>(null);
+  if (existing && prefilled !== existing.id) {
+    setPrefilled(existing.id);
+    setRating(existing.rating);
+    setContent(existing.content);
+  }
 
   const canSubmit = rating > 0 && content.trim().length > 0;
 
@@ -37,15 +43,19 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
 
     try {
       const review = await createReview(gameId, {
-        displayName: nameMode === "custom" ? customName.trim() : undefined,
+        displayName: !signedIn && nameMode === "custom" ? customName.trim() : undefined,
         rating,
         content: content.trim(),
       });
       onReviewAdded(review);
-      setRating(0);
-      setCustomName("");
-      setContent("");
-      setNameMode("anonymous");
+      if (signedIn) {
+        void qc.invalidateQueries({ queryKey: ["my-review", gameId] });
+      } else {
+        setRating(0);
+        setCustomName("");
+        setContent("");
+        setNameMode("anonymous");
+      }
     } catch {
       setError("Không thể gửi đánh giá. Vui lòng thử lại.");
     } finally {
@@ -55,7 +65,24 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
 
   return (
     <div className="border-t border-border pt-5 mt-5">
-      <h3 className="font-display text-base text-text-primary mb-4">Viết đánh giá của bạn</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h3 className="font-display text-base text-text-primary">{existing ? "Đánh giá của bạn" : "Viết đánh giá của bạn"}</h3>
+        {signedIn ? (
+          <span className="flex items-center gap-1.5 text-xs text-text-muted">
+            Đăng với tên <b className="text-text-primary">{mine?.displayName}</b>
+            {mine?.purchased && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+                <BadgeCheck className="w-3 h-3" /> Đã mua
+              </span>
+            )}
+          </span>
+        ) : (
+          <Link to={`/login?redirect=${encodeURIComponent(`/games/${gameId}`)}`} className="text-xs text-accent hover:underline">
+            Đăng nhập để có nhãn “Đã mua”
+          </Link>
+        )}
+      </div>
+      {existing?.isHidden && <p className="mb-3 text-xs text-amber-300">Đánh giá của bạn đang bị ẩn do vi phạm tiêu chuẩn cộng đồng.</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Rating stars */}
@@ -90,7 +117,8 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           )}
         </div>
 
-        {/* Name mode toggle */}
+        {/* Name mode toggle (guests only) */}
+        {!signedIn && (
         <div className="flex items-center gap-3">
           <span className="text-xs text-text-muted flex-shrink-0">Hiển thị:</span>
           <button
@@ -118,9 +146,10 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             Nhập tên
           </button>
         </div>
+        )}
 
         {/* Custom name input */}
-        {nameMode === "custom" && (
+        {!signedIn && nameMode === "custom" && (
           <input
             type="text"
             value={customName}
@@ -161,7 +190,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             {submitting ? (
               <><MoxicLoader size="sm" /> Đang gửi...</>
             ) : (
-              <><Send size={14} /> Gửi đánh giá</>
+              <><Send size={14} /> {existing ? "Cập nhật đánh giá" : "Gửi đánh giá"}</>
             )}
           </button>
         </div>

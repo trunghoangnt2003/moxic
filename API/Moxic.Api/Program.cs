@@ -89,6 +89,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PointsService>();
 builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<RentalService>();
+builder.Services.AddScoped<CommunityService>();
 builder.Services.AddHttpClient(PriceTrackerService.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddScoped<PriceTrackerService>();
 builder.Services.AddHostedService<PriceTrackerJob>();
@@ -268,6 +269,7 @@ using (var scope = app.Services.CreateScope())
         await WishlistSchemaBootstrap.EnsureAsync(dbContext);
         await RentalSchemaBootstrap.EnsureAsync(dbContext);
         await PriceTrackingSchemaBootstrap.EnsureAsync(dbContext);
+        await CommunitySchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

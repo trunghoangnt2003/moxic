@@ -27,6 +27,9 @@ public static class GameEndpoints
             decimal? maxPrice,
             bool? onSale,
             bool? rentable,
+            int? yearFrom,
+            int? yearTo,
+            double? minRating,
             string? sort,
             int page = 1,
             int pageSize = 20) =>
@@ -62,6 +65,22 @@ public static class GameEndpoints
             if (regions.Count > 0) query = query.Where(g => g.Region != null && regions.Contains(g.Region));
             var publishers = ParseList(publisher);
             if (publishers.Count > 0) query = query.Where(g => g.Publisher != null && publishers.Contains(g.Publisher));
+
+            if (yearFrom.HasValue)
+            {
+                var from = new DateTime(Math.Clamp(yearFrom.Value, 1970, 2100), 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(g => g.ReleaseDate != null && g.ReleaseDate >= from);
+            }
+            if (yearTo.HasValue)
+            {
+                var to = new DateTime(Math.Clamp(yearTo.Value, 1970, 2100) + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(g => g.ReleaseDate != null && g.ReleaseDate < to);
+            }
+            if (minRating.HasValue)
+            {
+                var min = Math.Clamp(minRating.Value, 1, 5);
+                query = query.Where(g => g.Reviews.Any(r => !r.IsHidden) && g.Reviews.Where(r => !r.IsHidden).Average(r => r.Rating) >= min);
+            }
 
             var idList = ParseIds(ids);
             if (idList.Count > 0)
@@ -184,8 +203,11 @@ public static class GameEndpoints
                 .Select(grp => new { id = grp.Key, name = grp.Key, count = grp.Count() })
                 .OrderByDescending(x => x.count).ThenBy(x => x.name).ToListAsync();
 
+            var years = await games.Where(g => g.ReleaseDate != null).Select(g => g.ReleaseDate!.Value.Year).Distinct().OrderByDescending(y => y).ToListAsync();
+
             return Results.Ok(new
             {
+                years,
                 genres = genreFacets,
                 tags = tagFacets,
                 types = typeFacets,
@@ -266,8 +288,9 @@ public static class GameEndpoints
             var purchaseCount = await dbContext.OrderDetails
                 .CountAsync(od => od.GameId == id && SoldStatuses.Contains(od.Order.Status));
 
-            var storeRating = game.Reviews.Count > 0
-                ? Math.Round(game.Reviews.Average(r => r.Rating), 1)
+            var visibleReviews = game.Reviews.Where(r => !r.IsHidden).ToList();
+            var storeRating = visibleReviews.Count > 0
+                ? Math.Round(visibleReviews.Average(r => r.Rating), 1)
                 : 5.0;
 
             var dto = new GameDetailDto
@@ -304,8 +327,10 @@ public static class GameEndpoints
                         IsDefault = e.IsDefault
                     }).ToList(),
                 Reviews = game.Reviews
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Take(8)
+                    .Where(r => !r.IsHidden)
+                    .OrderByDescending(r => r.IsVerifiedPurchase)
+                    .ThenByDescending(r => r.UpdatedAt ?? r.CreatedAt)
+                    .Take(12)
                     .Select(r => new GameReviewDto
                     {
                         Id = r.Id,
@@ -313,15 +338,17 @@ public static class GameEndpoints
                         AvatarUrl = r.AvatarUrl,
                         Rating = r.Rating,
                         Content = r.Content,
-                        CreatedAt = r.CreatedAt
+                        CreatedAt = r.CreatedAt,
+                        IsVerifiedPurchase = r.IsVerifiedPurchase
                     }).ToList()
             };
 
             return Results.Ok(dto);
         });
 
-        // Public: submit a review for a game (no auth)
-        group.MapPost("/{id:guid}/reviews", async (Guid id, PublicReviewRequest request, MoxicDbContext dbContext) =>
+        // Public: submit a review. Signed-in customers get their account name, one review per game
+        // (re-submitting updates it) and a "Đã mua" badge when they own the game.
+        group.MapPost("/{id:guid}/reviews", async (Guid id, PublicReviewRequest request, MoxicDbContext dbContext, HttpContext http, Moxic.Api.Services.CommunityService community) =>
         {
             var gameExists = await dbContext.Games.AnyAsync(g => g.Id == id);
             if (!gameExists) return Results.NotFound();
@@ -334,6 +361,34 @@ public static class GameEndpoints
 
             if (request.Content.Length > 500)
                 return Results.BadRequest(new { error = "Nội dung đánh giá không được vượt quá 500 ký tự." });
+
+            var customer = await community.GetCustomerAsync(http);
+            if (customer != null)
+            {
+                var verified = await community.HasPurchasedAsync(customer, id);
+                var existing = await dbContext.GameReviews.FirstOrDefaultAsync(r => r.GameId == id && r.UserId == customer.UserId);
+                var now = DateTime.UtcNow;
+                if (existing == null)
+                {
+                    existing = new GameReview
+                    {
+                        Id = Guid.NewGuid(), GameId = id, UserId = customer.UserId, CreatedAt = now,
+                        AvatarUrl = $"https://i.pravatar.cc/40?u={Uri.EscapeDataString(customer.UserId)}",
+                    };
+                    dbContext.GameReviews.Add(existing);
+                }
+                existing.UserName = customer.DisplayName.Length > 50 ? customer.DisplayName[..50] : customer.DisplayName;
+                existing.Rating = request.Rating;
+                existing.Content = request.Content.Trim();
+                existing.IsVerifiedPurchase = verified;
+                existing.UpdatedAt = now;
+                await dbContext.SaveChangesAsync();
+                return Results.Ok(new GameReviewDto
+                {
+                    Id = existing.Id, UserName = existing.UserName, AvatarUrl = existing.AvatarUrl, Rating = existing.Rating,
+                    Content = existing.Content, CreatedAt = existing.CreatedAt, IsVerifiedPurchase = verified, IsMine = true,
+                });
+            }
 
             var displayName = request.DisplayName;
             if (string.IsNullOrWhiteSpace(displayName))
@@ -371,7 +426,7 @@ public static class GameEndpoints
                 Content = review.Content,
                 CreatedAt = review.CreatedAt
             });
-        });
+        }).RequireRateLimiting(Moxic.Api.Services.CouponRules.RateLimitPolicy);
     }
 
     /// <summary>Orders that are paid or being fulfilled count as sold.</summary>

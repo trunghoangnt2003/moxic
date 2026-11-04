@@ -19,6 +19,7 @@ import {
   Megaphone,
   LayoutDashboard,
   KeyRound,
+  ShieldAlert,
   TicketPercent,
 } from "lucide-react";
 import GameList from "./pages/GameList";
@@ -39,6 +40,7 @@ const Coupons = lazy(() => import("./pages/Coupons"));
 const Announcements = lazy(() => import("./pages/Announcements"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
+const Moderation = lazy(() => import("./pages/Moderation"));
 
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -53,6 +55,7 @@ const navItems = [
   { to: "/customers", label: "Khách hàng", icon: Users },
   { to: "/spin-music", label: "Kho nhạc", icon: Music },
   { to: "/announcements", label: "Thông báo", icon: Megaphone },
+  { to: "/moderation", label: "Kiểm duyệt", icon: ShieldAlert },
   { to: "/contact-settings", label: "Contact", icon: MessageCircle },
 ];
 
@@ -247,6 +250,7 @@ function App() {
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/rentals" element={<Rentals />} />
+                  <Route path="/moderation" element={<Moderation />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />
                   <Route path="/games/:id/edit" element={<GameForm />} />

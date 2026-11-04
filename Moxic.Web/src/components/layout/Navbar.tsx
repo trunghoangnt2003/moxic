@@ -201,6 +201,15 @@ export default function Navbar() {
                       </p>
                     </div>
                     <Link
+                      to="/account"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      Tài khoản & thư viện game
+                    </Link>
+                    <Link
                       to="/account/orders"
                       role="menuitem"
                       onClick={() => setAccountOpen(false)}
@@ -318,6 +327,14 @@ export default function Navbar() {
                   <p className="flex items-center gap-1.5 py-1 text-sm text-amber-300">
                     <Coins className="w-4 h-4" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
                   </p>
+                  <Link
+                    to="/account"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <User className="w-4 h-4" />
+                    Tài khoản & thư viện game
+                  </Link>
                   <Link
                     to="/account/orders"
                     onClick={() => setMenuOpen(false)}

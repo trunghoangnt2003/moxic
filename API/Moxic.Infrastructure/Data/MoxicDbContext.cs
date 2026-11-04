@@ -37,6 +37,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<RentalAssetGame> RentalAssetGames => Set<RentalAssetGame>();
     public DbSet<RentalOrder> RentalOrders => Set<RentalOrder>();
     public DbSet<GamePriceSnapshot> GamePriceSnapshots => Set<GamePriceSnapshot>();
+    public DbSet<GameComment> GameComments => Set<GameComment>();
+    public DbSet<ContentReport> ContentReports => Set<ContentReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -265,6 +267,27 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<GameComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DisplayName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Content).HasMaxLength(1000).IsRequired();
+            entity.HasOne<Game>().WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<GameComment>().WithMany().HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.GameId, e.CreatedAt });
+        });
+
+        modelBuilder.Entity<ContentReport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TargetType).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ReporterIp).HasMaxLength(64);
+            entity.Property(e => e.Reason).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Note).HasMaxLength(300);
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.HasIndex(e => new { e.Status, e.CreatedAt });
+        });
+
         modelBuilder.Entity<GamePriceSnapshot>(entity =>
         {
             entity.HasKey(e => e.Id);
