@@ -13,6 +13,7 @@ function Facebook({ className = "" }: { className?: string }) {
 import { useMe } from "../../hooks/useAccount";
 import { getLoyalty } from "../../lib/loyaltyApi";
 
+import { t } from "../../lib/i18n";
 interface Props {
   /** Path on the site, e.g. /games/{id}. */
   path: string;
@@ -27,7 +28,7 @@ interface Props {
  * Share a page: native share sheet on phones, otherwise a small menu (copy, Facebook, Messenger, Telegram, X).
  * Signed-in customers share with their referral code attached so friends who join earn them points.
  */
-export default function ShareButton({ path, title, text, className = "", label = "Chia sẻ" }: Props) {
+export default function ShareButton({ path, title, text, className = "", label = t("Chia sẻ") }: Props) {
   const { data: me } = useMe();
   const { data: loyalty } = useQuery({ queryKey: ["loyalty"], queryFn: getLoyalty, enabled: !!me, staleTime: 5 * 60_000 });
   const [open, setOpen] = useState(false);
@@ -51,10 +52,10 @@ export default function ShareButton({ path, title, text, className = "", label =
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success(code ? "Đã copy link, bạn bè đăng ký qua link này, bạn được cộng điểm!" : "Đã copy link");
+      toast.success(code ? t("Đã copy link, bạn bè đăng ký qua link này, bạn được cộng điểm!") : t("Đã copy link"));
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Không copy được, hãy copy thủ công: " + url);
+      toast.error(t("Không copy được, hãy copy thủ công: ") + url);
     }
   };
 
@@ -103,7 +104,7 @@ export default function ShareButton({ path, title, text, className = "", label =
               <l.icon className="w-4 h-4" /> {l.label}
             </a>
           ))}
-          {code && <p className="px-3 pt-1 pb-1.5 text-[11px] text-text-muted border-t border-white/5 mt-1">Link có mã giới thiệu {code} của bạn</p>}
+          {code && <p className="px-3 pt-1 pb-1.5 text-[11px] text-text-muted border-t border-white/5 mt-1">{t("Link có mã giới thiệu {0} của bạn", [code])}</p>}
         </div>
       )}
     </div>

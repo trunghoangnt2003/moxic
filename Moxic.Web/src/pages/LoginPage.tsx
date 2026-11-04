@@ -8,6 +8,7 @@ import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import { getAccountErrorMessage, isEmailNotVerifiedError, useLogin, useMe } from "../hooks/useAccount";
 import { safeRedirect } from "../lib/accountApi";
 
+import { t } from "../lib/i18n";
 export default function LoginPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -30,9 +31,9 @@ export default function LoginPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const errors: typeof fieldErrors = {};
-    if (!email.trim()) errors.email = "Vui lòng nhập email";
-    else if (!email.includes("@")) errors.email = "Email không hợp lệ";
-    if (!password) errors.password = "Vui lòng nhập mật khẩu";
+    if (!email.trim()) errors.email = t("Vui lòng nhập email");
+    else if (!email.includes("@")) errors.email = t("Email không hợp lệ");
+    if (!password) errors.password = t("Vui lòng nhập mật khẩu");
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -41,18 +42,18 @@ export default function LoginPage() {
       { email: email.trim(), password },
       {
         onSuccess: (data) => {
-          toast.success(`Chào mừng ${data.displayName}!`);
+          toast.success(t("Chào mừng {0}!", [data.displayName]));
           navigate(redirect, { replace: true });
         },
         onError: (err) => {
           if (isEmailNotVerifiedError(err)) {
-            toast(getAccountErrorMessage(err, "Email chưa được xác minh."));
+            toast(getAccountErrorMessage(err, t("Email chưa được xác minh.")));
             const qs = new URLSearchParams({ email: email.trim() });
             if (redirectParam) qs.set("redirect", redirect);
             navigate(`/verify-email?${qs.toString()}`);
             return;
           }
-          setError(getAccountErrorMessage(err, "Đăng nhập thất bại. Vui lòng thử lại."));
+          setError(getAccountErrorMessage(err, t("Đăng nhập thất bại. Vui lòng thử lại.")));
         },
       },
     );
@@ -60,13 +61,13 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      title="Đăng nhập"
-      subtitle="Đăng nhập để theo dõi đơn hàng và lịch sử mua hàng."
+      title={t("Đăng nhập")}
+      subtitle={t("Đăng nhập để theo dõi đơn hàng và lịch sử mua hàng.")}
       footer={
         <p>
-          Chưa có tài khoản?{" "}
+          {t("Chưa có tài khoản?")}{" "}
           <Link to={`/register${carry ? `?${carry}` : ""}`} className="text-accent hover:underline font-semibold">
-            Đăng ký
+            {t("Đăng ký")}
           </Link>
         </p>
       }
@@ -84,11 +85,11 @@ export default function LoginPage() {
         />
         <AuthField
           id="login-password"
-          label="Mật khẩu"
+          label={t("Mật khẩu")}
           type="password"
           value={password}
           onChange={setPassword}
-          placeholder="Mật khẩu"
+          placeholder={t("Mật khẩu")}
           autoComplete="current-password"
           error={fieldErrors.password}
         />
@@ -98,7 +99,7 @@ export default function LoginPage() {
             to={`/forgot-password${email.trim() ? `?email=${encodeURIComponent(email.trim())}` : ""}`}
             className="text-xs text-text-secondary hover:text-accent transition-colors"
           >
-            Quên mật khẩu?
+            {t("Quên mật khẩu?")}
           </Link>
         </div>
 
@@ -116,10 +117,10 @@ export default function LoginPage() {
         >
           {login.isPending ? (
             <>
-              <MoxicLoader size="sm" /> Đang đăng nhập…
+              <MoxicLoader size="sm" /> {t("Đang đăng nhập…")}
             </>
           ) : (
-            "Đăng nhập"
+            t("Đăng nhập")
           )}
         </button>
       </form>

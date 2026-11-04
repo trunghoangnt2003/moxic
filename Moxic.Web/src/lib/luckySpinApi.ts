@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { t, locale } from "./i18n";
 // Own axios instance mirroring lib/api.ts (kept separate so lib/api.ts stays untouched).
 // withCredentials sends the MoxicCustomer cookie (free / points cases need the account).
 const API_URL = import.meta.env.VITE_API_URL || "/api";
@@ -165,12 +166,12 @@ export async function getContactSettings() {
 }
 
 export function formatPoints(n: number): string {
-  return n.toLocaleString("vi-VN");
+  return n.toLocaleString(locale);
 }
 
 /** "Nhập mã" | "Miễn phí mỗi 24h" | "500 điểm" */
 export function openMethodLabel(c: Pick<CaseSummary, "openMethod" | "freeIntervalHours" | "pointsCost">): string {
-  if (c.openMethod === "FreeInterval") return `Miễn phí mỗi ${c.freeIntervalHours}h`;
-  if (c.openMethod === "Points") return `${formatPoints(c.pointsCost)} điểm`;
-  return "Nhập mã";
+  if (c.openMethod === "FreeInterval") return t("Miễn phí mỗi {0}h", [c.freeIntervalHours]);
+  if (c.openMethod === "Points") return t("{0} điểm", [formatPoints(c.pointsCost)]);
+  return t("Nhập mã");
 }

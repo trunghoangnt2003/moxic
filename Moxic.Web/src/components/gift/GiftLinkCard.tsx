@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Copy, Gift, Send } from "lucide-react";
 
+import { t } from "../../lib/i18n";
 interface Props {
   token: string;
   recipientName?: string | null;
@@ -11,7 +12,7 @@ interface Props {
 export default function GiftLinkCard({ token, recipientName, claimedAt }: Props) {
   const [copied, setCopied] = useState(false);
   const url = `${window.location.origin}/gift/${token}`;
-  const text = `🎁 Bạn có một món quà game Xbox từ Moxic GameStore! Mở quà tại đây:`;
+  const text = t("🎁 Bạn có một món quà game Xbox từ Moxic GameStore! Mở quà tại đây:");
 
   const copy = async () => {
     try {
@@ -26,7 +27,7 @@ export default function GiftLinkCard({ token, recipientName, claimedAt }: Props)
   const share = async () => {
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share({ title: "Quà tặng game Xbox", text, url });
+        await navigator.share({ title: t("Quà tặng game Xbox"), text, url });
         return;
       } catch {
         /* cancelled */
@@ -40,24 +41,24 @@ export default function GiftLinkCard({ token, recipientName, claimedAt }: Props)
       <Gift className="absolute -right-4 -top-4 w-24 h-24 text-accent/10 rotate-12" />
       <div className="flex items-center gap-2">
         <Gift className="w-5 h-5 text-accent" />
-        <h3 className="font-display text-lg text-text-primary">Link quà tặng{recipientName ? ` cho ${recipientName}` : ""}</h3>
+        <h3 className="font-display text-lg text-text-primary">{t("Link quà tặng{0}", [recipientName ? ` cho ${recipientName}` : ""])}</h3>
       </div>
       {claimedAt ? (
-        <p className="text-sm text-positive">✓ Người nhận đã mở quà và nhập tài khoản Xbox.</p>
+        <p className="text-sm text-positive">{t("✓ Người nhận đã mở quà và nhập tài khoản Xbox.")}</p>
       ) : (
         <p className="text-xs text-text-secondary leading-relaxed">
-          Gửi link này cho người nhận. Họ mở link, nhập tài khoản Xbox của họ và Moxic sẽ cài game sau khi bạn thanh toán. Đừng chia sẻ link công khai.
+          {t("Gửi link này cho người nhận. Họ mở link, nhập tài khoản Xbox của họ và Moxic sẽ cài game sau khi bạn thanh toán. Đừng chia sẻ link công khai.")}
         </p>
       )}
       <div className="flex items-stretch gap-2">
         <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="flex-1 min-w-0 bg-bg-base border border-white/10 px-3 py-2 text-xs text-text-primary font-mono" />
-        <button type="button" onClick={copy} aria-label="Copy link quà" className="px-3 bg-accent/20 hover:bg-accent/30 text-accent cursor-pointer">
+        <button type="button" onClick={copy} aria-label={t("Copy link quà")} className="px-3 bg-accent/20 hover:bg-accent/30 text-accent cursor-pointer">
           {copied ? <Check className="w-4 h-4 text-positive" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button type="button" onClick={share} className="h-10 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-on-accent text-sm font-bold cursor-pointer">
-          <Send className="w-4 h-4" /> Gửi quà
+          <Send className="w-4 h-4" /> {t("Gửi quà")}
         </button>
         <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer" className="h-10 inline-flex items-center justify-center gap-2 border border-white/10 hover:border-accent/50 text-sm text-text-primary">
           Telegram

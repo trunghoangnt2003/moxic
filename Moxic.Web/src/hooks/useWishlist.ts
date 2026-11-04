@@ -5,6 +5,7 @@ import { addToWishlist, getGames, getWishlist, mergeWishlist, removeFromWishlist
 import { guestWishlist } from "../lib/localIds";
 import { useMe } from "./useAccount";
 
+import { t } from "../lib/i18n";
 const KEY = ["wishlist"];
 
 // Shared across every hook instance (many GameCards mount at once).
@@ -63,7 +64,7 @@ export function useToggleWishlist() {
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(KEY, ctx.prev);
-      toast.error("Không cập nhật được danh sách yêu thích");
+      toast.error(t("Không cập nhật được danh sách yêu thích"));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: KEY }),
   });
@@ -73,7 +74,7 @@ export function useToggleWishlist() {
     if (loggedIn) mutation.mutate({ gameId, add });
     else if (add) guestWishlist.push(gameId);
     else guestWishlist.remove(gameId);
-    if (add) toast.success(name ? `Đã thêm “${name}” vào Yêu thích` : "Đã thêm vào Yêu thích", { icon: "❤️" });
+    if (add) toast.success(name ? t("Đã thêm “{0}” vào Yêu thích", [name]) : t("Đã thêm vào Yêu thích"), { icon: "❤️" });
   };
 }
 

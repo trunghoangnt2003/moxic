@@ -2,6 +2,7 @@ import { Check, Layers, Minus } from "lucide-react";
 import type { GameEdition } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
 
+import { t } from "../../lib/i18n";
 /** "So sánh phiên bản": rows = every included item across editions, columns = editions. */
 export default function EditionCompare({
   editions,
@@ -19,7 +20,7 @@ export default function EditionCompare({
   return (
     <section className="mt-12">
       <h2 className="font-display text-xl text-text-primary flex items-center gap-2 mb-5">
-        <Layers className="w-5 h-5 text-accent" /> So sánh phiên bản
+        <Layers className="w-5 h-5 text-accent" /> {t("So sánh phiên bản")}
       </h2>
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
         <table className="w-full min-w-[520px] border-collapse text-sm">
@@ -42,7 +43,7 @@ export default function EditionCompare({
                       {e.originalPrice > e.salePrice && <span className="block text-[11px] text-text-muted line-through">{formatPrice(e.originalPrice)}</span>}
                       <span className={`block text-base font-bold ${active ? "text-accent" : "text-text-primary"}`}>{formatPrice(e.salePrice)}</span>
                       <span className={`mt-2 inline-block px-2 py-0.5 text-[11px] font-semibold ${active ? "bg-accent text-on-accent" : "border border-white/15 text-text-muted"}`}>
-                        {active ? "Đang chọn" : "Chọn bản này"}
+                        {active ? t("Đang chọn") : t("Chọn bản này")}
                       </span>
                     </button>
                   </th>
@@ -57,9 +58,9 @@ export default function EditionCompare({
                 {editions.map((e) => (
                   <td key={e.id} className={`px-3 py-2.5 text-center ${e.id === selectedId ? "bg-accent/5" : ""}`}>
                     {has(e, item) ? (
-                      <Check className="w-4 h-4 mx-auto text-positive" aria-label="Có" />
+                      <Check className="w-4 h-4 mx-auto text-positive" aria-label={t("Có")} />
                     ) : (
-                      <Minus className="w-4 h-4 mx-auto text-text-muted/50" aria-label="Không" />
+                      <Minus className="w-4 h-4 mx-auto text-text-muted/50" aria-label={t("Không")} />
                     )}
                   </td>
                 ))}

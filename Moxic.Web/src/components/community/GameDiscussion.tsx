@@ -8,6 +8,7 @@ import { useMe } from "../../hooks/useAccount";
 import { timeAgo } from "../../lib/utils";
 import ReportButton from "./ReportButton";
 
+import { t as tr } from "../../lib/i18n";
 function Avatar({ name }: { name: string }) {
   const initials = name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase() || "?";
   let hue = 0;
@@ -29,7 +30,7 @@ function Composer({ gameId, parentId, onDone, autoFocus, placeholder }: { gameId
       qc.invalidateQueries({ queryKey: ["comments", gameId] });
       onDone?.();
     },
-    onError: (e) => toast.error(apiError(e, "Không gửi được bình luận")),
+    onError: (e) => toast.error(apiError(e, tr("Không gửi được bình luận"))),
   });
   return (
     <form
@@ -50,7 +51,7 @@ function Composer({ gameId, parentId, onDone, autoFocus, placeholder }: { gameId
           if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && text.trim().length >= 2) send.mutate();
         }}
       />
-      <button type="submit" disabled={send.isPending || text.trim().length < 2} aria-label="Gửi" className="self-end h-10 w-10 shrink-0 flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
+      <button type="submit" disabled={send.isPending || text.trim().length < 2} aria-label={tr("Gửi")} className="self-end h-10 w-10 shrink-0 flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
         {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
       </button>
     </form>
@@ -62,7 +63,7 @@ function CommentRow({ c, gameId, onReply }: { c: CommentItem; gameId: string; on
   const del = useMutation({
     mutationFn: () => deleteComment(c.id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["comments", gameId] }),
-    onError: (e) => toast.error(apiError(e, "Không xóa được")),
+    onError: (e) => toast.error(apiError(e, tr("Không xóa được"))),
   });
   return (
     <div className="flex gap-3">
@@ -72,7 +73,7 @@ function CommentRow({ c, gameId, onReply }: { c: CommentItem; gameId: string; on
           <span className="text-sm font-semibold text-text-primary">{c.displayName}</span>
           {c.isBuyer && (
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
-              <BadgeCheck className="w-3 h-3" /> Đã mua
+              <BadgeCheck className="w-3 h-3" /> {tr("Đã mua")}
             </span>
           )}
           <span className="text-[11px] text-text-muted">{timeAgo(c.createdAt)}</span>
@@ -81,12 +82,12 @@ function CommentRow({ c, gameId, onReply }: { c: CommentItem; gameId: string; on
         <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
           {onReply && (
             <button type="button" onClick={onReply} className="hover:text-white cursor-pointer">
-              Trả lời
+              {tr("Trả lời")}
             </button>
           )}
           {c.isMine ? (
             <button type="button" onClick={() => del.mutate()} disabled={del.isPending} className="inline-flex items-center gap-1 hover:text-negative cursor-pointer">
-              <Trash2 className="w-3 h-3" /> Xóa
+              <Trash2 className="w-3 h-3" /> {tr("Xóa")}
             </button>
           ) : (
             <ReportButton targetType="Comment" targetId={c.id} />
@@ -108,7 +109,7 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
   return (
     <section className="mt-12">
       <h2 className="font-display text-xl text-text-primary flex items-center gap-2 mb-5">
-        <MessagesSquare className="w-5 h-5 text-accent" /> Thảo luận {data && data.total > 0 && <span className="text-text-muted text-base">({data.total})</span>}
+        <MessagesSquare className="w-5 h-5 text-accent" /> {tr("Thảo luận")} {data && data.total > 0 && <span className="text-text-muted text-base">({data.total})</span>}
       </h2>
 
       <div className="bg-bg-surface border border-border p-4 mb-4">
@@ -116,15 +117,15 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
           <div className="flex gap-3">
             <Avatar name={me.displayName} />
             <div className="flex-1 min-w-0">
-              <Composer gameId={gameId} placeholder="Hỏi đáp, chia sẻ kinh nghiệm chơi… (Ctrl+Enter để gửi)" />
+              <Composer gameId={gameId} placeholder={tr("Hỏi đáp, chia sẻ kinh nghiệm chơi… (Ctrl+Enter để gửi)")} />
             </div>
           </div>
         ) : (
           <p className="text-sm text-text-muted">
             <Link to={`/login?redirect=${encodeURIComponent(`/games/${gameId}`)}`} className="text-accent hover:underline">
-              Đăng nhập
+              {tr("Đăng nhập")}
             </Link>{" "}
-            để tham gia thảo luận.
+            {tr("để tham gia thảo luận.")}
           </p>
         )}
       </div>
@@ -134,7 +135,7 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
           <Loader2 className="w-5 h-5 animate-spin" />
         </div>
       ) : !data || data.items.length === 0 ? (
-        <p className="text-sm text-text-muted text-center py-8 border border-dashed border-white/10">Chưa có thảo luận nào, hãy là người đầu tiên!</p>
+        <p className="text-sm text-text-muted text-center py-8 border border-dashed border-white/10">{tr("Chưa có thảo luận nào, hãy là người đầu tiên!")}</p>
       ) : (
         <ul className="space-y-3">
           {data.items.map((t) => (
@@ -149,7 +150,7 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
                     <div className="flex gap-2 items-start">
                       <CornerDownRight className="w-4 h-4 text-text-muted mt-3 shrink-0" />
                       <div className="flex-1">
-                        <Composer gameId={gameId} parentId={t.comment.id} autoFocus placeholder={`Trả lời ${t.comment.displayName}…`} onDone={() => setReplyTo(null)} />
+                        <Composer gameId={gameId} parentId={t.comment.id} autoFocus placeholder={tr("Trả lời {0}…", [t.comment.displayName])} onDone={() => setReplyTo(null)} />
                       </div>
                     </div>
                   )}
@@ -163,13 +164,13 @@ export default function GameDiscussion({ gameId }: { gameId: string }) {
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="h-9 px-3 border border-border text-sm disabled:opacity-40 cursor-pointer">
-            Mới hơn
+            {tr("Mới hơn")}
           </button>
           <span className="h-9 px-3 flex items-center text-sm text-text-muted">
             {page}/{totalPages}
           </span>
           <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="h-9 px-3 border border-border text-sm disabled:opacity-40 cursor-pointer">
-            Cũ hơn
+            {tr("Cũ hơn")}
           </button>
         </div>
       )}

@@ -9,6 +9,7 @@ import CheckoutForm from "../components/checkout/CheckoutForm";
 import CouponBox from "../components/checkout/CouponBox";
 import { cartLineToken, type CouponQuote } from "../lib/couponApi";
 
+import { t } from "../lib/i18n";
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
@@ -28,13 +29,13 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 mx-auto rounded-full bg-bg-surface border border-white/10 flex items-center justify-center">
             <ShoppingCart className="w-9 h-9 text-text-muted" />
           </div>
-          <h1 className="mt-6 font-display text-3xl font-bold text-text-primary">Giỏ hàng đang trống</h1>
-          <p className="mt-2 text-text-secondary">Bạn chưa thêm game nào vào giỏ hàng.</p>
+          <h1 className="mt-6 font-display text-3xl font-bold text-text-primary">{t("Giỏ hàng đang trống")}</h1>
+          <p className="mt-2 text-text-secondary">{t("Bạn chưa thêm game nào vào giỏ hàng.")}</p>
           <button
             onClick={() => navigate("/games")}
             className="mt-8 h-12 px-8 bg-accent hover:bg-accent-hover text-on-accent font-semibold transition-colors cursor-pointer"
           >
-            Tiếp tục mua sắm
+            {t("Tiếp tục mua sắm")}
           </button>
         </div>
       </Container>
@@ -47,12 +48,12 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto">
           <CheckoutSteps current={1} />
           <div className="flex items-end justify-between gap-3 mb-8">
-            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary">Thông tin đặt hàng</h1>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary">{t("Thông tin đặt hàng")}</h1>
             <button
               onClick={() => navigate("/cart")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap text-text-secondary hover:text-accent text-sm transition-colors cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" /> Giỏ hàng
+              <ArrowLeft className="w-4 h-4" /> {t("Giỏ hàng")}
             </button>
           </div>
 

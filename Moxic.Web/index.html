@@ -7,6 +7,14 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#0f0f11" />
     <script>
+      // A visitor who chose English comes back to the /en version of the page they open.
+      (function () {
+        try {
+          var p = location.pathname;
+          if (localStorage.getItem("moxic.lang") === "en" && p !== "/en" && p.indexOf("/en/") !== 0 && p.indexOf("/api/") !== 0 && p.indexOf("/assets/") !== 0)
+            location.replace("/en" + (p === "/" ? "" : p) + location.search + location.hash);
+        } catch (e) {}
+      })();
       // Theme before first paint (no flash): saved choice, else dark; "system" follows the OS.
       (function () {
         var p = "dark";

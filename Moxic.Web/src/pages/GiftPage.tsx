@@ -7,6 +7,7 @@ import { PageLoader, MoxicLoader } from "../components/shared/MoxicLoader";
 import { claimGift, getGift } from "../lib/api";
 import { usePageMeta } from "../hooks/usePageMeta";
 
+import { t } from "../lib/i18n";
 const BURST = Array.from({ length: 18 }, (_, i) => {
   const a = (i / 18) * Math.PI * 2;
   const r = 120 + (i % 3) * 40;
@@ -25,7 +26,7 @@ export default function GiftPage() {
     enabled: !!token,
     retry: false,
   });
-  usePageMeta("Bạn có một món quà", "Mở quà game Xbox từ Moxic GameStore.");
+  usePageMeta(t("Bạn có một món quà"), t("Mở quà game Xbox từ Moxic GameStore."));
 
   const [phase, setPhase] = useState<"closed" | "opening" | "open">("closed");
   const [email, setEmail] = useState("");
@@ -41,7 +42,7 @@ export default function GiftPage() {
       setEditing(false);
       qc.invalidateQueries({ queryKey: ["gift", token] });
     },
-    onError: (e: any) => setFormError(e?.response?.data?.error || "Không gửi được, vui lòng thử lại"),
+    onError: (e: any) => setFormError(t(e?.response?.data?.error ?? "") || t("Không gửi được, vui lòng thử lại")),
   });
 
   if (isLoading) return <PageLoader />;
@@ -49,9 +50,9 @@ export default function GiftPage() {
     return (
       <Container className="py-20 text-center">
         <Gift className="w-12 h-12 mx-auto text-text-muted mb-4" />
-        <p className="text-text-primary font-display text-xl mb-2">Không tìm thấy quà tặng</p>
-        <p className="text-sm text-text-muted mb-6">Link có thể sai hoặc đã hết hạn.</p>
-        <Link to="/" className="text-accent hover:underline text-sm">Về trang chủ</Link>
+        <p className="text-text-primary font-display text-xl mb-2">{t("Không tìm thấy quà tặng")}</p>
+        <p className="text-sm text-text-muted mb-6">{t("Link có thể sai hoặc đã hết hạn.")}</p>
+        <Link to="/" className="text-accent hover:underline text-sm">{t("Về trang chủ")}</Link>
       </Container>
     );
   }
@@ -67,8 +68,8 @@ export default function GiftPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
-    if (!email.includes("@")) return setFormError("Email tài khoản Xbox không hợp lệ");
-    if (!password) return setFormError("Nhập mật khẩu tài khoản Xbox");
+    if (!email.includes("@")) return setFormError(t("Email tài khoản Xbox không hợp lệ"));
+    if (!password) return setFormError(t("Nhập mật khẩu tài khoản Xbox"));
     claim.mutate();
   };
 
@@ -82,16 +83,16 @@ export default function GiftPage() {
             <div className="text-center pt-6">
               <p className="text-xs text-accent mb-2">Moxic GameStore</p>
               <h1 className="font-display text-3xl md:text-4xl text-text-primary mb-2">
-                {gift.recipientName ? `${gift.recipientName} ơi,` : "Bạn ơi,"} có quà nè!
+                {gift.recipientName ? t("{0} ơi,", [gift.recipientName]) : t("Bạn ơi,")} {t("có quà nè!")}
               </h1>
               <p className="text-text-secondary mb-10">
-                {gift.fromName ? <><b className="text-text-primary">{gift.fromName}</b> đã gửi tặng bạn</> : "Ai đó đã gửi tặng bạn"} một món quà game Xbox
+                {gift.fromName ? <><b className="text-text-primary">{gift.fromName}</b> {t("đã gửi tặng bạn")}</> : t("Ai đó đã gửi tặng bạn")} {t("một món quà game Xbox")}
               </p>
 
               <button
                 type="button"
                 onClick={open}
-                aria-label="Mở quà"
+                aria-label={t("Mở quà")}
                 className="relative mx-auto block w-48 h-48 cursor-pointer select-none"
                 style={{ animation: phase === "closed" ? "gift-float 2.4s ease-in-out infinite" : undefined }}
               >
@@ -124,12 +125,12 @@ export default function GiftPage() {
                     />
                   ))}
               </button>
-              <p className="mt-8 text-sm text-text-muted">{phase === "closed" ? "Chạm vào hộp quà để mở" : "Đang mở…"}</p>
+              <p className="mt-8 text-sm text-text-muted">{phase === "closed" ? t("Chạm vào hộp quà để mở") : t("Đang mở…")}</p>
             </div>
           ) : (
             <div className="space-y-5 animate-[popIn_0.4s_ease-out]">
               <div className="text-center">
-                <p className="text-xs text-accent mb-2">Quà tặng từ {gift.fromName || "một người bạn"}</p>
+                <p className="text-xs text-accent mb-2">{t("Quà tặng từ")} {gift.fromName || t("một người bạn")}</p>
                 <h1 className="font-display text-2xl md:text-3xl text-text-primary">
                   {gift.items.length === 1 ? gift.items[0].gameName : `${gift.items.length} game Xbox`}
                 </h1>
@@ -161,22 +162,22 @@ export default function GiftPage() {
 
               {gift.status === "Cancelled" ? (
                 <div className="flex items-center gap-2 bg-negative/10 border border-negative/30 px-4 py-3 text-sm text-negative">
-                  <AlertCircle className="w-4 h-4 shrink-0" /> Đơn quà tặng này đã bị hủy.
+                  <AlertCircle className="w-4 h-4 shrink-0" /> {t("Đơn quà tặng này đã bị hủy.")}
                 </div>
               ) : gift.status === "Completed" ? (
                 <div className="flex items-center gap-2 bg-positive/10 border border-positive/30 px-4 py-3 text-sm text-positive">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" /> Game đã được cài vào tài khoản {gift.xboxEmailHint}. Chơi vui nhé!
+                  <CheckCircle2 className="w-4 h-4 shrink-0" /> {t("Game đã được cài vào tài khoản {0}. Chơi vui nhé!", [gift.xboxEmailHint])}
                 </div>
               ) : gift.claimed && !showForm ? (
                 <div className="bg-bg-surface border border-white/10 p-5 space-y-2">
-                  <p className="flex items-center gap-2 text-positive font-semibold"><CheckCircle2 className="w-5 h-5" /> Đã nhận quà</p>
+                  <p className="flex items-center gap-2 text-positive font-semibold"><CheckCircle2 className="w-5 h-5" /> {t("Đã nhận quà")}</p>
                   <p className="text-sm text-text-secondary">
-                    Tài khoản Xbox: <b className="text-text-primary">{gift.xboxEmailHint}</b>.{" "}
-                    {gift.status === "Installing" ? "Moxic đang cài game cho bạn." : gift.paid ? "Moxic sẽ cài game sớm nhất." : "Moxic sẽ cài game ngay khi người tặng hoàn tất thanh toán."}
+                    {t("Tài khoản Xbox:")} <b className="text-text-primary">{gift.xboxEmailHint}</b>.{" "}
+                    {gift.status === "Installing" ? t("Moxic đang cài game cho bạn.") : gift.paid ? t("Moxic sẽ cài game sớm nhất.") : t("Moxic sẽ cài game ngay khi người tặng hoàn tất thanh toán.")}
                   </p>
                   {gift.canClaim && (
                     <button type="button" onClick={() => setEditing(true)} className="text-xs text-accent hover:underline cursor-pointer">
-                      Nhập sai? Cập nhật tài khoản Xbox
+                      {t("Nhập sai? Cập nhật tài khoản Xbox")}
                     </button>
                   )}
                 </div>
@@ -185,27 +186,27 @@ export default function GiftPage() {
               {showForm && gift.status !== "Cancelled" && (
                 <form onSubmit={submit} className="bg-bg-surface border border-white/10 p-5 space-y-4">
                   <div>
-                    <h2 className="font-display text-lg text-text-primary">Nhận quà vào tài khoản Xbox của bạn</h2>
+                    <h2 className="font-display text-lg text-text-primary">{t("Nhận quà vào tài khoản Xbox của bạn")}</h2>
                     <p className="text-xs text-text-muted mt-1">
                       {gift.status === "ActionRequired"
-                        ? "Thông tin trước đó chưa đúng, vui lòng nhập lại."
-                        : "Moxic sẽ đăng nhập để cài game, giống như khi bạn tự mua."}
+                        ? t("Thông tin trước đó chưa đúng, vui lòng nhập lại.")
+                        : t("Moxic sẽ đăng nhập để cài game, giống như khi bạn tự mua.")}
                     </p>
                   </div>
                   <div>
-                    <label htmlFor="gift-email" className="block text-xs text-text-secondary font-semibold mb-1.5">Email tài khoản Xbox *</label>
+                    <label htmlFor="gift-email" className="block text-xs text-text-secondary font-semibold mb-1.5">{t("Email tài khoản Xbox *")}</label>
                     <input id="gift-email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@outlook.com" className={inputClass} />
                   </div>
                   <div>
-                    <label htmlFor="gift-pass" className="block text-xs text-text-secondary font-semibold mb-1.5">Mật khẩu tài khoản Xbox *</label>
-                    <input id="gift-pass" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mật khẩu đăng nhập Xbox" className={inputClass} />
+                    <label htmlFor="gift-pass" className="block text-xs text-text-secondary font-semibold mb-1.5">{t("Mật khẩu tài khoản Xbox *")}</label>
+                    <input id="gift-pass" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("Mật khẩu đăng nhập Xbox")} className={inputClass} />
                   </div>
                   <div>
-                    <label htmlFor="gift-phone" className="block text-xs text-text-secondary font-semibold mb-1.5">SĐT / Zalo <span className="text-text-muted">(để Moxic liên hệ khi cài)</span></label>
+                    <label htmlFor="gift-phone" className="block text-xs text-text-secondary font-semibold mb-1.5">{t("SĐT / Zalo")} <span className="text-text-muted">{t("(để Moxic liên hệ khi cài)")}</span></label>
                     <input id="gift-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0901234567" className={inputClass} />
                   </div>
                   <p className="flex items-start gap-2 text-[11px] text-text-muted">
-                    <Lock className="w-3.5 h-3.5 mt-0.5 shrink-0" /> Mật khẩu được mã hóa, chỉ dùng để cài game. Bạn nên đổi mật khẩu sau khi game đã được cài.
+                    <Lock className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {t("Mật khẩu được mã hóa, chỉ dùng để cài game. Bạn nên đổi mật khẩu sau khi game đã được cài.")}
                   </p>
                   {formError && (
                     <p className="flex items-center gap-2 bg-negative/10 border border-negative/30 px-3 py-2 text-xs text-negative">
@@ -213,19 +214,19 @@ export default function GiftPage() {
                     </p>
                   )}
                   <button type="submit" disabled={claim.isPending} className="w-full h-12 inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-on-accent font-bold disabled:opacity-50 cursor-pointer">
-                    {claim.isPending ? <><MoxicLoader size="sm" /> Đang gửi…</> : <><Gift className="w-4 h-4" /> Nhận quà</>}
+                    {claim.isPending ? <><MoxicLoader size="sm" /> {t("Đang gửi…")}</> : <><Gift className="w-4 h-4" /> {t("Nhận quà")}</>}
                   </button>
                 </form>
               )}
 
               <div className="grid grid-cols-2 gap-3 text-xs text-text-secondary">
-                <p className="flex items-center gap-2 bg-bg-surface/60 border border-white/10 px-3 py-2.5"><ShieldCheck className="w-4 h-4 text-accent shrink-0" /> Game chính hãng Microsoft</p>
-                <p className="flex items-center gap-2 bg-bg-surface/60 border border-white/10 px-3 py-2.5"><Clock className="w-4 h-4 text-accent shrink-0" /> Cài trong 15 đến 30 phút</p>
+                <p className="flex items-center gap-2 bg-bg-surface/60 border border-white/10 px-3 py-2.5"><ShieldCheck className="w-4 h-4 text-accent shrink-0" /> {t("Game chính hãng Microsoft")}</p>
+                <p className="flex items-center gap-2 bg-bg-surface/60 border border-white/10 px-3 py-2.5"><Clock className="w-4 h-4 text-accent shrink-0" /> {t("Cài trong 15 đến 30 phút")}</p>
               </div>
 
               <p className="text-center text-sm text-text-muted">
-                Muốn tặng lại bạn bè?{" "}
-                <Link to="/games" className="text-accent hover:underline">Khám phá game giá rẻ</Link>
+                {t("Muốn tặng lại bạn bè?")}{" "}
+                <Link to="/games" className="text-accent hover:underline">{t("Khám phá game giá rẻ")}</Link>
               </p>
             </div>
           )}

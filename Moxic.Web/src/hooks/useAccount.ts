@@ -17,6 +17,7 @@ import {
 } from "../lib/accountApi";
 import { COUPONS_QUERY_KEY } from "./useCoupons";
 
+import { t } from "../lib/i18n";
 export const ME_QUERY_KEY = ["account", "me"] as const;
 const ORDERS_KEY = ["account", "orders"] as const;
 export const POINTS_QUERY_KEY = ["account", "points"] as const;
@@ -124,7 +125,7 @@ export function useMyPoints(page: number, enabled = true) {
 export function getAccountErrorMessage(err: unknown, fallback: string): string {
   if (isAxiosError(err)) {
     if (err.response?.status === 429) {
-      return "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.";
+      return t("Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.");
     }
     const data = err.response?.data as { error?: unknown } | undefined;
     if (data && typeof data.error === "string" && data.error.trim()) {

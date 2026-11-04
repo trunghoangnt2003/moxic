@@ -9,6 +9,7 @@ import { MoxicLoader } from "../shared/MoxicLoader";
 import PrivacyNotice from "./PrivacyNotice";
 import type { OrderCreateRequest } from "../../types/game";
 
+import { t } from "../../lib/i18n";
 interface Props {
   onSuccess: (orderCode: string) => void;
   /** Code of the applied (server-previewed) coupon. */
@@ -104,14 +105,14 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
     if (isGift) {
-      if (!giftTo.trim()) errors.giftTo = "Nhập tên người nhận";
+      if (!giftTo.trim()) errors.giftTo = t("Nhập tên người nhận");
     }
-    if (!phone.trim()) errors.phone = "Số điện thoại không được để trống";
-    else if (!/^\d+$/.test(phone.trim())) errors.phone = "Số điện thoại chỉ gồm chữ số";
+    if (!phone.trim()) errors.phone = t("Số điện thoại không được để trống");
+    else if (!/^\d+$/.test(phone.trim())) errors.phone = t("Số điện thoại chỉ gồm chữ số");
     if (!isGift) {
-      if (!email.trim()) errors.email = "Email Xbox không được để trống";
-      else if (!email.includes("@")) errors.email = "Email không hợp lệ";
-      if (!password.trim()) errors.password = "Mật khẩu tài khoản Xbox không được để trống";
+      if (!email.trim()) errors.email = t("Email Xbox không được để trống");
+      else if (!email.includes("@")) errors.email = t("Email không hợp lệ");
+      if (!password.trim()) errors.password = t("Mật khẩu tài khoản Xbox không được để trống");
     }
     setFieldErrors(errors);
     // Take the customer to the first field that needs attention (the phone submit bar can be far below it).
@@ -151,11 +152,11 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
       clearCart();
       onSuccess(result.orderCode);
     } catch (err: any) {
-      const msg = err?.response?.data?.error || err?.message || "Đặt hàng thất bại. Vui lòng thử lại.";
+      const msg = t(err?.response?.data?.error ?? "") || err?.message || t("Đặt hàng thất bại. Vui lòng thử lại.");
       const code = err?.response?.data?.code;
       if (typeof code === "string" && code.startsWith("COUPON_")) {
         onCouponRejected?.();
-        setError(`${msg} Mã giảm giá đã được gỡ, bạn có thể đặt hàng lại.`);
+        setError(t("{0} Mã giảm giá đã được gỡ, bạn có thể đặt hàng lại.", [msg]));
       } else {
         setError(msg);
       }
@@ -167,12 +168,12 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
   const invalid = (k: string) => (fieldErrors[k] ? true : undefined);
   const submitLabel = loading ? (
     <>
-      <MoxicLoader size="sm" /> Đang xử lý…
+      <MoxicLoader size="sm" /> {t("Đang xử lý…")}
     </>
   ) : isGift ? (
-    "Đặt quà tặng"
+    t("Đặt quà tặng")
   ) : (
-    "Đặt hàng"
+    t("Đặt hàng")
   );
 
   return (
@@ -183,18 +184,18 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
           <p className="flex items-start gap-2 text-sm text-text-secondary mb-4">
             <UserCheck className="w-4 h-4 text-positive shrink-0 mt-0.5" />
             <span>
-              Đang đăng nhập với <strong className="text-text-primary">{me.displayName}</strong>. Đơn hàng sẽ được lưu vào{" "}
+              {t("Đang đăng nhập với")} <strong className="text-text-primary">{me.displayName}</strong>{t(". Đơn hàng sẽ được lưu vào")}{" "}
               <Link to="/account/orders" className="text-accent hover:underline">
-                Lịch sử mua hàng
+                {t("Lịch sử mua hàng")}
               </Link>
               .
             </span>
           </p>
         ) : (
           <p className="text-sm text-text-secondary mb-4">
-            Đã có tài khoản?{" "}
+            {t("Đã có tài khoản?")}{" "}
             <Link to="/login?redirect=/checkout" className="text-accent hover:underline font-semibold">
-              Đăng nhập để theo dõi đơn hàng
+              {t("Đăng nhập để theo dõi đơn hàng")}
             </Link>
           </p>
         )}
@@ -202,8 +203,8 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
         <div role="radiogroup" aria-label="Mua cho ai" className="grid grid-cols-2 gap-2">
           {(
             [
-              [false, "Cho tôi", User],
-              [true, "Tặng bạn bè", Gift],
+              [false, t("Cho tôi"), User],
+              [true, t("Tặng bạn bè"), Gift],
             ] as const
           ).map(([gift, label, Icon]) => {
             const on = isGift === gift;
@@ -225,34 +226,34 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
           })}
         </div>
         {isGift && (
-          <p className="mt-3 text-sm text-text-muted">Bạn thanh toán và nhận link quà gửi cho bạn bè. Người nhận tự nhập tài khoản Xbox của họ.</p>
+          <p className="mt-3 text-sm text-text-muted">{t("Bạn thanh toán và nhận link quà gửi cho bạn bè. Người nhận tự nhập tài khoản Xbox của họ.")}</p>
         )}
       </div>
 
       {isGift && (
-        <Section title="Món quà">
-          <Field id="gift-to" label="Tên người nhận" required error={fieldErrors.giftTo}>
+        <Section title={t("Món quà")}>
+          <Field id="gift-to" label={t("Tên người nhận")} required error={fieldErrors.giftTo}>
             <input id="gift-to" maxLength={60} value={giftTo} onChange={(e) => setGiftTo(e.target.value)} placeholder="VD: Minh" aria-invalid={invalid("giftTo")} className={inputClass} />
           </Field>
-          <Field id="gift-from" label="Tên người tặng">
-            <input id="gift-from" maxLength={60} value={giftFrom} onChange={(e) => setGiftFrom(e.target.value)} placeholder={me?.displayName || "Tên của bạn"} className={inputClass} />
+          <Field id="gift-from" label={t("Tên người tặng")}>
+            <input id="gift-from" maxLength={60} value={giftFrom} onChange={(e) => setGiftFrom(e.target.value)} placeholder={me?.displayName || t("Tên của bạn")} className={inputClass} />
           </Field>
-          <Field id="gift-msg" label={<>Lời nhắn <span className="text-text-muted font-normal num">({giftMessage.length}/300)</span></>}>
+          <Field id="gift-msg" label={<>{t("Lời nhắn")} <span className="text-text-muted font-normal num">({giftMessage.length}/300)</span></>}>
             <textarea
               id="gift-msg"
               rows={3}
               maxLength={300}
               value={giftMessage}
               onChange={(e) => setGiftMessage(e.target.value)}
-              placeholder="Chúc mừng sinh nhật! Chơi vui nhé"
+              placeholder={t("Chúc mừng sinh nhật! Chơi vui nhé")}
               className={`${inputClass} h-auto py-3 resize-none`}
             />
           </Field>
         </Section>
       )}
 
-      <Section title="Liên hệ">
-        <Field id="checkout-phone" label={isGift ? "Số điện thoại của bạn (người tặng)" : "Số điện thoại"} required error={fieldErrors.phone}>
+      <Section title={t("Liên hệ")}>
+        <Field id="checkout-phone" label={isGift ? t("Số điện thoại của bạn (người tặng)") : t("Số điện thoại")} required error={fieldErrors.phone}>
           <input
             id="checkout-phone"
             type="tel"
@@ -265,19 +266,19 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
             className={inputClass}
           />
         </Field>
-        <Field id="checkout-zalo" label={<>Zalo / Facebook <span className="text-text-muted font-normal">(không bắt buộc)</span></>}>
-          <input id="checkout-zalo" type="text" value={zalo} onChange={(e) => setZalo(e.target.value)} placeholder="Zalo hoặc Facebook để liên hệ" className={inputClass} />
+        <Field id="checkout-zalo" label={<>Zalo / Facebook <span className="text-text-muted font-normal">{t("(không bắt buộc)")}</span></>}>
+          <input id="checkout-zalo" type="text" value={zalo} onChange={(e) => setZalo(e.target.value)} placeholder={t("Zalo hoặc Facebook để liên hệ")} className={inputClass} />
         </Field>
       </Section>
 
       {!isGift && (
-        <Section title="Tài khoản Xbox để cài game">
+        <Section title={t("Tài khoản Xbox để cài game")}>
           <Field
             id="checkout-email"
-            label="Email tài khoản Xbox"
+            label={t("Email tài khoản Xbox")}
             required
             error={fieldErrors.email}
-            hint={emailPrefilled && me && email === me.email ? "Đã điền sẵn email tài khoản, hãy đổi nếu email Xbox của bạn khác." : undefined}
+            hint={emailPrefilled && me && email === me.email ? t("Đã điền sẵn email tài khoản, hãy đổi nếu email Xbox của bạn khác.") : undefined}
           >
             <input
               id="checkout-email"
@@ -290,14 +291,14 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
               className={inputClass}
             />
           </Field>
-          <Field id="checkout-password" label="Mật khẩu tài khoản Xbox" required error={fieldErrors.password}>
+          <Field id="checkout-password" label={t("Mật khẩu tài khoản Xbox")} required error={fieldErrors.password}>
             <input
               id="checkout-password"
               type="password"
               autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mật khẩu đăng nhập Xbox"
+              placeholder={t("Mật khẩu đăng nhập Xbox")}
               aria-invalid={invalid("password")}
               className={inputClass}
             />
@@ -310,7 +311,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
         {!isGift && (
           <label className="flex items-start gap-3 text-sm text-text-secondary cursor-pointer select-none">
             <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="mt-0.5 w-4 h-4 accent-accent shrink-0" />
-            Ghi nhớ SĐT, email Xbox và Zalo trên thiết bị này cho lần mua sau (không lưu mật khẩu)
+            {t("Ghi nhớ SĐT, email Xbox và Zalo trên thiết bị này cho lần mua sau (không lưu mật khẩu)")}
           </label>
         )}
 
@@ -335,7 +336,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
         <div className="px-4 py-3 flex items-center gap-4">
           {total != null && (
             <div className="min-w-0">
-              <p className="text-xs text-text-muted">Thanh toán</p>
+              <p className="text-xs text-text-muted">{t("Thanh toán")}</p>
               <p className="font-display text-xl font-bold text-accent num leading-tight">{formatPrice(total)}</p>
             </div>
           )}

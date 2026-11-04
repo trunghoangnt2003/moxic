@@ -8,7 +8,8 @@ import WishlistButton from "../components/games/WishlistButton";
 import { getReleaseCalendar } from "../lib/discoveryApi";
 import { formatPrice } from "../lib/utils";
 
-const MONTHS = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+import { t } from "../lib/i18n";
+const MONTHS = [t("Tháng 1"), t("Tháng 2"), t("Tháng 3"), t("Tháng 4"), t("Tháng 5"), t("Tháng 6"), t("Tháng 7"), t("Tháng 8"), t("Tháng 9"), t("Tháng 10"), t("Tháng 11"), t("Tháng 12")];
 
 /** "Lịch phát hành": upcoming (and last-30-day) releases grouped by month. */
 export default function ReleaseCalendarPage() {
@@ -33,14 +34,14 @@ export default function ReleaseCalendarPage() {
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <h1 className="font-display text-2xl md:text-4xl font-bold flex items-center gap-3">
-            <CalendarDays className="w-7 h-7 text-accent" /> Lịch phát hành
+            <CalendarDays className="w-7 h-7 text-accent" /> {t("Lịch phát hành")}
           </h1>
-          <p className="text-sm text-text-muted mt-1">Game Xbox sắp ra mắt, đặt trước để chơi ngay ngày đầu tiên.</p>
+          <p className="text-sm text-text-muted mt-1">{t("Game Xbox sắp ra mắt, đặt trước để chơi ngay ngày đầu tiên.")}</p>
         </div>
         <div className="flex border border-white/10">
           {[
-            ["upcoming", "Sắp ra mắt"],
-            ["recent", "Vừa ra mắt"],
+            ["upcoming", t("Sắp ra mắt")],
+            ["recent", t("Vừa ra mắt")],
           ].map(([k, l]) => (
             <button
               key={k}
@@ -58,7 +59,7 @@ export default function ReleaseCalendarPage() {
         <SectionLoader />
       ) : groups.length === 0 ? (
         <p className="text-center text-text-muted py-16 bg-black/40 border border-white/5">
-          {tab === "upcoming" ? "Chưa có game sắp ra mắt trong danh mục." : "Không có game ra mắt trong 30 ngày qua."}
+          {tab === "upcoming" ? t("Chưa có game sắp ra mắt trong danh mục.") : t("Không có game ra mắt trong 30 ngày qua.")}
         </p>
       ) : (
         <div className="space-y-10">
@@ -84,17 +85,17 @@ export default function ReleaseCalendarPage() {
                           <p className="text-xs text-text-muted truncate">{g.genres.map((x) => x.name).slice(0, 3).join(", ")}</p>
                           {days > 0 ? (
                             <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-caution">
-                              <Rocket className="w-3 h-3" /> còn {days} ngày
+                              <Rocket className="w-3 h-3" /> {t("còn {0} ngày", [days])}
                             </p>
                           ) : days === 0 ? (
-                            <p className="mt-1 text-[11px] font-semibold text-positive">Ra mắt hôm nay!</p>
+                            <p className="mt-1 text-[11px] font-semibold text-positive">{t("Ra mắt hôm nay!")}</p>
                           ) : (
-                            <p className="mt-1 text-[11px] text-text-muted">Đã ra mắt</p>
+                            <p className="mt-1 text-[11px] text-text-muted">{t("Đã ra mắt")}</p>
                           )}
                         </div>
                         <div className="text-right shrink-0 hidden sm:block">
                           <p className="text-sm font-bold">{g.salePrice > 0 ? formatPrice(g.salePrice) : "—"}</p>
-                          <p className="text-[11px] text-accent">{g.status === "Preorder" ? "Đặt trước" : "Mua ngay"}</p>
+                          <p className="text-[11px] text-accent">{g.status === "Preorder" ? t("Đặt trước") : t("Mua ngay")}</p>
                         </div>
                         <WishlistButton gameId={g.id} gameName={g.name} className="!opacity-100 shrink-0" />
                       </Link>

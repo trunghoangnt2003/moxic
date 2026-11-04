@@ -5,6 +5,7 @@ import { Search, X, ArrowRight, Loader2 } from "lucide-react";
 import { getGames } from "../../lib/api";
 import { formatPrice } from "../../lib/utils";
 
+import { t } from "../../lib/i18n";
 interface Props {
   /** "desktop": compact field in the top bar that widens on focus. "mobile": full-width field in the menu. */
   variant: "desktop" | "mobile";
@@ -112,7 +113,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
           aria-expanded={showPanel}
           aria-controls={listId}
           aria-autocomplete="list"
-          placeholder="Tìm kiếm game…"
+          placeholder={t("Tìm kiếm game…")}
           value={text}
           onChange={(e) => {
             setText(e.target.value);
@@ -130,7 +131,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
         {text && (
           <button
             type="button"
-            aria-label="Xóa"
+            aria-label={t("Xóa")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
               setText("");
@@ -153,7 +154,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
           }`}
         >
           {term && items.length === 0 && !isFetching && (
-            <p className="px-4 py-4 text-sm text-text-muted">Không tìm thấy game cho “{term}”.</p>
+            <p className="px-4 py-4 text-sm text-text-muted">{t("Không tìm thấy game cho “{0}”.", [term])}</p>
           )}
           {items.map((g, i) => {
             const discount = g.originalPrice > g.salePrice && g.originalPrice > 0 ? Math.round((1 - g.salePrice / g.originalPrice) * 100) : 0;
@@ -177,12 +178,12 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{g.name}</p>
                   <p className="text-[11px] text-text-muted truncate">
-                    {g.status === "Preorder" ? "Đặt trước" : g.genres.map((x) => x.name).slice(0, 2).join(", ")}
+                    {g.status === "Preorder" ? t("Đặt trước") : g.genres.map((x) => x.name).slice(0, 2).join(", ")}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
                   {discount > 0 && <span className="block text-[10px] font-bold text-discount">-{discount}%</span>}
-                  <span className="text-sm font-semibold">{g.salePrice === 0 ? "Miễn phí" : formatPrice(g.salePrice)}</span>
+                  <span className="text-sm font-semibold">{g.salePrice === 0 ? t("Miễn phí") : formatPrice(g.salePrice)}</span>
                 </div>
               </button>
             );
@@ -200,7 +201,7 @@ export default function HeaderSearch({ variant, onNavigate }: Props) {
               }`}
             >
               <span className="truncate">
-                Xem tất cả kết quả cho “{term}”{data && data.total > 0 ? ` (${data.total})` : ""}
+                {t("Xem tất cả kết quả cho “{0}”{1}", [term, data && data.total > 0 ? ` (${data.total})` : ""])}
               </span>
               <ArrowRight className="w-4 h-4 shrink-0" />
             </button>

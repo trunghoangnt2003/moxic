@@ -7,6 +7,7 @@ import { getCouponErrorMessage, shortCouponDiscount, type CouponQuote } from "..
 import { formatPrice } from "../../lib/utils";
 import { MoxicLoader } from "../shared/MoxicLoader";
 
+import { t } from "../../lib/i18n";
 interface Props {
   gameIds: string[];
   applied: CouponQuote | null;
@@ -37,7 +38,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
   const apply = (raw: string) => {
     const normalized = normalize(raw);
     if (!normalized) {
-      setError("Vui lòng nhập mã giảm giá.");
+      setError(t("Vui lòng nhập mã giảm giá."));
       return;
     }
     if (gameIds.length === 0) return;
@@ -51,7 +52,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
           setCode("");
           onApplied(q);
         },
-        onError: (err) => setError(getCouponErrorMessage(err, "Không áp dụng được mã giảm giá.")),
+        onError: (err) => setError(getCouponErrorMessage(err, t("Không áp dụng được mã giảm giá."))),
       }
     );
   };
@@ -68,7 +69,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
           appliedKeyRef.current = key;
           onApplied(q);
         },
-        onError: (err) => setError(getCouponErrorMessage(err, "Không áp dụng được mã giảm giá.")),
+        onError: (err) => setError(getCouponErrorMessage(err, t("Không áp dụng được mã giảm giá."))),
       }
     );
   }, [me, initialCode, key, mutate, onApplied]);
@@ -85,7 +86,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
         onSuccess: (q) => onApplied(q),
         onError: (err) => {
           onApplied(null);
-          setError(getCouponErrorMessage(err, "Mã giảm giá không còn áp dụng được cho giỏ hàng."));
+          setError(getCouponErrorMessage(err, t("Mã giảm giá không còn áp dụng được cho giỏ hàng.")));
         },
       }
     );
@@ -97,9 +98,9 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
     return (
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border border-dashed border-white/15 px-4 py-3 text-sm">
         <TicketPercent className="h-4 w-4 shrink-0 text-accent" />
-        <span className="text-text-secondary">Có mã giảm giá?</span>
+        <span className="text-text-secondary">{t("Có mã giảm giá?")}</span>
         <Link to={`/login?redirect=${encodeURIComponent("/checkout")}`} className="font-semibold text-accent hover:underline">
-          Đăng nhập để dùng
+          {t("Đăng nhập để dùng")}
         </Link>
       </p>
     );
@@ -114,7 +115,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
           <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-positive" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-text-primary">
-              Đã áp dụng <span className="font-mono font-semibold">{applied.code}</span>
+              {t("Đã áp dụng")} <span className="font-mono font-semibold">{applied.code}</span>
               <span className="text-text-secondary">, {applied.name}</span>
             </p>
             <p className="mt-0.5 text-sm font-bold text-positive">−{formatPrice(applied.discountAmount)}</p>
@@ -128,7 +129,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
             }}
             className="flex flex-shrink-0 cursor-pointer items-center gap-1 px-1.5 py-1 text-xs text-text-secondary hover:text-negative"
           >
-            <X className="h-3.5 w-3.5" /> Bỏ mã
+            <X className="h-3.5 w-3.5" /> {t("Bỏ mã")}
           </button>
         </div>
       ) : (
@@ -145,8 +146,8 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               maxLength={40}
-              placeholder="Nhập mã giảm giá"
-              aria-label="Mã giảm giá"
+              placeholder={t("Nhập mã giảm giá")}
+              aria-label={t("Mã giảm giá")}
               className="w-full h-11 border border-white/15 bg-bg-base pl-9 pr-3 font-mono text-base text-text-primary placeholder:font-sans placeholder:normal-case placeholder:text-text-muted focus:border-accent focus:outline-none"
             />
           </div>
@@ -155,7 +156,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
             disabled={isPending}
             className="flex h-11 min-w-[88px] shrink-0 cursor-pointer items-center justify-center border border-accent px-4 text-sm font-semibold text-accent hover:text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? <MoxicLoader size="sm" /> : "Áp dụng"}
+            {isPending ? <MoxicLoader size="sm" /> : t("Áp dụng")}
           </button>
         </form>
       )}
@@ -168,7 +169,7 @@ export default function CouponBox({ gameIds, applied, onApplied, initialCode }: 
 
       {usable.length > 0 && (
         <div>
-          <p className="mb-2 text-sm text-text-muted">Mã trong ví của bạn</p>
+          <p className="mb-2 text-sm text-text-muted">{t("Mã trong ví của bạn")}</p>
           <div className="flex flex-wrap gap-1.5">
             {usable.map((c) => (
               <button

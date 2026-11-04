@@ -9,6 +9,7 @@ import { MoxicLoader } from "../components/shared/MoxicLoader";
 import { getAccountErrorMessage, useForgotPassword, useResetPassword } from "../hooks/useAccount";
 import { useCountdown } from "../hooks/useCountdown";
 
+import { t } from "../lib/i18n";
 const RESEND_COOLDOWN = 60;
 
 type Step = "request" | "reset";
@@ -41,7 +42,7 @@ export default function ForgotPasswordPage() {
 
   const requestCode = (onDone?: () => void) => {
     if (!email.trim() || !email.includes("@")) {
-      setFieldErrors({ email: "Vui lòng nhập email hợp lệ." });
+      setFieldErrors({ email: t("Vui lòng nhập email hợp lệ.") });
       return;
     }
     setFieldErrors({});
@@ -52,7 +53,7 @@ export default function ForgotPasswordPage() {
         cooldown.start(RESEND_COOLDOWN);
         onDone?.();
       },
-      onError: (err) => setError(getAccountErrorMessage(err, "Không thể gửi mã. Vui lòng thử lại.")),
+      onError: (err) => setError(getAccountErrorMessage(err, t("Không thể gửi mã. Vui lòng thử lại."))),
     });
   };
 
@@ -64,10 +65,10 @@ export default function ForgotPasswordPage() {
   const handleReset = (e: FormEvent) => {
     e.preventDefault();
     const errors: FieldErrors = {};
-    if (code.length !== 6) errors.code = "Vui lòng nhập đủ 6 chữ số.";
-    if (password.length < 8) errors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
-    else if (!/\d/.test(password)) errors.password = "Mật khẩu phải chứa ít nhất 1 chữ số.";
-    if (confirm !== password) errors.confirm = "Mật khẩu nhập lại không khớp.";
+    if (code.length !== 6) errors.code = t("Vui lòng nhập đủ 6 chữ số.");
+    if (password.length < 8) errors.password = t("Mật khẩu phải có ít nhất 8 ký tự.");
+    else if (!/\d/.test(password)) errors.password = t("Mật khẩu phải chứa ít nhất 1 chữ số.");
+    if (confirm !== password) errors.confirm = t("Mật khẩu nhập lại không khớp.");
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -79,7 +80,7 @@ export default function ForgotPasswordPage() {
           toast.success(data.message);
           navigate(`/login?email=${encodeURIComponent(email.trim())}`, { replace: true });
         },
-        onError: (err) => setError(getAccountErrorMessage(err, "Không thể đặt lại mật khẩu. Vui lòng thử lại.")),
+        onError: (err) => setError(getAccountErrorMessage(err, t("Không thể đặt lại mật khẩu. Vui lòng thử lại."))),
       },
     );
   };
@@ -93,21 +94,21 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Quên mật khẩu"
+      title={t("Quên mật khẩu")}
       subtitle={
         step === "request" ? (
-          "Nhập email tài khoản, chúng tôi sẽ gửi mã 6 chữ số để đặt lại mật khẩu."
+          t("Nhập email tài khoản, chúng tôi sẽ gửi mã 6 chữ số để đặt lại mật khẩu.")
         ) : (
           <>
-            Nhập mã đã gửi tới <strong className="text-text-primary break-all">{email.trim()}</strong> và mật khẩu mới.
+            {t("Nhập mã đã gửi tới")} <strong className="text-text-primary break-all">{email.trim()}</strong> {t("và mật khẩu mới.")}
           </>
         )
       }
       footer={
         <p>
-          Nhớ mật khẩu rồi?{" "}
+          {t("Nhớ mật khẩu rồi?")}{" "}
           <Link to="/login" className="text-accent hover:underline font-semibold">
-            Đăng nhập
+            {t("Đăng nhập")}
           </Link>
         </p>
       }
@@ -128,10 +129,10 @@ export default function ForgotPasswordPage() {
           <button type="submit" disabled={forgot.isPending} className={primaryButton}>
             {forgot.isPending ? (
               <>
-                <MoxicLoader size="sm" /> Đang gửi…
+                <MoxicLoader size="sm" /> {t("Đang gửi…")}
               </>
             ) : (
-              "Gửi mã"
+              t("Gửi mã")
             )}
           </button>
         </form>
@@ -139,30 +140,30 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleReset} className="space-y-4" noValidate>
           <OtpInput
             id="reset-code"
-            label="Mã xác nhận"
+            label={t("Mã xác nhận")}
             value={code}
             onChange={setCode}
-            hint="Mã có hiệu lực trong 15 phút. Kiểm tra cả thư mục Spam."
+            hint={t("Mã có hiệu lực trong 15 phút. Kiểm tra cả thư mục Spam.")}
             error={fieldErrors.code}
           />
           <AuthField
             id="reset-password"
-            label="Mật khẩu mới"
+            label={t("Mật khẩu mới")}
             type="password"
             value={password}
             onChange={setPassword}
-            placeholder="Mật khẩu mới"
+            placeholder={t("Mật khẩu mới")}
             autoComplete="new-password"
-            hint="Tối thiểu 8 ký tự, gồm ít nhất 1 chữ số."
+            hint={t("Tối thiểu 8 ký tự, gồm ít nhất 1 chữ số.")}
             error={fieldErrors.password}
           />
           <AuthField
             id="reset-confirm"
-            label="Nhập lại mật khẩu mới"
+            label={t("Nhập lại mật khẩu mới")}
             type="password"
             value={confirm}
             onChange={setConfirm}
-            placeholder="Nhập lại mật khẩu mới"
+            placeholder={t("Nhập lại mật khẩu mới")}
             autoComplete="new-password"
             error={fieldErrors.confirm}
           />
@@ -170,10 +171,10 @@ export default function ForgotPasswordPage() {
           <button type="submit" disabled={reset.isPending} className={primaryButton}>
             {reset.isPending ? (
               <>
-                <MoxicLoader size="sm" /> Đang cập nhật…
+                <MoxicLoader size="sm" /> {t("Đang cập nhật…")}
               </>
             ) : (
-              "Đặt lại mật khẩu"
+              t("Đặt lại mật khẩu")
             )}
           </button>
           <button
@@ -183,7 +184,7 @@ export default function ForgotPasswordPage() {
             className="w-full border border-white/10 hover:bg-bg-elevated text-text-secondary hover:text-text-primary py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {forgot.isPending && <MoxicLoader size="sm" />}
-            {cooldown.active ? `Gửi lại mã (${cooldown.remaining}s)` : "Gửi lại mã"}
+            {cooldown.active ? t("Gửi lại mã ({0}s)", [cooldown.remaining]) : t("Gửi lại mã")}
           </button>
           <button
             type="button"
@@ -194,7 +195,7 @@ export default function ForgotPasswordPage() {
             }}
             className="w-full text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
           >
-            Đổi email
+            {t("Đổi email")}
           </button>
         </form>
       )}

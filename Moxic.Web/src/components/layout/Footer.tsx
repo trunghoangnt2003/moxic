@@ -1,6 +1,7 @@
 ﻿import { Link } from "react-router-dom";
 import { Gamepad2 } from "lucide-react";
 
+import { t } from "../../lib/i18n";
 export default function Footer() {
   return (
     <footer className="bg-bg-surface border-t border-border mt-16">
@@ -15,22 +16,22 @@ export default function Footer() {
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-text-secondary">
             <Link to="/bang-gia-xbox" className="hover:text-text-primary transition-colors">
-              Bảng giá Xbox
+              {t("Bảng giá Xbox")}
             </Link>
             <Link to="/hoi-dap" className="hover:text-text-primary transition-colors">
-              Hỏi đáp
+              {t("Hỏi đáp")}
             </Link>
             <Link to="/leaderboard" className="hover:text-text-primary transition-colors">
-              Bảng xếp hạng
+              {t("Bảng xếp hạng")}
             </Link>
             <Link to="/games" className="hover:text-text-primary transition-colors">
               Store
             </Link>
             <a href="#" className="hover:text-text-primary transition-colors">
-              Điều khoản
+              {t("Điều khoản")}
             </a>
             <a href="#" className="hover:text-text-primary transition-colors">
-              Bảo mật
+              {t("Bảo mật")}
             </a>
           </div>
         </div>
@@ -41,7 +42,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <p className="text-text-muted text-xs">
-            Moxic GameStore, Game Xbox chính hãng giá rẻ hơn 30% so với Store
+            {t("Moxic GameStore, Game Xbox chính hãng giá rẻ hơn 30% so với Store")}
           </p>
           <p className="text-text-muted text-xs">
             &copy; 2026 Moxic. All rights reserved.

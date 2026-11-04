@@ -1,11 +1,12 @@
 import { Check } from "lucide-react";
 
-const STEPS = ["Giỏ hàng", "Thông tin", "Thanh toán", "Hoàn tất"];
+import { t } from "../../lib/i18n";
+const STEPS = [t("Giỏ hàng"), t("Thông tin"), t("Thanh toán"), t("Hoàn tất")];
 
 /** Cart Info Payment Done progress header shared by the purchase flow pages. */
 export default function CheckoutSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
   return (
-    <ol className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 text-xs sm:text-sm" aria-label="Các bước mua hàng">
+    <ol className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 text-xs sm:text-sm" aria-label={t("Các bước mua hàng")}>
       {STEPS.map((label, i) => {
         const done = i < current;
         const active = i === current;

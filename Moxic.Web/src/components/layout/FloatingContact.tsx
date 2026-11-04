@@ -6,6 +6,7 @@ import { useContactSettings } from "../../hooks/useLuckySpin";
 import { getChatConfig, getChatUnread, useChatUi } from "../../lib/chatApi";
 import ChatPanel from "../chat/ChatPanel";
 
+import { t } from "../../lib/i18n";
 function MessengerGlyph({ className = "" }: { className?: string }) {
   // lucide 1.x has no brand icons, inline Messenger glyph.
   return (
@@ -93,7 +94,7 @@ export default function FloatingContact() {
     secondary.push({
       key: "phone",
       href: phoneHref,
-      label: `Gọi ${data?.phoneNumber ?? ""}`.trim(),
+      label: t("Gọi {0}", [data?.phoneNumber ?? ""]).trim(),
       external: false,
       className: "bg-positive hover:bg-positive",
       content: <Phone className="h-5 w-5 text-on-solid" strokeWidth={2.4} />,
@@ -155,7 +156,7 @@ export default function FloatingContact() {
         <button
           type="button"
           onClick={() => openChat()}
-          aria-label="Chat với Moxic"
+          aria-label={t("Chat với Moxic")}
           className="group pointer-events-auto relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-on-accent shadow-lg shadow-accent/40 transition-transform duration-200 hover:scale-105 cursor-pointer"
         >
           <span className="pointer-events-none absolute inset-0 rounded-full bg-accent/40 animate-ping [animation-duration:2.4s]" />
@@ -165,7 +166,7 @@ export default function FloatingContact() {
               {unread > 9 ? "9+" : unread}
             </span>
           )}
-          <HoverLabel>Chat với Moxic</HoverLabel>
+          <HoverLabel>{t("Chat với Moxic")}</HoverLabel>
         </button>
       )}
 
@@ -189,7 +190,7 @@ export default function FloatingContact() {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          aria-label={open ? "Thu gọn" : "Mở thêm liên hệ"}
+          aria-label={open ? t("Thu gọn") : t("Mở thêm liên hệ")}
           className={`pointer-events-auto mr-1 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-colors duration-200 ${
             open
               ? "border-white/20 bg-bg-elevated text-text-primary"

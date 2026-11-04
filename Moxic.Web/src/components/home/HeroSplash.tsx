@@ -4,6 +4,7 @@ import type { GameListItem, GameDetail } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
 import { ShoppingCart } from "lucide-react";
 
+import { t } from "../../lib/i18n";
 interface Props {
   featured: any[]; // Changed to any[] to accept GameDetail
   available: GameListItem[];
@@ -21,16 +22,16 @@ function Countdown({ date }: { date: string }) {
   }, [date]);
 
   if (left == null) return null;
-  if (left === 0) return <p className="text-sm font-semibold text-positive">Đã ra mắt</p>;
+  if (left === 0) return <p className="text-sm font-semibold text-positive">{t("Đã ra mắt")}</p>;
   const parts: [number, string][] = [
-    [Math.floor(left / 86_400_000), "ngày"],
-    [Math.floor((left % 86_400_000) / 3_600_000), "giờ"],
-    [Math.floor((left % 3_600_000) / 60_000), "phút"],
-    [Math.floor((left % 60_000) / 1000), "giây"],
+    [Math.floor(left / 86_400_000), t("ngày")],
+    [Math.floor((left % 86_400_000) / 3_600_000), t("giờ")],
+    [Math.floor((left % 3_600_000) / 60_000), t("phút")],
+    [Math.floor((left % 60_000) / 1000), t("giây")],
   ];
   return (
     <div>
-      <p className="text-sm text-white/70 mb-2">Ra mắt sau</p>
+      <p className="text-sm text-white/70 mb-2">{t("Ra mắt sau")}</p>
       <div className="flex gap-2" role="timer" aria-live="off">
         {parts.map(([n, unit]) => (
           <div key={unit} className="w-14 py-2 text-center bg-black/50 border border-white/10">
@@ -99,7 +100,7 @@ export default function HeroSplash({ featured, available }: Props) {
             <div className="relative z-20 flex flex-col h-full justify-between gap-6">
               <div>
                 {isPreorder && (
-                  <span className="inline-block px-2.5 py-1 rounded-sm bg-preorder text-on-solid text-xs font-bold mb-4">Bom tấn sắp ra mắt</span>
+                  <span className="inline-block px-2.5 py-1 rounded-sm bg-preorder text-on-solid text-xs font-bold mb-4">{t("Bom tấn sắp ra mắt")}</span>
                 )}
                 <h1 className="font-display text-4xl md:text-6xl font-extrabold text-white leading-[1.05] drop-shadow-2xl max-w-2xl">{hero.name}</h1>
                 {hero.description && (
@@ -110,7 +111,7 @@ export default function HeroSplash({ featured, available }: Props) {
               <div className="space-y-5">
                 <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
                   <div>
-                    <p className="text-sm text-white/70">{isPreorder ? "Giá đặt trước" : "Giá tại Moxic"}</p>
+                    <p className="text-sm text-white/70">{isPreorder ? t("Giá đặt trước") : t("Giá tại Moxic")}</p>
                     <div className="mt-1 flex items-baseline gap-3 flex-wrap">
                       {discount > 0 && <span className="px-1.5 py-0.5 rounded-sm text-sm font-bold bg-discount text-on-solid num">-{discount}%</span>}
                       {discount > 0 && <span className="text-white/50 line-through text-sm num">{formatPrice(hero.originalPrice)}</span>}
@@ -122,7 +123,7 @@ export default function HeroSplash({ featured, available }: Props) {
                     className="h-12 px-6 inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-on-accent font-bold transition-colors shadow-lg shadow-black/40"
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    {isPreorder ? "Đặt trước ngay" : "Mua ngay"}
+                    {isPreorder ? t("Đặt trước ngay") : t("Mua ngay")}
                   </Link>
                 </div>
                 {isPreorder && hero.releaseDate && <Countdown date={hero.releaseDate} />}

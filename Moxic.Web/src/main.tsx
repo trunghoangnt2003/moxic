@@ -1,4 +1,5 @@
-﻿import { StrictMode } from 'react'
+import './lib/i18n' // first: sets the language (from the URL) and Accept-Language before any API client is created
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'

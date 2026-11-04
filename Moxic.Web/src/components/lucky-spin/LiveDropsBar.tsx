@@ -6,6 +6,7 @@ import { useLiveDrops } from "../../hooks/useLuckySpin";
 import type { LiveDrop } from "../../lib/luckySpinApi";
 import { timeAgo } from "../../lib/utils";
 
+import { t } from "../../lib/i18n";
 const WOW_GOLD = "#e4ae39";
 const SLIDE_MS = 450;
 
@@ -112,7 +113,7 @@ export default function LiveDropsBar() {
 
   return (
     <section
-      aria-label="Phần thưởng vừa trúng"
+      aria-label={t("Phần thưởng vừa trúng")}
       className="relative overflow-hidden rounded-sm border border-white/10 bg-spin-deep/85"
     >
       <div className="flex items-stretch gap-2 p-2">

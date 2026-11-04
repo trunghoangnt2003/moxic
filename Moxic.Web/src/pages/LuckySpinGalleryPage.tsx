@@ -11,11 +11,12 @@ import { useMe } from "../hooks/useAccount";
 import { formatPoints, lookupSpinCode, type OpenMethod } from "../lib/luckySpinApi";
 import { useServerNow } from "../hooks/useCountdown";
 
+import { t } from "../lib/i18n";
 const FILTERS: { key: OpenMethod | null; label: string }[] = [
-  { key: null, label: "Tất cả" },
-  { key: "Code", label: "Nhập mã" },
-  { key: "FreeInterval", label: "Miễn phí" },
-  { key: "Points", label: "Dùng điểm" },
+  { key: null, label: t("Tất cả") },
+  { key: "Code", label: t("Nhập mã") },
+  { key: "FreeInterval", label: t("Miễn phí") },
+  { key: "Points", label: t("Dùng điểm") },
 ];
 
 const normalizeCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
@@ -47,7 +48,7 @@ export default function LuckySpinGalleryPage() {
   const resolveCode = async (raw: string, replace: boolean) => {
     const value = normalizeCode(raw);
     if (!value) {
-      toast.error("Vui lòng nhập mã quay.");
+      toast.error(t("Vui lòng nhập mã quay."));
       return;
     }
     setLookingUp(true);
@@ -82,12 +83,11 @@ export default function LuckySpinGalleryPage() {
       {/* Heading */}
       <div className="mb-6 text-center md:mb-8">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-[11px] font-semibold text-highlight">
-          <Sparkles className="h-3 w-3" /> Mở hòm
+          <Sparkles className="h-3 w-3" /> {t("Mở hòm")}
         </div>
-        <h1 className="mt-3 font-display text-3xl font-bold text-text-primary md:text-4xl">Vòng Quay May Mắn</h1>
+        <h1 className="mt-3 font-display text-3xl font-bold text-text-primary md:text-4xl">{t("Vòng Quay May Mắn")}</h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-text-muted">
-          Chọn hòm để mở bằng mã quay, lượt miễn phí theo chu kỳ hoặc điểm thưởng, cơ hội nhận game Xbox miễn phí và
-          mã giảm giá.
+          {t("Chọn hòm để mở bằng mã quay, lượt miễn phí theo chu kỳ hoặc điểm thưởng, cơ hội nhận game Xbox miễn phí và mã giảm giá.")}
         </p>
         <div className="mt-4 flex justify-center">
           {loggedIn ? (
@@ -95,14 +95,14 @@ export default function LuckySpinGalleryPage() {
               to="/account/points"
               className="inline-flex items-center gap-1.5 rounded-full border border-caution/30 bg-caution/10 px-3 py-1.5 text-xs font-semibold text-caution transition-colors hover:bg-caution/20"
             >
-              <Coins className="h-3.5 w-3.5" /> Điểm của bạn: {formatPoints(me.points)}
+              <Coins className="h-3.5 w-3.5" /> {t("Điểm của bạn: {0}", [formatPoints(me.points)])}
             </Link>
           ) : (
             <Link
               to="/login?redirect=/lucky-spin"
               className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10"
             >
-              <LogIn className="h-3.5 w-3.5" /> Đăng nhập để mở hòm miễn phí và dùng điểm
+              <LogIn className="h-3.5 w-3.5" /> {t("Đăng nhập để mở hòm miễn phí và dùng điểm")}
             </Link>
           )}
         </div>
@@ -114,16 +114,16 @@ export default function LuckySpinGalleryPage() {
       <form
         onSubmit={submitCode}
         className="mx-auto mt-6 flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center"
-        aria-label="Nhập mã quay"
+        aria-label={t("Nhập mã quay")}
       >
         <label htmlFor="gallery-code" className="flex items-center gap-1.5 text-sm font-semibold text-highlight sm:whitespace-nowrap">
-          <KeyRound className="h-4 w-4" /> Có mã quay?
+          <KeyRound className="h-4 w-4" /> {t("Có mã quay?")}
         </label>
         <input
           id="gallery-code"
           value={code}
           onChange={(e) => setCode(normalizeCode(e.target.value))}
-          placeholder="NHẬP MÃ QUAY"
+          placeholder={t("NHẬP MÃ QUAY")}
           maxLength={32}
           autoComplete="off"
           autoCapitalize="characters"
@@ -136,13 +136,13 @@ export default function LuckySpinGalleryPage() {
           className="inline-flex h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold text-on-solid transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, var(--color-spin-glow) 0%, var(--color-spin-pink) 100%)" }}
         >
-          {lookingUp ? <MoxicLoader size="sm" /> : null} Tìm hòm
+          {lookingUp ? <MoxicLoader size="sm" /> : null} {t("Tìm hòm")}
         </button>
       </form>
 
       {/* Filters */}
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Lọc theo cách mở">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label={t("Lọc theo cách mở")}>
           {FILTERS.map((f) => {
             const active = method === f.key;
             return (
@@ -167,9 +167,9 @@ export default function LuckySpinGalleryPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm hòm…"
+            placeholder={t("Tìm hòm…")}
             maxLength={100}
-            aria-label="Tìm hòm"
+            aria-label={t("Tìm hòm")}
             className="h-10 w-full rounded-sm border border-white/10 bg-spin-deep pl-9 pr-3 text-sm text-white placeholder:text-white/35 outline-none focus:border-highlight"
           />
         </div>
@@ -178,21 +178,21 @@ export default function LuckySpinGalleryPage() {
       {/* Grid */}
       <div className="mt-5">
         {isLoading ? (
-          <SectionLoader label="Đang tải hòm…" />
+          <SectionLoader label={t("Đang tải hòm…")} />
         ) : isError ? (
           <div className="rounded-sm border border-white/10 bg-white/5 p-8 text-center">
-            <p className="mb-4 text-sm text-negative">Không thể tải danh sách hòm. Vui lòng thử lại.</p>
+            <p className="mb-4 text-sm text-negative">{t("Không thể tải danh sách hòm. Vui lòng thử lại.")}</p>
             <button
               type="button"
               onClick={() => void refetch()}
               className="rounded-sm bg-highlight px-5 py-2 text-sm font-semibold text-on-solid hover:bg-highlight"
             >
-              Thử lại
+              {t("Thử lại")}
             </button>
           </div>
         ) : cases.length === 0 ? (
           <p className="rounded-sm border border-white/10 bg-white/5 px-4 py-10 text-center text-sm text-text-muted">
-            {method || q ? "Không tìm thấy hòm phù hợp." : "Chưa có hòm nào."}
+            {method || q ? t("Không tìm thấy hòm phù hợp.") : t("Chưa có hòm nào.")}
           </p>
         ) : (
           <>
@@ -210,7 +210,7 @@ export default function LuckySpinGalleryPage() {
                   className="inline-flex items-center gap-2 rounded-sm border border-highlight/40 bg-highlight/10 px-6 py-2.5 text-sm font-semibold text-highlight transition-colors hover:bg-highlight/20 disabled:opacity-60"
                 >
                   {isFetchingNextPage ? <MoxicLoader size="sm" /> : null}
-                  Xem thêm hòm
+                  {t("Xem thêm hòm")}
                 </button>
               </div>
             )}

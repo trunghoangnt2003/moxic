@@ -4,6 +4,7 @@ import { Columns3, X } from "lucide-react";
 import { compareList } from "../../lib/localIds";
 import { useGames } from "../../hooks/useGames";
 
+import { t } from "../../lib/i18n";
 const MAX = 3;
 
 export function toggleCompare(id: string, name?: string) {
@@ -13,11 +14,11 @@ export function toggleCompare(id: string, name?: string) {
     return;
   }
   if (ids.length >= MAX) {
-    toast.error(`Chỉ so sánh tối đa ${MAX} game, bỏ bớt một game trước nhé`);
+    toast.error(t("Chỉ so sánh tối đa {0} game, bỏ bớt một game trước nhé", [MAX]));
     return;
   }
   compareList.set([...ids, id]);
-  toast.success(name ? `Đã thêm “${name}” vào so sánh` : "Đã thêm vào so sánh");
+  toast.success(name ? t("Đã thêm “{0}” vào so sánh", [name]) : t("Đã thêm vào so sánh"));
 }
 
 /** Labelled toggle for the game page. */
@@ -33,7 +34,7 @@ export function CompareButton({ gameId, gameName, className = "" }: { gameId: st
         active ? "border-info/60 bg-info/10 text-info" : "border-white/15 text-text-secondary hover:text-white hover:border-white/30"
       } ${className}`}
     >
-      <Columns3 className="w-4 h-4" /> {active ? "Đang so sánh" : "So sánh"}
+      <Columns3 className="w-4 h-4" /> {active ? t("Đang so sánh") : t("So sánh")}
     </button>
   );
 }
@@ -58,7 +59,7 @@ export function CompareBar() {
                 <button
                   type="button"
                   onClick={() => compareList.remove(g.id)}
-                  aria-label={`Bỏ ${g.name}`}
+                  aria-label={t("Bỏ {0}", [g.name])}
                   className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center bg-black/80 text-white cursor-pointer"
                 >
                   <X className="w-3 h-3" />
@@ -73,9 +74,9 @@ export function CompareBar() {
           to={`/compare?ids=${ids.join(",")}`}
           className={`h-10 px-4 inline-flex items-center gap-1.5 text-sm font-bold ${ids.length >= 2 ? "bg-info text-on-accent" : "bg-white/10 text-text-muted pointer-events-none"}`}
         >
-          <Columns3 className="w-4 h-4" /> So sánh {ids.length}/{MAX}
+          <Columns3 className="w-4 h-4" /> {t("So sánh {0}/{1}", [ids.length, MAX])}
         </Link>
-        <button type="button" onClick={() => compareList.clear()} aria-label="Xóa danh sách so sánh" className="p-2 text-text-muted hover:text-white cursor-pointer">
+        <button type="button" onClick={() => compareList.clear()} aria-label={t("Xóa danh sách so sánh")} className="p-2 text-text-muted hover:text-white cursor-pointer">
           <X className="w-4 h-4" />
         </button>
       </div>

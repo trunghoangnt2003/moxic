@@ -10,6 +10,7 @@ import { getActivePaymentConfig } from "../lib/api";
 import { cancelRental, extendRental, getRental, markRentalPaid, RENTAL_STATUS, rentalError, type RentalDetail } from "../lib/rentalApi";
 import { formatPrice } from "../lib/utils";
 
+import { t, locale } from "../lib/i18n";
 function useTick(ms = 1000) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -26,7 +27,7 @@ function remaining(target: string | null, now: number) {
   return { ms, d: Math.floor(ms / 86_400_000), h: Math.floor((ms % 86_400_000) / 3_600_000), m: Math.floor((ms % 3_600_000) / 60_000), s: Math.floor((ms % 60_000) / 1000) };
 }
 
-const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }) : "—");
+const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString(locale, { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }) : "—");
 
 function CopyField({ label, value, secret }: { label: string; value: string; secret?: boolean }) {
   const [show, setShow] = useState(!secret);
@@ -37,7 +38,7 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error("Không sao chép được");
+      toast.error(t("Không sao chép được"));
     }
   };
   return (
@@ -46,11 +47,11 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
       <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 h-11">
         <span className="flex-1 font-mono text-sm truncate select-all">{show ? value : "•".repeat(Math.min(12, value.length))}</span>
         {secret && (
-          <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Ẩn" : "Hiện"} className="p-1.5 text-text-muted hover:text-white cursor-pointer">
+          <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? t("Ẩn") : t("Hiện")} className="p-1.5 text-text-muted hover:text-white cursor-pointer">
             {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
-        <button type="button" onClick={copy} aria-label={`Sao chép ${label}`} className="p-1.5 text-text-muted hover:text-white cursor-pointer">
+        <button type="button" onClick={copy} aria-label={t("Sao chép {0}", [label])} className="p-1.5 text-text-muted hover:text-white cursor-pointer">
           {copied ? <Check className="w-4 h-4 text-positive" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
@@ -60,10 +61,10 @@ function CopyField({ label, value, secret }: { label: string; value: string; sec
 
 function Timeline({ r }: { r: RentalDetail }) {
   const steps = [
-    { key: "order", label: "Giữ chỗ", done: true },
-    { key: "pay", label: "Thanh toán", done: ["AwaitingConfirmation", "Active", "Expired", "Returned"].includes(r.status) },
-    { key: "deliver", label: "Bàn giao", done: ["Active", "Expired", "Returned"].includes(r.status) },
-    { key: "end", label: "Kết thúc", done: ["Expired", "Returned"].includes(r.status) },
+    { key: "order", label: t("Giữ chỗ"), done: true },
+    { key: "pay", label: t("Thanh toán"), done: ["AwaitingConfirmation", "Active", "Expired", "Returned"].includes(r.status) },
+    { key: "deliver", label: t("Bàn giao"), done: ["Active", "Expired", "Returned"].includes(r.status) },
+    { key: "end", label: t("Kết thúc"), done: ["Expired", "Returned"].includes(r.status) },
   ];
   if (r.status === "Cancelled") return null;
   return (
@@ -89,21 +90,21 @@ function PayBox({ code, amount, payBefore, onPaid, onCancel, busy }: { code: str
     <div className="space-y-4">
       {left && (
         <p className={`flex items-center gap-2 text-sm ${left.ms < 5 * 60_000 ? "text-negative" : "text-caution"}`}>
-          <Clock className="w-4 h-4" /> Giữ chỗ còn{" "}
+          <Clock className="w-4 h-4" /> {t("Giữ chỗ còn")}{" "}
           <b className="font-mono tabular-nums">
             {String(left.m).padStart(2, "0")}:{String(left.s).padStart(2, "0")}
           </b>
-          . Quá hạn, đơn sẽ tự hủy để nhường slot.
+          {t(". Quá hạn, đơn sẽ tự hủy để nhường slot.")}
         </p>
       )}
       <QRDisplay bankQrUrl={config?.bankQrUrl} cryptoQrUrl={config?.cryptoQrUrl} transferContent={code} amount={amount} />
       <div className="flex flex-col sm:flex-row gap-2">
         <button type="button" onClick={onPaid} disabled={busy} className="h-12 flex-[2] inline-flex items-center justify-center gap-2 bg-accent text-on-accent text-sm font-bold disabled:opacity-50 cursor-pointer">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Tôi đã chuyển khoản
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} {t("Tôi đã chuyển khoản")}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} disabled={busy} className="h-12 flex-1 border border-white/15 text-sm text-text-secondary hover:text-white cursor-pointer">
-            Hủy đơn
+            {t("Hủy đơn")}
           </button>
         )}
       </div>
@@ -126,35 +127,35 @@ export default function RentalDetailPage() {
   const paid = useMutation({
     mutationFn: (c: string) => markRentalPaid(c),
     onSuccess: () => {
-      toast.success("Đã ghi nhận! Moxic sẽ xác nhận và bàn giao sớm nhất.");
+      toast.success(t("Đã ghi nhận! Moxic sẽ xác nhận và bàn giao sớm nhất."));
       refresh();
     },
-    onError: (e) => toast.error(rentalError(e, "Không cập nhật được")),
+    onError: (e) => toast.error(rentalError(e, t("Không cập nhật được"))),
   });
   const cancel = useMutation({
     mutationFn: (c: string) => cancelRental(c),
     onSuccess: () => {
-      toast.success("Đã hủy");
+      toast.success(t("Đã hủy"));
       refresh();
     },
-    onError: (e) => toast.error(rentalError(e, "Không hủy được")),
+    onError: (e) => toast.error(rentalError(e, t("Không hủy được"))),
   });
   const extend = useMutation({
     mutationFn: (planId: string) => extendRental(code, planId),
     onSuccess: () => {
-      toast.success("Đã tạo yêu cầu gia hạn, vui lòng thanh toán");
+      toast.success(t("Đã tạo yêu cầu gia hạn, vui lòng thanh toán"));
       refresh();
     },
-    onError: (e) => toast.error(rentalError(e, "Không gia hạn được")),
+    onError: (e) => toast.error(rentalError(e, t("Không gia hạn được"))),
   });
 
   if (isLoading) return <SectionLoader />;
   if (error || !r) {
     return (
       <Container className="mt-12 text-center py-16">
-        <p className="text-text-muted mb-4">Không tìm thấy đơn thuê.</p>
+        <p className="text-text-muted mb-4">{t("Không tìm thấy đơn thuê.")}</p>
         <Link to="/account/rentals" className="text-accent hover:underline text-sm">
-          Về danh sách đơn thuê
+          {t("Về danh sách đơn thuê")}
         </Link>
       </Container>
     );
@@ -168,7 +169,7 @@ export default function RentalDetailPage() {
   return (
     <Container className="mt-8 mb-20 max-w-4xl">
       <Link to="/account/rentals" className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-white mb-5">
-        <ArrowLeft className="w-4 h-4" /> Game đang thuê
+        <ArrowLeft className="w-4 h-4" /> {t("Game đang thuê")}
       </Link>
 
       {/* Header */}
@@ -180,7 +181,7 @@ export default function RentalDetailPage() {
           <span className={`inline-block px-2 py-0.5 text-xs font-bold border ${st.cls}`}>{st.label}</span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold mt-2 truncate">{r.gameName}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Mã đơn <span className="font-mono text-text-secondary">{r.code}</span>, {r.days} ngày, {formatPrice(r.price)}
+            {t("Mã đơn")} <span className="font-mono text-text-secondary">{r.code}</span>{t(", {0} ngày, {1}", [r.days, formatPrice(r.price)])}
           </p>
         </div>
       </div>
@@ -192,7 +193,7 @@ export default function RentalDetailPage() {
       <div className="space-y-5">
         {r.status === "PendingPayment" && (
           <section className="bg-bg-surface border border-white/10 p-5">
-            <h2 className="font-display text-lg font-bold mb-4">Thanh toán để nhận game</h2>
+            <h2 className="font-display text-lg font-bold mb-4">{t("Thanh toán để nhận game")}</h2>
             <PayBox code={r.code} amount={r.price} payBefore={r.payBefore} busy={busy} onPaid={() => paid.mutate(r.code)} onCancel={() => cancel.mutate(r.code)} />
           </section>
         )}
@@ -201,8 +202,8 @@ export default function RentalDetailPage() {
           <section className="bg-info/5 border border-info/30 p-5 flex gap-3">
             <Loader2 className="w-5 h-5 text-info animate-spin shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold">Moxic đang xác nhận thanh toán</p>
-              <p className="text-sm text-text-muted mt-1">Ngay khi xác nhận, thông tin tài khoản sẽ hiện tại đây và bạn nhận email thông báo. Trang tự cập nhật.</p>
+              <p className="font-semibold">{t("Moxic đang xác nhận thanh toán")}</p>
+              <p className="text-sm text-text-muted mt-1">{t("Ngay khi xác nhận, thông tin tài khoản sẽ hiện tại đây và bạn nhận email thông báo. Trang tự cập nhật.")}</p>
             </div>
           </section>
         )}
@@ -213,29 +214,29 @@ export default function RentalDetailPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-4 mb-5">
               <div>
                 <p className="flex items-center gap-1.5 text-xs text-positive font-semibold">
-                  <KeyRound className="w-3.5 h-3.5" /> Tài khoản chơi game
+                  <KeyRound className="w-3.5 h-3.5" /> {t("Tài khoản chơi game")}
                 </p>
-                <p className="text-sm text-text-muted mt-1">Đăng nhập tài khoản này trên Xbox để chơi {r.gameName}.</p>
+                <p className="text-sm text-text-muted mt-1">{t("Đăng nhập tài khoản này trên Xbox để chơi {0}.", [r.gameName])}</p>
               </div>
               {left && (
                 <div className="text-right">
-                  <p className="text-xs text-text-muted">Còn lại</p>
+                  <p className="text-xs text-text-muted">{t("Còn lại")}</p>
                   <p className="font-display text-2xl font-bold tabular-nums">
-                    {left.d > 0 && <>{left.d}<span className="text-sm text-text-muted mx-0.5">ngày</span></>}
-                    {left.h}<span className="text-sm text-text-muted mx-0.5">giờ</span>
-                    {String(left.m).padStart(2, "0")}<span className="text-sm text-text-muted ml-0.5">phút</span>
+                    {left.d > 0 && <>{left.d}<span className="text-sm text-text-muted mx-0.5">{t("ngày")}</span></>}
+                    {left.h}<span className="text-sm text-text-muted mx-0.5">{t("giờ")}</span>
+                    {String(left.m).padStart(2, "0")}<span className="text-sm text-text-muted ml-0.5">{t("phút")}</span>
                   </p>
-                  <p className="text-xs text-text-muted">Hết hạn {fmt(r.endsAt)}</p>
+                  <p className="text-xs text-text-muted">{t("Hết hạn {0}", [fmt(r.endsAt)])}</p>
                 </div>
               )}
             </div>
             <div className="relative grid sm:grid-cols-2 gap-3">
-              <CopyField label="Email đăng nhập" value={r.credentials.email} />
-              <CopyField label="Mật khẩu" value={r.credentials.password ?? "Liên hệ Moxic"} secret />
+              <CopyField label={t("Email đăng nhập")} value={r.credentials.email} />
+              <CopyField label={t("Mật khẩu")} value={r.credentials.password ?? t("Liên hệ Moxic")} secret />
             </div>
             <ul className="relative mt-4 space-y-1 text-xs text-text-muted list-disc pl-4">
-              <li>Không đổi mật khẩu, email hay bật bảo mật 2 lớp trên tài khoản này.</li>
-              <li>Không mua thêm nội dung bằng tài khoản thuê. Hết hạn Moxic sẽ thu hồi tài khoản.</li>
+              <li>{t("Không đổi mật khẩu, email hay bật bảo mật 2 lớp trên tài khoản này.")}</li>
+              <li>{t("Không mua thêm nội dung bằng tài khoản thuê. Hết hạn Moxic sẽ thu hồi tài khoản.")}</li>
             </ul>
           </section>
         )}
@@ -244,8 +245,8 @@ export default function RentalDetailPage() {
           <section className="bg-negative/5 border border-negative/30 p-5 flex gap-3">
             <AlertTriangle className="w-5 h-5 text-negative shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold">Đơn thuê đã hết hạn lúc {fmt(r.endsAt)}</p>
-              <p className="text-sm text-text-muted mt-1">Gia hạn ngay bên dưới để tiếp tục chơi trước khi tài khoản được thu hồi.</p>
+              <p className="font-semibold">{t("Đơn thuê đã hết hạn lúc {0}", [fmt(r.endsAt)])}</p>
+              <p className="text-sm text-text-muted mt-1">{t("Gia hạn ngay bên dưới để tiếp tục chơi trước khi tài khoản được thu hồi.")}</p>
             </div>
           </section>
         )}
@@ -254,11 +255,11 @@ export default function RentalDetailPage() {
           <section className="bg-bg-surface border border-white/10 p-5 flex gap-3">
             <XCircle className="w-5 h-5 text-text-muted shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold">{r.status === "Returned" ? "Đơn thuê đã kết thúc" : "Đơn thuê đã hủy"}</p>
+              <p className="font-semibold">{r.status === "Returned" ? t("Đơn thuê đã kết thúc") : t("Đơn thuê đã hủy")}</p>
               <p className="text-sm text-text-muted mt-1">
-                {r.cancelReason ? `Lý do: ${r.cancelReason}. ` : ""}
+                {r.cancelReason ? t("Lý do: {0}. ", [r.cancelReason]) : ""}
                 <Link to={`/games/${r.gameId}`} className="text-accent hover:underline">
-                  Thuê lại {r.gameName}
+                  {t("Thuê lại {0}", [r.gameName])}
                 </Link>
               </p>
             </div>
@@ -269,23 +270,23 @@ export default function RentalDetailPage() {
         {(r.status === "Active" || r.status === "Expired") && (
           <section className="bg-bg-surface border border-white/10 p-5">
             <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
-              <RefreshCw className="w-5 h-5 text-accent" /> Gia hạn
+              <RefreshCw className="w-5 h-5 text-accent" /> {t("Gia hạn")}
             </h2>
             {pendingExt ? (
               pendingExt.status === "PendingPayment" ? (
                 <>
                   <p className="text-sm text-text-muted mb-3">
-                    Yêu cầu gia hạn <b className="text-white">{pendingExt.days} ngày</b>, chuyển khoản với nội dung <span className="font-mono text-white">{pendingExt.code}</span>.
+                    {t("Yêu cầu gia hạn")} <b className="text-white">{t("{0} ngày", [pendingExt.days])}</b>{t(", chuyển khoản với nội dung")} <span className="font-mono text-white">{pendingExt.code}</span>.
                   </p>
                   <PayBox code={pendingExt.code} amount={pendingExt.price} busy={busy} onPaid={() => paid.mutate(pendingExt.code)} onCancel={() => cancel.mutate(pendingExt.code)} />
                 </>
               ) : (
                 <p className="flex items-center gap-2 text-sm text-info">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Đang xác nhận thanh toán gia hạn {pendingExt.days} ngày…
+                  <Loader2 className="w-4 h-4 animate-spin" /> {t("Đang xác nhận thanh toán gia hạn {0} ngày…", [pendingExt.days])}
                 </p>
               )
             ) : r.plans.length === 0 ? (
-              <p className="text-sm text-text-muted">Game này hiện chưa mở gói gia hạn. Liên hệ Moxic để được hỗ trợ.</p>
+              <p className="text-sm text-text-muted">{t("Game này hiện chưa mở gói gia hạn. Liên hệ Moxic để được hỗ trợ.")}</p>
             ) : (
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1">
@@ -298,7 +299,7 @@ export default function RentalDetailPage() {
                         onClick={() => setExtPlan(p.id)}
                         className={`px-3 py-2 border text-left cursor-pointer ${active ? "border-accent bg-accent/10" : "border-border hover:border-white/30"}`}
                       >
-                        <span className="block text-xs text-text-muted">+{p.days} ngày</span>
+                        <span className="block text-xs text-text-muted">{t("+{0} ngày", [p.days])}</span>
                         <span className="block font-bold">{formatPrice(p.price)}</span>
                       </button>
                     );
@@ -310,7 +311,7 @@ export default function RentalDetailPage() {
                   disabled={extend.isPending || !r.canExtend}
                   className="h-12 sm:h-auto px-6 bg-accent text-on-accent text-sm font-bold disabled:opacity-40 cursor-pointer"
                 >
-                  {extend.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Gia hạn"}
+                  {extend.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t("Gia hạn")}
                 </button>
               </div>
             )}
@@ -320,10 +321,10 @@ export default function RentalDetailPage() {
         {/* Details */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/5 border border-white/10 text-sm">
           {[
-            ["Đặt lúc", fmt(r.createdAt)],
-            ["Bắt đầu", fmt(r.startsAt)],
-            ["Hết hạn", fmt(r.endsAt)],
-            ["Gói", `${r.days} ngày, ${formatPrice(r.price)}`],
+            [t("Đặt lúc"), fmt(r.createdAt)],
+            [t("Bắt đầu"), fmt(r.startsAt)],
+            [t("Hết hạn"), fmt(r.endsAt)],
+            [t("Gói"), t("{0} ngày, {1}", [r.days, formatPrice(r.price)])],
           ].map(([k, v]) => (
             <div key={k} className="bg-bg-base p-3">
               <p className="text-xs text-text-muted">{k}</p>
@@ -334,12 +335,12 @@ export default function RentalDetailPage() {
 
         {r.extensions.length > 0 && (
           <section>
-            <h3 className="text-xs text-text-muted mb-2">Lịch sử gia hạn</h3>
+            <h3 className="text-xs text-text-muted mb-2">{t("Lịch sử gia hạn")}</h3>
             <ul className="divide-y divide-white/5 border border-white/10">
               {r.extensions.map((e) => (
                 <li key={e.code} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                   <span className="font-mono text-text-secondary">{e.code}</span>
-                  <span>+{e.days} ngày, {formatPrice(e.price)}</span>
+                  <span>{t("+{0} ngày, {1}", [e.days, formatPrice(e.price)])}</span>
                   <span className={`px-1.5 py-0.5 text-xs font-bold border ${RENTAL_STATUS[e.status].cls}`}>{RENTAL_STATUS[e.status].label}</span>
                 </li>
               ))}

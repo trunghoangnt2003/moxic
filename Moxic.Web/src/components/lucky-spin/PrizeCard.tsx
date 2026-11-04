@@ -1,6 +1,7 @@
 import { Clover, TicketPercent } from "lucide-react";
 import type { PublicPrize, Rarity } from "../../lib/luckySpinApi";
 
+import { t } from "../../lib/i18n";
 export const RARITY_COLORS: Record<Rarity, string> = {
   common: "#b0c3d9",
   uncommon: "#4b69ff",
@@ -10,11 +11,11 @@ export const RARITY_COLORS: Record<Rarity, string> = {
 };
 
 export const RARITY_LABELS: Record<Rarity, string> = {
-  common: "Phổ thông",
-  uncommon: "Hiếm vừa",
-  rare: "Hiếm",
-  epic: "Cực hiếm",
-  legendary: "Huyền thoại",
+  common: t("Phổ thông"),
+  uncommon: t("Hiếm vừa"),
+  rare: t("Hiếm"),
+  epic: t("Cực hiếm"),
+  legendary: t("Huyền thoại"),
 };
 
 /** Lower = rarer (used to sort "rarest first"). */

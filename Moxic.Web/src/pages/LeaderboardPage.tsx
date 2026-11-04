@@ -8,6 +8,7 @@ import { SectionLoader } from "../components/shared/MoxicLoader";
 import { useMe } from "../hooks/useAccount";
 import { usePageMeta } from "../hooks/usePageMeta";
 
+import { t } from "../lib/i18n";
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api", withCredentials: true });
 
 interface Row {
@@ -33,9 +34,9 @@ interface LeaderboardData {
 }
 
 const META: Record<Board["key"], { icon: typeof Trophy; unit: string; how: string; cta: { to: string; label: string } }> = {
-  gamers: { icon: Gamepad2, unit: "game", how: "Mỗi game bạn mua trong tháng = 1 điểm.", cta: { to: "/games", label: "Săn game" } },
-  reviewers: { icon: PenLine, unit: "điểm", how: "Mỗi đánh giá từ 30 ký tự = 1 điểm, đánh giá game đã mua = 2 điểm.", cta: { to: "/games", label: "Viết đánh giá" } },
-  referrers: { icon: UserPlus, unit: "bạn", how: "Mỗi bạn bè đăng ký bằng mã của bạn và hoàn tất đơn đầu tiên = 1 điểm.", cta: { to: "/rewards", label: "Lấy link mời" } },
+  gamers: { icon: Gamepad2, unit: "game", how: t("Mỗi game bạn mua trong tháng = 1 điểm."), cta: { to: "/games", label: t("Săn game") } },
+  reviewers: { icon: PenLine, unit: t("điểm"), how: t("Mỗi đánh giá từ 30 ký tự = 1 điểm, đánh giá game đã mua = 2 điểm."), cta: { to: "/games", label: t("Viết đánh giá") } },
+  referrers: { icon: UserPlus, unit: t("bạn"), how: t("Mỗi bạn bè đăng ký bằng mã của bạn và hoàn tất đơn đầu tiên = 1 điểm."), cta: { to: "/rewards", label: t("Lấy link mời") } },
 };
 
 // Podium tints for ranks 1 to 3 (gold, silver, bronze), all role tokens.
@@ -61,10 +62,10 @@ function Countdown({ to }: { to: string }) {
   );
   return (
     <div className="flex items-center gap-1.5">
-      {cell(d, "ngày")}
-      {cell(h, "giờ")}
-      {cell(m, "phút")}
-      {cell(s, "giây")}
+      {cell(d, t("ngày"))}
+      {cell(h, t("giờ"))}
+      {cell(m, t("phút"))}
+      {cell(s, t("giây"))}
     </div>
   );
 }
@@ -95,19 +96,19 @@ function Podium({ rows, unit, prizes }: { rows: Row[]; unit: string; prizes: num
               </div>
               <p className={`mt-2 text-sm font-semibold truncate max-w-full ${r.isMe ? "text-accent" : ""}`}>
                 {r.displayName}
-                {r.isMe && " (bạn)"}
+                {r.isMe && t(" (bạn)")}
               </p>
               <p className="text-xs text-text-muted">
                 {r.score} {unit}
               </p>
             </>
           ) : (
-            <p className="text-xs text-text-muted mb-2">Còn trống</p>
+            <p className="text-xs text-text-muted mb-2">{t("Còn trống")}</p>
           )}
           <div
             className={`mt-2 w-full ${heights[i]} border-t-2 ${ranks[i] === 1 ? "border-caution bg-gradient-to-b from-caution/25" : ranks[i] === 2 ? "border-text-muted bg-gradient-to-b from-text-muted/15" : "border-caution bg-gradient-to-b from-caution/15"} to-transparent flex items-start justify-center pt-2`}
           >
-            <span className="text-[11px] font-bold text-caution">+{prizes[ranks[i] - 1]} điểm</span>
+            <span className="text-[11px] font-bold text-caution">{t("+{0} điểm", [prizes[ranks[i] - 1]])}</span>
           </div>
         </div>
       ))}
@@ -117,7 +118,7 @@ function Podium({ rows, unit, prizes }: { rows: Row[]; unit: string; prizes: num
 
 /** Monthly community leaderboards with prizes and badges. */
 export default function LeaderboardPage() {
-  usePageMeta("Bảng xếp hạng", "Top game thủ, cây bút đánh giá và đại sứ giới thiệu của Moxic tháng này.");
+  usePageMeta(t("Bảng xếp hạng"), t("Top game thủ, cây bút đánh giá và đại sứ giới thiệu của Moxic tháng này."));
   const { data: me } = useMe();
   const { data, isLoading } = useQuery({
     queryKey: ["leaderboard", !!me],
@@ -136,14 +137,14 @@ export default function LeaderboardPage() {
       {/* Hero */}
       <section className="relative overflow-hidden border border-white/10 bg-gradient-to-br from-caution/15 via-bg-surface to-highlight/10 p-5 sm:p-7 text-center">
         <Trophy className="absolute -left-6 -bottom-8 w-40 h-40 text-caution/10 -rotate-12" />
-        <p className="text-xs text-caution">Tháng {mm}/{yyyy}</p>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold mt-1">Bảng xếp hạng</h1>
-        <p className="text-sm text-text-secondary mt-2">Top 3 mỗi bảng nhận điểm thưởng + huy hiệu hiển thị cạnh tên bạn.</p>
+        <p className="text-xs text-caution">{t("Tháng {0}/{1}", [mm, yyyy])}</p>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold mt-1">{t("Bảng xếp hạng")}</h1>
+        <p className="text-sm text-text-secondary mt-2">{t("Top 3 mỗi bảng nhận điểm thưởng + huy hiệu hiển thị cạnh tên bạn.")}</p>
         <div className="flex justify-center mt-4">
           <Countdown to={data.endsAt} />
         </div>
         <p className="mt-2 text-[11px] text-text-muted inline-flex items-center gap-1">
-          <Timer className="w-3 h-3" /> Chốt bảng & trao giải tự động khi hết tháng
+          <Timer className="w-3 h-3" /> {t("Chốt bảng & trao giải tự động khi hết tháng")}
         </p>
       </section>
 
@@ -172,8 +173,8 @@ export default function LeaderboardPage() {
         {board.top.length === 0 ? (
           <div className="text-center py-12">
             <Flag className="w-10 h-10 mx-auto mb-2 text-text-muted" aria-hidden="true" />
-            <p className="font-semibold">Chưa ai ghi điểm tháng này</p>
-            <p className="text-sm text-text-muted mb-4">Ghi điểm đầu tiên để lên ngay hạng 1!</p>
+            <p className="font-semibold">{t("Chưa ai ghi điểm tháng này")}</p>
+            <p className="text-sm text-text-muted mb-4">{t("Ghi điểm đầu tiên để lên ngay hạng 1!")}</p>
             <Link to={meta.cta.to} className="inline-flex h-10 px-5 items-center bg-accent text-on-accent text-sm font-bold">
               {meta.cta.label}
             </Link>
@@ -189,7 +190,7 @@ export default function LeaderboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">
                       {r.displayName}
-                      {r.isMe && <span className="text-accent"> (bạn)</span>}
+                      {r.isMe && <span className="text-accent"> {t("(bạn)")}</span>}
                     </p>
                     {r.badges.length > 0 && <p className="text-[10px] text-caution/80 truncate">{r.badges[0]}</p>}
                   </div>
@@ -211,11 +212,11 @@ export default function LeaderboardPage() {
             <p className="flex-1 text-sm">
               {board.me ? (
                 <>
-                  Bạn đang hạng <b className="text-accent">#{board.me.rank}</b> với <b>{board.me.score}</b> {meta.unit}
-                  {board.me.rank > 3 && board.top[2] && <span className="text-text-muted">, cần {board.top[2].score - board.me.score + 1} nữa để vào top 3</span>}
+                  {t("Bạn đang hạng")} <b className="text-accent">#{board.me.rank}</b> {t("với")} <b>{board.me.score}</b> {meta.unit}
+                  {board.me.rank > 3 && board.top[2] && <span className="text-text-muted">{t(", cần {0} nữa để vào top 3", [board.top[2].score - board.me.score + 1])}</span>}
                 </>
               ) : (
-                <span className="text-text-secondary">Bạn chưa có điểm ở bảng này tháng này.</span>
+                <span className="text-text-secondary">{t("Bạn chưa có điểm ở bảng này tháng này.")}</span>
               )}
             </p>
             <Link to={meta.cta.to} className="shrink-0 h-9 px-3 inline-flex items-center bg-accent text-on-accent text-xs font-bold">
@@ -224,7 +225,7 @@ export default function LeaderboardPage() {
           </div>
         ) : (
           <Link to="/login?redirect=/leaderboard" className="block text-center border border-accent/40 bg-bg-elevated/95 p-3 text-sm font-semibold text-accent">
-            Đăng nhập để tham gia đua top & nhận thưởng
+            {t("Đăng nhập để tham gia đua top & nhận thưởng")}
           </Link>
         )}
       </div>
@@ -233,7 +234,7 @@ export default function LeaderboardPage() {
       {data.lastMonth.winners.length > 0 && (
         <section className="mt-8">
           <h2 className="font-display text-lg font-bold mb-3">
-            <Trophy className="inline w-5 h-5 mr-1.5 -mt-0.5 text-caution" aria-hidden="true" />Vinh danh tháng {data.lastMonth.month.slice(5)}/{data.lastMonth.month.slice(0, 4)}
+            <Trophy className="inline w-5 h-5 mr-1.5 -mt-0.5 text-caution" aria-hidden="true" />{t("Vinh danh tháng {0}/{1}", [data.lastMonth.month.slice(5), data.lastMonth.month.slice(0, 4)])}
           </h2>
           <div className="grid sm:grid-cols-3 gap-3">
             {ORDER.map((k) => {
@@ -247,7 +248,7 @@ export default function LeaderboardPage() {
                       <span className="truncate">
                         <span className={`inline-flex w-5 h-5 mr-1.5 rounded-full items-center justify-center text-[10px] font-bold ${MEDAL[w.rank - 1]}`}>{w.rank}</span>{w.displayName}
                       </span>
-                      <span className="text-caution text-xs shrink-0">+{w.points} điểm</span>
+                      <span className="text-caution text-xs shrink-0">{t("+{0} điểm", [w.points])}</span>
                     </p>
                   ))}
                 </div>

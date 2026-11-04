@@ -13,18 +13,19 @@ import {
 } from "../lib/couponApi";
 import { formatDate } from "../lib/utils";
 
+import { t } from "../lib/i18n";
 type Tab = "usable" | "used" | "expired";
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: "usable", label: "Có thể dùng" },
-  { key: "used", label: "Đã dùng" },
-  { key: "expired", label: "Hết hạn" },
+  { key: "usable", label: t("Có thể dùng") },
+  { key: "used", label: t("Đã dùng") },
+  { key: "expired", label: t("Hết hạn") },
 ];
 
 const EMPTY_TEXT: Record<Tab, string> = {
-  usable: "Bạn chưa có mã giảm giá nào có thể dùng.",
-  used: "Chưa có mã nào đã dùng.",
-  expired: "Không có mã hết hạn.",
+  usable: t("Bạn chưa có mã giảm giá nào có thể dùng."),
+  used: t("Chưa có mã nào đã dùng."),
+  expired: t("Không có mã hết hạn."),
 };
 
 function tabOf(c: WalletCoupon): Tab {
@@ -44,10 +45,10 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
     try {
       await navigator.clipboard.writeText(coupon.code);
       setCopied(true);
-      toast.success("Đã sao chép mã");
+      toast.success(t("Đã sao chép mã"));
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error("Không thể sao chép, vui lòng chép thủ công.");
+      toast.error(t("Không thể sao chép, vui lòng chép thủ công."));
     }
   };
 
@@ -64,10 +65,10 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
         <div className="flex flex-wrap items-center gap-2">
           <p className="min-w-0 truncate text-sm font-semibold text-text-primary">{coupon.name}</p>
           <span className="border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-xs font-semibold text-accent">
-            {coupon.source === "SpinReward" ? "Thưởng vòng quay" : coupon.source === "PointsReward" ? "Đổi điểm" : "Sự kiện"}
+            {coupon.source === "SpinReward" ? t("Thưởng vòng quay") : coupon.source === "PointsReward" ? t("Đổi điểm") : t("Sự kiện")}
           </span>
           {coupon.status === "Inactive" && (
-            <span className="border border-negative/30 bg-negative/10 px-1.5 py-0.5 text-xs font-semibold text-negative">Đã vô hiệu</span>
+            <span className="border border-negative/30 bg-negative/10 px-1.5 py-0.5 text-xs font-semibold text-negative">{t("Đã vô hiệu")}</span>
           )}
         </div>
 
@@ -85,10 +86,10 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
 
         <p className="mt-2 text-xs text-text-muted">
           {coupon.status === "Upcoming" && coupon.startsAt
-            ? `Bắt đầu từ ${formatDate(coupon.startsAt)}`
+            ? t("Bắt đầu từ {0}", [formatDate(coupon.startsAt)])
             : coupon.expiresAt
               ? `HSD: ${formatDate(coupon.expiresAt)}`
-              : "Không thời hạn"}
+              : t("Không thời hạn")}
         </p>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -99,7 +100,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
             <button
               type="button"
               onClick={copy}
-              aria-label="Sao chép mã"
+              aria-label={t("Sao chép mã")}
               className="flex cursor-pointer items-center border-l border-white/10 px-3 text-text-secondary hover:text-accent"
             >
               {copied ? <Check className="h-4 w-4 text-positive" /> : <Copy className="h-4 w-4" />}
@@ -112,7 +113,7 @@ function CouponTicket({ coupon }: { coupon: WalletCoupon }) {
               onClick={() => navigate(`/checkout?coupon=${encodeURIComponent(coupon.code)}`)}
               className="cursor-pointer bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 sm:ml-auto"
             >
-              Dùng ngay
+              {t("Dùng ngay")}
             </button>
           ) : null}
         </div>
@@ -138,13 +139,13 @@ export default function CouponWalletPage() {
     e.preventDefault();
     const code = claimCode.trim();
     if (!code) {
-      setClaimError("Vui lòng nhập mã thưởng.");
+      setClaimError(t("Vui lòng nhập mã thưởng."));
       return;
     }
     setClaimError("");
     claim.mutate(code, {
       onSuccess: (res) => {
-        toast.success(res.alreadyOwned ? "Mã đã có trong ví của bạn" : "Đã thêm mã vào ví");
+        toast.success(res.alreadyOwned ? t("Mã đã có trong ví của bạn") : t("Đã thêm mã vào ví"));
         setClaimCode("");
         setTab("usable");
         if (searchParams.has("claim")) {
@@ -153,7 +154,7 @@ export default function CouponWalletPage() {
           setSearchParams(next, { replace: true });
         }
       },
-      onError: (err) => setClaimError(getCouponErrorMessage(err, "Không nhận được mã thưởng.")),
+      onError: (err) => setClaimError(getCouponErrorMessage(err, t("Không nhận được mã thưởng."))),
     });
   };
 
@@ -161,12 +162,12 @@ export default function CouponWalletPage() {
     <div>
       <Container>
         <div className="max-w-4xl">
-          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">Mã giảm giá của tôi</h1>
+          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">{t("Mã giảm giá của tôi")}</h1>
 
           {/* Claim */}
           <section className="mt-4 border border-white/10 bg-bg-surface p-5 sm:p-6">
             <h2 className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-              <Gift className="h-4 w-4 text-accent" /> Nhập mã thưởng
+              <Gift className="h-4 w-4 text-accent" /> {t("Nhập mã thưởng")}
             </h2>
             <form onSubmit={handleClaim} className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
@@ -174,7 +175,7 @@ export default function CouponWalletPage() {
                 onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
                 maxLength={40}
                 placeholder="VD: MXABCD2345"
-                aria-label="Mã thưởng"
+                aria-label={t("Mã thưởng")}
                 className="min-w-0 flex-1 border border-white/10 bg-bg-elevated px-4 py-2.5 font-mono text-sm text-text-primary placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-text-muted focus:border-accent/60 focus:outline-none"
               />
               <button
@@ -182,7 +183,7 @@ export default function CouponWalletPage() {
                 disabled={claim.isPending}
                 className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {claim.isPending ? <MoxicLoader size="sm" /> : "Nhận vào ví"}
+                {claim.isPending ? <MoxicLoader size="sm" /> : t("Nhận vào ví")}
               </button>
             </form>
             {claimError && (
@@ -191,7 +192,7 @@ export default function CouponWalletPage() {
               </p>
             )}
             <p className="mt-3 text-xs text-text-muted">
-              Mã thưởng giảm giá từ vòng quay sẽ tự vào ví nếu bạn đã đăng nhập khi mở hòm.
+              {t("Mã thưởng giảm giá từ vòng quay sẽ tự vào ví nếu bạn đã đăng nhập khi mở hòm.")}
             </p>
           </section>
 
@@ -217,15 +218,15 @@ export default function CouponWalletPage() {
 
           <div className="mt-4">
             {isLoading ? (
-              <SectionLoader label="Đang tải mã giảm giá…" />
+              <SectionLoader label={t("Đang tải mã giảm giá…")} />
             ) : isError ? (
               <div className="border border-white/10 bg-bg-surface p-8 text-center">
-                <p className="mb-4 text-sm text-negative">Không thể tải mã giảm giá. Vui lòng thử lại.</p>
+                <p className="mb-4 text-sm text-negative">{t("Không thể tải mã giảm giá. Vui lòng thử lại.")}</p>
                 <button
                   onClick={() => void refetch()}
                   className="cursor-pointer bg-accent px-6 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
                 >
-                  Thử lại
+                  {t("Thử lại")}
                 </button>
               </div>
             ) : visible.length === 0 ? (

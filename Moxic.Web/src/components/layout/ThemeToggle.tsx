@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemePref } from "../../lib/theme";
 
+import { t } from "../../lib/i18n";
 const OPTIONS: { value: ThemePref; label: string; icon: typeof Sun }[] = [
-  { value: "dark", label: "Tối", icon: Moon },
-  { value: "light", label: "Sáng", icon: Sun },
-  { value: "system", label: "Theo hệ thống", icon: Monitor },
+  { value: "dark", label: t("Tối"), icon: Moon },
+  { value: "light", label: t("Sáng"), icon: Sun },
+  { value: "system", label: t("Theo hệ thống"), icon: Monitor },
 ];
 
 /** Navbar icon button: shows the mode in effect, opens a three-way menu (Tối, Sáng, Theo hệ thống). */
@@ -38,7 +39,7 @@ export function ThemeMenuButton() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Giao diện: ${theme === "light" ? "sáng" : "tối"}`}
+        aria-label={`Giao diện: ${theme === "light" ? t("sáng") : t("tối")}`}
         className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
       >
         <Icon className="w-5 h-5" />
@@ -75,8 +76,8 @@ export function ThemeSegmented() {
   const { pref, setPref } = useTheme();
   return (
     <div>
-      <p className="text-sm text-text-muted mb-2">Giao diện</p>
-      <div role="radiogroup" aria-label="Giao diện" className="grid grid-cols-3 border border-border">
+      <p className="text-sm text-text-muted mb-2">{t("Giao diện")}</p>
+      <div role="radiogroup" aria-label={t("Giao diện")} className="grid grid-cols-3 border border-border">
         {OPTIONS.map((o) => (
           <button
             key={o.value}
@@ -89,7 +90,7 @@ export function ThemeSegmented() {
             }`}
           >
             <o.icon className="w-4 h-4" />
-            {o.value === "system" ? "Tự động" : o.label}
+            {o.value === "system" ? t("Tự động") : o.label}
           </button>
         ))}
       </div>

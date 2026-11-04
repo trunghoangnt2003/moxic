@@ -5,6 +5,7 @@ import { ArrowRight, Zap } from "lucide-react";
 import { getGames } from "../../lib/api";
 import GameRail from "./GameRail";
 
+import { t as tr } from "../../lib/i18n";
 /** Ticks once per second (or per minute for long countdowns) and returns the time left. */
 export function useCountdownTo(iso: string | null | undefined) {
   const target = iso ? new Date(iso).getTime() : 0;
@@ -33,16 +34,16 @@ export function SaleCountdownBadge({ endsAt, className = "" }: { endsAt: string;
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-xs font-bold tabular-nums bg-gradient-to-r from-negative to-caution text-on-solid ${className}`}>
       <Zap className="w-3 h-3 fill-white" />
-      {t.d > 0 ? `${t.d} ngày ${t.h}h` : `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`}
+      {t.d > 0 ? tr("{0} ngày {1}h", [t.d, t.h]) : `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`}
     </span>
   );
 }
 
 /** Big segmented countdown used on the game page and the home rail header. */
-export function SaleCountdown({ endsAt, label = "Kết thúc sau" }: { endsAt: string; label?: string }) {
+export function SaleCountdown({ endsAt, label = tr("Kết thúc sau") }: { endsAt: string; label?: string }) {
   const t = useCountdownTo(endsAt);
   if (t.ms <= 0) return null;
-  const parts = t.d > 0 ? [[t.d, "ngày"], [t.h, "giờ"], [t.m, "phút"]] : [[t.h, "giờ"], [t.m, "phút"], [t.s, "giây"]];
+  const parts = t.d > 0 ? [[t.d, tr("ngày")], [t.h, tr("giờ")], [t.m, tr("phút")]] : [[t.h, tr("giờ")], [t.m, tr("phút")], [t.s, tr("giây")]];
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-text-secondary">{label}</span>
@@ -78,7 +79,7 @@ export function FlashSaleRail() {
         games={games}
         action={
           <Link to="/games?sale=1&sort=discount" className="text-accent hover:text-accent-hover text-sm flex items-center gap-1">
-            Tất cả ưu đãi <ArrowRight className="w-4 h-4" />
+            {tr("Tất cả ưu đãi")} <ArrowRight className="w-4 h-4" />
           </Link>
         }
       />

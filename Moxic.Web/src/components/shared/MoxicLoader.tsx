@@ -1,6 +1,7 @@
 import MoxicWave from "./MoxicWave";
 import { useId } from "react";
 
+import { t } from "../../lib/i18n";
 type LoaderSize = "sm" | "md" | "lg";
 
 interface MoxicLoaderProps {
@@ -98,10 +99,10 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
         <p className="font-display text-xs sm:text-sm text-text-muted">{label}</p>
       ) : (
         <>
-          <span className="sr-only">Đang tải…</span>
+          <span className="sr-only">{t("Đang tải…")}</span>
           {/* Under reduced motion the ring is static, so show the text visibly too. */}
           <span aria-hidden="true" className="hidden motion-reduce:block font-display text-xs text-text-muted">
-            Đang tải…
+            {t("Đang tải…")}
           </span>
         </>
       )}
@@ -110,7 +111,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
 }
 
 /** Full-page loader (lazy routes, page-level queries). */
-export function PageLoader({ label = "Đang tải…" }: { label?: string }) {
+export function PageLoader({ label = t("Đang tải…") }: { label?: string }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <MoxicWave width={240} label={label} />

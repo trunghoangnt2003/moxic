@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import { useToggleWishlist, useWishlistIds } from "../../hooks/useWishlist";
 
+import { t } from "../../lib/i18n";
 interface Props {
   gameId: string;
   gameName?: string;
@@ -31,7 +32,7 @@ export default function WishlistButton({ gameId, gameName, variant = "overlay", 
         } ${className}`}
       >
         <Heart className={`w-4 h-4 transition-transform ${active ? "fill-negative text-negative scale-110" : ""}`} />
-        {active ? "Đã yêu thích" : "Yêu thích"}
+        {active ? t("Đã yêu thích") : t("Yêu thích")}
       </button>
     );
   }
@@ -41,8 +42,8 @@ export default function WishlistButton({ gameId, gameName, variant = "overlay", 
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      aria-label={active ? "Bỏ khỏi Yêu thích" : "Thêm vào Yêu thích"}
-      title={active ? "Bỏ khỏi Yêu thích" : "Thêm vào Yêu thích"}
+      aria-label={active ? t("Bỏ khỏi Yêu thích") : t("Thêm vào Yêu thích")}
+      title={active ? t("Bỏ khỏi Yêu thích") : t("Thêm vào Yêu thích")}
       className={`w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md border transition cursor-pointer ${
         active
           ? "bg-negative/90 border-negative text-on-solid opacity-100"

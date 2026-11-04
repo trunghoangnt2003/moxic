@@ -11,6 +11,7 @@ import {
 } from "../lib/luckySpinApi";
 import { ME_QUERY_KEY } from "./useAccount";
 
+import { t } from "../lib/i18n";
 const CASES_PAGE_SIZE = 24;
 
 export function useLuckySpinCases({ method, q }: { method: OpenMethod | null; q: string }) {
@@ -89,14 +90,14 @@ export function useContactSettings() {
 export function getSpinErrorMessage(err: unknown): string {
   if (isAxiosError(err)) {
     if (err.response?.status === 429) {
-      return "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.";
+      return t("Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.");
     }
     const data = err.response?.data as { error?: unknown } | undefined;
     if (data && typeof data.error === "string" && data.error.trim()) {
       return data.error;
     }
   }
-  return "Không thể mở hòm lúc này, vui lòng thử lại.";
+  return t("Không thể mở hòm lúc này, vui lòng thử lại.");
 }
 
 /** Machine-readable code from an open error (LOGIN_REQUIRED, EMAIL_NOT_VERIFIED, COOLDOWN, INSUFFICIENT_POINTS). */

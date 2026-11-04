@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 
+import { t } from "./i18n";
 // Own axios instance (mirrors accountApi.ts). withCredentials sends the MoxicCustomer cookie.
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const api = axios.create({ baseURL: API_URL, withCredentials: true });
@@ -50,13 +51,13 @@ export interface RentalDetail extends RentalSummary {
 }
 
 export const RENTAL_STATUS: Record<RentalStatus, { label: string; cls: string }> = {
-  PendingPayment: { label: "Chờ thanh toán", cls: "bg-caution/15 text-caution border-caution/40" },
-  AwaitingConfirmation: { label: "Chờ xác nhận", cls: "bg-info/15 text-info border-info/40" },
-  Active: { label: "Đang thuê", cls: "bg-positive/15 text-positive border-positive/40" },
-  Expired: { label: "Đã hết hạn", cls: "bg-negative/15 text-negative border-negative/40" },
-  Returned: { label: "Đã kết thúc", cls: "bg-white/5 text-text-muted border-white/15" },
-  Completed: { label: "Hoàn tất", cls: "bg-positive/15 text-positive border-positive/40" },
-  Cancelled: { label: "Đã hủy", cls: "bg-white/5 text-text-muted border-white/15" },
+  PendingPayment: { label: t("Chờ thanh toán"), cls: "bg-caution/15 text-caution border-caution/40" },
+  AwaitingConfirmation: { label: t("Chờ xác nhận"), cls: "bg-info/15 text-info border-info/40" },
+  Active: { label: t("Đang thuê"), cls: "bg-positive/15 text-positive border-positive/40" },
+  Expired: { label: t("Đã hết hạn"), cls: "bg-negative/15 text-negative border-negative/40" },
+  Returned: { label: t("Đã kết thúc"), cls: "bg-white/5 text-text-muted border-white/15" },
+  Completed: { label: t("Hoàn tất"), cls: "bg-positive/15 text-positive border-positive/40" },
+  Cancelled: { label: t("Đã hủy"), cls: "bg-white/5 text-text-muted border-white/15" },
 };
 
 export function rentalError(err: unknown, fallback: string) {

@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 import type { GamesResponse, GameFacets, GameDetail, GameReview, ActivePaymentConfig, OrderCreateRequest, OrderCreateResponse, OrderConfirmationData } from "../types/game";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";

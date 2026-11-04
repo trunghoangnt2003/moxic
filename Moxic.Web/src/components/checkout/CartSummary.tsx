@@ -4,6 +4,7 @@ import { formatPrice } from "../../lib/utils";
 import type { CouponQuote } from "../../lib/couponApi";
 import type { CartItem } from "../../types/game";
 
+import { t } from "../../lib/i18n";
 interface Props {
   items: CartItem[];
   total: number;
@@ -20,7 +21,7 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
 
   return (
     <aside className="bg-bg-surface border border-white/10 p-5 sm:p-6 lg:sticky lg:top-20">
-      <h2 className="font-display text-lg font-semibold text-text-primary">Đơn hàng của bạn</h2>
+      <h2 className="font-display text-lg font-semibold text-text-primary">{t("Đơn hàng của bạn")}</h2>
 
       <ul className="mt-4 space-y-3">
         {items.map((item) => (
@@ -32,7 +33,7 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
                 <p className="text-xs text-text-muted mt-0.5">
                   {item.editionName}
                   {item.editionName && item.quantity > 1 ? ", " : ""}
-                  {item.quantity > 1 ? `số lượng ${item.quantity}` : ""}
+                  {item.quantity > 1 ? t("số lượng {0}", [item.quantity]) : ""}
                 </p>
               )}
             </div>
@@ -47,26 +48,26 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
         {quote ? (
           <>
             <div className="flex justify-between gap-3">
-              <dt className="text-text-secondary">Tạm tính</dt>
+              <dt className="text-text-secondary">{t("Tạm tính")}</dt>
               <dd className="text-text-primary num">{formatPrice(quote.subtotal)}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="min-w-0 truncate text-text-secondary">
-                Mã <span className="font-mono">{quote.code}</span>
+                {t("Mã")} <span className="font-mono">{quote.code}</span>
               </dt>
               <dd className="shrink-0 text-positive num">-{formatPrice(quote.discountAmount)}</dd>
             </div>
           </>
         ) : (
           <div className="flex justify-between gap-3">
-            <dt className="text-text-secondary">Tạm tính</dt>
+            <dt className="text-text-secondary">{t("Tạm tính")}</dt>
             <dd className="text-text-primary num">{formatPrice(total)}</dd>
           </div>
         )}
       </dl>
 
       <div className="mt-4 pt-4 border-t border-white/10 flex items-baseline justify-between gap-3">
-        <span className="text-text-secondary">Tổng cộng</span>
+        <span className="text-text-secondary">{t("Tổng cộng")}</span>
         <span className="font-display text-2xl sm:text-3xl text-accent font-bold num">{formatPrice(pay)}</span>
       </div>
       {saved > 0 && (

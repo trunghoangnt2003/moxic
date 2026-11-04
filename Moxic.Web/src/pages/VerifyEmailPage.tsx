@@ -10,6 +10,7 @@ import { getAccountErrorMessage, useResendVerification, useVerifyEmail } from ".
 import { useCountdown } from "../hooks/useCountdown";
 import { safeRedirect } from "../lib/accountApi";
 
+import { t } from "../lib/i18n";
 const RESEND_COOLDOWN = 60;
 
 export default function VerifyEmailPage() {
@@ -30,11 +31,11 @@ export default function VerifyEmailPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
-      setError("Vui lòng nhập email hợp lệ.");
+      setError(t("Vui lòng nhập email hợp lệ."));
       return;
     }
     if (code.length !== 6) {
-      setError("Vui lòng nhập đủ 6 chữ số.");
+      setError(t("Vui lòng nhập đủ 6 chữ số."));
       return;
     }
     setError("");
@@ -42,17 +43,17 @@ export default function VerifyEmailPage() {
       { email: email.trim(), code },
       {
         onSuccess: () => {
-          toast.success("Xác minh email thành công!");
+          toast.success(t("Xác minh email thành công!"));
           navigate(redirect, { replace: true });
         },
-        onError: (err) => setError(getAccountErrorMessage(err, "Xác minh thất bại. Vui lòng thử lại.")),
+        onError: (err) => setError(getAccountErrorMessage(err, t("Xác minh thất bại. Vui lòng thử lại."))),
       },
     );
   };
 
   const handleResend = () => {
     if (!email.trim() || !email.includes("@")) {
-      setError("Vui lòng nhập email hợp lệ.");
+      setError(t("Vui lòng nhập email hợp lệ."));
       return;
     }
     setError("");
@@ -61,30 +62,30 @@ export default function VerifyEmailPage() {
         toast.success(data.message);
         cooldown.start(RESEND_COOLDOWN);
       },
-      onError: (err) => setError(getAccountErrorMessage(err, "Không thể gửi lại mã. Vui lòng thử lại.")),
+      onError: (err) => setError(getAccountErrorMessage(err, t("Không thể gửi lại mã. Vui lòng thử lại."))),
     });
   };
 
   return (
     <AuthShell
-      title="Xác minh email"
+      title={t("Xác minh email")}
       subtitle={
         initialEmail ? (
           <span className="flex items-start gap-2">
             <MailCheck className="w-4 h-4 mt-0.5 text-accent flex-shrink-0" />
             <span>
-              Chúng tôi đã gửi mã 6 chữ số tới <strong className="text-text-primary break-all">{initialEmail}</strong>.
+              {t("Chúng tôi đã gửi mã 6 chữ số tới")} <strong className="text-text-primary break-all">{initialEmail}</strong>.
             </span>
           </span>
         ) : (
-          "Nhập email đã đăng ký và mã 6 chữ số đã gửi tới email đó."
+          t("Nhập email đã đăng ký và mã 6 chữ số đã gửi tới email đó.")
         )
       }
       footer={
         <p>
-          Đã xác minh?{" "}
+          {t("Đã xác minh?")}{" "}
           <Link to={`/login?email=${encodeURIComponent(email.trim())}`} className="text-accent hover:underline font-semibold">
-            Đăng nhập
+            {t("Đăng nhập")}
           </Link>
         </p>
       }
@@ -103,10 +104,10 @@ export default function VerifyEmailPage() {
         )}
         <OtpInput
           id="verify-code"
-          label="Mã xác minh"
+          label={t("Mã xác minh")}
           value={code}
           onChange={setCode}
-          hint="Mã có hiệu lực trong 15 phút. Kiểm tra cả thư mục Spam."
+          hint={t("Mã có hiệu lực trong 15 phút. Kiểm tra cả thư mục Spam.")}
         />
 
         {error && (
@@ -123,10 +124,10 @@ export default function VerifyEmailPage() {
         >
           {verify.isPending ? (
             <>
-              <MoxicLoader size="sm" /> Đang xác minh…
+              <MoxicLoader size="sm" /> {t("Đang xác minh…")}
             </>
           ) : (
-            "Xác minh"
+            t("Xác minh")
           )}
         </button>
 
@@ -137,7 +138,7 @@ export default function VerifyEmailPage() {
           className="w-full border border-white/10 hover:bg-bg-elevated text-text-secondary hover:text-text-primary py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {resend.isPending && <MoxicLoader size="sm" />}
-          {cooldown.active ? `Gửi lại mã (${cooldown.remaining}s)` : "Gửi lại mã"}
+          {cooldown.active ? t("Gửi lại mã ({0}s)", [cooldown.remaining]) : t("Gửi lại mã")}
         </button>
       </form>
     </AuthShell>

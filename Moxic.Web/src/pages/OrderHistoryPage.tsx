@@ -8,6 +8,7 @@ import { useMe, useMyOrders } from "../hooks/useAccount";
 import type { AccountOrderSummary } from "../lib/accountApi";
 import { formatDate, formatPrice } from "../lib/utils";
 
+import { t } from "../lib/i18n";
 const MAX_COVERS = 3;
 
 function OrderCard({ order }: { order: AccountOrderSummary }) {
@@ -39,8 +40,8 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
 
       <div className="min-w-0">
         <p className="font-semibold text-text-primary truncate group-hover:text-accent transition-colors">
-          {order.items[0]?.gameName ?? "Đơn hàng"}
-          {extra > 0 && <span className="text-text-muted font-normal"> và {extra} game khác</span>}
+          {order.items[0]?.gameName ?? t("Đơn hàng")}
+          {extra > 0 && <span className="text-text-muted font-normal"> {t("và {0} game khác", [extra])}</span>}
         </p>
         <p className="mt-1 text-sm text-text-muted">
           <span className="font-mono">{order.orderCode}</span>, {formatDate(order.createdAt)}
@@ -56,7 +57,7 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
         </div>
         <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(order.totalAmount)}</p>
         <span className="sm:hidden inline-flex items-center gap-1 text-sm text-accent">
-          Chi tiết <ChevronRight className="w-4 h-4" />
+          {t("Chi tiết")} <ChevronRight className="w-4 h-4" />
         </span>
       </div>
     </Link>
@@ -74,35 +75,34 @@ export default function OrderHistoryPage() {
     <div>
       <Container>
         <div className="max-w-4xl">
-          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">Đơn hàng</h1>
+          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">{t("Đơn hàng")}</h1>
           {me && (
             <p className="text-sm text-text-muted mb-6">
-              Các đơn hàng dùng email <strong className="text-text-secondary break-all">{me.email}</strong> (email tài
-              khoản Xbox khi đặt hàng) hoặc đặt khi đã đăng nhập.
+              {t("Các đơn hàng dùng email")} <strong className="text-text-secondary break-all">{me.email}</strong> {t("(email tài khoản Xbox khi đặt hàng) hoặc đặt khi đã đăng nhập.")}
             </p>
           )}
 
           {isLoading ? (
-            <SectionLoader label="Đang tải đơn hàng…" />
+            <SectionLoader label={t("Đang tải đơn hàng…")} />
           ) : isError ? (
             <div className="bg-bg-surface border border-white/10 p-8 text-center">
-              <p className="text-sm text-negative mb-4">Không thể tải lịch sử mua hàng. Vui lòng thử lại.</p>
+              <p className="text-sm text-negative mb-4">{t("Không thể tải lịch sử mua hàng. Vui lòng thử lại.")}</p>
               <button
                 onClick={() => void refetch()}
                 className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-2.5 text-sm font-semibold transition-colors cursor-pointer"
               >
-                Thử lại
+                {t("Thử lại")}
               </button>
             </div>
           ) : !data || data.items.length === 0 ? (
             <div className="bg-bg-surface border border-white/10 p-10 text-center">
               <Package className="w-12 h-12 text-white/10 mx-auto mb-3" />
-              <p className="text-text-secondary text-sm mb-5">Bạn chưa có đơn hàng nào.</p>
+              <p className="text-text-secondary text-sm mb-5">{t("Bạn chưa có đơn hàng nào.")}</p>
               <Link
                 to="/games"
                 className="inline-flex h-11 items-center bg-accent hover:bg-accent-hover text-on-accent px-6 text-sm font-semibold transition-colors"
               >
-                Khám phá game
+                {t("Khám phá game")}
               </Link>
             </div>
           ) : (
@@ -114,11 +114,11 @@ export default function OrderHistoryPage() {
               </div>
 
               {data.total > data.pageSize && (
-                <nav className="mt-6 flex items-center justify-center gap-4" aria-label="Phân trang">
+                <nav className="mt-6 flex items-center justify-center gap-4" aria-label={t("Phân trang")}>
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    aria-label="Trang trước"
+                    aria-label={t("Trang trước")}
                     className="p-2 border border-white/10 text-text-secondary hover:bg-bg-elevated disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />

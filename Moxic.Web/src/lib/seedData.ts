@@ -1,4 +1,4 @@
-﻿import type { GameListItem, GameDetail, GameReview, SystemRequirement, GenreTag } from "../types/game";
+import type { GameListItem, GameDetail, GameReview, SystemRequirement, GenreTag } from "../types/game";
 
 /* ──── helpers ──────── */
 function ss(id: string, n: number): GameDetail["media"] {

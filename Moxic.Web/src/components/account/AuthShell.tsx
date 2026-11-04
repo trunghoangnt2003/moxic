@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useGames } from "../../hooks/useGames";
 
+import { t } from "../../lib/i18n";
 interface AuthShellProps {
   title: string;
   subtitle?: ReactNode;
@@ -33,7 +34,7 @@ export default function AuthShell({ title, subtitle, children, footer }: AuthShe
           <Link to="/" className="font-display text-2xl text-accent">
             Moxic
           </Link>
-          <p className="mt-3 font-display text-3xl font-bold text-text-primary max-w-sm leading-tight">Game Xbox chính hãng, rẻ hơn Store</p>
+          <p className="mt-3 font-display text-3xl font-bold text-text-primary max-w-sm leading-tight">{t("Game Xbox chính hãng, rẻ hơn Store")}</p>
         </div>
       </div>
 

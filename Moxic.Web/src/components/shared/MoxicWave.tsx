@@ -1,5 +1,6 @@
 import { useId } from "react";
 
+import { t } from "../../lib/i18n";
 /**
  * "MOXIC sóng sánh": the MOXIC wordmark filled with sloshing liquid gold, two offset waves
  * scrolling sideways while the liquid level bobs up and down.
@@ -45,7 +46,7 @@ export default function MoxicWave({ width = 220, label }: { width?: number; labe
         </g>
       </svg>
       {label && <p className="font-display text-[11px] text-text-muted">{label}</p>}
-      <span className="sr-only">Đang tải…</span>
+      <span className="sr-only">{t("Đang tải…")}</span>
     </div>
   );
 }

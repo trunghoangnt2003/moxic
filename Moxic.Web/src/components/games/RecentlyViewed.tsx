@@ -4,6 +4,7 @@ import { useGames } from "../../hooks/useGames";
 import { recentlyViewed } from "../../lib/localIds";
 import GameRail from "./GameRail";
 
+import { t } from "../../lib/i18n";
 /** "Đã xem gần đây", ids live in localStorage, game data (fresh covers/prices) is re-fetched. */
 export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
   const allIds = recentlyViewed.useIds();
@@ -21,13 +22,13 @@ export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
     <GameRail
       title={
         <>
-          <History className="w-5 h-5 text-accent" /> Bạn đã xem gần đây
+          <History className="w-5 h-5 text-accent" /> {t("Bạn đã xem gần đây")}
         </>
       }
       games={games}
       action={
         <button type="button" onClick={() => recentlyViewed.clear()} className="text-xs text-text-muted hover:text-white cursor-pointer">
-          Xóa lịch sử
+          {t("Xóa lịch sử")}
         </button>
       }
     />

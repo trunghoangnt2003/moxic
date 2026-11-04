@@ -5,12 +5,13 @@ import { Loader2, Package, Send, X } from "lucide-react";
 import { useMe, useMyOrders } from "../../hooks/useAccount";
 import { getChatMessages, sendChatMessage, useChatUi, type ChatMsg } from "../../lib/chatApi";
 
-const QUICK = ["Đơn của mình đã nhận được tiền chưa?", "Bao lâu thì cài xong game?", "Tư vấn giúp mình nên mua game nào"];
+import { t as tr, locale } from "../../lib/i18n";
+const QUICK = [tr("Đơn của mình đã nhận được tiền chưa?"), tr("Bao lâu thì cài xong game?"), tr("Tư vấn giúp mình nên mua game nào")];
 
 function time(iso: string) {
   const d = new Date(iso);
   const today = new Date().toDateString() === d.toDateString();
-  return d.toLocaleString("vi-VN", today ? { hour: "2-digit", minute: "2-digit" } : { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale, today ? { hour: "2-digit", minute: "2-digit" } : { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
 /** Live chat with the shop. Messages go to the admins' Telegram; replies come back here. */
@@ -59,7 +60,7 @@ export default function ChatPanel() {
     onError: (e: any, t) => {
       setPending([]);
       setText(t);
-      setError(e?.response?.data?.error || "Không gửi được, thử lại nhé");
+      setError(tr(e?.response?.data?.error ?? "") || tr("Không gửi được, thử lại nhé"));
     },
   });
 
@@ -86,7 +87,7 @@ export default function ChatPanel() {
     const v = t.trim();
     if (!v || send.isPending) return;
     if (needContact && !contact.trim()) {
-      setError("Để lại SĐT/Zalo để Moxic liên hệ lại nếu bạn rời trang");
+      setError(tr("Để lại SĐT/Zalo để Moxic liên hệ lại nếu bạn rời trang"));
       return;
     }
     send.mutate(v);
@@ -101,10 +102,10 @@ export default function ChatPanel() {
           <span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-positive ring-2 ring-bg-surface" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-display font-bold leading-tight">Moxic hỗ trợ</p>
-          <p className="text-[11px] text-text-muted">Thường trả lời trong vài phút</p>
+          <p className="font-display font-bold leading-tight">{tr("Moxic hỗ trợ")}</p>
+          <p className="text-[11px] text-text-muted">{tr("Thường trả lời trong vài phút")}</p>
         </div>
-        <button type="button" onClick={close} aria-label="Đóng chat" className="p-2 -mr-2 text-text-muted hover:text-white cursor-pointer">
+        <button type="button" onClick={close} aria-label={tr("Đóng chat")} className="p-2 -mr-2 text-text-muted hover:text-white cursor-pointer">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -117,9 +118,9 @@ export default function ChatPanel() {
             value={attached ?? ""}
             onChange={(e) => openChat(e.target.value || null)}
             className="flex-1 min-w-0 bg-transparent text-text-secondary focus:outline-none cursor-pointer"
-            aria-label="Đơn hàng cần hỗ trợ"
+            aria-label={tr("Đơn hàng cần hỗ trợ")}
           >
-            <option value="">Không về đơn hàng cụ thể</option>
+            <option value="">{tr("Không về đơn hàng cụ thể")}</option>
             {attached && !orders?.items.some((o) => o.orderCode === attached) && <option value={attached}>{attached}</option>}
             {orders?.items.map((o) => (
               <option key={o.orderCode} value={o.orderCode}>
@@ -128,12 +129,12 @@ export default function ChatPanel() {
             ))}
           </select>
         ) : attached ? (
-          <span className="flex-1 text-text-secondary">Về đơn {attached}</span>
+          <span className="flex-1 text-text-secondary">{tr("Về đơn {0}", [attached])}</span>
         ) : (
           <input
             value={guestOrder}
             onChange={(e) => setGuestOrder(e.target.value.toUpperCase())}
-            placeholder="Mã đơn hàng (nếu có), VD MOXIC-2026…"
+            placeholder={tr("Mã đơn hàng (nếu có), VD MOXIC-2026…")}
             className="flex-1 min-w-0 bg-transparent text-text-secondary placeholder:text-text-muted focus:outline-none font-mono"
           />
         )}
@@ -148,7 +149,7 @@ export default function ChatPanel() {
         ) : messages.length === 0 ? (
           <div className="pt-4 space-y-4">
             <div className="max-w-[85%] bg-bg-elevated border border-white/5 px-3 py-2 text-sm rounded-2xl rounded-tl-sm">
-              Chào bạn 👋 Moxic có thể giúp gì? Hỏi về đơn hàng, cách cài game hay tư vấn chọn game đều được nhé!
+              {tr("Chào bạn 👋 Moxic có thể giúp gì? Hỏi về đơn hàng, cách cài game hay tư vấn chọn game đều được nhé!")}
             </div>
             <div className="flex flex-wrap gap-2">
               {QUICK.map((q) => (
@@ -166,7 +167,7 @@ export default function ChatPanel() {
               <div key={m.id}>
                 {showOrder && (
                   <p className="text-center text-[10px] text-text-muted my-2">
-                    Về đơn{" "}
+                    {tr("Về đơn")}{" "}
                     {me ? (
                       <Link to={`/account/orders/${m.orderCode}`} onClick={() => window.innerWidth < 640 && close()} className="font-mono hover:text-accent">
                         {m.orderCode}
@@ -202,8 +203,8 @@ export default function ChatPanel() {
       >
         {needContact && (
           <div className="grid grid-cols-2 gap-2">
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Tên của bạn" className="h-9 px-3 bg-bg-base border border-border text-sm focus:outline-none focus:border-accent" />
-            <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={100} placeholder="SĐT / Zalo *" className="h-9 px-3 bg-bg-base border border-border text-sm focus:outline-none focus:border-accent" />
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder={tr("Tên của bạn")} className="h-9 px-3 bg-bg-base border border-border text-sm focus:outline-none focus:border-accent" />
+            <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={100} placeholder={tr("SĐT / Zalo *")} className="h-9 px-3 bg-bg-base border border-border text-sm focus:outline-none focus:border-accent" />
           </div>
         )}
         {error && <p className="text-xs text-negative">{error}</p>}
@@ -219,10 +220,10 @@ export default function ChatPanel() {
             }}
             rows={1}
             maxLength={2000}
-            placeholder="Nhập tin nhắn…"
+            placeholder={tr("Nhập tin nhắn…")}
             className="flex-1 min-h-[40px] max-h-32 resize-none px-3 py-2 bg-bg-base border border-border text-[16px] sm:text-sm focus:outline-none focus:border-accent"
           />
-          <button type="submit" disabled={!text.trim() || send.isPending} aria-label="Gửi" className="h-10 w-10 shrink-0 inline-flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
+          <button type="submit" disabled={!text.trim() || send.isPending} aria-label={tr("Gửi")} className="h-10 w-10 shrink-0 inline-flex items-center justify-center bg-accent text-on-accent disabled:opacity-40 cursor-pointer">
             {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>

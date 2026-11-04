@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Banknote, Check, CreditCard, Download, LogIn, PartyPopper, Receipt, RefreshCw, XCircle } from "lucide-react";
 import { confetti, haptic } from "../../lib/fx";
 
+import { t, locale } from "../../lib/i18n";
 export interface TrackerOrder {
   orderCode: string;
   status: string;
@@ -13,10 +14,10 @@ export interface TrackerOrder {
 }
 
 const STEPS = [
-  { label: "Đặt hàng", icon: Receipt },
-  { label: "Đã nhận tiền", icon: CreditCard },
-  { label: "Đăng nhập Xbox", icon: LogIn },
-  { label: "Đang tải game", icon: Download },
+  { label: t("Đã đặt hàng"), icon: Receipt },
+  { label: t("Đã nhận tiền"), icon: CreditCard },
+  { label: t("Đăng nhập Xbox"), icon: LogIn },
+  { label: t("Đang tải game"), icon: Download },
   { label: "Xong", icon: PartyPopper },
 ] as const;
 
@@ -28,15 +29,15 @@ function reached(o: TrackerOrder) {
   return 0;
 }
 
-const hhmm = (iso?: string | null) => (iso ? new Date(iso).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "");
+const hhmm = (iso?: string | null) => (iso ? new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) : "");
 
 function since(iso: string | null | undefined, now: number) {
   if (!iso) return "";
   const m = Math.max(0, Math.floor((now - new Date(iso).getTime()) / 60000));
-  if (m < 1) return "vừa xong";
-  if (m < 60) return `${m} phút trước`;
+  if (m < 1) return t("vừa xong");
+  if (m < 60) return t("{0} phút trước", [m]);
   const h = Math.floor(m / 60);
-  return h < 24 ? `${h} giờ trước` : `${Math.floor(h / 24)} ngày trước`;
+  return h < 24 ? t("{0} giờ trước", [h]) : t("{0} ngày trước", [Math.floor(h / 24)]);
 }
 
 /**
@@ -82,15 +83,15 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
   const pct = cancelled ? 0 : (step / (STEPS.length - 1)) * 100;
 
   const headline = cancelled
-    ? { icon: XCircle, tone: "text-negative bg-negative/15", title: "Đơn đã bị hủy", sub: "Liên hệ Moxic nếu bạn cần hỗ trợ." }
+    ? { icon: XCircle, tone: "text-negative bg-negative/15", title: t("Đơn đã bị hủy"), sub: t("Liên hệ Moxic nếu bạn cần hỗ trợ.") }
     : action
-      ? { icon: AlertTriangle, tone: "text-caution bg-caution/15", title: "Cần bạn kiểm tra tài khoản Xbox", sub: "Thông tin đăng nhập chưa đúng, cập nhật để Moxic cài tiếp." }
+      ? { icon: AlertTriangle, tone: "text-caution bg-caution/15", title: t("Cần bạn kiểm tra tài khoản Xbox"), sub: t("Thông tin đăng nhập chưa đúng, cập nhật để Moxic cài tiếp.") }
       : [
-          { icon: Receipt, tone: "text-accent bg-accent/15", title: "Chờ thanh toán", sub: "Quét QR để thanh toán, hệ thống tự nhận diện khi tiền về." },
-          { icon: Banknote, tone: "text-positive bg-positive/15", title: "Đã nhận tiền", sub: "Moxic sắp đăng nhập Xbox của bạn để cài game, thường xong trong 15 đến 30 phút." },
-          { icon: LogIn, tone: "text-info bg-info/15", title: "Đang đăng nhập Xbox", sub: "Vui lòng KHÔNG đăng nhập tài khoản Xbox lúc này để tránh bị văng." },
-          { icon: Download, tone: "text-info bg-info/15", title: "Đang tải game", sub: "Game đang được thêm vào thư viện của bạn. Sắp xong rồi!" },
-          { icon: PartyPopper, tone: "text-positive bg-positive/15", title: "Xong, game đã vào tài khoản", sub: "Mở Xbox, vào Thư viện để tải về và chơi. Chúc vui!" },
+          { icon: Receipt, tone: "text-accent bg-accent/15", title: t("Chờ thanh toán"), sub: t("Quét QR để thanh toán, hệ thống tự nhận diện khi tiền về.") },
+          { icon: Banknote, tone: "text-positive bg-positive/15", title: t("Đã nhận tiền"), sub: t("Moxic sắp đăng nhập Xbox của bạn để cài game, thường xong trong 15 đến 30 phút.") },
+          { icon: LogIn, tone: "text-info bg-info/15", title: t("Đang đăng nhập Xbox"), sub: t("Vui lòng KHÔNG đăng nhập tài khoản Xbox lúc này để tránh bị văng.") },
+          { icon: Download, tone: "text-info bg-info/15", title: t("Đang tải game"), sub: t("Game đang được thêm vào thư viện của bạn. Sắp xong rồi!") },
+          { icon: PartyPopper, tone: "text-positive bg-positive/15", title: t("Xong, game đã vào tài khoản"), sub: t("Mở Xbox, vào Thư viện để tải về và chơi. Chúc vui!") },
         ][step];
 
   const lastAt = times[step];
@@ -109,7 +110,7 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
         {!done && !cancelled && step > 0 && (
           <span className="shrink-0 inline-flex items-center gap-1.5 text-xs text-text-muted">
             <RefreshCw className="w-3.5 h-3.5 motion-safe:animate-spin [animation-duration:3s]" aria-hidden="true" />
-            Tự cập nhật
+            {t("Tự cập nhật")}
           </span>
         )}
       </div>
@@ -146,7 +147,7 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
                   <Icon className="w-4 h-4" />
                 </span>
                 <span className={`mt-2 text-[10px] sm:text-xs text-center leading-tight ${isDone || isNext ? "text-white font-semibold" : "text-text-muted"}`}>
-                  {warn ? "Cần xử lý" : s.label}
+                  {warn ? t("Cần xử lý") : s.label}
                 </span>
                 <span className="text-[10px] text-text-muted h-3">{isDone ? hhmm(times[i]) : ""}</span>
               </li>
@@ -155,14 +156,14 @@ export default function LiveOrderTracker({ order }: { order: TrackerOrder }) {
         </ol>
         {cancelled && (
           <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-negative">
-            <XCircle className="w-4 h-4" /> Đơn đã hủy
+            <XCircle className="w-4 h-4" /> {t("Đơn đã hủy")}
           </p>
         )}
       </div>
 
       {!done && !cancelled && step > 0 && lastAt && (
         <p className="mt-3 text-center text-[11px] text-text-muted">
-          Cập nhật {since(lastAt, now)}, trang tự cập nhật, không cần tải lại
+          {t("Cập nhật {0}, trang tự cập nhật, không cần tải lại", [since(lastAt, now)])}
         </p>
       )}
     </div>

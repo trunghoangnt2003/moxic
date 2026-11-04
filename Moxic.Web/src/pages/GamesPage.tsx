@@ -10,31 +10,32 @@ import { formatPrice } from "../lib/utils";
 import type { FacetOption, ProductType } from "../types/game";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 
+import { t, lang } from "../lib/i18n";
 const PAGE_SIZE = 24;
 
 const SORTS = [
-  { value: "", label: "Nổi bật & mới nhất" },
-  { value: "bestseller", label: "Bán chạy nhất" },
-  { value: "discount", label: "Giảm giá nhiều nhất" },
-  { value: "ending", label: "Sắp hết khuyến mãi" },
-  { value: "price-asc", label: "Giá: thấp cao" },
-  { value: "price-desc", label: "Giá: cao thấp" },
-  { value: "release", label: "Ngày phát hành" },
-  { value: "name-asc", label: "Tên: A Z" },
-  { value: "name-desc", label: "Tên: Z A" },
+  { value: "", label: t("Nổi bật & mới nhất") },
+  { value: "bestseller", label: t("Bán chạy nhất") },
+  { value: "discount", label: t("Giảm giá nhiều nhất") },
+  { value: "ending", label: t("Sắp hết khuyến mãi") },
+  { value: "price-asc", label: t("Giá: thấp đến cao") },
+  { value: "price-desc", label: t("Giá: cao đến thấp") },
+  { value: "release", label: t("Ngày phát hành") },
+  { value: "name-asc", label: t("Tên: A đến Z") },
+  { value: "name-desc", label: t("Tên: Z đến A") },
 ];
 
 const PRICE_PRESETS: { label: string; min?: number; max?: number }[] = [
-  { label: "Dưới 200K", max: 200_000 },
+  { label: t("Dưới 200K"), max: 200_000 },
   { label: "200K – 500K", min: 200_000, max: 500_000 },
-  { label: "500K – 1 triệu", min: 500_000, max: 1_000_000 },
-  { label: "Trên 1 triệu", min: 1_000_000 },
+  { label: t("500K – 1 triệu"), min: 500_000, max: 1_000_000 },
+  { label: t("Trên 1 triệu"), min: 1_000_000 },
 ];
 
 const STATUSES = [
-  { value: "", label: "Tất cả" },
-  { value: "Available", label: "Sẵn có" },
-  { value: "Preorder", label: "Đặt trước" },
+  { value: "", label: t("Tất cả") },
+  { value: "Available", label: t("Sẵn có") },
+  { value: "Preorder", label: t("Đặt trước") },
 ];
 
 interface Filters {
@@ -103,9 +104,9 @@ function writeFilters(f: Filters): URLSearchParams {
 }
 
 function shortPrice(v: number) {
-  if (v >= 1_000_000) return `${+(v / 1_000_000).toFixed(1)} triệu`;
+  if (v >= 1_000_000) return t("{0} triệu", [+(v / 1_000_000).toFixed(1)]);
   if (v >= 1_000) return `${Math.round(v / 1_000)}K`;
-  return `${v}đ`;
+  return t("{0}đ", [v]);
 }
 
 export default function GamesPage() {
@@ -168,12 +169,12 @@ export default function GamesPage() {
     chips.push({
       key: "year",
       label: filters.yearFrom != null && filters.yearTo != null
-        ? filters.yearFrom === filters.yearTo ? `Năm ${filters.yearFrom}` : `${filters.yearFrom}–${filters.yearTo}`
-        : filters.yearFrom != null ? `Từ ${filters.yearFrom}` : `Trước ${filters.yearTo! + 1}`,
+        ? filters.yearFrom === filters.yearTo ? t("Năm {0}", [filters.yearFrom]) : `${filters.yearFrom}–${filters.yearTo}`
+        : filters.yearFrom != null ? t("Từ {0}", [filters.yearFrom]) : t("Trước {0}", [filters.yearTo! + 1]),
       onRemove: () => update({ yearFrom: undefined, yearTo: undefined }),
     });
-  if (filters.rating != null) chips.push({ key: "rating", label: `${filters.rating}★ trở lên`, onRemove: () => update({ rating: undefined }) });
-  if (filters.sale) chips.push({ key: "sale", label: "Đang giảm giá", onRemove: () => update({ sale: false }) });
+  if (filters.rating != null) chips.push({ key: "rating", label: t("{0}★ trở lên", [filters.rating]), onRemove: () => update({ rating: undefined }) });
+  if (filters.sale) chips.push({ key: "sale", label: t("Đang giảm giá"), onRemove: () => update({ sale: false }) });
   for (const id of filters.genres)
     chips.push({ key: `g${id}`, label: nameOf(facets?.genres, id), onRemove: () => update({ genres: filters.genres.filter((x) => x !== id) }) });
   for (const t of filters.types)
@@ -191,8 +192,8 @@ export default function GamesPage() {
         filters.min != null && filters.max != null
           ? `${shortPrice(filters.min)} – ${shortPrice(filters.max)}`
           : filters.min != null
-            ? `Từ ${shortPrice(filters.min)}`
-            : `Đến ${shortPrice(filters.max!)}`,
+            ? t("Từ {0}", [shortPrice(filters.min)])
+            : t("Đến {0}", [shortPrice(filters.max!)]),
       onRemove: () => update({ min: undefined, max: undefined }),
     });
 
@@ -219,15 +220,15 @@ export default function GamesPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-2 mb-5">
         <div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-text-primary">Cửa hàng game</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-text-primary">{t("Cửa hàng game")}</h1>
           <p className="text-text-muted text-sm mt-1">
             {data ? (
               <>
-                <span className="text-text-primary font-semibold">{data.total}</span> game
-                {chips.length > 0 ? " phù hợp" : " đang bán"}
+                <span className="text-text-primary font-semibold">{data.total}</span> {lang === "en" && data.total !== 1 ? "games" : "game"}
+                {chips.length > 0 ? t(" phù hợp") : t(" đang bán")}
               </>
             ) : (
-              "Đang tải…"
+              t("Đang tải…")
             )}
           </p>
         </div>
@@ -242,7 +243,7 @@ export default function GamesPage() {
               type="search"
               inputMode="search"
               enterKeyHint="search"
-              placeholder="Tìm theo tên game, thể loại, tag…"
+              placeholder={t("Tìm theo tên game, thể loại, tag…")}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onKeyDown={(e) => {
@@ -253,7 +254,7 @@ export default function GamesPage() {
             {searchText && (
               <button
                 type="button"
-                aria-label="Xóa tìm kiếm"
+                aria-label={t("Xóa tìm kiếm")}
                 onClick={() => {
                   setSearchText("");
                   update({ q: "" });
@@ -271,7 +272,7 @@ export default function GamesPage() {
             className="md:hidden relative flex-1 h-11 px-3 flex items-center justify-center gap-2 border border-white/10 bg-bg-surface text-sm font-semibold cursor-pointer"
           >
             <SlidersHorizontal className="w-4 h-4 text-accent" />
-            Lọc
+            {t("Lọc")}
             {filterCount > 0 && (
               <span className="min-w-5 h-5 px-1 flex items-center justify-center bg-accent text-on-accent text-[11px] font-bold">
                 {filterCount}
@@ -301,7 +302,7 @@ export default function GamesPage() {
               onClick={clearAll}
               className="shrink-0 h-8 px-2 text-xs text-text-muted hover:text-white underline underline-offset-4 cursor-pointer"
             >
-              Xóa tất cả
+              {t("Xóa tất cả")}
             </button>
           </div>
         )}
@@ -314,11 +315,11 @@ export default function GamesPage() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-accent" />
-                <span className="font-display font-bold">Bộ lọc</span>
+                <span className="font-display font-bold">{t("Bộ lọc")}</span>
               </div>
               {filterCount > 0 && (
                 <button type="button" onClick={clearAll} className="text-xs text-text-muted hover:text-accent cursor-pointer">
-                  Đặt lại
+                  {t("Đặt lại")}
                 </button>
               )}
             </div>
@@ -330,9 +331,9 @@ export default function GamesPage() {
         <div className="flex-1 min-w-0">
           {error ? (
             <div className="text-center py-20 border border-dashed border-white/15">
-              <p className="text-danger mb-4">Không thể tải danh sách game</p>
+              <p className="text-danger mb-4">{t("Không thể tải danh sách game")}</p>
               <button onClick={() => refetch()} className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-3 text-sm font-semibold cursor-pointer">
-                Thử lại
+                {t("Thử lại")}
               </button>
             </div>
           ) : isLoading ? (
@@ -340,10 +341,10 @@ export default function GamesPage() {
           ) : data && data.items.length === 0 ? (
             <div className="text-center py-20 px-6 border border-dashed border-white/15">
               <Search className="w-10 h-10 mx-auto text-text-muted mb-4" />
-              <p className="font-semibold mb-1">Không tìm thấy game phù hợp</p>
-              <p className="text-text-muted text-sm mb-5">Thử bỏ bớt bộ lọc hoặc tìm với từ khóa khác.</p>
+              <p className="font-semibold mb-1">{t("Không tìm thấy game phù hợp")}</p>
+              <p className="text-text-muted text-sm mb-5">{t("Thử bỏ bớt bộ lọc hoặc tìm với từ khóa khác.")}</p>
               <button onClick={clearAll} className="border border-accent text-accent hover:bg-accent/10 px-5 py-2.5 text-sm font-semibold cursor-pointer">
-                Xóa bộ lọc
+                {t("Xóa bộ lọc")}
               </button>
             </div>
           ) : (
@@ -379,26 +380,26 @@ export default function GamesPage() {
         <div className="absolute inset-0 bg-black/70" onClick={() => setSheetOpen(false)} />
         <div
           role="dialog"
-          aria-label="Bộ lọc"
+          aria-label={t("Bộ lọc")}
           className={`absolute inset-x-0 bottom-0 max-h-[85vh] flex flex-col bg-bg-surface border-t border-white/10 transition-transform duration-300 ${sheetOpen ? "translate-y-0" : "translate-y-full"}`}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-            <span className="font-display font-bold text-lg">Bộ lọc</span>
-            <button type="button" aria-label="Đóng" onClick={() => setSheetOpen(false)} className="p-2 -mr-2 cursor-pointer">
+            <span className="font-display font-bold text-lg">{t("Bộ lọc")}</span>
+            <button type="button" aria-label={t("Đóng")} onClick={() => setSheetOpen(false)} className="p-2 -mr-2 cursor-pointer">
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto overscroll-contain">{panel}</div>
           <div className="flex gap-3 p-4 border-t border-white/5 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <button type="button" onClick={clearAll} className="flex-1 h-12 border border-white/15 text-sm font-semibold cursor-pointer">
-              Xóa lọc
+              {t("Xóa lọc")}
             </button>
             <button
               type="button"
               onClick={() => setSheetOpen(false)}
               className="flex-[2] h-12 bg-accent text-on-accent text-sm font-bold cursor-pointer"
             >
-              {isFetching ? "Đang lọc…" : `Xem ${data?.total ?? 0} kết quả`}
+              {isFetching ? t("Đang lọc…") : t("Xem {0} kết quả", [data?.total ?? 0])}
             </button>
           </div>
         </div>
@@ -411,7 +412,7 @@ function SortSelect({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div className="relative shrink-0">
       <select
-        aria-label="Sắp xếp"
+        aria-label={t("Sắp xếp")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-11 w-[132px] sm:w-[200px] appearance-none bg-bg-surface border border-white/10 pl-3 pr-8 text-sm text-text-primary focus:outline-none focus:border-accent cursor-pointer truncate"
@@ -459,7 +460,7 @@ function FilterPanel({
 
   return (
     <div>
-      <Section title="Trạng thái">
+      <Section title={t("Trạng thái")}>
         <div className="grid grid-cols-3 border border-white/10">
           {STATUSES.map((s) => {
             const active = filters.status === s.value;
@@ -482,7 +483,7 @@ function FilterPanel({
         <label className="mt-3 flex items-center justify-between gap-3 px-3 py-2.5 border border-white/10 cursor-pointer hover:border-white/20">
           <span className="flex items-center gap-2 text-sm whitespace-nowrap min-w-0">
             <Percent className="w-4 h-4 text-discount" />
-            Đang giảm giá
+            {t("Đang giảm giá")}
             {facets && <span className="text-text-muted text-xs">({facets.onSale})</span>}
           </span>
           <input type="checkbox" className="sr-only peer" checked={filters.sale} onChange={(e) => update({ sale: e.target.checked })} />
@@ -491,26 +492,26 @@ function FilterPanel({
       </Section>
 
       {facets && facets.types.length > 1 && (
-        <Section title="Loại sản phẩm">
+        <Section title={t("Loại sản phẩm")}>
           <CheckList
             options={facets.types.map((t) => ({ ...t, name: PRODUCT_TYPE_LABELS[t.id as ProductType] ?? t.name }))}
             selected={filters.types}
             onToggle={(id) => update({ types: toggle(filters.types, id) })}
-            searchPlaceholder="Tìm loại…"
+            searchPlaceholder={t("Tìm loại…")}
           />
         </Section>
       )}
 
-      <Section title="Thể loại">
+      <Section title={t("Thể loại")}>
         <CheckList
           options={facets?.genres}
           selected={filters.genres}
           onToggle={(id) => update({ genres: toggle(filters.genres, id) })}
-          searchPlaceholder="Tìm thể loại…"
+          searchPlaceholder={t("Tìm thể loại…")}
         />
       </Section>
 
-      <Section title="Đánh giá" defaultOpen={filters.rating != null}>
+      <Section title={t("Đánh giá")} defaultOpen={filters.rating != null}>
         <div className="grid grid-cols-2 gap-1.5">
           {[4.5, 4, 3.5, 3].map((r) => {
             const active = filters.rating === r;
@@ -531,22 +532,22 @@ function FilterPanel({
       </Section>
 
       {facets && facets.years.length > 0 && (
-        <Section title="Năm phát hành" defaultOpen={filters.yearFrom != null || filters.yearTo != null}>
+        <Section title={t("Năm phát hành")} defaultOpen={filters.yearFrom != null || filters.yearTo != null}>
           <YearFilter years={facets.years} from={filters.yearFrom} to={filters.yearTo} onChange={(yearFrom, yearTo) => update({ yearFrom, yearTo })} />
         </Section>
       )}
 
-      <Section title="Khoảng giá">
+      <Section title={t("Khoảng giá")}>
         <PriceFilter min={filters.min} max={filters.max} bounds={facets?.price} onChange={(min, max) => update({ min, max })} />
       </Section>
 
       {facets && facets.publishers.length > 0 && (
-        <Section title="Nhà phát hành" defaultOpen={filters.publishers.length > 0}>
+        <Section title={t("Nhà phát hành")} defaultOpen={filters.publishers.length > 0}>
           <CheckList
             options={facets.publishers}
             selected={filters.publishers}
             onToggle={(id) => update({ publishers: toggle(filters.publishers, id) })}
-            searchPlaceholder="Tìm nhà phát hành…"
+            searchPlaceholder={t("Tìm nhà phát hành…")}
           />
         </Section>
       )}
@@ -580,7 +581,7 @@ function CheckList({
   const [term, setTerm] = useState("");
   const [expanded, setExpanded] = useState(false);
   if (!options) return <div className="h-24 animate-pulse bg-white/5" />;
-  if (options.length === 0) return <p className="text-xs text-text-muted">Chưa có thể loại nào.</p>;
+  if (options.length === 0) return <p className="text-xs text-text-muted">{t("Chưa có thể loại nào.")}</p>;
 
   const filtered = term ? options.filter((o) => o.name.toLowerCase().includes(term.toLowerCase())) : options;
   // Selected items stay visible even when collapsed.
@@ -620,11 +621,11 @@ function CheckList({
             </button>
           );
         })}
-        {filtered.length === 0 && <p className="text-xs text-text-muted px-2 py-2">Không có kết quả.</p>}
+        {filtered.length === 0 && <p className="text-xs text-text-muted px-2 py-2">{t("Không có kết quả.")}</p>}
       </div>
       {!term && filtered.length > 8 && (
         <button type="button" onClick={() => setExpanded(!expanded)} className="mt-2 px-2 text-xs text-accent hover:underline cursor-pointer">
-          {expanded ? "Thu gọn" : `Xem thêm ${filtered.length - 8}`}
+          {expanded ? t("Thu gọn") : t("Xem thêm {0}", [filtered.length - 8])}
         </button>
       )}
     </div>
@@ -657,7 +658,7 @@ function TagCloud({ options, selected, onToggle }: { options: FacetOption[]; sel
       </div>
       {options.length > 12 && (
         <button type="button" onClick={() => setExpanded(!expanded)} className="mt-2 text-xs text-accent hover:underline cursor-pointer">
-          {expanded ? "Thu gọn" : `Xem thêm ${options.length - 12} tag`}
+          {expanded ? t("Thu gọn") : t("Xem thêm {0} tag", [options.length - 12])}
         </button>
       )}
     </div>
@@ -726,18 +727,18 @@ function PriceFilter({
           value={minText}
           onChange={(e) => setMinText(e.target.value.replace(/\D/g, ""))}
           onBlur={apply}
-          placeholder={bounds ? `Từ ${shortPrice(bounds.min)}` : "Từ"}
-          aria-label="Giá thấp nhất"
+          placeholder={bounds ? t("Từ {0}", [shortPrice(bounds.min)]) : t("Từ")}
+          aria-label={t("Giá thấp nhất")}
           className="w-full min-w-0 h-9 bg-bg-base border border-white/10 px-2 text-xs focus:outline-none focus:border-accent text-text-primary placeholder:text-text-placeholder"
         />
-        <span className="text-text-muted text-xs">đến</span>
+        <span className="text-text-muted text-xs">{t("đến")}</span>
         <input
           inputMode="numeric"
           value={maxText}
           onChange={(e) => setMaxText(e.target.value.replace(/\D/g, ""))}
           onBlur={apply}
-          placeholder={bounds ? `Đến ${shortPrice(bounds.max)}` : "Đến"}
-          aria-label="Giá cao nhất"
+          placeholder={bounds ? t("Đến {0}", [shortPrice(bounds.max)]) : t("Đến")}
+          aria-label={t("Giá cao nhất")}
           className="w-full min-w-0 h-9 bg-bg-base border border-white/10 px-2 text-xs focus:outline-none focus:border-accent text-text-primary placeholder:text-text-placeholder"
         />
         <button type="submit" className="h-9 px-3 border border-white/10 text-xs hover:border-accent hover:text-accent cursor-pointer">
@@ -746,7 +747,7 @@ function PriceFilter({
       </form>
       {(min != null || max != null) && (
         <p className="mt-2 text-[11px] text-text-muted">
-          {min != null ? formatPrice(min) : "0"} đến {max != null ? formatPrice(max) : "∞"}
+          {t("{0} đến {1}", [min != null ? formatPrice(min) : "0", max != null ? formatPrice(max) : "∞"])}
         </p>
       )}
     </div>
@@ -756,10 +757,10 @@ function PriceFilter({
 function YearFilter({ years, from, to, onChange }: { years: number[]; from?: number; to?: number; onChange: (from?: number, to?: number) => void }) {
   const newest = years[0];
   const presets: { label: string; from?: number; to?: number }[] = [
-    { label: `Mới nhất (${newest})`, from: newest, to: newest },
+    { label: t("Mới nhất ({0})", [newest]), from: newest, to: newest },
     { label: `${newest - 2}–${newest}`, from: newest - 2, to: newest },
     { label: `${newest - 6}–${newest - 3}`, from: newest - 6, to: newest - 3 },
-    { label: `Trước ${newest - 6}`, to: newest - 7 },
+    { label: t("Trước {0}", [newest - 6]), to: newest - 7 },
   ];
   return (
     <div className="space-y-2">
@@ -781,12 +782,12 @@ function YearFilter({ years, from, to, onChange }: { years: number[]; from?: num
         })}
       </div>
       <select
-        aria-label="Chọn năm"
+        aria-label={t("Chọn năm")}
         value={from != null && from === to ? String(from) : ""}
         onChange={(e) => (e.target.value ? onChange(Number(e.target.value), Number(e.target.value)) : onChange(undefined, undefined))}
         className="w-full h-9 bg-bg-base border border-white/10 px-2 text-xs text-text-primary focus:outline-none focus:border-accent cursor-pointer"
       >
-        <option value="">Chọn một năm…</option>
+        <option value="">{t("Chọn một năm…")}</option>
         {years.map((y) => (
           <option key={y} value={y}>
             {y}
@@ -810,10 +811,10 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
 
   const btn = "h-10 min-w-10 px-2 border text-sm font-semibold transition-colors";
   return (
-    <nav className="flex justify-center items-center gap-1.5 mt-10" aria-label="Phân trang">
+    <nav className="flex justify-center items-center gap-1.5 mt-10" aria-label={t("Phân trang")}>
       <button
         type="button"
-        aria-label="Trang trước"
+        aria-label={t("Trang trước")}
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
         className={`${btn} border-white/10 hover:border-accent disabled:opacity-40 disabled:hover:border-white/10 cursor-pointer disabled:cursor-default`}

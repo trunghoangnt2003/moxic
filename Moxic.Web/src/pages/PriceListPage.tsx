@@ -8,6 +8,7 @@ import { SectionLoader } from "../components/shared/MoxicLoader";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { formatPrice } from "../lib/utils";
 
+import { t, locale } from "../lib/i18n";
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api" });
 
 interface Row {
@@ -31,8 +32,8 @@ type Sort = "save" | "price" | "name";
 
 /** "Bảng giá game Xbox hôm nay": Xbox Store vs Moxic for every game, refreshed daily. */
 export default function PriceListPage() {
-  const today = new Date().toLocaleDateString("vi-VN");
-  usePageMeta(`Bảng giá game Xbox hôm nay ${today}`, "So sánh giá game Xbox Store và giá Moxic, cập nhật hằng ngày.");
+  const today = new Date().toLocaleDateString(locale);
+  usePageMeta(t("Bảng giá game Xbox hôm nay {0}", [today]), t("So sánh giá game Xbox Store và giá Moxic, cập nhật hằng ngày."));
   const { data, isLoading } = useQuery({
     queryKey: ["seo", "prices"],
     queryFn: async () => (await api.get<PriceData>("/seo/prices")).data,
@@ -53,17 +54,17 @@ export default function PriceListPage() {
 
   return (
     <Container className="mt-8 mb-20 max-w-5xl">
-      <p className="text-xs text-accent">Cập nhật {today}</p>
-      <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">Bảng giá game Xbox hôm nay</h1>
+      <p className="text-xs text-accent">{t("Cập nhật {0}", [today])}</p>
+      <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">{t("Bảng giá game Xbox hôm nay")}</h1>
       <p className="text-text-secondary mt-2 max-w-2xl">
-        So sánh giá niêm yết trên Xbox Store Việt Nam với giá tại Moxic cho {data.items.length} game. Giá Xbox Store được kiểm tra tự động hằng ngày
-        {data.storeCheckedAt ? ` (lần gần nhất ${new Date(data.storeCheckedAt).toLocaleDateString("vi-VN")})` : ""}.
+        {t("So sánh giá niêm yết trên Xbox Store Việt Nam với giá tại Moxic cho {0} game. Giá Xbox Store được kiểm tra tự động hằng ngày", [data.items.length])}
+        {data.storeCheckedAt ? t(" (lần gần nhất {0})", [new Date(data.storeCheckedAt).toLocaleDateString(locale)]) : ""}.
       </p>
 
       <div className="grid grid-cols-3 gap-2 mt-5">
         <div className="border border-white/10 bg-bg-surface p-3 text-center">
           <p className="font-display text-2xl font-bold text-positive">-{data.avgSave}%</p>
-          <p className="text-[11px] text-text-muted">Tiết kiệm trung bình</p>
+          <p className="text-[11px] text-text-muted">{t("Tiết kiệm trung bình")}</p>
         </div>
         <div className="border border-white/10 bg-bg-surface p-3 text-center">
           <p className="font-display text-2xl font-bold">{data.items.length}</p>
@@ -71,21 +72,21 @@ export default function PriceListPage() {
         </div>
         <div className="border border-white/10 bg-bg-surface p-3 text-center">
           <p className="font-display text-lg sm:text-2xl font-bold text-accent">{formatPrice(totalSaved)}</p>
-          <p className="text-[11px] text-text-muted">Tổng chênh lệch nếu mua hết</p>
+          <p className="text-[11px] text-text-muted">{t("Tổng chênh lệch nếu mua hết")}</p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mt-5">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm game…" className="w-full h-10 pl-9 pr-3 bg-bg-surface border border-white/15 text-[16px] sm:text-sm focus:outline-none focus:border-accent" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Tìm game…")} className="w-full h-10 pl-9 pr-3 bg-bg-surface border border-white/15 text-[16px] sm:text-sm focus:outline-none focus:border-accent" />
         </div>
         <div className="inline-flex border border-white/15 text-xs">
           {(
             [
-              ["save", "Tiết kiệm nhiều"],
-              ["price", "Giá thấp"],
-              ["name", "Tên A–Z"],
+              ["save", t("Tiết kiệm nhiều")],
+              ["price", t("Giá thấp")],
+              ["name", t("Tên A–Z")],
             ] as [Sort, string][]
           ).map(([k, l]) => (
             <button key={k} type="button" onClick={() => setSort(k)} className={`px-3 h-10 inline-flex items-center gap-1 cursor-pointer ${sort === k ? "bg-accent/15 text-accent" : "text-text-muted hover:text-white"}`}>
@@ -102,7 +103,7 @@ export default function PriceListPage() {
               <th className="text-left px-3 py-2.5 font-semibold">Game</th>
               <th className="text-right px-3 py-2.5 font-semibold whitespace-nowrap">Xbox Store</th>
               <th className="text-right px-3 py-2.5 font-semibold whitespace-nowrap">Moxic</th>
-              <th className="text-right px-3 py-2.5 font-semibold">Tiết kiệm</th>
+              <th className="text-right px-3 py-2.5 font-semibold">{t("Tiết kiệm")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -122,7 +123,7 @@ export default function PriceListPage() {
                       <TrendingDown className="w-3.5 h-3.5" /> -{r.savePercent}%
                     </span>
                   ) : (
-                    <span className="text-text-muted">Bằng giá</span>
+                    <span className="text-text-muted">{t("Bằng giá")}</span>
                   )}
                 </td>
               </tr>
@@ -132,7 +133,7 @@ export default function PriceListPage() {
       </div>
 
       <p className="mt-4 text-xs text-text-muted">
-        Có câu hỏi về cách mua? Xem <Link to="/hoi-dap" className="text-accent hover:underline">Hỏi đáp</Link>.
+        {t("Có câu hỏi về cách mua? Xem")} <Link to="/hoi-dap" className="text-accent hover:underline">{t("Hỏi đáp")}</Link>.
       </p>
     </Container>
   );

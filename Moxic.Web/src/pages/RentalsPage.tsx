@@ -6,13 +6,14 @@ import { SectionLoader } from "../components/shared/MoxicLoader";
 import { getMyRentals, RENTAL_STATUS } from "../lib/rentalApi";
 import { formatPrice } from "../lib/utils";
 
+import { t } from "../lib/i18n";
 function daysLeft(iso: string | null) {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
-  if (ms <= 0) return "Đã hết hạn";
+  if (ms <= 0) return t("Đã hết hạn");
   const d = Math.floor(ms / 86_400_000);
   const h = Math.floor((ms % 86_400_000) / 3_600_000);
-  return d > 0 ? `Còn ${d} ngày ${h} giờ` : `Còn ${h} giờ`;
+  return d > 0 ? t("Còn {0} ngày {1} giờ", [d, h]) : t("Còn {0} giờ", [h]);
 }
 
 /** "Game đang thuê": the customer's rentals, active first. */
@@ -25,11 +26,11 @@ export default function RentalsPage() {
     <Container className="mt-8 mb-20 max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-display text-3xl font-bold text-text-primary">Game đang thuê</h1>
-          <p className="text-sm text-text-muted mt-1">Thông tin tài khoản, hạn thuê và gia hạn.</p>
+          <h1 className="font-display text-3xl font-bold text-text-primary">{t("Game đang thuê")}</h1>
+          <p className="text-sm text-text-muted mt-1">{t("Thông tin tài khoản, hạn thuê và gia hạn.")}</p>
         </div>
         <Link to="/rent" className="h-10 px-4 inline-flex items-center bg-positive text-on-accent text-sm font-bold">
-          Thuê thêm game
+          {t("Thuê thêm game")}
         </Link>
       </div>
 
@@ -38,10 +39,10 @@ export default function RentalsPage() {
       ) : items.length === 0 ? (
         <div className="text-center py-20 bg-black/40 border border-white/5">
           <Gamepad2 className="w-12 h-12 mx-auto text-positive/50 mb-4" />
-          <p className="font-semibold mb-1">Bạn chưa thuê game nào</p>
-          <p className="text-sm text-text-muted mb-6">Chơi game bom tấn chỉ với một phần nhỏ giá mua.</p>
+          <p className="font-semibold mb-1">{t("Bạn chưa thuê game nào")}</p>
+          <p className="text-sm text-text-muted mb-6">{t("Chơi game bom tấn chỉ với một phần nhỏ giá mua.")}</p>
           <Link to="/rent" className="inline-flex h-11 items-center px-6 bg-positive text-on-accent text-sm font-bold">
-            Xem game cho thuê
+            {t("Xem game cho thuê")}
           </Link>
         </div>
       ) : (
@@ -67,7 +68,7 @@ export default function RentalsPage() {
                         </>
                       ) : (
                         <>
-                          {r.days} ngày, {formatPrice(r.price)}
+                          {t("{0} ngày, {1}", [r.days, formatPrice(r.price)])}
                         </>
                       )}
                     </p>

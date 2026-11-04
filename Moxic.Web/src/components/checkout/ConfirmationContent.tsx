@@ -3,6 +3,7 @@ import { formatPrice, formatDate } from "../../lib/utils";
 import { useState } from "react";
 import type { OrderConfirmationItem } from "../../types/game";
 
+import { t } from "../../lib/i18n";
 interface Props {
   orderCode: string;
   items: OrderConfirmationItem[];
@@ -30,14 +31,14 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
   return (
     <div className="bg-bg-surface border border-white/10">
       <div className="px-4 py-3 border-b border-white/10">
-        <p className="text-[11px] text-text-muted">Mã đơn hàng</p>
+        <p className="text-[11px] text-text-muted">{t("Mã đơn hàng")}</p>
         <div className="flex items-center gap-2">
           <span className="font-mono text-base font-semibold text-text-primary truncate">{orderCode}</span>
           <button
             type="button"
             onClick={handleCopy}
             className="w-7 h-7 shrink-0 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
-            aria-label="Sao chép mã đơn hàng"
+            aria-label={t("Sao chép mã đơn hàng")}
           >
             {copied ? <Check className="w-3.5 h-3.5 text-positive" /> : <Copy className="w-3.5 h-3.5 text-text-muted" />}
           </button>
@@ -61,19 +62,19 @@ export default function ConfirmationContent({ orderCode, items, totalAmount, cre
         {discountAmount > 0 && (
           <>
             <div className="flex justify-between gap-3">
-              <span className="text-text-muted">Tạm tính</span>
+              <span className="text-text-muted">{t("Tạm tính")}</span>
               <span className="text-text-secondary tabular-nums">{formatPrice(subtotalAmount ?? totalAmount + discountAmount)}</span>
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-text-muted truncate">
-                Giảm giá{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
+                {t("Giảm giá")}{couponCode ? <> (<span className="font-mono">{couponCode}</span>)</> : null}
               </span>
               <span className="text-positive font-semibold tabular-nums">−{formatPrice(discountAmount)}</span>
             </div>
           </>
         )}
         <div className="flex items-baseline justify-between gap-3 pt-1">
-          <span className="text-text-secondary font-semibold">Tổng cộng</span>
+          <span className="text-text-secondary font-semibold">{t("Tổng cộng")}</span>
           <span className="font-display text-xl font-bold text-accent tabular-nums">{formatPrice(totalAmount)}</span>
         </div>
       </div>

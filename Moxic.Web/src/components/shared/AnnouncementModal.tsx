@@ -5,6 +5,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Megaphone, PartyPopper, Rocket
 import { getActiveAnnouncements, type Announcement } from "../../lib/api";
 import { formatPrice } from "../../lib/utils";
 
+import { t, locale } from "../../lib/i18n";
 const SESSION_KEY = "moxic.announce.seen";
 const SNOOZE_KEY = "moxic.announce.snoozeDay";
 // Never interrupt buying, paying, signing in or opening a gift.
@@ -12,21 +13,21 @@ const QUIET_PATHS = ["/cart", "/checkout", "/confirmation", "/account/orders", "
 
 const KIND_META: Record<Announcement["kind"], { label: string; icon: typeof Rocket; badge: string; glow: string; accent: string }> = {
   GameLaunch: {
-    label: "Sắp ra mắt",
+    label: t("Sắp ra mắt"),
     icon: Rocket,
     badge: "bg-caution/15 text-caution border-caution/40",
     glow: "shadow-[0_0_60px_-10px_rgba(251,191,36,0.45)]",
     accent: "from-caution to-caution",
   },
   Event: {
-    label: "Sự kiện",
+    label: t("Sự kiện"),
     icon: PartyPopper,
     badge: "bg-highlight/15 text-highlight border-highlight/40",
     glow: "shadow-[0_0_60px_-10px_rgba(217,70,239,0.5)]",
     accent: "from-highlight to-highlight",
   },
   News: {
-    label: "Tin mới",
+    label: t("Tin mới"),
     icon: Megaphone,
     badge: "bg-info/15 text-info border-info/40",
     glow: "shadow-[0_0_60px_-10px_rgba(56,189,248,0.45)]",
@@ -64,13 +65,13 @@ function Countdown({ target, offsetMs, accent }: { target: string; offsetMs: num
   const now = useNow(offsetMs);
   const ms = Math.max(0, new Date(target).getTime() - now);
   const parts = [
-    { v: Math.floor(ms / 86_400_000), l: "Ngày" },
-    { v: Math.floor((ms % 86_400_000) / 3_600_000), l: "Giờ" },
-    { v: Math.floor((ms % 3_600_000) / 60_000), l: "Phút" },
-    { v: Math.floor((ms % 60_000) / 1000), l: "Giây" },
+    { v: Math.floor(ms / 86_400_000), l: t("Ngày") },
+    { v: Math.floor((ms % 86_400_000) / 3_600_000), l: t("Giờ") },
+    { v: Math.floor((ms % 3_600_000) / 60_000), l: t("Phút") },
+    { v: Math.floor((ms % 60_000) / 1000), l: t("Giây") },
   ];
   if (ms === 0) {
-    return <p className={`text-lg font-display font-bold bg-gradient-to-r ${accent} bg-clip-text text-transparent`}>Đã chính thức ra mắt!</p>;
+    return <p className={`text-lg font-display font-bold bg-gradient-to-r ${accent} bg-clip-text text-transparent`}>{t("Đã chính thức ra mắt!")}</p>;
   }
   return (
     <div className="grid grid-cols-4 gap-2 sm:gap-3" role="timer" aria-live="off">
@@ -170,7 +171,7 @@ export default function AnnouncementModal() {
           <button
             type="button"
             onClick={close}
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
             className="absolute top-2.5 right-2.5 w-9 h-9 flex items-center justify-center bg-black/50 hover:bg-black/80 border border-white/15 text-white cursor-pointer backdrop-blur-md"
           >
             <X className="w-4 h-4" />
@@ -180,7 +181,7 @@ export default function AnnouncementModal() {
             <>
               <button
                 type="button"
-                aria-label="Thông báo trước"
+                aria-label={t("Thông báo trước")}
                 onClick={() => setIndex((i) => (i - 1 + items.length) % items.length)}
                 className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/70 border border-white/10 text-white cursor-pointer"
               >
@@ -188,7 +189,7 @@ export default function AnnouncementModal() {
               </button>
               <button
                 type="button"
-                aria-label="Thông báo sau"
+                aria-label={t("Thông báo sau")}
                 onClick={() => setIndex((i) => (i + 1) % items.length)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/70 border border-white/10 text-white cursor-pointer"
               >
@@ -214,9 +215,9 @@ export default function AnnouncementModal() {
             <div className="space-y-2">
               <p className="flex items-center gap-1.5 text-xs text-text-secondary">
                 <CalendarDays className="w-3.5 h-3.5" />
-                {a.countdownLabel || (a.kind === "Event" ? "Sự kiện bắt đầu sau" : "Ra mắt sau")}
+                {a.countdownLabel || (a.kind === "Event" ? t("Sự kiện bắt đầu sau") : t("Ra mắt sau"))}
                 <span className="text-text-muted">
-                  , {new Date(a.countdownTo).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  , {new Date(a.countdownTo).toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" })}
                 </span>
               </p>
               <Countdown target={a.countdownTo} offsetMs={offsetMs} accent={meta.accent} />
@@ -229,13 +230,13 @@ export default function AnnouncementModal() {
             <div className="flex items-baseline gap-2">
               {discount > 0 && <span className="px-1.5 py-0.5 text-xs font-bold bg-discount text-on-solid">-{discount}%</span>}
               {discount > 0 && <span className="text-sm text-text-muted line-through">{formatPrice(a.gameOriginalPrice!)}</span>}
-              <span className="text-xl font-bold text-white">{a.gamePrice === 0 ? "Miễn phí" : formatPrice(a.gamePrice)}</span>
+              <span className="text-xl font-bold text-white">{a.gamePrice === 0 ? t("Miễn phí") : formatPrice(a.gamePrice)}</span>
             </div>
           )}
 
           <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-1">
             <button type="button" onClick={close} className="h-12 sm:flex-1 border border-white/15 text-sm font-semibold text-text-secondary hover:text-white hover:border-white/30 cursor-pointer">
-              Để sau
+              {t("Để sau")}
             </button>
             {a.ctaUrl && (
               <button
@@ -243,7 +244,7 @@ export default function AnnouncementModal() {
                 onClick={go}
                 className={`group relative h-12 sm:flex-[2] overflow-hidden bg-gradient-to-r ${meta.accent} text-on-accent text-sm font-extrabold cursor-pointer`}
               >
-                <span className="relative z-10">{a.ctaLabel || (a.kind === "GameLaunch" ? "Đặt trước ngay" : "Xem chi tiết")}</span>
+                <span className="relative z-10">{a.ctaLabel || (a.kind === "GameLaunch" ? t("Đặt trước ngay") : t("Xem chi tiết"))}</span>
                 <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
               </button>
             )}
@@ -252,17 +253,17 @@ export default function AnnouncementModal() {
           <div className="flex items-center justify-between gap-3">
             <label className="flex items-center gap-2 text-xs text-text-muted cursor-pointer select-none">
               <input type="checkbox" checked={snooze} onChange={(e) => setSnooze(e.target.checked)} className="accent-caution" />
-              Không hiện lại hôm nay
+              {t("Không hiện lại hôm nay")}
             </label>
             {items.length > 1 && (
-              <div className="flex gap-1.5" role="tablist" aria-label="Chọn thông báo">
+              <div className="flex gap-1.5" role="tablist" aria-label={t("Chọn thông báo")}>
                 {items.map((x, i) => (
                   <button
                     key={x.id}
                     type="button"
                     role="tab"
                     aria-selected={i === index}
-                    aria-label={`Thông báo ${i + 1}`}
+                    aria-label={t("Thông báo {0}", [i + 1])}
                     onClick={() => setIndex(i)}
                     className={`h-1.5 transition cursor-pointer ${i === index ? "w-6 bg-caution" : "w-1.5 bg-white/25 hover:bg-white/50"}`}
                   />

@@ -4,6 +4,7 @@ import { BadgeCheck, LineChart, TrendingDown } from "lucide-react";
 import axios from "axios";
 import { formatPrice } from "../../lib/utils";
 
+import { t, locale } from "../../lib/i18n";
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api" });
 
 interface Point {
@@ -28,8 +29,8 @@ interface History {
 }
 
 const money = (v: number, currency: string) =>
-  currency === "VND" ? formatPrice(v) : new Intl.NumberFormat("vi-VN", { style: "currency", currency, maximumFractionDigits: 2 }).format(v);
-const day = (iso: string) => new Date(iso).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  currency === "VND" ? formatPrice(v) : new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 2 }).format(v);
+const day = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" });
 
 /** Single-series step chart (price holds between changes) with a hover crosshair + tooltip. */
 function StepChart({ points, now, currency, height = 160 }: { points: Point[]; now: string; currency: string; height?: number }) {
@@ -74,7 +75,7 @@ function StepChart({ points, now, currency, height = 160 }: { points: Point[]; n
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto touch-none" role="img" aria-label="Biểu đồ lịch sử giá" onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto touch-none" role="img" aria-label={t("Biểu đồ lịch sử giá")} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
         <defs>
           <linearGradient id="ph-fill" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
@@ -91,13 +92,13 @@ function StepChart({ points, now, currency, height = 160 }: { points: Point[]; n
         </g>
         {/* lowest marker label */}
         <text x={Math.min(W - 60, Math.max(pad.l + 4, x(changes[minIdx].t)))} y={y(changes[minIdx].v) + 16} fontSize="10" className="fill-positive">
-          thấp nhất
+          {t("thấp nhất")}
         </text>
         <text x={pad.l} y={H - 6} fontSize="10" className="fill-text-muted">
           {day(new Date(t0).toISOString())}
         </text>
         <text x={W - pad.r} y={H - 6} fontSize="10" textAnchor="end" className="fill-text-muted">
-          Hôm nay
+          {t("Hôm nay")}
         </text>
         {h && <line x1={x(h.t)} x2={x(h.t)} y1={pad.t} y2={H - pad.b} stroke="currentColor" className="text-white/30" strokeWidth={1} strokeDasharray="3 3" />}
       </svg>
@@ -106,7 +107,7 @@ function StepChart({ points, now, currency, height = 160 }: { points: Point[]; n
           className="pointer-events-none absolute top-0 px-2.5 py-1.5 bg-bg-base/95 border border-white/15 text-xs whitespace-nowrap shadow-lg"
           style={{ left: `${Math.min(70, Math.max(0, (x(h.t) / W) * 100 - 10))}%` }}
         >
-          <p className="text-text-muted">Từ {day(new Date(h.t).toISOString())}</p>
+          <p className="text-text-muted">{t("Từ {0}", [day(new Date(h.t).toISOString())])}</p>
           <p className="font-semibold text-white">{money(h.v, currency)}</p>
         </div>
       )}
@@ -131,23 +132,23 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
   return (
     <section className="mt-12">
       <h2 className="font-display text-xl text-text-primary flex items-center gap-2 mb-5">
-        <LineChart className="w-5 h-5 text-accent" /> Lịch sử giá
+        <LineChart className="w-5 h-5 text-accent" /> {t("Lịch sử giá")}
       </h2>
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-bg-surface border border-border p-4">
           <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
             <div>
-              <p className="text-[11px] text-text-muted">Giá Moxic hiện tại</p>
+              <p className="text-[11px] text-text-muted">{t("Giá Moxic hiện tại")}</p>
               <p className="font-display text-2xl font-bold text-white">{formatPrice(data.current)}</p>
             </div>
             {atLowest ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold bg-positive/15 text-positive border border-positive/40">
-                <BadgeCheck className="w-4 h-4" /> Đang ở mức giá thấp nhất
+                <BadgeCheck className="w-4 h-4" /> {t("Đang ở mức giá thấp nhất")}
               </span>
             ) : (
               low && (
                 <span className="text-xs text-text-muted">
-                  Thấp nhất <b className="text-white">{formatPrice(low.price)}</b> ({day(low.at)})
+                  {t("Thấp nhất")} <b className="text-white">{formatPrice(low.price)}</b> ({day(low.at)})
                 </span>
               )
             )}
@@ -156,7 +157,7 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
             <StepChart points={data.moxic.points} now={data.serverNow} currency="VND" />
           ) : (
             <p className="text-xs text-text-muted py-8 text-center border border-dashed border-white/10">
-              Giá chưa thay đổi kể từ {data.moxic.trackedSince ? day(data.moxic.trackedSince) : "khi bắt đầu theo dõi"}.
+              {t("Giá chưa thay đổi kể từ")} {data.moxic.trackedSince ? day(data.moxic.trackedSince) : t("khi bắt đầu theo dõi")}.
             </p>
           )}
         </div>
@@ -164,12 +165,12 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
         <div className="bg-bg-surface border border-border p-4 space-y-3">
           {xbox && xboxNow ? (
             <>
-              <p className="text-[11px] text-text-muted">Giá Xbox Store ({(xbox.region ?? "us").toUpperCase()})</p>
+              <p className="text-[11px] text-text-muted">{t("Giá Xbox Store ({0})", [(xbox.region ?? "us").toUpperCase()])}</p>
               <p className="font-display text-xl font-bold text-white">{money(xboxNow.sale, xbox.currency ?? "USD")}</p>
               {xboxNow.base > xboxNow.sale && <p className="text-xs text-text-muted line-through">{money(xboxNow.base, xbox.currency ?? "USD")}</p>}
               {xbox.lowest && (
                 <p className="text-xs text-text-muted">
-                  Thấp nhất trên Store: <b className="text-white">{money(xbox.lowest.price, xbox.currency ?? "USD")}</b>
+                  {t("Thấp nhất trên Store:")} <b className="text-white">{money(xbox.lowest.price, xbox.currency ?? "USD")}</b>
                 </p>
               )}
               {xbox.points.length > 1 && <StepChart points={xbox.points} now={data.serverNow} currency={xbox.currency ?? "USD"} height={110} />}
@@ -177,16 +178,16 @@ export default function PriceHistory({ gameId }: { gameId: string }) {
           ) : (
             <>
               <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <TrendingDown className="w-4 h-4 text-positive" /> Rẻ hơn Store chính hãng
+                <TrendingDown className="w-4 h-4 text-positive" /> {t("Rẻ hơn Store chính hãng")}
               </p>
               <p className="text-xs text-text-muted">
                 {data.original > data.current
-                  ? `Tiết kiệm ${formatPrice(data.original - data.current)} (${Math.round((1 - data.current / data.original) * 100)}%) so với giá niêm yết.`
-                  : "Giá đã bao gồm dịch vụ cài đặt cho tài khoản Xbox của bạn."}
+                  ? t("Tiết kiệm {0} ({1}%) so với giá niêm yết.", [formatPrice(data.original - data.current), Math.round((1 - data.current / data.original) * 100)])
+                  : t("Giá đã bao gồm dịch vụ cài đặt cho tài khoản Xbox của bạn.")}
               </p>
             </>
           )}
-          <p className="text-[11px] text-text-muted border-t border-white/5 pt-3">♥ Thêm vào Yêu thích để nhận email khi game giảm giá.</p>
+          <p className="text-[11px] text-text-muted border-t border-white/5 pt-3">{t("♥ Thêm vào Yêu thích để nhận email khi game giảm giá.")}</p>
         </div>
       </div>
     </section>

@@ -7,6 +7,7 @@ import { createReview } from "../../lib/api";
 import { getMyReview } from "../../lib/communityApi";
 import type { GameReview } from "../../types/game";
 
+import { t } from "../../lib/i18n";
 interface ReviewFormProps {
   gameId: string;
   onReviewAdded: (review: GameReview) => void;
@@ -57,7 +58,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
         setNameMode("anonymous");
       }
     } catch {
-      setError("Không thể gửi đánh giá. Vui lòng thử lại.");
+      setError(t("Không thể gửi đánh giá. Vui lòng thử lại."));
     } finally {
       setSubmitting(false);
     }
@@ -66,28 +67,28 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
   return (
     <div className="border-t border-border pt-5 mt-5">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <h3 className="font-display text-base text-text-primary">{existing ? "Đánh giá của bạn" : "Viết đánh giá của bạn"}</h3>
+        <h3 className="font-display text-base text-text-primary">{existing ? t("Đánh giá của bạn") : t("Viết đánh giá của bạn")}</h3>
         {signedIn ? (
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            Đăng với tên <b className="text-text-primary">{mine?.displayName}</b>
+            {t("Đăng với tên")} <b className="text-text-primary">{mine?.displayName}</b>
             {mine?.purchased && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
-                <BadgeCheck className="w-3 h-3" /> Đã mua
+                <BadgeCheck className="w-3 h-3" /> {t("Đã mua")}
               </span>
             )}
           </span>
         ) : (
           <Link to={`/login?redirect=${encodeURIComponent(`/games/${gameId}`)}`} className="text-xs text-accent hover:underline">
-            Đăng nhập để có nhãn “Đã mua”
+            {t("Đăng nhập để có nhãn “Đã mua”")}
           </Link>
         )}
       </div>
-      {existing?.isHidden && <p className="mb-3 text-xs text-caution">Đánh giá của bạn đang bị ẩn do vi phạm tiêu chuẩn cộng đồng.</p>}
+      {existing?.isHidden && <p className="mb-3 text-xs text-caution">{t("Đánh giá của bạn đang bị ẩn do vi phạm tiêu chuẩn cộng đồng.")}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Rating stars */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-text-muted mr-2 flex-shrink-0">Chất lượng:</span>
+          <span className="text-xs text-text-muted mr-2 flex-shrink-0">{t("Chất lượng:")}</span>
           <div className="flex gap-0.5">
             {[1, 2, 3, 4, 5].map((s) => (
               <button
@@ -112,7 +113,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           </div>
           {rating > 0 && (
             <span className="text-xs text-text-muted ml-2">
-              {rating === 1 ? "Rất tệ" : rating === 2 ? "Tệ" : rating === 3 ? "Tạm ổn" : rating === 4 ? "Tốt" : "Xuất sắc"}
+              {rating === 1 ? t("Rất tệ") : rating === 2 ? t("Tệ") : rating === 3 ? t("Tạm ổn") : rating === 4 ? t("Tốt") : t("Xuất sắc")}
             </span>
           )}
         </div>
@@ -120,7 +121,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
         {/* Name mode toggle (guests only) */}
         {!signedIn && (
         <div className="flex items-center gap-3">
-          <span className="text-xs text-text-muted flex-shrink-0">Hiển thị:</span>
+          <span className="text-xs text-text-muted flex-shrink-0">{t("Hiển thị:")}</span>
           <button
             type="button"
             onClick={() => setNameMode("anonymous")}
@@ -131,7 +132,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             }`}
           >
             <User size={14} />
-            Ẩn danh
+            {t("Ẩn danh")}
           </button>
           <button
             type="button"
@@ -143,7 +144,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             }`}
           >
             <User size={14} />
-            Nhập tên
+            {t("Nhập tên")}
           </button>
         </div>
         )}
@@ -154,7 +155,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             type="text"
             value={customName}
             onChange={(e) => setCustomName(e.target.value.slice(0, 50))}
-            placeholder="Tên của bạn"
+            placeholder={t("Tên của bạn")}
             className="w-full bg-bg-surface border border-border px-3 py-2.5 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
             maxLength={50}
           />
@@ -165,7 +166,7 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, 500))}
-            placeholder="Chia sẻ trải nghiệm của bạn…"
+            placeholder={t("Chia sẻ trải nghiệm của bạn…")}
             rows={3}
             className="w-full bg-bg-surface border border-border px-3 py-2.5 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors resize-none"
             required
@@ -188,9 +189,9 @@ export default function ReviewForm({ gameId, onReviewAdded }: ReviewFormProps) {
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-accent text-on-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {submitting ? (
-              <><MoxicLoader size="sm" /> Đang gửi…</>
+              <><MoxicLoader size="sm" /> {t("Đang gửi…")}</>
             ) : (
-              <><Send size={14} /> {existing ? "Cập nhật đánh giá" : "Gửi đánh giá"}</>
+              <><Send size={14} /> {existing ? t("Cập nhật đánh giá") : t("Gửi đánh giá")}</>
             )}
           </button>
         </div>

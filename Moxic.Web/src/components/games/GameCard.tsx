@@ -8,6 +8,7 @@ import WishlistButton from "./WishlistButton";
 import { PRODUCT_TYPE_LABELS, PRODUCT_TYPE_STYLES } from "../../lib/productTypes";
 import { SaleCountdownBadge } from "./FlashSale";
 
+import { t, locale } from "../../lib/i18n";
 /** Cover image with a branded placeholder when the URL is missing or fails to load. */
 function Cover({ src, name, className }: { src?: string; name: string; className: string }) {
   const [failed, setFailed] = useState(false);
@@ -38,9 +39,9 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
       : 0;
 
   const priceDisplay = isFree
-    ? "Miễn phí"
+    ? t("Miễn phí")
     : (game.editionCount ?? 0) > 1
-      ? `Từ ${formatPrice(game.salePrice)}`
+      ? t("Từ {0}", [formatPrice(game.salePrice)])
       : formatPrice(game.salePrice);
   const type = game.productType ?? "Game";
 
@@ -68,14 +69,14 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
           ) : (
             hot && (
               <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-bold bg-bg-base/85 text-caution">
-                <Flame className="w-3.5 h-3.5" /> Bán chạy
+                <Flame className="w-3.5 h-3.5" /> {t("Bán chạy")}
               </span>
             )
           )}
           {game.saleEndsAt && <SaleCountdownBadge endsAt={game.saleEndsAt} className="absolute bottom-2 right-2" />}
           {(type !== "Game" || (game.region && game.region !== "Global") || isPreorder) && (
             <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-              {isPreorder && <span className="px-2 py-0.5 rounded-sm text-xs font-bold bg-preorder text-on-solid">Sắp ra mắt</span>}
+              {isPreorder && <span className="px-2 py-0.5 rounded-sm text-xs font-bold bg-preorder text-on-solid">{t("Sắp ra mắt")}</span>}
               {type !== "Game" && (
                 <span className={`px-2 py-0.5 rounded-sm text-xs font-bold ${PRODUCT_TYPE_STYLES[type]}`}>{PRODUCT_TYPE_LABELS[type]}</span>
               )}
@@ -101,10 +102,10 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
             <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-text-muted">
               {game.rentFrom != null && (
                 <span className="inline-flex items-center gap-1 font-semibold text-positive">
-                  <KeyRound className="w-3 h-3" /> Thuê từ {formatPrice(game.rentFrom)}
+                  <KeyRound className="w-3 h-3" /> {t("Thuê từ {0}", [formatPrice(game.rentFrom)])}
                 </span>
               )}
-              {(game.soldCount ?? 0) > 0 && <span>Đã bán {game.soldCount!.toLocaleString("vi-VN")}</span>}
+              {(game.soldCount ?? 0) > 0 && <span>{t("Đã bán {0}", [game.soldCount!.toLocaleString(locale)])}</span>}
             </p>
           )}
         </div>
@@ -133,7 +134,7 @@ export default function GameCard({ game, variant = "horizontal", rank }: Props) 
           <span className={priceClass}>{priceDisplay}</span>
         </div>
         {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
-        {isPreorder && <Badge variant="preorder">Sắp ra mắt</Badge>}
+        {isPreorder && <Badge variant="preorder">{t("Sắp ra mắt")}</Badge>}
       </div>
     </Link>
   );

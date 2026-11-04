@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import NavExplore from "./NavExplore";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { ThemeMenuButton, ThemeSegmented } from "./ThemeToggle";
 import { Puzzle as PuzzleIcon, Trophy as TrophyIcon } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
@@ -26,6 +27,7 @@ import HeaderSearch from "./HeaderSearch";
 import NotificationBell from "./NotificationBell";
 import { useWishlistIds } from "../../hooks/useWishlist";
 
+import { t, locale } from "../../lib/i18n";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -67,7 +69,7 @@ export default function Navbar() {
     setMenuOpen(false);
     logout.mutate(undefined, {
       onSettled: () => {
-        toast.success("Đã đăng xuất");
+        toast.success(t("Đã đăng xuất"));
         navigate("/");
       },
     });
@@ -79,12 +81,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo + Primary Nav */}
           <div className="flex items-center gap-6 lg:gap-8 min-w-0">
-            <Link
-              to="/"
-              className="text-accent font-display text-xl flex-shrink-0"
-            >
-              MOXIC
-            </Link>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Link to="/" className="text-accent font-display text-xl">
+                MOXIC
+              </Link>
+              <LanguageSwitcher />
+            </div>
             <div className="hidden md:flex items-center gap-5 lg:gap-6">
               <NavLink
                 to="/games"
@@ -101,7 +103,7 @@ export default function Navbar() {
                 }
               >
                 <KeyRound className="w-4 h-4" />
-                Thuê game
+                {t("Thuê game")}
               </NavLink>
               <NavLink
                 to="/lucky-spin"
@@ -112,7 +114,7 @@ export default function Navbar() {
                 }
               >
                 <Gift className="w-4 h-4 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
-                Mở hòm
+                {t("Mở hòm")}
                 <span className="absolute -top-1.5 -right-3 flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-highlight opacity-75 motion-reduce:hidden" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-highlight" />
@@ -134,8 +136,8 @@ export default function Navbar() {
             {/* Wishlist */}
             <Link
               to="/wishlist"
-              aria-label="Yêu thích"
-              title="Yêu thích"
+              aria-label={t("Yêu thích")}
+              title={t("Yêu thích")}
               className="relative text-text-secondary hover:text-negative transition-colors cursor-pointer"
             >
               <Heart className={`w-5 h-5 ${wishlistCount > 0 ? "text-negative" : ""}`} />
@@ -150,7 +152,7 @@ export default function Navbar() {
             <Link
               id="nav-cart-button"
               to="/cart"
-              aria-label="Giỏ hàng"
+              aria-label={t("Giỏ hàng")}
               className="relative text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -180,9 +182,9 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4" />
                   <span className="max-w-[120px] truncate">{me.displayName}</span>
-                  <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-caution/30 bg-caution/10 px-1.5 py-0.5 text-[11px] font-semibold text-caution" title="Điểm thưởng">
+                  <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-caution/30 bg-caution/10 px-1.5 py-0.5 text-[11px] font-semibold text-caution" title={t("Điểm thưởng")}>
                     <Coins className="w-3 h-3" />
-                    {me.points.toLocaleString("vi-VN")}
+                    {me.points.toLocaleString(locale)}
                   </span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${accountOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -192,7 +194,7 @@ export default function Navbar() {
                       <p className="text-sm font-semibold text-text-primary truncate">{me.displayName}</p>
                       <p className="text-xs text-text-muted truncate">{me.email}</p>
                       <p className="mt-1 flex items-center gap-1 text-xs text-caution">
-                        <Coins className="w-3 h-3" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
+                        <Coins className="w-3 h-3" /> {t("Điểm thưởng:")} <span className="font-semibold">{me.points.toLocaleString(locale)}</span>
                       </p>
                     </div>
                     <Link
@@ -202,7 +204,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
                     >
                       <User className="w-4 h-4" />
-                      Tài khoản & thư viện game
+                      {t("Tài khoản & thư viện game")}
                     </Link>
                     <Link
                       to="/account/orders"
@@ -211,7 +213,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
                     >
                       <Package className="w-4 h-4" />
-                      Lịch sử mua hàng
+                      {t("Lịch sử mua hàng")}
                     </Link>
                     <Link
                       to="/account/rentals"
@@ -220,7 +222,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
                     >
                       <KeyRound className="w-4 h-4" />
-                      Game đang thuê
+                      {t("Game đang thuê")}
                     </Link>
                     <Link
                       to="/rewards"
@@ -229,7 +231,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-caution hover:bg-bg-surface-hover hover:text-caution transition-colors"
                     >
                       <Crown className="w-4 h-4" />
-                      Thành viên & điểm danh
+                      {t("Thành viên & điểm danh")}
                     </Link>
                     <Link
                       to="/account/points"
@@ -238,7 +240,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
                     >
                       <Coins className="w-4 h-4" />
-                      Điểm thưởng
+                      {t("Điểm thưởng")}
                     </Link>
                     <Link
                       to="/account/coupons"
@@ -247,7 +249,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
                     >
                       <TicketPercent className="w-4 h-4" />
-                      Mã giảm giá của tôi
+                      {t("Mã giảm giá của tôi")}
                     </Link>
                     <button
                       type="button"
@@ -257,7 +259,7 @@ export default function Navbar() {
                       className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors cursor-pointer disabled:opacity-50"
                     >
                       <LogOut className="w-4 h-4" />
-                      Đăng xuất
+                      {t("Đăng xuất")}
                     </button>
                   </div>
                 )}
@@ -267,14 +269,14 @@ export default function Navbar() {
                 to="/login"
                 className="text-text-secondary hover:text-text-primary transition-colors text-sm cursor-pointer hidden sm:block"
               >
-                Đăng nhập
+                {t("Đăng nhập")}
               </Link>
             )}
 
             {/* Download */}
             <button className="bg-accent hover:bg-accent-hover text-on-accent px-4 py-2 text-sm font-bold transition-colors items-center gap-2 cursor-pointer hidden xl:flex whitespace-nowrap">
               <Download className="w-4 h-4" />
-              Tải về
+              {t("Tải về")}
             </button>
 
             {/* Mobile menu toggle */}
@@ -305,24 +307,24 @@ export default function Navbar() {
               className="flex items-center gap-2 text-positive py-2 text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
             >
-              <KeyRound className="w-4 h-4" /> Thuê game
+              <KeyRound className="w-4 h-4" /> {t("Thuê game")}
             </Link>
             <Link
               to="/lucky-spin"
               className="flex items-center gap-2 text-caution py-2 text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
             >
-              <Gift className="w-4 h-4" /> Mở hòm may mắn
+              <Gift className="w-4 h-4" /> {t("Mở hòm may mắn")}
               <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-highlight/20 text-highlight border border-highlight/40">HOT</span>
             </Link>
             <Link to="/release-calendar" className="block text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
-              Lịch phát hành
+              {t("Lịch phát hành")}
             </Link>
             <Link to="/leaderboard" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
-              <TrophyIcon className="w-4 h-4" aria-hidden="true" /> Bảng xếp hạng
+              <TrophyIcon className="w-4 h-4" aria-hidden="true" /> {t("Bảng xếp hạng")}
             </Link>
             <Link to="/doan-game" className="flex items-center gap-2 text-text-secondary hover:text-text-primary py-2 text-sm font-semibold" onClick={() => setMenuOpen(false)}>
-              <PuzzleIcon className="w-4 h-4" aria-hidden="true" /> Đoán game mỗi ngày
+              <PuzzleIcon className="w-4 h-4" aria-hidden="true" /> {t("Đoán game mỗi ngày")}
             </Link>
             <div className="pt-2 border-t border-border space-y-1">
               {me ? (
@@ -332,7 +334,7 @@ export default function Navbar() {
                     {me.displayName} <span className="text-text-muted text-xs">({me.email})</span>
                   </p>
                   <p className="flex items-center gap-1.5 py-1 text-sm text-caution">
-                    <Coins className="w-4 h-4" /> Điểm thưởng: <span className="font-semibold">{me.points.toLocaleString("vi-VN")}</span>
+                    <Coins className="w-4 h-4" /> {t("Điểm thưởng:")} <span className="font-semibold">{me.points.toLocaleString(locale)}</span>
                   </p>
                   <Link
                     to="/account"
@@ -340,7 +342,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
                     <User className="w-4 h-4" />
-                    Tài khoản & thư viện game
+                    {t("Tài khoản & thư viện game")}
                   </Link>
                   <Link
                     to="/account/orders"
@@ -348,7 +350,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
                     <Package className="w-4 h-4" />
-                    Lịch sử mua hàng
+                    {t("Lịch sử mua hàng")}
                   </Link>
                   <Link
                     to="/account/rentals"
@@ -356,7 +358,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
                     <KeyRound className="w-4 h-4" />
-                    Game đang thuê
+                    {t("Game đang thuê")}
                   </Link>
                   <Link
                     to="/rewards"
@@ -364,7 +366,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-caution"
                   >
                     <Crown className="w-4 h-4" />
-                    Thành viên & điểm danh
+                    {t("Thành viên & điểm danh")}
                   </Link>
                   <Link
                     to="/account/points"
@@ -372,7 +374,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
                     <Coins className="w-4 h-4" />
-                    Điểm thưởng
+                    {t("Điểm thưởng")}
                   </Link>
                   <Link
                     to="/account/coupons"
@@ -380,7 +382,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
                     <TicketPercent className="w-4 h-4" />
-                    Mã giảm giá của tôi
+                    {t("Mã giảm giá của tôi")}
                   </Link>
                   <button
                     type="button"
@@ -389,7 +391,7 @@ export default function Navbar() {
                     className="w-full flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary cursor-pointer disabled:opacity-50"
                   >
                     <LogOut className="w-4 h-4" />
-                    Đăng xuất
+                    {t("Đăng xuất")}
                   </button>
                 </>
               ) : !meLoading ? (
@@ -399,14 +401,14 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="block py-2 text-sm text-text-secondary hover:text-text-primary font-semibold"
                   >
-                    Đăng nhập
+                    {t("Đăng nhập")}
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setMenuOpen(false)}
                     className="block py-2 text-sm text-text-secondary hover:text-text-primary"
                   >
-                    Đăng ký
+                    {t("Đăng ký")}
                   </Link>
                 </>
               ) : null}
@@ -416,7 +418,7 @@ export default function Navbar() {
             </div>
             <button className="w-full bg-accent hover:bg-accent-hover text-on-accent py-3  text-sm font-bold flex items-center justify-center gap-2 cursor-pointer">
               <Download className="w-4 h-4" />
-              Tải về
+              {t("Tải về")}
             </button>
           </div>
         </div>

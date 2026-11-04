@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { GameListItem } from "../../types/game";
 import GameCard from "./GameCard";
 
+import { t } from "../../lib/i18n";
 interface Props {
   title: ReactNode;
   games: GameListItem[];
@@ -28,10 +29,10 @@ export default function GameRail({ title, games, action, ranked }: Props) {
         <div className="flex items-center gap-2">
           {action}
           <div className="hidden md:flex gap-1">
-            <button type="button" aria-label="Cuộn trái" onClick={() => scroll(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
+            <button type="button" aria-label={t("Cuộn trái")} onClick={() => scroll(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button type="button" aria-label="Cuộn phải" onClick={() => scroll(1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
+            <button type="button" aria-label={t("Cuộn phải")} onClick={() => scroll(1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

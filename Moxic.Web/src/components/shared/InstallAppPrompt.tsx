@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Download, Share, SquarePlus, X } from "lucide-react";
 import { isIos, isStandalone, promptInstall, useCanInstall } from "../../lib/pwa";
 
+import { t } from "../../lib/i18n";
 const KEY = "moxic.installPrompt";
 const SNOOZE_DAYS = 14;
 const QUIET = ["/checkout", "/confirmation", "/login", "/register", "/verify-email"];
@@ -46,15 +47,15 @@ export default function InstallAppPrompt() {
   return (
     <div className="fixed inset-x-2 bottom-[calc(0.5rem+var(--sab))] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[380px] z-[45] animate-[popIn_0.35s_ease-out]">
       <div className="relative bg-bg-surface/95 backdrop-blur-md border border-accent/30 shadow-2xl shadow-black/60 p-4">
-        <button type="button" onClick={dismiss} aria-label="Đóng" className="absolute top-2 right-2 p-1 text-text-muted hover:text-white cursor-pointer">
+        <button type="button" onClick={dismiss} aria-label={t("Đóng")} className="absolute top-2 right-2 p-1 text-text-muted hover:text-white cursor-pointer">
           <X className="w-4 h-4" />
         </button>
         {!iosHelp ? (
           <div className="flex items-center gap-3 pr-5">
             <img loading="lazy" decoding="async" src="/icon-192.png" alt="" className="w-12 h-12 rounded-xl shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="font-display font-bold leading-tight">Cài app Moxic</p>
-              <p className="text-xs text-text-muted">Mở nhanh từ màn hình chính, nhận thông báo flash sale & đơn hàng.</p>
+              <p className="font-display font-bold leading-tight">{t("Cài app Moxic")}</p>
+              <p className="text-xs text-text-muted">{t("Mở nhanh từ màn hình chính, nhận thông báo flash sale & đơn hàng.")}</p>
             </div>
             <button
               type="button"
@@ -69,19 +70,19 @@ export default function InstallAppPrompt() {
               }}
               className="h-10 px-3 shrink-0 inline-flex items-center gap-1.5 bg-accent text-on-accent text-sm font-bold cursor-pointer"
             >
-              <Download className="w-4 h-4" /> Cài
+              <Download className="w-4 h-4" /> {t("Cài")}
             </button>
           </div>
         ) : (
           <div className="pr-5 space-y-2 text-sm">
-            <p className="font-display font-bold">Thêm Moxic vào màn hình chính</p>
+            <p className="font-display font-bold">{t("Thêm Moxic vào màn hình chính")}</p>
             <p className="flex items-center gap-2 text-text-secondary">
-              1. Nhấn <Share className="w-4 h-4 text-info" /> <b>Chia sẻ</b> ở thanh dưới Safari
+              {t("1. Nhấn")} <Share className="w-4 h-4 text-info" /> <b>{t("Chia sẻ")}</b> {t("ở thanh dưới Safari")}
             </p>
             <p className="flex items-center gap-2 text-text-secondary">
-              2. Chọn <SquarePlus className="w-4 h-4" /> <b>Thêm vào MH chính</b>
+              {t("2. Chọn")} <SquarePlus className="w-4 h-4" /> <b>{t("Thêm vào MH chính")}</b>
             </p>
-            <p className="text-xs text-text-muted">Mở app từ màn hình chính để bật thông báo trên iPhone.</p>
+            <p className="text-xs text-text-muted">{t("Mở app từ màn hình chính để bật thông báo trên iPhone.")}</p>
           </div>
         )}
       </div>

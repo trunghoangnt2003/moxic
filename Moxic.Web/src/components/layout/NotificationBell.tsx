@@ -6,6 +6,7 @@ import { Bell, CheckCheck, Coins, KeyRound, Package, Tag, Info } from "lucide-re
 import { timeAgo } from "../../lib/utils";
 import PushToggle from "../shared/PushToggle";
 
+import { t } from "../../lib/i18n";
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "/api", withCredentials: true });
 
 interface Note {
@@ -68,7 +69,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`Thông báo${unread ? ` (${unread} chưa đọc)` : ""}`}
+        aria-label={`Thông báo${unread ? t(" ({0} chưa đọc)", [unread]) : ""}`}
         aria-expanded={open}
         className="relative text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
       >
@@ -82,15 +83,15 @@ export default function NotificationBell() {
       {open && (
         <div className="fixed sm:absolute inset-x-2 sm:inset-x-auto top-[calc(3.5rem+var(--sat))] sm:top-auto sm:right-0 sm:mt-3 sm:w-[360px] z-[60] bg-bg-surface border border-white/10 shadow-2xl shadow-black/60">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-            <p className="font-display font-bold">Thông báo</p>
+            <p className="font-display font-bold">{t("Thông báo")}</p>
             {unread > 0 && (
               <button type="button" onClick={() => readAll.mutate()} className="inline-flex items-center gap-1 text-xs text-accent hover:underline cursor-pointer">
-                <CheckCheck className="w-3.5 h-3.5" /> Đánh dấu đã đọc
+                <CheckCheck className="w-3.5 h-3.5" /> {t("Đánh dấu đã đọc")}
               </button>
             )}
           </div>
           <ul className="max-h-[60vh] overflow-y-auto divide-y divide-white/5">
-            {(data?.items ?? []).length === 0 && <li className="px-4 py-10 text-center text-sm text-text-muted">Chưa có thông báo nào.</li>}
+            {(data?.items ?? []).length === 0 && <li className="px-4 py-10 text-center text-sm text-text-muted">{t("Chưa có thông báo nào.")}</li>}
             {data?.items.map((n) => {
               const Icon = ICONS[n.type] ?? Info;
               return (
@@ -112,7 +113,7 @@ export default function NotificationBell() {
                       {n.body && <span className="block text-xs text-text-muted mt-0.5 line-clamp-2">{n.body}</span>}
                       <span className="block text-[11px] text-text-muted mt-1">{timeAgo(n.createdAt)}</span>
                     </span>
-                    {!n.read && <span className="w-2 h-2 mt-1.5 shrink-0 rounded-full bg-accent" aria-label="Chưa đọc" />}
+                    {!n.read && <span className="w-2 h-2 mt-1.5 shrink-0 rounded-full bg-accent" aria-label={t("Chưa đọc")} />}
                   </button>
                 </li>
               );

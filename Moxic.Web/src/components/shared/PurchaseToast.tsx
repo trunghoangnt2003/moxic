@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, X } from "lucide-react";
 import { getRecentPurchases } from "../../lib/api";
 
+import { t } from "../../lib/i18n";
 const FIRST_DELAY_MS = 8_000;
 const SHOW_MS = 6_000;
 const GAP_MS = 22_000;
@@ -13,10 +14,10 @@ const QUIET_PATHS = ["/checkout", "/confirmation", "/cart", "/login", "/register
 
 function ago(iso: string, serverOffset: number) {
   const s = Math.max(0, (Date.now() + serverOffset - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "vừa xong";
-  if (s < 3600) return `${Math.floor(s / 60)} phút trước`;
-  if (s < 86400) return `${Math.floor(s / 3600)} giờ trước`;
-  return `${Math.floor(s / 86400)} ngày trước`;
+  if (s < 60) return t("vừa xong");
+  if (s < 3600) return t("{0} phút trước", [Math.floor(s / 60)]);
+  if (s < 86400) return t("{0} giờ trước", [Math.floor(s / 3600)]);
+  return t("{0} ngày trước", [Math.floor(s / 86400)]);
 }
 
 /** Bottom-left social proof: real recent purchases (masked names), one at a time. */
@@ -84,18 +85,18 @@ export default function PurchaseToast() {
         </Link>
         <div className="min-w-0 text-xs leading-snug">
           <p className="text-text-secondary">
-            <span className="font-semibold text-white">{p.buyer}</span> vừa mua
+            <span className="font-semibold text-white">{p.buyer}</span> {t("vừa mua")}
           </p>
           <Link to={`/games/${p.gameId}`} className="block font-semibold text-accent truncate hover:underline">
             {p.gameName}
           </Link>
           <p className="flex items-center gap-1 text-[11px] text-text-muted mt-0.5">
-            <BadgeCheck className="w-3 h-3 text-positive" /> Đã xác thực, {ago(p.at, offset)}
+            <BadgeCheck className="w-3 h-3 text-positive" /> {t("Đã xác thực, {0}", [ago(p.at, offset)])}
           </p>
         </div>
         <button
           type="button"
-          aria-label="Tắt thông báo mua hàng"
+          aria-label={t("Tắt thông báo mua hàng")}
           onClick={() => {
             try {
               sessionStorage.setItem(HIDE_KEY, "1");

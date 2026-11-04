@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Flame } from "lucide-react";
 import { getGuessToday, imageUrl } from "../../lib/guessApi";
 
+import { t } from "../../lib/i18n";
 /** Home banner for the daily "Đoán game", shows today's pixelated picture as a teaser. */
 export default function GuessTeaser() {
   const { data: s } = useQuery({ queryKey: ["guess", "today"], queryFn: getGuessToday, staleTime: 60_000, retry: false });
@@ -14,12 +15,12 @@ export default function GuessTeaser() {
     >
       <img src={imageUrl(s.imagePath)} alt="" className="w-28 sm:w-40 aspect-video object-cover shrink-0 border border-white/10" loading="lazy" />
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-info">Đoán game #{s.number}</p>
+        <p className="text-[11px] text-info">{t("Đoán game #{0}", [s.number])}</p>
         <p className="font-display text-lg sm:text-xl font-bold leading-tight">
-          {s.finished ? (s.solved ? "Bạn đã đoán đúng hôm nay 🎉" : "Hôm nay khó quá 😅") : "Đây là game gì?"}
+          {s.finished ? (s.solved ? t("Bạn đã đoán đúng hôm nay 🎉") : t("Hôm nay khó quá 😅")) : t("Đây là game gì?")}
         </p>
         <p className="text-xs text-text-muted mt-0.5">
-          {s.finished ? "Câu mới lúc 0h, giữ chuỗi nhé!" : `Đoán đúng ngay lần đầu: +100 điểm, ${s.stats.players} người đã chơi`}
+          {s.finished ? t("Câu mới lúc 0h, giữ chuỗi nhé!") : t("Đoán đúng ngay lần đầu: +100 điểm, {0} người đã chơi", [s.stats.players])}
         </p>
       </div>
       {s.streak > 0 && (

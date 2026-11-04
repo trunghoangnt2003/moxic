@@ -5,6 +5,7 @@ import type { GameListItem } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
 import Badge from "../shared/Badge";
 
+import { t } from "../../lib/i18n";
 interface Props {
   games: GameListItem[];
 }
@@ -41,7 +42,7 @@ function HorizontalGameCard({ game }: { game: GameListItem }) {
         <div className="flex items-center gap-2 mt-1.5">
           {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
           {game.status === "Preorder" && (
-            <Badge variant="preorder">Sắp ra mắt</Badge>
+            <Badge variant="preorder">{t("Sắp ra mắt")}</Badge>
           )}
         </div>
         <div className="flex items-center gap-2 mt-1">
@@ -51,7 +52,7 @@ function HorizontalGameCard({ game }: { game: GameListItem }) {
             </span>
           )}
           <span className="text-text-primary font-bold text-sm num">
-            {game.salePrice > 0 ? formatPrice(game.salePrice) : "Miễn phí"}
+            {game.salePrice > 0 ? formatPrice(game.salePrice) : t("Miễn phí")}
           </span>
         </div>
       </div>
@@ -73,7 +74,7 @@ export default function DiscoverySection({ games }: Props) {
   return (
     <section>
       <div>
-        <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary mb-5">Mới lên kệ</h2>
+        <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary mb-5">{t("Mới lên kệ")}</h2>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ── Left: Feature Card ── */}
@@ -89,10 +90,10 @@ export default function DiscoverySection({ games }: Props) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
               <h3 className="font-display text-2xl font-bold text-white mb-2 drop-shadow-md group-hover:text-accent transition-colors">
-                Xem cả cửa hàng
+                {t("Xem cả cửa hàng")}
               </h3>
               <p className="text-white/70 text-sm font-medium">
-                Game Xbox mới nhất với giá ưu đãi
+                {t("Game Xbox mới nhất với giá ưu đãi")}
               </p>
             </div>
           </Link>

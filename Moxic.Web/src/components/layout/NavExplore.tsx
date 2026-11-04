@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { CalendarDays, ChevronDown, CircleHelp, Puzzle, Tags, Trophy } from "lucide-react";
 
+import { t } from "../../lib/i18n";
 const ITEMS = [
-  { to: "/doan-game", label: "Đoán game", desc: "Mỗi ngày một câu, nhận điểm", icon: Puzzle, tone: "text-info" },
-  { to: "/leaderboard", label: "Xếp hạng", desc: "Đua top tháng, nhận thưởng", icon: Trophy, tone: "text-caution" },
-  { to: "/release-calendar", label: "Sắp ra mắt", desc: "Lịch phát hành game", icon: CalendarDays, tone: "text-highlight" },
-  { to: "/bang-gia-xbox", label: "Bảng giá Xbox", desc: "So giá Xbox Store hôm nay", icon: Tags, tone: "text-positive" },
-  { to: "/hoi-dap", label: "Hỏi đáp", desc: "Cách mua, cài, thanh toán", icon: CircleHelp, tone: "text-text-secondary" },
+  { to: "/doan-game", label: t("Đoán game"), desc: t("Mỗi ngày một câu, nhận điểm"), icon: Puzzle, tone: "text-info" },
+  { to: "/leaderboard", label: t("Xếp hạng"), desc: t("Đua top tháng, nhận thưởng"), icon: Trophy, tone: "text-caution" },
+  { to: "/release-calendar", label: t("Sắp ra mắt"), desc: t("Lịch phát hành game"), icon: CalendarDays, tone: "text-highlight" },
+  { to: "/bang-gia-xbox", label: t("Bảng giá Xbox"), desc: t("So giá Xbox Store hôm nay"), icon: Tags, tone: "text-positive" },
+  { to: "/hoi-dap", label: t("Hỏi đáp"), desc: t("Cách mua, cài, thanh toán"), icon: CircleHelp, tone: "text-text-secondary" },
 ];
 
 /** Desktop "Khám phá ▾" menu, keeps the header on one line as features grow. */
@@ -41,7 +42,7 @@ export default function NavExplore() {
         aria-haspopup="menu"
         className={`inline-flex items-center gap-1 whitespace-nowrap text-sm font-semibold transition-colors cursor-pointer ${active || open ? "text-text-primary" : "text-text-secondary hover:text-text-primary"}`}
       >
-        Khám phá
+        {t("Khám phá")}
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (

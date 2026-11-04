@@ -11,6 +11,7 @@ import { confetti, haptic } from "../lib/fx";
 import { getGuessOptions, getGuessToday, imageUrl, submitGuess, type GuessState } from "../lib/guessApi";
 import { formatPrice } from "../lib/utils";
 
+import { t } from "../lib/i18n";
 const POINTS = [100, 70, 50, 35, 20, 10];
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
 
@@ -30,14 +31,14 @@ function Countdown({ to }: { to: string }) {
 }
 
 function shareText(s: GuessState) {
-  const result = s.solved ? `Đoán đúng ở lần ${s.tries}/${s.maxTries}` : `Chưa đoán ra (${s.maxTries}/${s.maxTries} lượt)`;
-  const streak = s.streak > 1 ? `, chuỗi ${s.streak} ngày` : "";
-  return `Moxic Đoán Game #${s.number}: ${result}${streak}.\nThử sức tại moxic.co/doan-game`;
+  const result = s.solved ? t("Đoán đúng ở lần {0}/{1}", [s.tries, s.maxTries]) : t("Chưa đoán ra ({0}/{1} lượt)", [s.maxTries, s.maxTries]);
+  const streak = s.streak > 1 ? t(", chuỗi {0} ngày", [s.streak]) : "";
+  return t("Moxic Đoán Game #{0}: {1}{2}.\nThử sức tại moxic.co/doan-game", [s.number, result, streak]);
 }
 
 /** Daily "guess the game from a pixelated picture" puzzle. */
 export default function GuessGamePage() {
-  usePageMeta("Đoán game mỗi ngày", "Đoán tên game Xbox từ ảnh bị làm mờ, mỗi ngày một câu, đoán sớm nhận nhiều điểm.");
+  usePageMeta(t("Đoán game mỗi ngày"), t("Đoán tên game Xbox từ ảnh bị làm mờ, mỗi ngày một câu, đoán sớm nhận nhiều điểm."));
   const qc = useQueryClient();
   const { data: s, isLoading, error } = useQuery({ queryKey: ["guess", "today"], queryFn: getGuessToday, staleTime: 30_000 });
   const { data: options } = useQuery({ queryKey: ["guess", "options"], queryFn: getGuessOptions, staleTime: 10 * 60_000 });
@@ -61,16 +62,16 @@ export default function GuessGamePage() {
       if (r.correct) {
         haptic([20, 60, 20, 60, 80]);
         confetti();
-        toast.success(r.earned > 0 ? `Chính xác! +${r.earned} điểm 🎉` : "Chính xác! 🎉", { duration: 5000 });
+        toast.success(r.earned > 0 ? t("Chính xác! +{0} điểm 🎉", [r.earned]) : t("Chính xác! 🎉"), { duration: 5000 });
         qc.invalidateQueries({ queryKey: ["loyalty"] });
       } else {
         haptic(60);
         setShake(true);
         window.setTimeout(() => setShake(false), 500);
-        if (r.state.finished) toast("Hết lượt rồi, xem đáp án bên dưới");
+        if (r.state.finished) toast(t("Hết lượt rồi, xem đáp án bên dưới"));
       }
     },
-    onError: (e: any) => toast.error(e?.response?.data?.error || "Không gửi được, thử lại nhé"),
+    onError: (e: any) => toast.error(t(e?.response?.data?.error ?? "") || t("Không gửi được, thử lại nhé")),
   });
 
   const guessedIds = useMemo(() => new Set(s?.guesses.map((g) => g.id) ?? []), [s]);
@@ -102,8 +103,8 @@ export default function GuessGamePage() {
     return (
       <Container className="py-20 text-center">
         <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-text-muted" aria-hidden="true" />
-        <p className="font-semibold">Câu đố hôm nay chưa sẵn sàng</p>
-        <p className="text-sm text-text-muted">Quay lại sau ít phút nhé!</p>
+        <p className="font-semibold">{t("Câu đố hôm nay chưa sẵn sàng")}</p>
+        <p className="text-sm text-text-muted">{t("Quay lại sau ít phút nhé!")}</p>
       </Container>
     );
 
@@ -120,16 +121,16 @@ export default function GuessGamePage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
-          <p className="text-xs text-accent">Mỗi ngày một câu</p>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold">Đoán Game #{s.number}</h1>
+          <p className="text-xs text-accent">{t("Mỗi ngày một câu")}</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold">{t("Đoán Game #{0}", [s.number])}</h1>
         </div>
         <div className="flex items-center gap-2">
           {s.signedIn && (
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 border text-sm font-bold ${s.streak > 0 ? "border-caution/50 bg-caution/10 text-caution" : "border-white/10 text-text-muted"}`} title="Chuỗi ngày đoán đúng">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 border text-sm font-bold ${s.streak > 0 ? "border-caution/50 bg-caution/10 text-caution" : "border-white/10 text-text-muted"}`} title={t("Chuỗi ngày đoán đúng")}>
               <Flame className="w-4 h-4" /> {s.streak}
             </span>
           )}
-          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-white/10 text-xs text-text-secondary" title="Câu đố mới sau">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-white/10 text-xs text-text-secondary" title={t("Câu đố mới sau")}>
             <Timer className="w-3.5 h-3.5" /> <Countdown to={s.nextAt} />
           </span>
         </div>
@@ -141,7 +142,7 @@ export default function GuessGamePage() {
         <img
           key={`${s.imagePath}-${attempt}`}
           src={imageUrl(s.imagePath) + (attempt ? `&r=${attempt}` : "")}
-          alt="Ảnh game cần đoán"
+          alt={t("Ảnh game cần đoán")}
           onLoad={() => setImgLoaded(true)}
           onError={() => {
             if (attempt < 3) window.setTimeout(() => setAttempt((a) => a + 1), 800 * (attempt + 1));
@@ -152,32 +153,32 @@ export default function GuessGamePage() {
         />
         {(imgFailed || slow) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 text-center p-4">
-            <p className="text-sm text-text-secondary">{imgFailed ? "Không tải được ảnh." : "Ảnh đang tải hơi lâu…"}</p>
+            <p className="text-sm text-text-secondary">{imgFailed ? t("Không tải được ảnh.") : t("Ảnh đang tải hơi lâu…")}</p>
             <button type="button" onClick={reloadImage} className="inline-flex items-center gap-2 h-10 px-4 bg-accent text-on-accent text-sm font-bold cursor-pointer">
-              <RefreshCw className="w-4 h-4" /> Tải lại ảnh
+              <RefreshCw className="w-4 h-4" /> {t("Tải lại ảnh")}
             </button>
           </div>
         )}
         {imgLoaded && (
-          <button type="button" onClick={reloadImage} aria-label="Tải lại ảnh" title="Tải lại ảnh" className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/60 text-white/80 hover:text-white cursor-pointer">
+          <button type="button" onClick={reloadImage} aria-label={t("Tải lại ảnh")} title={t("Tải lại ảnh")} className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/60 text-white/80 hover:text-white cursor-pointer">
             <RefreshCw className="w-4 h-4" />
           </button>
         )}
         {!s.finished && (
           <span className="absolute top-2 left-2 px-2 py-1 text-[11px] font-bold bg-black/70 text-white">
-            Đoán đúng ngay: +{s.nextPoints} điểm
+            {t("Đoán đúng ngay: +{0} điểm", [s.nextPoints])}
           </span>
         )}
         {s.finished && s.answer && (
           <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent animate-[popIn_0.4s_ease-out]">
-            <p className="text-xs text-text-muted">{s.solved ? "Bạn đoán đúng!" : "Đáp án là"}</p>
+            <p className="text-xs text-text-muted">{s.solved ? t("Bạn đoán đúng!") : t("Đáp án là")}</p>
             <p className="font-display text-xl font-bold">{s.answer.name}</p>
           </div>
         )}
       </div>
 
       {/* Tries */}
-      <div className="flex items-center gap-1.5 mt-3" aria-label={`Đã đoán ${s.tries}/${s.maxTries}`}>
+      <div className="flex items-center gap-1.5 mt-3" aria-label={t("Đã đoán {0}/{1}", [s.tries, s.maxTries])}>
         {Array.from({ length: s.maxTries }).map((_, i) => {
           const g = s.guesses[i];
           return (
@@ -187,7 +188,7 @@ export default function GuessGamePage() {
             />
           );
         })}
-        <span className="ml-2 text-xs text-text-muted whitespace-nowrap">{s.finished ? "Xong" : `Còn ${triesLeft} lượt`}</span>
+        <span className="ml-2 text-xs text-text-muted whitespace-nowrap">{s.finished ? "Xong" : t("Còn {0} lượt", [triesLeft])}</span>
       </div>
 
       {/* Input */}
@@ -214,13 +215,13 @@ export default function GuessGamePage() {
                 pick(matches[highlight].id);
               } else if (e.key === "Escape") setOpen(false);
             }}
-            placeholder="Gõ tên game để đoán…"
+            placeholder={t("Gõ tên game để đoán…")}
             disabled={guess.isPending}
             className="w-full h-12 pl-10 pr-10 bg-bg-surface border border-white/15 text-[16px] focus:outline-none focus:border-accent"
             aria-autocomplete="list"
           />
           {q && (
-            <button type="button" onClick={() => setQ("")} aria-label="Xóa" className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-white cursor-pointer">
+            <button type="button" onClick={() => setQ("")} aria-label={t("Xóa")} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-white cursor-pointer">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -241,7 +242,7 @@ export default function GuessGamePage() {
             </ul>
           )}
           {open && q.trim().length > 1 && matches.length === 0 && options && (
-            <p className="absolute left-0 right-0 mt-1 px-3 py-2 text-xs text-text-muted bg-bg-elevated border border-white/10">Không có game này trong kho Moxic</p>
+            <p className="absolute left-0 right-0 mt-1 px-3 py-2 text-xs text-text-muted bg-bg-elevated border border-white/10">{t("Không có game này trong kho Moxic")}</p>
           )}
         </div>
       )}
@@ -274,7 +275,7 @@ export default function GuessGamePage() {
       )}
       {!s.finished && s.tries < 2 && (
         <p className="mt-3 text-[11px] text-text-muted flex items-center gap-1">
-          <HelpCircle className="w-3 h-3" /> Mỗi lần đoán sai ảnh rõ hơn; từ lần sai thứ 2 sẽ có gợi ý.
+          <HelpCircle className="w-3 h-3" /> {t("Mỗi lần đoán sai ảnh rõ hơn; từ lần sai thứ 2 sẽ có gợi ý.")}
         </p>
       )}
 
@@ -284,16 +285,16 @@ export default function GuessGamePage() {
           <div className="text-center">
             {s.solved ? <PartyPopper className="w-10 h-10 mx-auto text-positive" aria-hidden="true" /> : <Frown className="w-10 h-10 mx-auto text-text-muted" aria-hidden="true" />}
             <p className="font-display text-xl font-bold mt-1">
-              {s.solved ? `Đúng sau ${s.tries} lần đoán!` : "Hết lượt mất rồi"}
+              {s.solved ? t("Đúng sau {0} lần đoán!", [s.tries]) : t("Hết lượt mất rồi")}
             </p>
-            {s.solved && s.points > 0 && <p className="text-caution font-bold">+{s.points} điểm thưởng</p>}
+            {s.solved && s.points > 0 && <p className="text-caution font-bold">{t("+{0} điểm thưởng", [s.points])}</p>}
             {s.solved && !s.signedIn && (
               <p className="text-sm text-text-muted mt-1">
-                <Link to="/login?redirect=/doan-game" className="text-accent hover:underline">Đăng nhập</Link> để nhận điểm và giữ chuỗi ngày nhé.
+                <Link to="/login?redirect=/doan-game" className="text-accent hover:underline">{t("Đăng nhập")}</Link> {t("để nhận điểm và giữ chuỗi ngày nhé.")}
               </p>
             )}
             <p className="text-xs text-text-muted mt-2">
-              Câu mới sau <Countdown to={s.nextAt} />
+              {t("Câu mới sau")} <Countdown to={s.nextAt} />
             </p>
           </div>
 
@@ -313,22 +314,22 @@ export default function GuessGamePage() {
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(shareText(s));
-                  toast.success("Đã copy kết quả, dán vào Facebook/Zalo khoe bạn bè!");
+                  toast.success(t("Đã copy kết quả, dán vào Facebook/Zalo khoe bạn bè!"));
                 } catch {
-                  toast.error("Không copy được");
+                  toast.error(t("Không copy được"));
                 }
               }}
               className="h-10 border border-white/15 text-sm font-semibold cursor-pointer"
             >
-              Copy kết quả
+              {t("Copy kết quả")}
             </button>
-            <ShareButton path="/doan-game" title={`Moxic Đoán Game #${s.number}`} text={shareText(s)} label="Thách bạn bè" />
+            <ShareButton path="/doan-game" title={t("Moxic Đoán Game #{0}", [s.number])} text={shareText(s)} label={t("Thách bạn bè")} />
           </div>
 
           {s.stats.players > 0 && (
             <div>
               <p className="text-xs text-text-muted mb-2">
-                {s.stats.players} người đã chơi, {Math.round((s.stats.solved / s.stats.players) * 100)}% đoán đúng
+                {t("{0} người đã chơi, {1}% đoán đúng", [s.stats.players, Math.round((s.stats.solved / s.stats.players) * 100)])}
               </p>
               <div className="space-y-1">
                 {s.stats.distribution.map((n, i) => (
@@ -351,11 +352,11 @@ export default function GuessGamePage() {
 
       {/* Rules */}
       <details className="mt-5 border border-white/10 bg-bg-surface/60 p-4 text-sm">
-        <summary className="cursor-pointer font-semibold">Cách tính điểm</summary>
+        <summary className="cursor-pointer font-semibold">{t("Cách tính điểm")}</summary>
         <ul className="mt-2 space-y-1 text-text-secondary">
-          <li>Đoán đúng ở lần 1 6: {POINTS.join(" / ")} điểm.</li>
-          <li>Chuỗi ngày đúng liên tiếp: +5 điểm mỗi ngày (tối đa +50).</li>
-          <li>Câu đố mới mỗi ngày lúc 0h (giờ Việt Nam). Điểm chỉ tính cho tài khoản đã đăng nhập.</li>
+          <li>{t("Đoán đúng ở lần 1 đến 6: {0} điểm.", [POINTS.join(" / ")])}</li>
+          <li>{t("Chuỗi ngày đúng liên tiếp: +5 điểm mỗi ngày (tối đa +50).")}</li>
+          <li>{t("Câu đố mới mỗi ngày lúc 0h (giờ Việt Nam). Điểm chỉ tính cho tài khoản đã đăng nhập.")}</li>
         </ul>
       </details>
     </Container>

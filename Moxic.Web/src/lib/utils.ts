@@ -1,9 +1,12 @@
-﻿export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("vi-VN").format(price) + "đ";
+
+import { t, locale } from "./i18n";
+
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat("vi-VN").format(price) + t("đ");
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("vi-VN", {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: "2-digit", month: "2-digit", year: "numeric",
   });
 }
@@ -18,15 +21,15 @@ export function timeAgo(dateStr: string): string {
   const date = new Date(dateStr).getTime();
   const seconds = Math.floor((now - date) / 1000);
 
-  if (seconds < 60) return "Vài giây trước";
+  if (seconds < 60) return t("Vài giây trước");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} phút trước`;
+  if (minutes < 60) return t("{0} phút trước", [minutes]);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
+  if (hours < 24) return t("{0} giờ trước", [hours]);
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ngày trước`;
+  if (days < 7) return t("{0} ngày trước", [days]);
   const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks} tuần trước`;
+  if (weeks < 4) return t("{0} tuần trước", [weeks]);
   const months = Math.floor(days / 30);
-  return `${months} tháng trước`;
+  return t("{0} tháng trước", [months]);
 }

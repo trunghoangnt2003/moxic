@@ -1,6 +1,7 @@
 import { useState, type HTMLAttributes } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
+import { t } from "../../lib/i18n";
 interface AuthFieldProps {
   id: string;
   label: string;
@@ -62,7 +63,7 @@ export default function AuthField({
           <button
             type="button"
             onClick={() => setVisible((v) => !v)}
-            aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            aria-label={visible ? t("Ẩn mật khẩu") : t("Hiện mật khẩu")}
             className="absolute right-0 top-0 h-full px-3 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
           >
             {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

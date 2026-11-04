@@ -8,6 +8,7 @@ import { MoxicLoader, PageLoader } from "../components/shared/MoxicLoader";
 import { getAccountErrorMessage, useMe, useRegister } from "../hooks/useAccount";
 import { safeRedirect } from "../lib/accountApi";
 
+import { t } from "../lib/i18n";
 interface FieldErrors {
   displayName?: string;
   email?: string;
@@ -37,12 +38,12 @@ export default function RegisterPage() {
   const validate = (): boolean => {
     const errors: FieldErrors = {};
     const name = displayName.trim();
-    if (name.length < 2 || name.length > 50) errors.displayName = "Tên hiển thị phải từ 2 đến 50 ký tự.";
-    if (!email.trim()) errors.email = "Vui lòng nhập email";
-    else if (!email.includes("@")) errors.email = "Email không hợp lệ";
-    if (password.length < 8) errors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
-    else if (!/\d/.test(password)) errors.password = "Mật khẩu phải chứa ít nhất 1 chữ số.";
-    if (confirm !== password) errors.confirm = "Mật khẩu nhập lại không khớp.";
+    if (name.length < 2 || name.length > 50) errors.displayName = t("Tên hiển thị phải từ 2 đến 50 ký tự.");
+    if (!email.trim()) errors.email = t("Vui lòng nhập email");
+    else if (!email.includes("@")) errors.email = t("Email không hợp lệ");
+    if (password.length < 8) errors.password = t("Mật khẩu phải có ít nhất 8 ký tự.");
+    else if (!/\d/.test(password)) errors.password = t("Mật khẩu phải chứa ít nhất 1 chữ số.");
+    if (confirm !== password) errors.confirm = t("Mật khẩu nhập lại không khớp.");
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -55,12 +56,12 @@ export default function RegisterPage() {
       { displayName: displayName.trim(), email: email.trim(), password },
       {
         onSuccess: (data) => {
-          toast.success("Đã gửi mã xác minh tới email của bạn.");
+          toast.success(t("Đã gửi mã xác minh tới email của bạn."));
           const qs = new URLSearchParams({ email: data.email });
           if (redirectParam) qs.set("redirect", redirect);
           navigate(`/verify-email?${qs.toString()}`);
         },
-        onError: (err) => setError(getAccountErrorMessage(err, "Đăng ký thất bại. Vui lòng thử lại.")),
+        onError: (err) => setError(getAccountErrorMessage(err, t("Đăng ký thất bại. Vui lòng thử lại."))),
       },
     );
   };
@@ -69,13 +70,13 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      title="Đăng ký"
-      subtitle="Tạo tài khoản để lưu và theo dõi lịch sử mua hàng."
+      title={t("Đăng ký")}
+      subtitle={t("Tạo tài khoản để lưu và theo dõi lịch sử mua hàng.")}
       footer={
         <p>
-          Đã có tài khoản?{" "}
+          {t("Đã có tài khoản?")}{" "}
           <Link to={loginHref} className="text-accent hover:underline font-semibold">
-            Đăng nhập
+            {t("Đăng nhập")}
           </Link>
         </p>
       }
@@ -83,11 +84,11 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <AuthField
           id="register-name"
-          label="Tên hiển thị"
+          label={t("Tên hiển thị")}
           type="text"
           value={displayName}
           onChange={setDisplayName}
-          placeholder="Tên của bạn"
+          placeholder={t("Tên của bạn")}
           autoComplete="nickname"
           maxLength={50}
           error={fieldErrors.displayName}
@@ -104,22 +105,22 @@ export default function RegisterPage() {
         />
         <AuthField
           id="register-password"
-          label="Mật khẩu"
+          label={t("Mật khẩu")}
           type="password"
           value={password}
           onChange={setPassword}
-          placeholder="Mật khẩu"
+          placeholder={t("Mật khẩu")}
           autoComplete="new-password"
-          hint="Tối thiểu 8 ký tự, gồm ít nhất 1 chữ số."
+          hint={t("Tối thiểu 8 ký tự, gồm ít nhất 1 chữ số.")}
           error={fieldErrors.password}
         />
         <AuthField
           id="register-confirm"
-          label="Nhập lại mật khẩu"
+          label={t("Nhập lại mật khẩu")}
           type="password"
           value={confirm}
           onChange={setConfirm}
-          placeholder="Nhập lại mật khẩu"
+          placeholder={t("Nhập lại mật khẩu")}
           autoComplete="new-password"
           error={fieldErrors.confirm}
         />
@@ -138,10 +139,10 @@ export default function RegisterPage() {
         >
           {register.isPending ? (
             <>
-              <MoxicLoader size="sm" /> Đang đăng ký…
+              <MoxicLoader size="sm" /> {t("Đang đăng ký…")}
             </>
           ) : (
-            "Tạo tài khoản"
+            t("Tạo tài khoản")
           )}
         </button>
       </form>

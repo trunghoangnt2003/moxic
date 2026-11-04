@@ -5,6 +5,7 @@ import { getAlsoBought, getForYou, getSimilar } from "../../lib/discoveryApi";
 import { recentlyViewed } from "../../lib/localIds";
 import { useMe } from "../../hooks/useAccount";
 
+import { t } from "../../lib/i18n";
 /** Home: "Dành cho bạn", personalised from recently viewed + (signed-in) wishlist/purchases. */
 export function ForYouRail() {
   const seeds = recentlyViewed.useIds();
@@ -19,7 +20,7 @@ export function ForYouRail() {
     <GameRail
       title={
         <>
-          <Sparkles className="w-6 h-6 text-highlight" /> {data.personalised ? "Dành cho bạn" : "Có thể bạn sẽ thích"}
+          <Sparkles className="w-6 h-6 text-highlight" /> {data.personalised ? t("Dành cho bạn") : t("Có thể bạn sẽ thích")}
         </>
       }
       games={data.items}
@@ -39,7 +40,7 @@ export function GamePageRails({ gameId }: { gameId: string }) {
         <GameRail
           title={
             <>
-              <ShoppingBag className="w-5 h-5 text-accent" /> Khách mua game này cũng mua
+              <ShoppingBag className="w-5 h-5 text-accent" /> {t("Khách mua game này cũng mua")}
             </>
           }
           games={also}
@@ -49,7 +50,7 @@ export function GamePageRails({ gameId }: { gameId: string }) {
         <GameRail
           title={
             <>
-              <Shapes className="w-5 h-5 text-accent" /> Game tương tự
+              <Shapes className="w-5 h-5 text-accent" /> {t("Game tương tự")}
             </>
           }
           games={similarOnly}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { t } from "../lib/i18n";
 /** Seconds-remaining countdown (e.g. the 60 s "Gửi lại mã" cooldown). */
 export function useCountdown(initialSeconds = 0) {
   const [remaining, setRemaining] = useState(initialSeconds);
@@ -42,5 +43,5 @@ export function formatCountdown(ms: number): string {
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
   const hms = `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
-  return days > 0 ? `${days} ngày ${hms}` : hms;
+  return days > 0 ? t("{0} ngày {1}", [days, hms]) : hms;
 }

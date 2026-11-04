@@ -23,6 +23,7 @@ import { useCaseMusic } from "../hooks/useCaseMusic";
 import { formatCountdown, useServerNow } from "../hooks/useCountdown";
 import { formatPoints, openMethodLabel, type OpenCaseResult } from "../lib/luckySpinApi";
 
+import { t } from "../lib/i18n";
 const normalizeInput = (value: string) => value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
 const RESULT_DELAY_MS = 350;
 const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
@@ -91,7 +92,7 @@ export default function LuckySpinPage() {
     if (spinCase.openMethod === "Code") {
       codeValue = code.trim();
       if (!codeValue) {
-        toast.error("Vui lòng nhập mã quay.");
+        toast.error(t("Vui lòng nhập mã quay."));
         return;
       }
     }
@@ -137,14 +138,14 @@ export default function LuckySpinPage() {
     return (
       <Container className="mt-12 mb-16 text-center">
         <Gift className="mx-auto h-12 w-12 text-highlight/60" />
-        <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">Không tìm thấy hòm</h1>
-        <p className="mt-2 text-sm text-text-muted">Hòm này không tồn tại hoặc đã tạm ngừng.</p>
+        <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">{t("Không tìm thấy hòm")}</h1>
+        <p className="mt-2 text-sm text-text-muted">{t("Hòm này không tồn tại hoặc đã tạm ngừng.")}</p>
         <Link
           to="/lucky-spin"
           className="mt-6 inline-flex items-center gap-2 rounded-sm px-6 py-2.5 text-sm font-semibold text-white"
           style={primaryButtonStyle}
         >
-          <ArrowLeft className="h-4 w-4" /> Tất cả hòm
+          <ArrowLeft className="h-4 w-4" /> {t("Tất cả hòm")}
         </Link>
       </Container>
     );
@@ -154,15 +155,15 @@ export default function LuckySpinPage() {
   const loginHref = `/login?redirect=${encodeURIComponent(`/lucky-spin/${slug}`)}`;
   const points = viewer?.points ?? 0;
   const pointsShort = spinCase ? Math.max(0, spinCase.pointsCost - points) : 0;
-  const busyLabel = animating && !openCase.isPending ? "Đang mở…" : null;
+  const busyLabel = animating && !openCase.isPending ? t("Đang mở…") : null;
 
   const muteToggle = music.hasTrack ? (
     <button
       type="button"
       onClick={music.toggleMute}
       aria-pressed={music.muted}
-      title={music.muted ? "Bật nhạc" : "Tắt nhạc"}
-      aria-label={music.muted ? "Bật nhạc" : "Tắt nhạc"}
+      title={music.muted ? t("Bật nhạc") : t("Tắt nhạc")}
+      aria-label={music.muted ? t("Bật nhạc") : t("Tắt nhạc")}
       className="inline-flex h-12 w-12 flex-none items-center justify-center rounded-sm border border-highlight/30 bg-spin-deep text-highlight transition-colors hover:bg-highlight/15"
     >
       {music.muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
@@ -177,13 +178,13 @@ export default function LuckySpinPage() {
           <input
             value={code}
             onChange={(e) => setCode(normalizeInput(e.target.value))}
-            placeholder="NHẬP MÃ QUAY"
+            placeholder={t("NHẬP MÃ QUAY")}
             maxLength={32}
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
             disabled={!available || busy}
-            aria-label="Mã quay"
+            aria-label={t("Mã quay")}
             className="h-12 flex-1 rounded-sm border border-highlight/30 bg-spin-deep px-4 text-center font-mono text-base text-white placeholder: placeholder:text-white/30 outline-none transition-colors focus:border-highlight focus:ring-2 focus:ring-highlight/30 disabled:opacity-60 sm:text-left"
           />
           <div className="flex gap-2">
@@ -194,7 +195,7 @@ export default function LuckySpinPage() {
               style={primaryButtonStyle}
             >
               {busy ? <MoxicLoader size="sm" /> : <Gift className="h-4 w-4" />}
-              {busyLabel ?? "Mở hòm"}
+              {busyLabel ?? t("Mở hòm")}
             </button>
             {muteToggle}
           </div>
@@ -206,13 +207,13 @@ export default function LuckySpinPage() {
           <div className="flex w-full justify-center gap-2">
             <Link to={loginHref} className={loginButtonClass}>
               <LogIn className="h-4 w-4" />
-              {spinCase.openMethod === "FreeInterval" ? "Đăng nhập để mở miễn phí" : "Đăng nhập để mở hòm"}
+              {spinCase.openMethod === "FreeInterval" ? t("Đăng nhập để mở miễn phí") : t("Đăng nhập để mở hòm")}
             </Link>
           </div>
           <p className="text-xs text-text-muted">
-            Chưa có tài khoản?{" "}
+            {t("Chưa có tài khoản?")}{" "}
             <Link to="/register" className="text-highlight hover:text-highlight">
-              Đăng ký ngay
+              {t("Đăng ký ngay")}
             </Link>
           </p>
         </div>
@@ -223,7 +224,7 @@ export default function LuckySpinPage() {
           to={`/verify-email${me?.email ? `?email=${encodeURIComponent(me.email)}` : ""}`}
           className={loginButtonClass}
         >
-          Xác minh email để mở hòm
+          {t("Xác minh email để mở hòm")}
         </Link>
       );
     } else if (spinCase.openMethod === "FreeInterval") {
@@ -238,13 +239,13 @@ export default function LuckySpinPage() {
               style={primaryButtonStyle}
             >
               {busy ? <MoxicLoader size="sm" /> : <Clock className="h-4 w-4" />}
-              {busyLabel ?? (inCooldown ? "Đã dùng lượt miễn phí" : "Mở miễn phí")}
+              {busyLabel ?? (inCooldown ? t("Đã dùng lượt miễn phí") : t("Mở miễn phí"))}
             </button>
             {muteToggle}
           </div>
           {inCooldown && (
             <p className="text-sm text-white/70" aria-live="polite">
-              Lượt miễn phí tiếp theo sau{" "}
+              {t("Lượt miễn phí tiếp theo sau")}{" "}
               <span className="font-mono font-semibold text-highlight">{formatCountdown(cooldownLeft)}</span>
             </p>
           )}
@@ -263,18 +264,18 @@ export default function LuckySpinPage() {
               style={primaryButtonStyle}
             >
               {busy ? <MoxicLoader size="sm" /> : <Coins className="h-4 w-4" />}
-              {busyLabel ?? `Mở hòm (${formatPoints(spinCase.pointsCost)} điểm)`}
+              {busyLabel ?? t("Mở hòm ({0} điểm)", [formatPoints(spinCase.pointsCost)])}
             </button>
             {muteToggle}
           </div>
           <p className="text-sm text-white/70">
-            Số dư: <span className="font-semibold text-caution">{formatPoints(points)} điểm</span>
+            {t("Số dư:")} <span className="font-semibold text-caution">{t("{0} điểm", [formatPoints(points)])}</span>
           </p>
           {short && (
             <p className="text-xs text-caution">
-              Bạn cần thêm {formatPoints(pointsShort)} điểm,{" "}
+              {t("Bạn cần thêm {0} điểm,", [formatPoints(pointsShort)])}{" "}
               <Link to="/account/points" className="underline hover:text-caution">
-                Cách nhận điểm
+                {t("Cách nhận điểm")}
               </Link>
             </p>
           )}
@@ -296,7 +297,7 @@ export default function LuckySpinPage() {
         to="/lucky-spin"
         className="inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text-primary"
       >
-        <ArrowLeft className="h-4 w-4" /> Tất cả hòm
+        <ArrowLeft className="h-4 w-4" /> {t("Tất cả hòm")}
       </Link>
 
       {/* Heading */}
@@ -334,14 +335,14 @@ export default function LuckySpinPage() {
 
       {!isLoading && (isError || (spinCase && !available)) && (
         <p className="mx-auto mt-4 max-w-xl rounded-sm border border-caution/30 bg-caution/10 px-4 py-3 text-center text-sm text-caution">
-          Hòm đang được cập nhật, vui lòng quay lại sau.
+          {t("Hòm đang được cập nhật, vui lòng quay lại sau.")}
         </p>
       )}
 
       {/* Items in the case */}
       {prizes.length > 0 && (
         <section className="mt-12 md:mt-16">
-          <h2 className="mb-4 font-display text-lg text-text-primary md:text-xl">Vật phẩm trong hòm</h2>
+          <h2 className="mb-4 font-display text-lg text-text-primary md:text-xl">{t("Vật phẩm trong hòm")}</h2>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-6">
             {prizes.map((p) => (
               <PrizeCard key={p.id} prize={p} size="tile" />

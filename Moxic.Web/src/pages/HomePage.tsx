@@ -13,6 +13,7 @@ import RecentlyViewed from "../components/games/RecentlyViewed";
 import { ForYouRail } from "../components/games/DiscoveryRails";
 import { FlashSaleRail } from "../components/games/FlashSale";
 
+import { t } from "../lib/i18n";
 export default function HomePage() {
   const { data, isLoading } = useGames({ pageSize: 50 });
   const { data: featured, isLoading: featuredLoading } = useFeaturedGames(5);
@@ -56,13 +57,13 @@ export default function HomePage() {
             ranked
             title={
               <>
-                <Flame className="w-6 h-6 text-caution" /> Bán chạy nhất
+                <Flame className="w-6 h-6 text-caution" /> {t("Bán chạy nhất")}
               </>
             }
             games={bestsellers}
             action={
               <Link to="/games?sort=bestseller" className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors">
-                Xem tất cả <ArrowRight className="w-4 h-4" />
+                {t("Xem tất cả")} <ArrowRight className="w-4 h-4" />
               </Link>
             }
           />
@@ -87,12 +88,12 @@ export default function HomePage() {
       {/* game noi bat */}
       <Container className="mt-14">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">Game nổi bật</h2>
+          <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">{t("Game nổi bật")}</h2>
           <Link
             to="/games"
             className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors"
           >
-            Xem tất cả <ArrowRight className="w-4 h-4" />
+            {t("Xem tất cả")} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
         <GameGrid games={availableGames.slice(0, 10)} variant="vertical" />
@@ -102,12 +103,12 @@ export default function HomePage() {
       {preorderGames.length > 0 && (
         <Container className="mt-14 mb-14">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">Sắp ra mắt</h2>
+            <h2 className="font-display text-xl md:text-2xl font-bold text-text-primary">{t("Sắp ra mắt")}</h2>
             <Link
               to="/preorder"
               className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors"
             >
-              Xem tất cả <ArrowRight className="w-4 h-4" />
+              {t("Xem tất cả")} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <GameGrid games={preorderGames.slice(0, 5)} variant="vertical" />
@@ -117,7 +118,7 @@ export default function HomePage() {
       {/* empty state */}
       {games.length === 0 && (
         <Container className="mt-12 text-center py-16">
-          <p className="text-text-muted">Chưa có game nào</p>
+          <p className="text-text-muted">{t("Chưa có game nào")}</p>
         </Container>
       )}
     </div>

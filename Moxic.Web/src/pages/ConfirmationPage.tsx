@@ -13,6 +13,7 @@ import QRDisplay from "../components/checkout/QRDisplay";
 import { getOrder, uploadPaymentProof } from "../lib/api";
 import { useChatUi } from "../lib/chatApi";
 
+import { t } from "../lib/i18n";
 /** Payment + live status page for an order (QR while unpaid, live install tracker once paid). */
 export default function ConfirmationPage() {
   const { orderCode } = useParams<{ orderCode: string }>();
@@ -34,7 +35,7 @@ export default function ConfirmationPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 50 * 1024 * 1024) return setUploadError("File quá lớn (tối đa 50MB)");
+    if (file.size > 50 * 1024 * 1024) return setUploadError(t("File quá lớn (tối đa 50MB)"));
     setSelectedFile(file);
     setUploadError("");
   };
@@ -48,23 +49,23 @@ export default function ConfirmationPage() {
       setUploaded(true);
       setSelectedFile(null);
     } catch (err: any) {
-      setUploadError(err?.response?.data?.error || "Upload thất bại, vui lòng thử lại");
+      setUploadError(t(err?.response?.data?.error ?? "") || t("Upload thất bại, vui lòng thử lại"));
     } finally {
       setUploading(false);
     }
   };
 
-  if (isLoading) return <PageLoader label="Đang tải đơn hàng" />;
+  if (isLoading) return <PageLoader label={t("Đang tải đơn hàng")} />;
 
   if (error || !order) {
     return (
       <Container className="py-20">
         <div className="text-center py-16 bg-bg-surface border border-white/10 max-w-[500px] mx-auto px-6">
           <AlertCircle className="w-14 h-14 text-negative mx-auto mb-4 opacity-70" />
-          <h2 className="font-display text-xl text-text-primary mb-2">Không tìm thấy đơn hàng</h2>
-          <p className="text-text-muted text-sm mb-6">Mã đơn hàng không tồn tại hoặc đã bị xóa.</p>
+          <h2 className="font-display text-xl text-text-primary mb-2">{t("Không tìm thấy đơn hàng")}</h2>
+          <p className="text-text-muted text-sm mb-6">{t("Mã đơn hàng không tồn tại hoặc đã bị xóa.")}</p>
           <Link to="/games" className="inline-flex items-center gap-1 text-accent hover:text-accent-hover text-sm">
-            <ArrowLeft className="w-4 h-4" /> Quay lại cửa hàng
+            <ArrowLeft className="w-4 h-4" /> {t("Quay lại cửa hàng")}
           </Link>
         </div>
       </Container>
@@ -81,12 +82,12 @@ export default function ConfirmationPage() {
   const step: 0 | 1 | 2 | 3 = isPaid || order.status === "ActionRequired" ? 3 : 2;
 
   const header = isCancelled
-    ? { icon: <XCircle className="w-7 h-7 text-negative" />, tone: "bg-negative/15", title: "Đơn hàng đã hủy", sub: "Liên hệ Moxic nếu bạn đã chuyển khoản hoặc cần hỗ trợ." }
+    ? { icon: <XCircle className="w-7 h-7 text-negative" />, tone: "bg-negative/15", title: t("Đơn hàng đã hủy"), sub: t("Liên hệ Moxic nếu bạn đã chuyển khoản hoặc cần hỗ trợ.") }
     : isPaid
-      ? { icon: <CheckCircle2 className="w-7 h-7 text-positive" />, tone: "bg-positive/15", title: "Thanh toán thành công 🎉", sub: "Moxic đang cài game vào tài khoản Xbox của bạn, theo dõi trực tiếp bên dưới." }
+      ? { icon: <CheckCircle2 className="w-7 h-7 text-positive" />, tone: "bg-positive/15", title: t("Thanh toán thành công 🎉"), sub: t("Moxic đang cài game vào tài khoản Xbox của bạn, theo dõi trực tiếp bên dưới.") }
       : isAwaiting
-        ? { icon: <Clock className="w-7 h-7 text-info" />, tone: "bg-info/15", title: "Đang kiểm tra thanh toán", sub: "Moxic đã nhận ảnh chuyển khoản của bạn và đang đối soát." }
-        : { icon: <Smartphone className="w-7 h-7 text-accent" />, tone: "bg-accent/15", title: "Thanh toán đơn hàng", sub: auto ? "Quét mã QR bằng app ngân hàng, đơn tự xác nhận ngay khi tiền về." : "Chuyển khoản theo thông tin bên dưới để hoàn tất đơn." };
+        ? { icon: <Clock className="w-7 h-7 text-info" />, tone: "bg-info/15", title: t("Đang kiểm tra thanh toán"), sub: t("Moxic đã nhận ảnh chuyển khoản của bạn và đang đối soát.") }
+        : { icon: <Smartphone className="w-7 h-7 text-accent" />, tone: "bg-accent/15", title: t("Thanh toán đơn hàng"), sub: auto ? t("Quét mã QR bằng app ngân hàng, đơn tự xác nhận ngay khi tiền về.") : t("Chuyển khoản theo thông tin bên dưới để hoàn tất đơn.") };
 
   return (
     <Container className="py-8 md:py-12 mb-16">
@@ -118,16 +119,16 @@ export default function ConfirmationPage() {
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
                     </span>
-                    <span className="text-text-primary font-medium">Đang chờ tiền về…</span>
-                    <span className="text-text-muted text-xs hidden sm:inline">trang tự cập nhật, không cần tải lại</span>
+                    <span className="text-text-primary font-medium">{t("Đang chờ tiền về…")}</span>
+                    <span className="text-text-muted text-xs hidden sm:inline">{t("trang tự cập nhật, không cần tải lại")}</span>
                   </div>
                 )}
 
                 <div className="p-4 sm:p-5">
                   <ol className="grid grid-cols-3 gap-2 mb-5 text-center">
-                    {["Mở app ngân hàng", "Quét mã QR", auto ? "Xong, tự xác nhận" : "Gửi ảnh chuyển khoản"].map((s, i) => (
+                    {[t("Mở app ngân hàng"), t("Quét mã QR"), auto ? t("Xong, tự xác nhận") : t("Gửi ảnh chuyển khoản")].map((s, i) => (
                       <li key={s} className="px-2 py-2.5 bg-white/[0.03] border border-white/5">
-                        <span className="block text-[10px] font-bold text-accent">BƯỚC {i + 1}</span>
+                        <span className="block text-[10px] font-bold text-accent">{t("BƯỚC {0}", [i + 1])}</span>
                         <span className="block text-xs text-text-secondary mt-0.5">{s}</span>
                       </li>
                     ))}
@@ -145,9 +146,9 @@ export default function ConfirmationPage() {
                   {paymentConfig.bankName && paymentConfig.bankAccountNumber && (
                     <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                       {[
-                        ["Ngân hàng", paymentConfig.bankName],
-                        ["Số tài khoản", paymentConfig.bankAccountNumber],
-                        ["Chủ tài khoản", paymentConfig.bankAccountHolder],
+                        [t("Ngân hàng"), paymentConfig.bankName],
+                        [t("Số tài khoản"), paymentConfig.bankAccountNumber],
+                        [t("Chủ tài khoản"), paymentConfig.bankAccountHolder],
                       ].map(([k, v]) => (
                         <div key={k} className="px-3 py-2 bg-white/[0.03] border border-white/5">
                           <dt className="text-[11px] text-text-muted">{k}</dt>
@@ -165,25 +166,25 @@ export default function ConfirmationPage() {
               <section className="border border-white/10 bg-bg-surface">
                 {auto && !showUpload ? (
                   <button type="button" onClick={() => setShowUpload(true)} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm text-text-muted hover:text-text-primary cursor-pointer">
-                    <span>Đã chuyển hơn 10 phút mà chưa được xác nhận? Gửi ảnh chuyển khoản</span>
+                    <span>{t("Đã chuyển hơn 10 phút mà chưa được xác nhận? Gửi ảnh chuyển khoản")}</span>
                     <ChevronDown className="w-4 h-4 shrink-0" />
                   </button>
                 ) : (
                   <div className="p-4 sm:p-5">
-                    <h3 className="text-sm font-semibold text-text-primary mb-3">Gửi ảnh chuyển khoản</h3>
+                    <h3 className="text-sm font-semibold text-text-primary mb-3">{t("Gửi ảnh chuyển khoản")}</h3>
                     {!uploaded ? (
                       <>
                         <label className="block border-2 border-dashed border-white/10 hover:border-accent/50 p-6 text-center transition-colors cursor-pointer">
                           {selectedFile ? (
                             <span className="relative inline-block">
-                              <img src={URL.createObjectURL(selectedFile)} alt="Ảnh đã chọn" className="max-h-[200px] mx-auto" />
+                              <img src={URL.createObjectURL(selectedFile)} alt={t("Ảnh đã chọn")} className="max-h-[200px] mx-auto" />
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   setSelectedFile(null);
                                 }}
-                                aria-label="Bỏ ảnh"
+                                aria-label={t("Bỏ ảnh")}
                                 className="absolute -top-2 -right-2 w-6 h-6 bg-negative rounded-full flex items-center justify-center cursor-pointer"
                               >
                                 <X className="w-3 h-3 text-white" />
@@ -192,8 +193,8 @@ export default function ConfirmationPage() {
                           ) : (
                             <span className="block">
                               <Upload className="w-7 h-7 text-text-muted mx-auto mb-2" />
-                              <span className="block text-sm text-text-secondary">Chọn ảnh chụp màn hình chuyển khoản</span>
-                              <span className="block text-xs text-text-muted mt-1">Mọi định dạng ảnh, tối đa 50MB</span>
+                              <span className="block text-sm text-text-secondary">{t("Chọn ảnh chụp màn hình chuyển khoản")}</span>
+                              <span className="block text-xs text-text-muted mt-1">{t("Mọi định dạng ảnh, tối đa 50MB")}</span>
                             </span>
                           )}
                           <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
@@ -206,12 +207,12 @@ export default function ConfirmationPage() {
                           className="mt-3 w-full h-11 bg-accent hover:bg-accent-hover text-on-accent text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
                         >
                           {uploading ? <MoxicLoader size="sm" /> : <Upload className="w-4 h-4" />}
-                          {uploading ? "Đang tải lên…" : "Gửi ảnh xác nhận"}
+                          {uploading ? t("Đang tải lên…") : t("Gửi ảnh xác nhận")}
                         </button>
                       </>
                     ) : (
                       <p className="flex items-center gap-2 text-sm text-positive">
-                        <CheckCircle2 className="w-5 h-5" /> Đã gửi ảnh, Moxic sẽ kiểm tra và xác nhận sớm.
+                        <CheckCircle2 className="w-5 h-5" /> {t("Đã gửi ảnh, Moxic sẽ kiểm tra và xác nhận sớm.")}
                       </p>
                     )}
                   </div>
@@ -221,12 +222,12 @@ export default function ConfirmationPage() {
 
             {isAwaiting && order.paymentProofUrl && (
               <section className="border border-white/10 bg-bg-surface p-4">
-                <h3 className="text-sm font-semibold text-text-primary mb-3">Ảnh chuyển khoản đã gửi</h3>
-                <img src={order.paymentProofUrl} alt="Ảnh chuyển khoản" className="max-h-[300px] mx-auto border border-white/10" />
+                <h3 className="text-sm font-semibold text-text-primary mb-3">{t("Ảnh chuyển khoản đã gửi")}</h3>
+                <img src={order.paymentProofUrl} alt={t("Ảnh chuyển khoản")} className="max-h-[300px] mx-auto border border-white/10" />
               </section>
             )}
 
-            {!isCancelled && (order.savedAmount ?? 0) > 0 && <SavedCallout amount={order.savedAmount!} suffix="với đơn này" share={isPaid} />}
+            {!isCancelled && (order.savedAmount ?? 0) > 0 && <SavedCallout amount={order.savedAmount!} suffix={t("với đơn này")} share={isPaid} />}
           </div>
 
           {/* Summary column */}
@@ -242,17 +243,17 @@ export default function ConfirmationPage() {
             />
             <div className="border border-white/10 bg-bg-surface p-4 space-y-2.5 text-sm">
               <p className="flex items-center gap-2 text-text-secondary">
-                <ShieldCheck className="w-4 h-4 text-positive shrink-0" /> Game chính hãng, cài vào tài khoản của bạn
+                <ShieldCheck className="w-4 h-4 text-positive shrink-0" /> {t("Game chính hãng, cài vào tài khoản của bạn")}
               </p>
               <p className="flex items-center gap-2 text-text-secondary">
-                <Clock className="w-4 h-4 text-accent shrink-0" /> Thường xong 15 đến 30 phút sau khi nhận tiền
+                <Clock className="w-4 h-4 text-accent shrink-0" /> {t("Thường xong 15 đến 30 phút sau khi nhận tiền")}
               </p>
               <button type="button" onClick={() => useChatUi.getState().openChat(order.orderCode)} className="flex items-center gap-2 text-accent hover:underline cursor-pointer">
-                <MessageCircleMore className="w-4 h-4 shrink-0" /> Cần hỗ trợ? Chat với Moxic về đơn này
+                <MessageCircleMore className="w-4 h-4 shrink-0" /> {t("Cần hỗ trợ? Chat với Moxic về đơn này")}
               </button>
             </div>
             <Link to="/games" className="flex items-center justify-center gap-2 h-11 border border-white/15 text-sm font-semibold text-text-secondary hover:text-text-primary hover:border-white/30">
-              <ShoppingCart className="w-4 h-4" /> Tiếp tục mua sắm
+              <ShoppingCart className="w-4 h-4" /> {t("Tiếp tục mua sắm")}
             </Link>
           </aside>
         </div>

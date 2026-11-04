@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 
+import { t } from "./i18n";
 // Own axios instance (mirrors accountApi.ts). withCredentials sends the MoxicCustomer cookie.
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const api = axios.create({ baseURL: API_URL, withCredentials: true });
@@ -7,8 +8,8 @@ const api = axios.create({ baseURL: API_URL, withCredentials: true });
 export function apiError(err: unknown, fallback: string) {
   if (isAxiosError(err)) {
     const msg = (err.response?.data as { error?: string } | undefined)?.error;
-    if (msg) return msg;
-    if (err.response?.status === 401) return "Vui lòng đăng nhập.";
+    if (msg) return t(msg);
+    if (err.response?.status === 401) return t("Vui lòng đăng nhập.");
   }
   return fallback;
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, Check, Banknote, Bitcoin } from "lucide-react";
 import { formatPrice } from "../../lib/utils";
 
+import { t } from "../../lib/i18n";
 interface Props {
   bankQrUrl?: string | null;
   cryptoQrUrl?: string | null;
@@ -47,7 +48,7 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
           onClick={() => setMode("bank")}
           className={`flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer ${mode === "bank" ? "text-accent border-b-2 border-accent bg-accent/5" : "text-text-muted hover:text-text-secondary"}`}
         >
-          <Banknote className="w-4 h-4" /> Chuyển khoản
+          <Banknote className="w-4 h-4" /> {t("Chuyển khoản")}
         </button>
         <button
           onClick={() => setMode("crypto")}
@@ -63,13 +64,13 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
         {qrUrl ? (
           <img
             src={qrUrl}
-            alt={`Mã QR ${mode === "bank" ? "ngân hàng" : "crypto"}`}
+            alt={`Mã QR ${mode === "bank" ? t("ngân hàng") : "crypto"}`}
             className="max-w-[260px] w-full aspect-square object-contain bg-white p-3 rounded-2xl shadow-xl shadow-accent/10"
           />
         ) : (
           <div className="max-w-[260px] w-full aspect-square bg-bg-elevated rounded-2xl flex items-center justify-center border border-dashed border-white/10">
             <p className="text-text-muted text-xs">
-              {mode === "bank" ? "Chưa có mã QR ngân hàng" : "Chưa có mã QR Crypto"}
+              {mode === "bank" ? t("Chưa có mã QR ngân hàng") : t("Chưa có mã QR Crypto")}
             </p>
           </div>
         )}
@@ -81,7 +82,7 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-positive" />
           </span>
-          QR đã điền sẵn số tiền & nội dung, tự xác nhận khi tiền về
+          {t("QR đã điền sẵn số tiền & nội dung, tự xác nhận khi tiền về")}
         </p>
       )}
 
@@ -90,14 +91,14 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
         <div className="mb-2 bg-accent/10 border border-accent/20 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[11px] text-text-muted mb-0.5">Số tiền cần chuyển</p>
+              <p className="text-[11px] text-text-muted mb-0.5">{t("Số tiền cần chuyển")}</p>
               <p className="text-accent font-display text-lg font-bold">{formatPrice(amount)}</p>
-              {discounted && <p className="text-[11px] text-positive">Đã trừ mã giảm giá</p>}
+              {discounted && <p className="text-[11px] text-positive">{t("Đã trừ mã giảm giá")}</p>}
             </div>
             <button
               onClick={handleCopyAmount}
               className="flex-shrink-0 w-8 h-8 bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-colors cursor-pointer"
-              aria-label="Sao chép số tiền cần chuyển"
+              aria-label={t("Sao chép số tiền cần chuyển")}
             >
               {amountCopied ? <Check className="w-4 h-4 text-positive" /> : <Copy className="w-4 h-4 text-accent" />}
             </button>
@@ -110,7 +111,7 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[11px] text-text-muted mb-0.5">
-              Nội dung chuyển khoản
+              {t("Nội dung chuyển khoản")}
             </p>
             <p className="text-accent font-mono text-sm font-semibold truncate">
               {transferContent}
@@ -119,7 +120,7 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
           <button
             onClick={handleCopy}
             className="flex-shrink-0 w-8 h-8 bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-colors cursor-pointer"
-            aria-label="Sao chép nội dung chuyển khoản"
+            aria-label={t("Sao chép nội dung chuyển khoản")}
           >
             {copied ? (
               <Check className="w-4 h-4 text-positive" />

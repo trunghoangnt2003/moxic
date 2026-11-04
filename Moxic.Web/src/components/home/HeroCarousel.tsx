@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { GameListItem } from "../../types/game";
 import { formatPrice } from "../../lib/utils";
 
+import { t } from "../../lib/i18n";
 interface Props {
   games: GameListItem[];
 }
@@ -14,24 +15,24 @@ interface HeroMeta {
 
 const heroMeta: Record<string, HeroMeta> = {
   "elden-ring": {
-    title: "Khuyến mãi từ Epic",
-    subtitle: "Phiêu lưu trong thế giới Vòng Địa Ngục với đồ họa tuyệt đỉnh.",
+    title: t("Khuyến mãi từ Epic"),
+    subtitle: t("Phiêu lưu trong thế giới Vòng Địa Ngục với đồ họa tuyệt đỉnh."),
   },
   "cyberpunk-2077": {
-    title: "Tương lai trong tầm tay",
-    subtitle: "Khám phá Night City rực rỡ. Giá chỉ còn 599.000đ!",
+    title: t("Tương lai trong tầm tay"),
+    subtitle: t("Khám phá Night City rực rỡ. Giá chỉ còn 599.000đ!"),
   },
   "ea-fc-26": {
-    title: "Bóng đá đỉnh cao",
-    subtitle: "EA SPORTS FC 26 đã có mặt! Cải tiến mới nhất cho game thủ.",
+    title: t("Bóng đá đỉnh cao"),
+    subtitle: t("EA SPORTS FC 26 đã có mặt! Cải tiến mới nhất cho game thủ."),
   },
   "cod-black-ops-6": {
-    title: "Chiến tranh hiện đại",
-    subtitle: "Black Ops 6, Bùng nổ hành động với chiến dịch bom tấn nhất.",
+    title: t("Chiến tranh hiện đại"),
+    subtitle: t("Black Ops 6, Bùng nổ hành động với chiến dịch bom tấn nhất."),
   },
   "assassins-creed-shadows": {
-    title: "Hành trình Samurai",
-    subtitle: "Đến Nhật Bản thời phong kiến. Đặt hàng ngay!",
+    title: t("Hành trình Samurai"),
+    subtitle: t("Đến Nhật Bản thời phong kiến. Đặt hàng ngay!"),
   },
 };
 
@@ -86,7 +87,7 @@ export default function HeroCarousel({ games }: Props) {
               to={`/games/${game.id}`}
               className="inline-block bg-white hover:bg-text-primary text-on-accent font-bold px-8 py-3 text-sm transition duration-300 cursor-pointer"
             >
-              Tiết kiệm ngay
+              {t("Tiết kiệm ngay")}
             </Link>
           </div>
         </div>
@@ -119,7 +120,7 @@ export default function HeroCarousel({ games }: Props) {
                   {g.name}
                 </p>
                 <p className="text-xs text-text-muted mt-0.5">
-                  {g.salePrice > 0 ? formatPrice(g.salePrice) : "Miễn phí"}
+                  {g.salePrice > 0 ? formatPrice(g.salePrice) : t("Miễn phí")}
                 </p>
               </div>
             </button>

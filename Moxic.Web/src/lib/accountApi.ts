@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { t } from "./i18n";
 // Own axios instance (mirrors luckySpinApi.ts). withCredentials sends the HttpOnly
 // MoxicCustomer cookie to the API (moxic.co -> api.moxic.co is same-site).
 const API_URL = import.meta.env.VITE_API_URL || "/api";
@@ -136,13 +137,13 @@ export async function getMyOrder(orderCode: string) {
 }
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  Pending: "Chờ thanh toán",
-  AwaitingConfirmation: "Chờ xác nhận thanh toán",
-  Verifying: "Đang xác minh",
-  Installing: "Đang cài đặt",
-  ActionRequired: "Cần cập nhật thông tin",
-  Completed: "Hoàn tất",
-  Cancelled: "Đã hủy",
+  Pending: t("Chờ thanh toán"),
+  AwaitingConfirmation: t("Chờ xác nhận thanh toán"),
+  Verifying: t("Đang xác minh"),
+  Installing: t("Đang cài đặt"),
+  ActionRequired: t("Cần cập nhật thông tin"),
+  Completed: t("Hoàn tất"),
+  Cancelled: t("Đã hủy"),
 };
 
 export const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
@@ -192,13 +193,13 @@ export async function getMyPoints(page: number, pageSize = 20) {
 }
 
 export const POINTS_REASON_LABELS: Record<PointsReason, string> = {
-  OrderCompleted: "Hoàn tất đơn hàng",
-  CaseOpen: "Mở hòm",
-  AdminAdjust: "Điều chỉnh bởi Moxic",
-  CheckIn: "Điểm danh hằng ngày",
-  Mission: "Hoàn thành nhiệm vụ",
-  Referral: "Giới thiệu bạn bè",
-  Redeem: "Đổi điểm",
-  Leaderboard: "Thưởng bảng xếp hạng",
-  DailyGuess: "Đoán game mỗi ngày",
+  OrderCompleted: t("Hoàn tất đơn hàng"),
+  CaseOpen: t("Mở hòm"),
+  AdminAdjust: t("Điều chỉnh bởi Moxic"),
+  CheckIn: t("Điểm danh hằng ngày"),
+  Mission: t("Hoàn thành nhiệm vụ"),
+  Referral: t("Giới thiệu bạn bè"),
+  Redeem: t("Đổi điểm"),
+  Leaderboard: t("Thưởng bảng xếp hạng"),
+  DailyGuess: t("Đoán game mỗi ngày"),
 };

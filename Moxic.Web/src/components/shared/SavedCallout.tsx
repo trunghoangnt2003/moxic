@@ -2,6 +2,7 @@ import { PiggyBank } from "lucide-react";
 import { formatPrice } from "../../lib/utils";
 import ShareButton from "./ShareButton";
 
+import { t } from "../../lib/i18n";
 interface Props {
   amount: number;
   /** e.g. "cho đơn này", "từ trước tới giờ" */
@@ -13,11 +14,11 @@ interface Props {
 /** "Bạn đã tiết kiệm 1.240.000đ so với Xbox Store", the core Moxic promise, made visible. */
 export default function SavedCallout({ amount, suffix, share = false, compact = false }: Props) {
   if (!amount || amount <= 0) return null;
-  const text = `Mình vừa tiết kiệm ${formatPrice(amount)} so với Xbox Store khi mua game ở Moxic GameStore 😎`;
+  const text = t("Mình vừa tiết kiệm {0} so với Xbox Store khi mua game ở Moxic GameStore 😎", [formatPrice(amount)]);
   if (compact)
     return (
       <p className="flex items-center gap-1.5 text-sm text-positive">
-        <PiggyBank className="w-4 h-4 shrink-0" /> Tiết kiệm <b>{formatPrice(amount)}</b> so với Xbox Store
+        <PiggyBank className="w-4 h-4 shrink-0" /> {t("Tiết kiệm")} <b>{formatPrice(amount)}</b> {t("so với Xbox Store")}
       </p>
     );
   return (
@@ -27,11 +28,11 @@ export default function SavedCallout({ amount, suffix, share = false, compact = 
         <PiggyBank className="w-6 h-6 text-positive" />
       </div>
       <div className="flex-1 min-w-[180px]">
-        <p className="text-xs text-positive/80">Bạn đã tiết kiệm{suffix ? ` ${suffix}` : ""}</p>
+        <p className="text-xs text-positive/80">{t("Bạn đã tiết kiệm{0}", [suffix ? ` ${suffix}` : ""])}</p>
         <p className="font-display text-2xl font-extrabold text-positive leading-tight">{formatPrice(amount)}</p>
-        <p className="text-[11px] text-text-muted">so với giá Xbox Store chính hãng</p>
+        <p className="text-[11px] text-text-muted">{t("so với giá Xbox Store chính hãng")}</p>
       </div>
-      {share && <ShareButton path="/" title="Moxic GameStore, game Xbox rẻ hơn Store" text={text} label="Khoe ngay" className="w-36" />}
+      {share && <ShareButton path="/" title={t("Moxic GameStore, game Xbox rẻ hơn Store")} text={text} label="Khoe ngay" className="w-36" />}
     </div>
   );
 }

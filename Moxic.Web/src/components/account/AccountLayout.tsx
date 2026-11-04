@@ -4,18 +4,19 @@ import toast from "react-hot-toast";
 import { Coins, Heart, KeyRound, LayoutGrid, LogOut, Package, TicketPercent, Trophy } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
 
+import { t } from "../../lib/i18n";
 /** True inside the account frame: Container renders flat so pages sit in the content column. */
 export const AccountFrameContext = createContext(false);
 export const useInAccountFrame = () => useContext(AccountFrameContext);
 
 const LINKS = [
-  { to: "/account", label: "Tổng quan", icon: LayoutGrid, end: true },
-  { to: "/account/orders", label: "Đơn hàng", icon: Package },
-  { to: "/account/rentals", label: "Game đang thuê", icon: KeyRound },
-  { to: "/wishlist", label: "Yêu thích", icon: Heart },
-  { to: "/rewards", label: "Thành tựu", icon: Trophy },
-  { to: "/account/points", label: "Điểm thưởng", icon: Coins },
-  { to: "/account/coupons", label: "Mã giảm giá", icon: TicketPercent },
+  { to: "/account", label: t("Tổng quan"), icon: LayoutGrid, end: true },
+  { to: "/account/orders", label: t("Đơn hàng"), icon: Package },
+  { to: "/account/rentals", label: t("Game đang thuê"), icon: KeyRound },
+  { to: "/wishlist", label: t("Yêu thích"), icon: Heart },
+  { to: "/rewards", label: t("Thành tựu"), icon: Trophy },
+  { to: "/account/points", label: t("Điểm thưởng"), icon: Coins },
+  { to: "/account/coupons", label: t("Mã giảm giá"), icon: TicketPercent },
 ];
 
 /**
@@ -53,7 +54,7 @@ export default function AccountLayout() {
               <p className="text-sm text-text-muted truncate">{me.email}</p>
             </div>
           </div>
-          <nav aria-label="Tài khoản" className="space-y-0.5">
+          <nav aria-label={t("Tài khoản")} className="space-y-0.5">
             {LINKS.map((l) => (
               <NavLink key={l.to} to={l.to} end={l.end} className={linkCls}>
                 <l.icon className="w-4 h-4 shrink-0" />
@@ -67,7 +68,7 @@ export default function AccountLayout() {
             onClick={() =>
               logout.mutate(undefined, {
                 onSettled: () => {
-                  toast.success("Đã đăng xuất");
+                  toast.success(t("Đã đăng xuất"));
                   navigate("/");
                 },
               })
@@ -75,13 +76,13 @@ export default function AccountLayout() {
             className="mt-3 pt-3 w-full border-t border-white/10 flex items-center gap-3 h-11 px-3 text-sm text-text-muted hover:text-negative transition-colors cursor-pointer disabled:opacity-50"
           >
             <LogOut className="w-4 h-4" />
-            Đăng xuất
+            {t("Đăng xuất")}
           </button>
         </div>
       </aside>
 
       {/* Phone tab strip */}
-      <nav aria-label="Tài khoản" className="lg:hidden -mx-4 px-4 mb-6 flex overflow-x-auto border-b border-white/10 [scrollbar-width:none]">
+      <nav aria-label={t("Tài khoản")} className="lg:hidden -mx-4 px-4 mb-6 flex overflow-x-auto border-b border-white/10 [scrollbar-width:none]">
         {LINKS.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.end} className={tabCls}>
             <l.icon className="w-4 h-4" />

@@ -1,4 +1,5 @@
-export function CardSkeleton() {
+
+import { t } from "../../lib/i18n";export function CardSkeleton() {
   return (
     <div className="bg-bg-surface  border border-border overflow-hidden animate-pulse">
       <div className="aspect-[3/4] bg-bg-elevated" />
@@ -27,7 +28,7 @@ export function GridSkeleton({ count = 6 }: { count?: number }) {
 /** Game detail placeholder: hero, media, title/price column. */
 export function GameDetailSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Đang tải">
+    <div aria-busy="true" aria-label={t("Đang tải")}>
       <div className="skeleton w-full h-[220px] md:h-[340px]" />
       <div className="max-w-7xl mx-auto px-4 -mt-16 relative grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
@@ -54,7 +55,7 @@ export function GameDetailSkeleton() {
 /** Home placeholder: hero banner + a row of cards. */
 export function HomeSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Đang tải">
+    <div aria-busy="true" aria-label={t("Đang tải")}>
       <div className="skeleton w-full h-[360px] md:h-[480px]" />
       <div className="max-w-7xl mx-auto px-4 mt-8 space-y-4">
         <div className="skeleton h-6 w-48" />
@@ -75,7 +76,7 @@ export function HomeSkeleton() {
 /** Order detail placeholder. */
 export function OrderSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10 space-y-4" aria-busy="true" aria-label="Đang tải">
+    <div className="max-w-3xl mx-auto px-4 py-10 space-y-4" aria-busy="true" aria-label={t("Đang tải")}>
       <div className="skeleton h-5 w-40" />
       <div className="skeleton h-40 w-full" />
       <div className="skeleton h-24 w-full" />

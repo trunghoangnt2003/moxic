@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
-const DEFAULT_TITLE = "Moxic GameStore — Game Xbox chính hãng giá rẻ";
+import { t } from "../lib/i18n";
+const DEFAULT_TITLE = t("Moxic GameStore — Game Xbox chính hãng giá rẻ");
 
 /** Sets the tab title + meta description for the current page (crawlers get server-rendered tags). */
 export function usePageMeta(title?: string | null, description?: string | null) {

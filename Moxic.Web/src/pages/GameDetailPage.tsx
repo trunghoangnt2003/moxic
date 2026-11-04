@@ -41,6 +41,7 @@ import {
 import toast from "react-hot-toast";
 
 import ReviewForm from "../components/game-detail/ReviewForm";
+import { t, locale } from "../lib/i18n";
 function RatingCard({
   source,
   score,
@@ -124,7 +125,7 @@ export default function GameDetailPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  usePageMeta(game?.name, game ? `Mua ${game.name} cho Xbox giá rẻ hơn Store tại Moxic GameStore.` : null);
+  usePageMeta(game?.name, game ? t("Mua {0} cho Xbox giá rẻ hơn Store tại Moxic GameStore.", [game.name]) : null);
 
   // "Đã xem gần đây"
   useEffect(() => {
@@ -136,8 +137,8 @@ export default function GameDetailPage() {
   if (error || !game) {
     return (
       <Container className="mt-12 text-center py-16">
-        <p className="text-danger mb-4">Không thể tải dữ liệu</p>
-        <Link to="/games" className="text-accent hover:text-accent-hover text-sm">Quay lại</Link>
+        <p className="text-danger mb-4">{t("Không thể tải dữ liệu")}</p>
+        <Link to="/games" className="text-accent hover:text-accent-hover text-sm">{t("Quay lại")}</Link>
       </Container>
     );
   }
@@ -162,7 +163,7 @@ export default function GameDetailPage() {
   const genreText = game.genres?.map((g) => g.name).join(", ");
 
   const handleAddToCart = () => {
-    toast.success(edition ? `Đã thêm bản ${edition.name} vào giỏ hàng!` : "Đã thêm vào giỏ hàng!", { duration: 3000 });
+    toast.success(edition ? t("Đã thêm bản {0} vào giỏ hàng!", [edition.name]) : t("Đã thêm vào giỏ hàng!"), { duration: 3000 });
     addItem({
       gameId: game.id,
       name: edition ? game.name + ", " + edition.name : game.name,
@@ -195,7 +196,7 @@ export default function GameDetailPage() {
 
   const formatCount = (n: number): string => {
     if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",") + "K";
-    return n.toLocaleString("vi-VN");
+    return n.toLocaleString(locale);
   };
 
   return (
@@ -213,7 +214,7 @@ export default function GameDetailPage() {
             <h1 className="font-display text-3xl md:text-5xl font-extrabold leading-tight text-text-primary mb-3 max-w-3xl">{game.name}</h1>
             <div className="flex items-center gap-3 flex-wrap">
               <Badge variant={isPreorder ? "preorder" : "available"}>
-                {isPreorder ? "Sắp ra mắt" : "Sẵn có"}
+                {isPreorder ? t("Sắp ra mắt") : t("Sẵn có")}
               </Badge>
               {genreText && <span className="text-xs text-text-secondary bg-bg-surface/80 px-2 py-1">{genreText}</span>}
               {discount > 0 && (
@@ -225,7 +226,7 @@ export default function GameDetailPage() {
               {game.purchaseCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-xs text-accent bg-accent/10 px-2 py-1">
                   <Flame className="w-3.5 h-3.5" />
-                  {formatCount(game.purchaseCount)} người đã mua
+                  {t("{0} người đã mua", [formatCount(game.purchaseCount)])}
                 </span>
               )}
             </div>
@@ -233,15 +234,15 @@ export default function GameDetailPage() {
           {/* Phone: price + actions right under the title (desktop has the price card beside the gallery) */}
           <div className="lg:hidden">
             <p className="font-display text-3xl font-bold text-accent num">
-              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
+              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : t("Liên hệ")}
             </p>
             <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
               <button onClick={handleBuyNow} className="h-12 bg-accent hover:bg-accent-hover text-on-accent font-bold transition-colors cursor-pointer">
-                {isPreorder ? "Đặt trước" : "Mua ngay"}
+                {isPreorder ? t("Đặt trước") : t("Mua ngay")}
               </button>
               <button
                 onClick={handleAddToCart}
-                aria-label="Thêm vào giỏ hàng"
+                aria-label={t("Thêm vào giỏ hàng")}
                 className="h-12 px-4 inline-flex items-center justify-center gap-2 border border-border text-text-primary hover:bg-bg-surface-hover transition-colors cursor-pointer"
               >
                 {added ? <Check className="w-5 h-5 text-success" /> : <ShoppingCart className="w-5 h-5" />}
@@ -317,7 +318,7 @@ export default function GameDetailPage() {
 
             {/* Description */}
             <div className="mb-8" id="mo-ta">
-              <h2 className="font-display text-xl font-bold text-text-primary mb-3">Mô tả</h2>
+              <h2 className="font-display text-xl font-bold text-text-primary mb-3">{t("Mô tả")}</h2>
               <div className="text-text-secondary text-base leading-relaxed whitespace-pre-line max-w-prose">
                 {game.description}
               </div>
@@ -325,7 +326,7 @@ export default function GameDetailPage() {
 
             {/* System Requirements */}
             {hasReq && <div className="mb-8" id="cau-hinh">
-              <h2 className="font-display text-xl font-bold text-text-primary mb-3">Cấu hình yêu cầu</h2>
+              <h2 className="font-display text-xl font-bold text-text-primary mb-3">{t("Cấu hình yêu cầu")}</h2>
               <div className="bg-bg-surface border border-border overflow-hidden">
                 <div className="flex border-b border-border">
                   <button
@@ -334,21 +335,21 @@ export default function GameDetailPage() {
                       ? "text-text-primary border-b-2 border-accent bg-accent/5"
                       : "text-text-muted hover:text-text-secondary"
                     }`}
-                  >Khuyến nghị</button>
+                  >{t("Khuyến nghị")}</button>
                   <button
                     onClick={() => setShowMinReq(true)}
                     className={`flex-1 py-3 text-sm font-semibold transition-colors cursor-pointer ${showMinReq
                       ? "text-text-primary border-b-2 border-accent bg-accent/5"
                       : "text-text-muted hover:text-text-secondary"
                     }`}
-                  >Tối thiểu</button>
+                  >{t("Tối thiểu")}</button>
                 </div>
                 <div className="p-5">
-                  <SpecRow label="Hệ điều hành" value={activeReq.os} />
+                  <SpecRow label={t("Hệ điều hành")} value={activeReq.os} />
                   <SpecRow label="CPU" value={activeReq.processor} />
                   <SpecRow label="RAM" value={activeReq.memory} />
                   <SpecRow label="GPU" value={activeReq.graphics} />
-                  <SpecRow label="Lưu trữ" value={activeReq.storage} />
+                  <SpecRow label={t("Lưu trữ")} value={activeReq.storage} />
                 </div>
               </div>
             </div>}
@@ -356,7 +357,7 @@ export default function GameDetailPage() {
             {/* Ratings */}
             {game.ratings.length > 0 && (
               <div className="mb-8" id="danh-gia">
-                <h2 className="font-display text-xl font-bold text-text-primary mb-3">Đánh giá</h2>
+                <h2 className="font-display text-xl font-bold text-text-primary mb-3">{t("Đánh giá")}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {game.ratings.map((r) => <RatingCard key={r.source} {...r} />)}
                 </div>
@@ -374,7 +375,7 @@ export default function GameDetailPage() {
                   aria-expanded={showReviews}
                   aria-controls="reviews-content"
                 >
-                  <h2 className="font-display text-xl font-bold text-text-primary group-hover:text-accent transition-colors">Đánh giá từ khách hàng</h2>
+                  <h2 className="font-display text-xl font-bold text-text-primary group-hover:text-accent transition-colors">{t("Đánh giá từ khách hàng")}</h2>
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="flex items-center gap-1.5 bg-bg-surface border border-border px-2.5 py-1.5 md:px-3 md:py-1.5">
                       <StarRating rating={Math.round(game.storeRating)} size={10} />
@@ -415,7 +416,7 @@ export default function GameDetailPage() {
                               <span className="text-sm font-semibold text-text-primary">{review.userName}</span>
                               {review.isVerifiedPurchase && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-positive/15 text-positive border border-positive/40">
-                                  <BadgeCheck className="w-3 h-3" /> Đã mua
+                                  <BadgeCheck className="w-3 h-3" /> {t("Đã mua")}
                                 </span>
                               )}
                               {review.badges?.slice(0, 1).map((b) => (
@@ -450,7 +451,7 @@ export default function GameDetailPage() {
             {/* Price card */}
             <div className="bg-bg-surface border border-border p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-text-muted text-sm">Giá bán</span>
+                <span className="text-text-muted text-sm">{t("Giá bán")}</span>
                 {discount > 0 && <Badge variant="discount">-{discount}%</Badge>}
               </div>
               {game.saleEndsAt && (
@@ -460,8 +461,8 @@ export default function GameDetailPage() {
                 </div>
               )}
               {editions.length > 1 && (
-                <div className="mb-4 space-y-2" role="radiogroup" aria-label="Chọn phiên bản">
-                  <p className="text-[11px] text-text-muted">Chọn phiên bản</p>
+                <div className="mb-4 space-y-2" role="radiogroup" aria-label={t("Chọn phiên bản")}>
+                  <p className="text-[11px] text-text-muted">{t("Chọn phiên bản")}</p>
                   {editions.map((ed) => {
                     const active = ed.id === edition?.id;
                     const off = ed.originalPrice > ed.salePrice && ed.originalPrice > 0 ? Math.round((1 - ed.salePrice / ed.originalPrice) * 100) : 0;
@@ -481,7 +482,7 @@ export default function GameDetailPage() {
                         </span>
                         <span className="flex-1 min-w-0">
                           <span className={`block text-sm font-semibold truncate ${active ? "text-white" : "text-text-secondary"}`}>{ed.name}</span>
-                          {ed.includes.length > 0 && <span className="block text-[11px] text-text-muted truncate">{ed.includes.length} nội dung</span>}
+                          {ed.includes.length > 0 && <span className="block text-[11px] text-text-muted truncate">{t("{0} nội dung", [ed.includes.length])}</span>}
                         </span>
                         <span className="text-right shrink-0">
                           {off > 0 && <span className="block text-[10px] font-bold text-discount">-{off}%</span>}
@@ -497,29 +498,29 @@ export default function GameDetailPage() {
                   <span className="text-text-muted text-base line-through num">{formatPrice(original)}</span>
                 )}
                 <span className="font-display text-3xl font-bold text-accent num">
-                  {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
+                  {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : t("Liên hệ")}
                 </span>
               </div>
               {isPreorder && game.releaseDate && (
                 <div className="mb-4">
                   <p className="text-text-secondary text-sm">
-                    {days > 0 ? `Còn ${days} ngày đến ngày phát hành` : `Phát hành: ${formatDate(game.releaseDate)}`}
+                    {days > 0 ? t("Còn {0} ngày đến ngày phát hành", [days]) : t("Phát hành: {0}", [formatDate(game.releaseDate)])}
                   </p>
-                  <p className="text-text-muted text-xs mt-1">Game sẽ được cài đặt vào tài khoản Xbox của bạn đúng ngày phát hành.</p>
+                  <p className="text-text-muted text-xs mt-1">{t("Game sẽ được cài đặt vào tài khoản Xbox của bạn đúng ngày phát hành.")}</p>
                 </div>
               )}
               <div className="flex flex-col gap-2">
                 <button onClick={handleBuyNow} className="w-full h-12 bg-accent hover:bg-accent-hover text-on-accent font-bold text-base transition-colors cursor-pointer">
-                  {isPreorder ? "Đặt trước ngay" : "Mua ngay"}
+                  {isPreorder ? t("Đặt trước ngay") : t("Mua ngay")}
                 </button>
                 <button
                   onClick={handleAddToCart}
                   className="w-full h-11 border border-border text-text-secondary text-sm hover:bg-bg-surface-hover transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {added ? (
-                    <><Check className="w-4 h-4 text-success" /> Đã thêm vào giỏ</>
+                    <><Check className="w-4 h-4 text-success" /> {t("Đã thêm vào giỏ")}</>
                   ) : (
-                    <><ShoppingCart className="w-4 h-4" /> Thêm vào giỏ hàng</>
+                    <><ShoppingCart className="w-4 h-4" /> {t("Thêm vào giỏ hàng")}</>
                   )}
                 </button>
                 <div className="grid grid-cols-2 gap-2">
@@ -532,9 +533,9 @@ export default function GameDetailPage() {
                     onClick={handleGift}
                     className="inline-flex items-center justify-center gap-2 h-10 px-3 border border-accent/40 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors cursor-pointer"
                   >
-                    <Gift className="w-4 h-4" /> Tặng game
+                    <Gift className="w-4 h-4" /> {t("Tặng game")}
                   </button>
-                  <ShareButton path={`/games/${game.id}`} title={`${game.name}, giá rẻ tại Moxic GameStore`} text={`Mua ${game.name} cho Xbox giá rẻ hơn Store`} />
+                  <ShareButton path={`/games/${game.id}`} title={t("{0}, giá rẻ tại Moxic GameStore", [game.name])} text={t("Mua {0} cho Xbox giá rẻ hơn Store", [game.name])} />
                 </div>
                 {game.xboxProductId && (
                   <a
@@ -543,7 +544,7 @@ export default function GameDetailPage() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-accent pt-1"
                   >
-                    So giá trên Xbox Store chính hãng <ExternalLink className="w-3.5 h-3.5" />
+                    {t("So giá trên Xbox Store chính hãng")} <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>            </div>
@@ -552,21 +553,21 @@ export default function GameDetailPage() {
 
             {/* Game info */}
             <div className="bg-bg-surface border border-border p-5 space-y-3">
-              <h3 className="font-display text-base font-semibold text-text-primary">Thông tin game</h3>
+              <h3 className="font-display text-base font-semibold text-text-primary">{t("Thông tin game")}</h3>
               <div className="text-sm space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Thể loại</span>
-                  <span className="text-text-primary text-right">{genreText || "Chưa phân loại"}</span>
+                  <span className="text-text-muted">{t("Thể loại")}</span>
+                  <span className="text-text-primary text-right">{genreText || t("Chưa phân loại")}</span>
                 </div>
                 {game.productType && game.productType !== "Game" && (
                   <div className="flex justify-between">
-                    <span className="text-text-muted">Loại</span>
+                    <span className="text-text-muted">{t("Loại")}</span>
                     <span className="text-text-primary">{PRODUCT_TYPE_LABELS[game.productType] ?? game.productType}</span>
                   </div>
                 )}
                 {game.publisher && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-text-muted">Nhà phát hành</span>
+                    <span className="text-text-muted">{t("Nhà phát hành")}</span>
                     <Link to={`/games?publisher=${encodeURIComponent(game.publisher)}`} className="text-text-primary text-right hover:text-accent">
                       {game.publisher}
                     </Link>
@@ -574,7 +575,7 @@ export default function GameDetailPage() {
                 )}
                 {game.developer && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-text-muted">Nhà phát triển</span>
+                    <span className="text-text-muted">{t("Nhà phát triển")}</span>
                     <span className="text-text-primary text-right">{game.developer}</span>
                   </div>
                 )}
@@ -585,12 +586,12 @@ export default function GameDetailPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Trạng thái</span>
-                  <span className="text-text-primary">{isPreorder ? "Sắp ra mắt" : "Sẵn có"}</span>
+                  <span className="text-text-muted">{t("Trạng thái")}</span>
+                  <span className="text-text-primary">{isPreorder ? t("Sắp ra mắt") : t("Sẵn có")}</span>
                 </div>
                 {game.releaseDate && (
                   <div className="flex justify-between">
-                    <span className="text-text-muted">Phát hành</span>
+                    <span className="text-text-muted">{t("Phát hành")}</span>
                     <span className="text-text-primary">{formatDate(game.releaseDate)}</span>
                   </div>
                 )}
@@ -606,12 +607,12 @@ export default function GameDetailPage() {
 
             {/* Purchase guide */}
             <div className="bg-bg-surface border border-border p-5">
-              <h3 className="font-display text-base font-semibold text-text-primary mb-4">Cách mua hàng</h3>
+              <h3 className="font-display text-base font-semibold text-text-primary mb-4">{t("Cách mua hàng")}</h3>
               <div className="space-y-4">
                 {[
-                  { icon: ShoppingCart, step: "Chọn game", desc: "Thêm vào giỏ hàng" },
-                  { icon: CreditCard, step: "Thanh toán", desc: "QR + cung cấp tài khoản Xbox" },
-                  { icon: Gamepad2, step: "Cài đặt", desc: "Nhân viên cài đặt trong 15 đến 30 phút" },
+                  { icon: ShoppingCart, step: t("Chọn game"), desc: t("Thêm vào giỏ hàng") },
+                  { icon: CreditCard, step: t("Thanh toán"), desc: t("QR + cung cấp tài khoản Xbox") },
+                  { icon: Gamepad2, step: t("Cài đặt"), desc: t("Nhân viên cài đặt trong 15 đến 30 phút") },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -646,7 +647,7 @@ export default function GameDetailPage() {
         {/* ─── BACK LINK ─── */}
         <div className="pb-12">
           <Link to="/games" className="inline-flex items-center gap-1 text-text-muted hover:text-text-primary text-sm transition-colors">
-            <ChevronLeft className="w-4 h-4" /> Quay lại cửa hàng
+            <ChevronLeft className="w-4 h-4" /> {t("Quay lại cửa hàng")}
           </Link>
         </div>
       </Container>
@@ -656,7 +657,7 @@ export default function GameDetailPage() {
         <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-surface/95 backdrop-blur-md border-t border-border p-3 pb-[calc(0.75rem+var(--sab))] flex items-center gap-3 shadow-2xl animate-slide-up">
           <div className="flex-1 min-w-0">
             <p className="font-display text-lg text-accent">
-              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : "Liên hệ"}
+              {isPreorder ? formatPrice(price) : price > 0 ? formatPrice(price) : t("Liên hệ")}
             </p>
             {original > 0 && price > 0 && (
               <p className="text-text-muted text-xs line-through">{formatPrice(original)}</p>
@@ -666,12 +667,12 @@ export default function GameDetailPage() {
             onClick={handleBuyNow}
             className="bg-accent hover:bg-accent-hover text-on-accent px-6 py-3 text-sm font-bold transition-colors cursor-pointer whitespace-nowrap"
           >
-            {isPreorder ? "Đặt trước" : "Mua ngay"}
+            {isPreorder ? t("Đặt trước") : t("Mua ngay")}
           </button>
           <button
             onClick={handleAddToCart}
             className="w-11 h-11 bg-accent/20 hover:bg-accent/30 flex items-center justify-center cursor-pointer"
-            aria-label="Thêm vào giỏ hàng"
+            aria-label={t("Thêm vào giỏ hàng")}
           >
             <ShoppingCart className="w-5 h-5 text-accent" />
           </button>

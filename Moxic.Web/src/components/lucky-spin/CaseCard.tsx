@@ -4,6 +4,7 @@ import PrizeCard, { RARITY_COLORS } from "./PrizeCard";
 import { formatPoints, openMethodLabel, type CaseSummary } from "../../lib/luckySpinApi";
 import { formatCountdown } from "../../hooks/useCountdown";
 
+import { t } from "../../lib/i18n";
 const CHAMFER = 12;
 const chamferPolygon = (c: number) =>
   `polygon(${c}px 0, calc(100% - ${c}px) 0, 100% ${c}px, 100% calc(100% - ${c}px), calc(100% - ${c}px) 100%, ${c}px 100%, 0 calc(100% - ${c}px), 0 ${c}px)`;
@@ -19,31 +20,31 @@ interface CaseCardProps {
 const METHOD_ICON = { Code: KeyRound, FreeInterval: Clock, Points: Coins } as const;
 
 function StatusLine({ c, now, loggedIn, points }: CaseCardProps) {
-  if (!c.available) return <span className="text-caution">Đang cập nhật</span>;
+  if (!c.available) return <span className="text-caution">{t("Đang cập nhật")}</span>;
 
   if (c.openMethod === "FreeInterval") {
-    if (!loggedIn) return <span className="text-white/60">Đăng nhập để mở</span>;
+    if (!loggedIn) return <span className="text-white/60">{t("Đăng nhập để mở")}</span>;
     const next = c.nextFreeOpenAt ? Date.parse(c.nextFreeOpenAt) : NaN;
     if (Number.isFinite(next) && next > now) {
       return (
         <span className="text-white/70">
-          Mở lại sau <span className="font-mono text-highlight">{formatCountdown(next - now)}</span>
+          {t("Mở lại sau")} <span className="font-mono text-highlight">{formatCountdown(next - now)}</span>
         </span>
       );
     }
-    return <span className="text-positive">Sẵn sàng mở</span>;
+    return <span className="text-positive">{t("Sẵn sàng mở")}</span>;
   }
 
   if (c.openMethod === "Points") {
-    if (!loggedIn) return <span className="text-white/60">Đăng nhập để mở</span>;
+    if (!loggedIn) return <span className="text-white/60">{t("Đăng nhập để mở")}</span>;
     const balance = points ?? 0;
     if (balance < c.pointsCost) {
-      return <span className="text-caution">Cần thêm {formatPoints(c.pointsCost - balance)} điểm</span>;
+      return <span className="text-caution">{t("Cần thêm {0} điểm", [formatPoints(c.pointsCost - balance)])}</span>;
     }
-    return <span className="text-positive">Sẵn sàng mở</span>;
+    return <span className="text-positive">{t("Sẵn sàng mở")}</span>;
   }
 
-  return <span className="text-white/60">Nhập mã quay để mở</span>;
+  return <span className="text-white/60">{t("Nhập mã quay để mở")}</span>;
 }
 
 export default function CaseCard({ c, now, loggedIn, points }: CaseCardProps) {
@@ -118,7 +119,7 @@ export default function CaseCard({ c, now, loggedIn, points }: CaseCardProps) {
           <h3 className="line-clamp-1 font-display text-sm font-bold text-white sm:text-base">{c.name}</h3>
           {c.description && <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-white/55">{c.description}</p>}
           <div className="mt-auto pt-2 text-[11px]">
-            <p className="text-white/45">{c.prizeCount} vật phẩm</p>
+            <p className="text-white/45">{t("{0} vật phẩm", [c.prizeCount])}</p>
             <p className="mt-0.5 line-clamp-1">
               <StatusLine c={c} now={now} loggedIn={loggedIn} points={points} />
             </p>

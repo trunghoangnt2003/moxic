@@ -4,6 +4,7 @@ import { useLuckySpinCasesPreview } from "../../hooks/useLuckySpin";
 import type { PublicPrize } from "../../lib/luckySpinApi";
 import PrizeCard, { RARITY_RANK } from "../lucky-spin/PrizeCard";
 
+import { t } from "../../lib/i18n";
 const CHAMFER = 16;
 const chamferPolygon = (c: number) =>
   `polygon(${c}px 0, calc(100% - ${c}px) 0, 100% ${c}px, 100% calc(100% - ${c}px), calc(100% - ${c}px) 100%, ${c}px 100%, 0 calc(100% - ${c}px), 0 ${c}px)`;
@@ -40,11 +41,11 @@ export default function LuckySpinBanner() {
         {/* Copy */}
         <div className="relative z-10 flex-1 text-center md:text-left">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-[10px] font-semibold text-highlight">
-            <Sparkles className="h-3 w-3" /> Sự kiện
+            <Sparkles className="h-3 w-3" /> {t("Sự kiện")}
           </span>
-          <h2 className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">Vòng Quay May Mắn</h2>
+          <h2 className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">{t("Vòng Quay May Mắn")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/70 md:mx-0">
-            Mở hòm bằng mã quay, miễn phí theo chu kỳ hoặc bằng điểm thưởng, cơ hội nhận game Xbox miễn phí và mã giảm giá
+            {t("Mở hòm bằng mã quay, miễn phí theo chu kỳ hoặc bằng điểm thưởng, cơ hội nhận game Xbox miễn phí và mã giảm giá")}
           </p>
           <Link
             to="/lucky-spin"
@@ -54,7 +55,7 @@ export default function LuckySpinBanner() {
               boxShadow: "0 0 22px rgba(236, 72, 153, 0.35)",
             }}
           >
-            Mở hòm ngay <ArrowRight className="h-4 w-4" />
+            {t("Mở hòm ngay")} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 

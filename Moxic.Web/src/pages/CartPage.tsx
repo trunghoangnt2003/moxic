@@ -6,6 +6,7 @@ import { useCartStore } from "../lib/cartStore";
 import { formatPrice } from "../lib/utils";
 import { Trash2, ShoppingCart, ArrowLeft, Plus, Minus, ShieldCheck, Zap } from "lucide-react";
 
+import { t } from "../lib/i18n";
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -25,13 +26,13 @@ export default function CartPage() {
           <div className="w-20 h-20 mx-auto rounded-full bg-bg-surface border border-white/10 flex items-center justify-center">
             <ShoppingCart className="w-9 h-9 text-text-muted" />
           </div>
-          <h1 className="mt-6 font-display text-3xl font-bold text-text-primary">Giỏ hàng đang trống</h1>
-          <p className="mt-2 text-text-secondary">Chọn một game bạn thích, giá luôn rẻ hơn Xbox Store.</p>
+          <h1 className="mt-6 font-display text-3xl font-bold text-text-primary">{t("Giỏ hàng đang trống")}</h1>
+          <p className="mt-2 text-text-secondary">{t("Chọn một game bạn thích, giá luôn rẻ hơn Xbox Store.")}</p>
           <Link
             to="/games"
             className="mt-8 inline-flex h-12 items-center justify-center px-8 bg-accent hover:bg-accent-hover text-on-accent font-semibold transition-colors"
           >
-            Khám phá cửa hàng
+            {t("Khám phá cửa hàng")}
           </Link>
         </div>
       </Container>
@@ -46,11 +47,11 @@ export default function CartPage() {
 
           <div className="flex items-end justify-between gap-4 mb-6">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-text-primary">
-              Giỏ hàng <span className="text-text-muted font-normal text-xl num">{count}</span>
+              {t("Giỏ hàng")} <span className="text-text-muted font-normal text-xl num">{count}</span>
             </h1>
             <Link to="/games" className="hidden sm:inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-accent transition-colors">
               <ArrowLeft className="w-4 h-4" />
-              Tiếp tục mua sắm
+              {t("Tiếp tục mua sắm")}
             </Link>
           </div>
 
@@ -79,7 +80,7 @@ export default function CartPage() {
                       </Link>
                       <p className="mt-1 text-sm text-text-muted">
                         {item.editionName ? `${item.editionName}, ` : ""}
-                        {item.status === "Preorder" ? "Đặt trước" : "Game kỹ thuật số"}
+                        {item.status === "Preorder" ? t("Đặt trước") : t("Game kỹ thuật số")}
                       </p>
                       <div className="mt-2 flex items-baseline gap-2 sm:hidden">
                         <span className="font-bold text-text-primary num">{formatPrice(item.price)}</span>
@@ -102,7 +103,7 @@ export default function CartPage() {
                           <button
                             onClick={() => updateQuantity(item.gameId, item.quantity - 1)}
                             className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors cursor-pointer"
-                            aria-label="Giảm số lượng"
+                            aria-label={t("Giảm số lượng")}
                           >
                             <Minus className="w-4 h-4" />
                           </button>
@@ -112,7 +113,7 @@ export default function CartPage() {
                           <button
                             onClick={() => updateQuantity(item.gameId, item.quantity + 1)}
                             className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors cursor-pointer"
-                            aria-label="Tăng số lượng"
+                            aria-label={t("Tăng số lượng")}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -120,7 +121,7 @@ export default function CartPage() {
                         <button
                           onClick={() => removeItem(item.gameId)}
                           className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-negative hover:bg-negative/10 transition-colors cursor-pointer"
-                          aria-label={`Xóa ${item.name}`}
+                          aria-label={t("Xóa {0}", [item.name])}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -136,34 +137,34 @@ export default function CartPage() {
                   className="text-sm text-text-muted hover:text-negative transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Xóa tất cả
+                  {t("Xóa tất cả")}
                 </button>
                 <Link to="/games" className="sm:hidden text-sm text-text-secondary hover:text-accent transition-colors inline-flex items-center gap-1.5">
                   <ArrowLeft className="w-4 h-4" />
-                  Mua thêm
+                  {t("Mua thêm")}
                 </Link>
               </div>
             </div>
 
             {/* Summary */}
             <aside className="lg:sticky lg:top-20 bg-bg-surface border border-white/10 p-6">
-              <h2 className="font-display text-lg font-semibold text-text-primary">Tóm tắt đơn hàng</h2>
+              <h2 className="font-display text-lg font-semibold text-text-primary">{t("Tóm tắt đơn hàng")}</h2>
 
               <dl className="mt-5 space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-text-secondary">Giá Xbox Store ({count} game)</dt>
+                  <dt className="text-text-secondary">{t("Giá Xbox Store ({0} game)", [count])}</dt>
                   <dd className="text-text-primary num">{formatPrice(originalTotal)}</dd>
                 </div>
                 {saved > 0 && (
                   <div className="flex justify-between">
-                    <dt className="text-text-secondary">Moxic giảm</dt>
+                    <dt className="text-text-secondary">{t("Moxic giảm")}</dt>
                     <dd className="text-positive num">-{formatPrice(saved)}</dd>
                   </div>
                 )}
               </dl>
 
               <div className="mt-5 pt-5 border-t border-white/10 flex justify-between items-baseline">
-                <span className="text-text-secondary">Tổng cộng</span>
+                <span className="text-text-secondary">{t("Tổng cộng")}</span>
                 <span className="font-display text-3xl text-accent font-bold num">{formatPrice(total)}</span>
               </div>
               {saved > 0 && (
@@ -176,17 +177,17 @@ export default function CartPage() {
                 onClick={() => navigate("/checkout")}
                 className="hidden lg:flex mt-6 w-full h-12 items-center justify-center bg-accent hover:bg-accent-hover text-on-accent font-bold transition-colors cursor-pointer"
               >
-                Tiến hành thanh toán
+                {t("Tiến hành thanh toán")}
               </button>
 
               <ul className="mt-6 space-y-2.5 text-sm text-text-secondary">
                 <li className="flex items-start gap-2.5">
                   <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-accent" />
-                  Game chính hãng, cài thẳng vào tài khoản Xbox của bạn
+                  {t("Game chính hãng, cài thẳng vào tài khoản Xbox của bạn")}
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Zap className="w-4 h-4 mt-0.5 shrink-0 text-accent" />
-                  Thanh toán QR, xác nhận tự động trong vài giây
+                  {t("Thanh toán QR, xác nhận tự động trong vài giây")}
                 </li>
               </ul>
             </aside>
@@ -198,14 +199,14 @@ export default function CartPage() {
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-bg-base/95 backdrop-blur pb-[var(--sab)]">
         <div className="px-4 py-3 flex items-center gap-4">
           <div className="min-w-0">
-            <p className="text-xs text-text-muted">Tổng cộng</p>
+            <p className="text-xs text-text-muted">{t("Tổng cộng")}</p>
             <p className="font-display text-xl font-bold text-accent num leading-tight">{formatPrice(total)}</p>
           </div>
           <button
             onClick={() => navigate("/checkout")}
             className="ml-auto h-12 px-6 bg-accent hover:bg-accent-hover text-on-accent font-bold transition-colors cursor-pointer"
           >
-            Thanh toán
+            {t("Thanh toán")}
           </button>
         </div>
       </div>
