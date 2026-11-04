@@ -43,7 +43,7 @@ public class TelegramBot
     }
 
     /// <summary>Sends an HTML message; returns its message_id, or null on failure.</summary>
-    public async Task<long?> SendAsync(long chatId, string html, long? replyTo = null, CancellationToken ct = default)
+    public async Task<long?> SendAsync(long chatId, string html, long? replyTo = null, CancellationToken ct = default, object? markup = null)
     {
         try
         {
@@ -55,6 +55,7 @@ public class TelegramBot
                 ["disable_web_page_preview"] = true,
             };
             if (replyTo != null) body["reply_parameters"] = new { message_id = replyTo, allow_sending_without_reply = true };
+            if (markup != null) body["reply_markup"] = markup;
             var r = await CallAsync("sendMessage", body, ct);
             return r?["message_id"]?.GetValue<long>();
         }
@@ -65,9 +66,69 @@ public class TelegramBot
         }
     }
 
+    /// <summary>Inline keyboard markup from rows of (text, callbackData or url).</summary>
+    public static object Keyboard(IEnumerable<IEnumerable<(string Text, string? Data, string? Url)>> rows) => new
+    {
+        inline_keyboard = rows.Select(r => r.Select(b => b.Url != null
+            ? (object)new { text = b.Text, url = b.Url }
+            : new { text = b.Text, callback_data = b.Data })).Where(r => r.Any()).ToArray(),
+    };
+
+    public static object EmptyKeyboard => new { inline_keyboard = Array.Empty<object>() };
+
+    public async Task<bool> EditAsync(long chatId, long messageId, string html, object? markup, CancellationToken ct = default)
+    {
+        try
+        {
+            var body = new Dictionary<string, object?>
+            {
+                ["chat_id"] = chatId, ["message_id"] = messageId, ["text"] = html.Length > 4000 ? html[..4000] : html,
+                ["parse_mode"] = "HTML", ["disable_web_page_preview"] = true, ["reply_markup"] = markup ?? EmptyKeyboard,
+            };
+            return await CallAsync("editMessageText", body, ct) != null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Telegram editMessageText failed");
+            return false;
+        }
+    }
+
+    public async Task EditKeyboardAsync(long chatId, long messageId, object markup, CancellationToken ct = default)
+    {
+        try { await CallAsync("editMessageReplyMarkup", new { chat_id = chatId, message_id = messageId, reply_markup = markup }, ct); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Telegram editMessageReplyMarkup failed"); }
+    }
+
+    public async Task DeleteAsync(long chatId, long messageId, CancellationToken ct = default)
+    {
+        try { await CallAsync("deleteMessage", new { chat_id = chatId, message_id = messageId }, ct); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Telegram deleteMessage failed"); }
+    }
+
+    public async Task AnswerCallbackAsync(string callbackId, string? text, bool alert = false, CancellationToken ct = default)
+    {
+        var body = new Dictionary<string, object?> { ["callback_query_id"] = callbackId, ["show_alert"] = alert };
+        if (text != null) body["text"] = text;
+        try { await CallAsync("answerCallbackQuery", body, ct); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Telegram answerCallbackQuery failed"); }
+    }
+
+    public async Task SendPhotoAsync(long chatId, string url, string? captionHtml, long? replyTo = null, CancellationToken ct = default)
+    {
+        try
+        {
+            var body = new Dictionary<string, object?> { ["chat_id"] = chatId, ["photo"] = url, ["parse_mode"] = "HTML" };
+            if (captionHtml != null) body["caption"] = captionHtml;
+            if (replyTo != null) body["reply_parameters"] = new { message_id = replyTo, allow_sending_without_reply = true };
+            await CallAsync("sendPhoto", body, ct, TimeSpan.FromSeconds(30));
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Telegram sendPhoto failed"); }
+    }
+
     public async Task<JsonArray?> GetUpdatesAsync(long offset, int timeoutSeconds, CancellationToken ct)
     {
-        var r = await CallAsync("getUpdates", new { offset, timeout = timeoutSeconds, allowed_updates = new[] { "message" } }, ct,
+        var r = await CallAsync("getUpdates", new { offset, timeout = timeoutSeconds, allowed_updates = new[] { "message", "callback_query" } }, ct,
             TimeSpan.FromSeconds(timeoutSeconds + 15));
         return r as JsonArray;
     }

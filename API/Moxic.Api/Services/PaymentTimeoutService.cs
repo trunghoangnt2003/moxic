@@ -73,6 +73,7 @@ public class PaymentTimeoutService : BackgroundService
                 await tx.CommitAsync(ct);
             }
             cancelled++;
+            TelegramOrderNotifier.RefreshInBackground(_scopeFactory, order.Id, _logger);
 
             try { await email.SendOrderCancelledAsync(order.CustomerXboxEmail, order.OrderCode, reason); }
             catch (Exception ex) { _logger.LogWarning(ex, "Failed to send cancellation email for order {code}", order.OrderCode); }

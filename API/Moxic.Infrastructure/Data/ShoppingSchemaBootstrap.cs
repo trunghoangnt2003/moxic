@@ -132,6 +132,15 @@ public static class ShoppingSchemaBootstrap
             CONSTRAINT "PK_TelegramAdminChats" PRIMARY KEY ("ChatId")
         );
 
+        CREATE TABLE IF NOT EXISTS "TelegramOrderMessages" (
+            "ChatId" bigint NOT NULL,
+            "MessageId" bigint NOT NULL,
+            "OrderId" uuid NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_TelegramOrderMessages" PRIMARY KEY ("ChatId", "MessageId")
+        );
+        CREATE INDEX IF NOT EXISTS "IX_TelegramOrderMessages_OrderId" ON "TelegramOrderMessages" ("OrderId");
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES

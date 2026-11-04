@@ -128,6 +128,11 @@ public class GiftsController : ControllerBase
         order.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
+        var scopes = HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
+        TelegramOrderNotifier.RefreshInBackground(scopes, order.Id, _logger);
+        TelegramOrderNotifier.NotifyInBackground(scopes, order.Id,
+            firstClaim ? "🎁 Người nhận quà đã nhập TK Xbox" : "🎁 Người nhận quà đã CẬP NHẬT TK Xbox", log: _logger);
+
         if (firstClaim && !string.IsNullOrEmpty(order.CustomerId))
         {
             try

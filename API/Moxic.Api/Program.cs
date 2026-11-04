@@ -92,6 +92,8 @@ builder.Services.AddScoped<RewardShopService>();
 builder.Services.AddHttpClient(TelegramBot.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(60));
 builder.Services.AddSingleton<TelegramBot>();
 builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<TelegramOrderNotifier>();
+builder.Services.AddScoped<OrderStatusService>();
 builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<RentalService>();

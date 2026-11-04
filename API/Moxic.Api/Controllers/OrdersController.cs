@@ -164,6 +164,9 @@ public class OrdersController : ControllerBase
                 await svc.SendNewOrderNotificationToAdminAsync(_orderCode, _phone, _total, _discount, _couponCode);
             });
 
+        TelegramOrderNotifier.NotifyInBackground(HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>(), order.Id,
+            order.IsGift ? "🛒🎁 Đơn quà tặng mới" : "🛒 Đơn mới", log: _logger);
+
         return CreatedAtAction(nameof(GetOrder), new { orderCode = order.OrderCode },
             new CreateOrderResponse
             {
@@ -273,6 +276,10 @@ public class OrdersController : ControllerBase
         order.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
+
+        var scopes = HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
+        TelegramOrderNotifier.RefreshInBackground(scopes, order.Id, _logger);
+        TelegramOrderNotifier.NotifyInBackground(scopes, order.Id, "📸 Khách đã gửi ảnh chuyển khoản", withProof: true, log: _logger);
 
         return Ok(new PaymentProofUploadResponse
         {

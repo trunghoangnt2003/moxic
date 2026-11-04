@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Moxic.Core.Entities;
 using Moxic.Infrastructure.Data;
+using Moxic.Shared.Enums;
 
 namespace Moxic.Api.Services;
 
@@ -13,6 +14,9 @@ namespace Moxic.Api.Services;
 public class TelegramChatPoller : BackgroundService
 {
     public static string LinkCacheKey(string code) => $"tg-link:{code}";
+
+    private static readonly System.Text.RegularExpressions.Regex OrderCodeRegex =
+        new(@"MOXIC-\d{8}-[A-Z0-9]{5}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
     private readonly TelegramBot _bot;
     private readonly IServiceScopeFactory _scopes;
@@ -51,9 +55,11 @@ public class TelegramChatPoller : BackgroundService
                 foreach (var u in updates)
                 {
                     offset = Math.Max(offset, u!["update_id"]!.GetValue<long>() + 1);
-                    var msg = u["message"];
-                    if (msg == null) continue;
-                    try { await HandleAsync(msg, ct); }
+                    try
+                    {
+                        if (u["message"] is { } msg) await HandleAsync(msg, ct);
+                        else if (u["callback_query"] is { } cb) await HandleCallbackAsync(cb, ct);
+                    }
                     catch (Exception ex) { _logger.LogWarning(ex, "Telegram update handling failed"); }
                 }
             }
@@ -110,13 +116,42 @@ public class TelegramChatPoller : BackgroundService
         }
         if (text.StartsWith("/start") || text.StartsWith("/help"))
         {
-            await _bot.SendAsync(chatId, "Bấm <b>Reply</b> vào tin của khách để trả lời, hoặc gõ <code>/r MÃ nội dung</code> (mã là #XXXX trong tin).", ct: ct);
+            await _bot.SendAsync(chatId,
+                "<b>Chat khách:</b> bấm <b>Reply</b> vào tin của khách để trả lời, hoặc <code>/r MÃ nội dung</code>.\n" +
+                "<b>Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn (hoặc gửi thẳng mã đơn)\nBấm nút dưới mỗi đơn để đổi trạng thái.", ct: ct);
+            return;
+        }
+
+        var replyTo = msg["reply_to_message"]?["message_id"]?.GetValue<long>();
+        var orders = scope.ServiceProvider.GetRequiredService<TelegramOrderNotifier>();
+        if (text.StartsWith("/cho", StringComparison.OrdinalIgnoreCase))
+        {
+            var open = new[] { OrderStatus.AwaitingConfirmation, OrderStatus.Verifying, OrderStatus.ActionRequired, OrderStatus.Installing, OrderStatus.Pending };
+            var since = DateTime.UtcNow.AddDays(-3);
+            var list = await db.Orders.AsNoTracking().Include(o => o.Details)
+                .Where(o => open.Contains(o.Status) && (o.Status != OrderStatus.Pending || o.CreatedAt >= since))
+                .OrderBy(o => o.Status == OrderStatus.Pending).ThenBy(o => o.CreatedAt).Take(10).ToListAsync(ct);
+            if (list.Count == 0) await _bot.SendAsync(chatId, "✨ Không có đơn nào cần xử lý.", ct: ct);
+            foreach (var o in list) await orders.SendCardAsync(chatId, o);
+            return;
+        }
+        var codeMatch = OrderCodeRegex.Match(text);
+        if (replyTo == null && (text.StartsWith("/don", StringComparison.OrdinalIgnoreCase) || (codeMatch.Success && codeMatch.Length == text.Length)))
+        {
+            if (!codeMatch.Success)
+            {
+                await _bot.SendAsync(chatId, "Cú pháp: <code>/don MOXIC-20261104-ABCDE</code>", ct: ct);
+                return;
+            }
+            var oc = codeMatch.Value.ToUpperInvariant();
+            var found = await db.Orders.AsNoTracking().Include(x => x.Details).FirstOrDefaultAsync(x => x.OrderCode == oc, ct);
+            if (found == null) await _bot.SendAsync(chatId, $"Không tìm thấy đơn {TelegramBot.Html(oc)}", ct: ct);
+            else await orders.SendCardAsync(chatId, found);
             return;
         }
 
         ChatThread? thread = null;
         var body = text;
-        var replyTo = msg["reply_to_message"]?["message_id"]?.GetValue<long>();
         if (replyTo != null)
         {
             var threadId = await db.ChatTelegramRefs.Where(r => r.TelegramChatId == chatId && r.TelegramMessageId == replyTo)
@@ -147,5 +182,91 @@ public class TelegramChatPoller : BackgroundService
         db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = mid, ThreadId = thread.Id, CreatedAt = DateTime.UtcNow });
         await db.SaveChangesAsync(ct);
         await chat.EchoAdminReplyAsync(thread, body, chatId, fromName);
+    }
+
+    /// <summary>Order card buttons. Only linked admin chats may act.</summary>
+    private async Task HandleCallbackAsync(JsonNode cb, CancellationToken ct)
+    {
+        var cbId = cb["id"]!.GetValue<string>();
+        var data = cb["data"]?.GetValue<string>() ?? "";
+        var message = cb["message"];
+        var chatId = message?["chat"]?["id"]?.GetValue<long>();
+        var messageId = message?["message_id"]?.GetValue<long>();
+        var who = cb["from"]?["first_name"]?.GetValue<string>() ?? "Admin";
+
+        using var scope = _scopes.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
+        if (chatId == null || messageId == null || !await db.TelegramAdminChats.AnyAsync(a => a.ChatId == chatId, ct))
+        {
+            await _bot.AnswerCallbackAsync(cbId, "Không có quyền", true, ct);
+            return;
+        }
+        if (data.Length < 4 || data[0] != 'o' || data[2] != ':' || !Guid.TryParseExact(data[3..], "N", out var orderId))
+        {
+            await _bot.AnswerCallbackAsync(cbId, null, ct: ct);
+            return;
+        }
+
+        var cards = scope.ServiceProvider.GetRequiredService<TelegramOrderNotifier>();
+        var order = await cards.FindAsync(orderId);
+        if (order == null)
+        {
+            await _bot.AnswerCallbackAsync(cbId, "Không tìm thấy đơn", true, ct);
+            return;
+        }
+
+        var op = data[1];
+        switch (op)
+        {
+            case 'r':
+                await _bot.EditAsync(chatId.Value, messageId.Value, cards.CardText(order, null), cards.Buttons(order), ct);
+                await _bot.AnswerCallbackAsync(cbId, "Đã làm mới", ct: ct);
+                return;
+            case 'x':
+                await _bot.EditKeyboardAsync(chatId.Value, messageId.Value, cards.Buttons(order, confirmCancel: true), ct);
+                await _bot.AnswerCallbackAsync(cbId, "Bấm xác nhận để hủy đơn", ct: ct);
+                return;
+            case 'k':
+                await cards.SendCredentialsAsync(chatId.Value, order, messageId.Value);
+                await _bot.AnswerCallbackAsync(cbId, null, ct: ct);
+                return;
+        }
+
+        OrderStatus? target = op switch
+        {
+            'v' => OrderStatus.Verifying,
+            'i' => OrderStatus.Installing,
+            'c' => OrderStatus.Completed,
+            'a' => OrderStatus.ActionRequired,
+            'X' => OrderStatus.Cancelled,
+            _ => null,
+        };
+        if (target == null)
+        {
+            await _bot.AnswerCallbackAsync(cbId, null, ct: ct);
+            return;
+        }
+
+        var reason = target switch
+        {
+            OrderStatus.Cancelled => "Đơn hàng đã bị hủy bởi Moxic. Liên hệ shop nếu bạn cần hỗ trợ.",
+            OrderStatus.ActionRequired => "Thông tin tài khoản Xbox chưa chính xác — vui lòng kiểm tra và cập nhật.",
+            _ => null,
+        };
+        var statuses = scope.ServiceProvider.GetRequiredService<OrderStatusService>();
+        var r = await statuses.ChangeAsync(orderId, target.Value, reason);
+        if (!r.Ok)
+        {
+            await _bot.AnswerCallbackAsync(cbId, r.Error, true, ct);
+            // The card may be stale (changed elsewhere) — show the current state.
+            var fresh = await cards.FindAsync(orderId);
+            if (fresh != null) await _bot.EditAsync(chatId.Value, messageId.Value, cards.CardText(fresh, null), cards.Buttons(fresh), ct);
+            return;
+        }
+        _logger.LogInformation("Order {Order} → {Status} by {Who} via Telegram", order.OrderCode, target, who);
+        await _bot.AnswerCallbackAsync(cbId, $"{TelegramOrderNotifier.StatusLabel(target.Value)} ✓", ct: ct);
+        // ChangeAsync already refreshes every card in the background; also update this one right away.
+        var updated = await cards.FindAsync(orderId);
+        if (updated != null) await _bot.EditAsync(chatId.Value, messageId.Value, cards.CardText(updated, $"bởi {who}"), cards.Buttons(updated), ct);
     }
 }

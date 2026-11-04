@@ -33,6 +33,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<ChatTelegramRef> ChatTelegramRefs => Set<ChatTelegramRef>();
     public DbSet<TelegramAdminChat> TelegramAdminChats => Set<TelegramAdminChat>();
+    public DbSet<TelegramOrderMessage> TelegramOrderMessages => Set<TelegramOrderMessage>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
@@ -473,6 +474,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         {
             entity.HasKey(e => new { e.TelegramChatId, e.TelegramMessageId });
             entity.HasOne<ChatThread>().WithMany().HasForeignKey(e => e.ThreadId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<TelegramOrderMessage>(entity =>
+        {
+            entity.HasKey(e => new { e.ChatId, e.MessageId });
+            entity.HasIndex(e => e.OrderId);
         });
         modelBuilder.Entity<TelegramAdminChat>(entity =>
         {

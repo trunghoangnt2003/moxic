@@ -57,3 +57,12 @@ public class TelegramAdminChat
     public string? Name { get; set; }
     public DateTime LinkedAt { get; set; }
 }
+
+/// <summary>An order card posted to an admin Telegram chat (edited in place when the order changes).</summary>
+public class TelegramOrderMessage
+{
+    public long ChatId { get; set; }
+    public long MessageId { get; set; }
+    public Guid OrderId { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
