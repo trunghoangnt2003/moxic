@@ -5,6 +5,7 @@ import MoxicWave from "./components/shared/MoxicWave";
 import AppLayout from "./components/layout/AppLayout";
 import GlobalLoader from "./components/shared/GlobalLoader";
 import RequireCustomer from "./components/account/RequireCustomer";
+import ScrollToTop from "./components/layout/ScrollToTop";
 import AccountLayout from "./components/account/AccountLayout";
 import { NotFoundPage } from "./components/shared/EmptyStates";
 import { Toaster } from "react-hot-toast";
@@ -66,6 +67,7 @@ export default function App() {
         duration: 4000,
       }} />
       <BrowserRouter>
+        <ScrollToTop />
         <Suspense
           fallback={
             <div className="min-h-[60vh] flex items-center justify-center">
