@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
 import { readApiError } from "../lib/luckySpinAdmin";
+import PriceTrackerCard from "./PriceTrackerCard";
 
 interface Overview {
   days: number;
@@ -404,6 +405,8 @@ export default function Dashboard() {
               </div>
             </section>
           </div>
+
+          <PriceTrackerCard />
 
           <section className="bg-steam-surface border border-steam-border rounded-sm p-3 md:p-4">
             <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest mb-3">Đơn theo trạng thái (trong kỳ)</h2>

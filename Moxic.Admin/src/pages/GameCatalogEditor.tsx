@@ -20,6 +20,8 @@ interface Catalog {
   publisher: string | null;
   developer: string | null;
   editions: Edition[];
+  xboxProductId: string | null;
+  priceRegion: string | null;
 }
 
 const TYPES = [
@@ -151,6 +153,15 @@ export default function GameCatalogEditor({ gameId, onPricesSynced }: { gameId: 
         <div>
           <label className="block text-[11px] text-steam-muted mb-1">Nhà phát triển</label>
           <input value={data.developer ?? ""} onChange={(e) => set({ developer: e.target.value })} placeholder="VD: Rockstar North" className="w-full steam-input text-xs" />
+        </div>
+        <div>
+          <label className="block text-[11px] text-steam-muted mb-1">Xbox Store product ID (theo dõi giá)</label>
+          <input value={data.xboxProductId ?? ""} onChange={(e) => set({ xboxProductId: e.target.value })} placeholder="VD: 9NBLGGH4R2R6" className="w-full steam-input text-xs font-mono uppercase" />
+          <p className="text-[10px] text-steam-muted mt-0.5">Lấy từ link xbox.com/…/store/…/<b>9XXXXXXXXXXX</b></p>
+        </div>
+        <div>
+          <label className="block text-[11px] text-steam-muted mb-1">Region lấy giá Store</label>
+          <input value={data.priceRegion ?? ""} onChange={(e) => set({ priceRegion: e.target.value })} placeholder="us" maxLength={5} className="w-full steam-input text-xs font-mono lowercase" />
         </div>
       </div>
 

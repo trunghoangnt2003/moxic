@@ -13,6 +13,8 @@ public class CustomerProfile
 
     /// <summary>Reward points balance — reserved for the cases/points feature.</summary>
     public int Points { get; set; }
+    /// <summary>Email me when a wishlisted game drops in price.</summary>
+    public bool PriceAlerts { get; set; } = true;
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

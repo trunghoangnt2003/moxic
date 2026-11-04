@@ -7,4 +7,6 @@ public class WishlistItem
     public Guid GameId { get; set; }
     public Game Game { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
+    /// <summary>Price the customer was last told about (alerts fire when the price drops below it).</summary>
+    public decimal? NotifiedPrice { get; set; }
 }

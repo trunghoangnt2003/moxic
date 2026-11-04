@@ -2,6 +2,7 @@
 import WishlistButton from "../components/games/WishlistButton";
 import EditionCompare from "../components/game-detail/EditionCompare";
 import RentPanel from "../components/rental/RentPanel";
+import PriceHistory from "../components/game-detail/PriceHistory";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import { recentlyViewed } from "../lib/localIds";
@@ -563,6 +564,8 @@ export default function GameDetailPage() {
             </div>
           </div>
         </div>
+
+        <PriceHistory gameId={game.id} />
 
         {/* ─── EDITION COMPARISON ─── */}
         {editions.length > 1 && <EditionCompare editions={editions} selectedId={edition?.id ?? null} onSelect={setEditionId} />}

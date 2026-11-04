@@ -87,8 +87,8 @@ export function useWishlistGames() {
     enabled: !loggedIn && ids.length > 0,
   });
 
-  if (loggedIn) return { games: server.data?.items ?? [], isLoading: server.isLoading };
+  if (loggedIn) return { games: server.data?.items ?? [], isLoading: server.isLoading, priceAlerts: server.data?.priceAlerts ?? true };
   const order = new Map(ids.map((id, i) => [id, i]));
   const games = ids.length === 0 ? [] : [...(guest.data?.items ?? [])].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-  return { games, isLoading: ids.length > 0 && guest.isLoading };
+  return { games, isLoading: ids.length > 0 && guest.isLoading, priceAlerts: false };
 }

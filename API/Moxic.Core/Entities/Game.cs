@@ -22,6 +22,10 @@ public class Game
     public string? Region { get; set; }
     public string? Publisher { get; set; }
     public string? Developer { get; set; }
+    /// <summary>Microsoft Store product id ("bigId", e.g. 9NBLGGH4R2R6) for price tracking.</summary>
+    public string? XboxProductId { get; set; }
+    /// <summary>Store region used for the Xbox price reference (ISO-2, lower case). Default "us".</summary>
+    public string? PriceRegion { get; set; }
     public ICollection<GameEdition> Editions { get; set; } = new List<GameEdition>();
     public SystemRequirementData? SystemRequirements { get; set; }
     public List<GameRating> Ratings { get; set; } = new();

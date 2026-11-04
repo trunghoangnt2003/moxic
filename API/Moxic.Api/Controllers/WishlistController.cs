@@ -11,6 +11,7 @@ using Moxic.Infrastructure.Data;
 namespace Moxic.Api.Controllers;
 
 public record WishlistMergeRequest(List<Guid>? GameIds);
+public record WishlistAlertsRequest(bool Enabled);
 
 /// <summary>"Yêu thích": the signed-in customer's saved games.</summary>
 [Route("api/account/wishlist")]
@@ -65,7 +66,17 @@ public class WishlistController : ControllerBase
                 CoverImageUrl = cover
             });
         }
-        return Ok(new { ids = rows.Select(r => r.GameId), items });
+        var priceAlerts = await _db.CustomerProfiles.AsNoTracking().Where(p => p.UserId == UserId).Select(p => (bool?)p.PriceAlerts).FirstOrDefaultAsync() ?? true;
+        return Ok(new { ids = rows.Select(r => r.GameId), items, priceAlerts });
+    }
+
+    // PUT /api/account/wishlist/alerts { enabled } — price-drop email opt-in/out
+    [HttpPut("alerts")]
+    public async Task<IActionResult> SetAlerts([FromBody] WishlistAlertsRequest request)
+    {
+        var updated = await _db.CustomerProfiles.Where(p => p.UserId == UserId)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PriceAlerts, request.Enabled));
+        return updated == 0 ? NotFound(new { error = "Không tìm thấy hồ sơ." }) : NoContent();
     }
 
     // PUT /api/account/wishlist/{gameId}
@@ -77,7 +88,7 @@ public class WishlistController : ControllerBase
             return BadRequest(new { error = $"Danh sách yêu thích tối đa {MaxItems} game." });
 
         await _db.Database.ExecuteSqlInterpolatedAsync(
-            $"""INSERT INTO "WishlistItems" ("UserId", "GameId", "CreatedAt") VALUES ({UserId}, {gameId}, {DateTime.UtcNow}) ON CONFLICT DO NOTHING""");
+            $"""INSERT INTO "WishlistItems" ("UserId", "GameId", "CreatedAt", "NotifiedPrice") SELECT {UserId}, g."Id", {DateTime.UtcNow}, g."SalePrice" FROM "Games" g WHERE g."Id" = {gameId} ON CONFLICT DO NOTHING""");
         return NoContent();
     }
 
@@ -101,7 +112,7 @@ public class WishlistController : ControllerBase
             foreach (var id in valid)
             {
                 await _db.Database.ExecuteSqlInterpolatedAsync(
-                    $"""INSERT INTO "WishlistItems" ("UserId", "GameId", "CreatedAt") VALUES ({UserId}, {id}, {now}) ON CONFLICT DO NOTHING""");
+                    $"""INSERT INTO "WishlistItems" ("UserId", "GameId", "CreatedAt", "NotifiedPrice") SELECT {UserId}, g."Id", {now}, g."SalePrice" FROM "Games" g WHERE g."Id" = {id} ON CONFLICT DO NOTHING""");
             }
         }
         return await Get();

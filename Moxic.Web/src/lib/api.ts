@@ -119,6 +119,11 @@ export async function createReview(gameId: string, data: { displayName?: string;
 export interface WishlistResponse {
   ids: string[];
   items: GamesResponse["items"];
+  priceAlerts?: boolean;
+}
+
+export async function setPriceAlerts(enabled: boolean) {
+  await api.put("/account/wishlist/alerts", { enabled });
 }
 
 export async function getWishlist() {

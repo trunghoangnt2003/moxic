@@ -36,6 +36,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<RentalAsset> RentalAssets => Set<RentalAsset>();
     public DbSet<RentalAssetGame> RentalAssetGames => Set<RentalAssetGame>();
     public DbSet<RentalOrder> RentalOrders => Set<RentalOrder>();
+    public DbSet<GamePriceSnapshot> GamePriceSnapshots => Set<GamePriceSnapshot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +74,8 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.Region).HasMaxLength(30);
             entity.Property(e => e.Publisher).HasMaxLength(100);
             entity.Property(e => e.Developer).HasMaxLength(100);
+            entity.Property(e => e.XboxProductId).HasMaxLength(20);
+            entity.Property(e => e.PriceRegion).HasMaxLength(5);
             entity.HasIndex(e => e.ProductType);
             entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18,2)");
@@ -262,6 +265,18 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<GamePriceSnapshot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Source).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Region).HasMaxLength(5).IsRequired();
+            entity.Property(e => e.Currency).HasMaxLength(5).IsRequired();
+            entity.Property(e => e.BasePrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.SalePrice).HasColumnType("decimal(18,2)");
+            entity.HasOne<Game>().WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.GameId, e.Source, e.CapturedAt });
+        });
+
         modelBuilder.Entity<RentalPlan>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -321,6 +336,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         modelBuilder.Entity<WishlistItem>(entity =>
         {
             entity.HasKey(e => new { e.UserId, e.GameId });
+            entity.Property(e => e.NotifiedPrice).HasColumnType("decimal(18,2)");
             entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<Microsoft.AspNetCore.Identity.IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.GameId);

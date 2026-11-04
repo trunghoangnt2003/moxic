@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Trash2 } from "lucide-react";
+import { BellRing, Heart, ShoppingCart, Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { setPriceAlerts } from "../lib/api";
 import toast from "react-hot-toast";
 import Container from "../components/layout/Container";
 import GameCard from "../components/games/GameCard";
@@ -10,8 +12,17 @@ import { useCartStore } from "../lib/cartStore";
 import { formatPrice } from "../lib/utils";
 
 export default function WishlistPage() {
-  const { games, isLoading } = useWishlistGames();
+  const { games, isLoading, priceAlerts } = useWishlistGames();
   const { loggedIn } = useWishlistIds();
+  const qc = useQueryClient();
+  const toggleAlerts = useMutation({
+    mutationFn: (enabled: boolean) => setPriceAlerts(enabled),
+    onSuccess: (_d, enabled) => {
+      toast.success(enabled ? "Sẽ báo qua email khi game yêu thích giảm giá" : "Đã tắt thông báo giảm giá");
+      qc.invalidateQueries({ queryKey: ["wishlist"] });
+    },
+    onError: () => toast.error("Không cập nhật được"),
+  });
   const toggle = useToggleWishlist();
   const addItem = useCartStore((s) => s.addItem);
   const cartItems = useCartStore((s) => s.items);
@@ -51,10 +62,23 @@ export default function WishlistPage() {
                   <Link to="/login?redirect=/wishlist" className="text-accent hover:underline">
                     Đăng nhập
                   </Link>{" "}
-                  để lưu trên mọi thiết bị
+                  để lưu trên mọi thiết bị và nhận báo giảm giá
                 </>
               )}
             </p>
+            {loggedIn && (
+              <label className="mt-3 inline-flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={priceAlerts}
+                  disabled={toggleAlerts.isPending}
+                  onChange={(e) => toggleAlerts.mutate(e.target.checked)}
+                />
+                <span className="relative shrink-0 w-9 h-5 bg-white/10 transition-colors peer-checked:bg-rose-500 after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+                <BellRing className="w-4 h-4 text-rose-400" /> Email cho tôi khi game yêu thích giảm giá
+              </label>
+            )}
           </div>
           {games.length > 0 && (
             <div className="flex items-center gap-4 bg-bg-surface border border-white/10 px-4 py-3">
