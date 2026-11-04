@@ -221,3 +221,21 @@ button:not(:disabled):active, a[class*="bg-accent"]:active, a[class*="h-10"]:act
   button:not(:disabled):active { scale: 1; }
   .skeleton::after { animation: none; }
 }
+
+/* MOXIC "sóng sánh" liquid loader */
+@keyframes moxic-wave-x { from { transform: translateX(0); } to { transform: translateX(-150px); } }
+@keyframes moxic-wave-x-rev { from { transform: translateX(-150px); } to { transform: translateX(0); } }
+@keyframes moxic-wave-bob { 0%, 100% { transform: translateY(6px); } 50% { transform: translateY(-8px); } }
+.moxic-wave-front { animation: moxic-wave-x 1.3s linear infinite; }
+.moxic-wave-back { animation: moxic-wave-x-rev 1.9s linear infinite; }
+.moxic-wave-bob { animation: moxic-wave-bob 2.2s ease-in-out infinite; }
+
+/* Route-change progress bar */
+@keyframes route-progress {
+  0% { transform: translateX(-100%) scaleX(0.3); }
+  50% { transform: translateX(10%) scaleX(0.6); }
+  100% { transform: translateX(110%) scaleX(0.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .moxic-wave-front, .moxic-wave-back, .moxic-wave-bob { animation: none; }
+}

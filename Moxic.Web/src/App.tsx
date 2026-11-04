@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import MoxicWave from "./components/shared/MoxicWave";
 import AppLayout from "./components/layout/AppLayout";
-import { PageLoader } from "./components/shared/MoxicLoader";
 import GlobalLoader from "./components/shared/GlobalLoader";
 import RequireCustomer from "./components/account/RequireCustomer";
 import { NotFoundPage } from "./components/shared/EmptyStates";
@@ -41,7 +41,32 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
 });
 
+/** Warm the most visited pages while the browser is idle, so taps open them instantly. */
+function usePreloadRoutes() {
+  useEffect(() => {
+    const load = () =>
+      [
+        () => import("./pages/GamesPage"),
+        () => import("./pages/GameDetailPage"),
+        () => import("./pages/CartPage"),
+        () => import("./pages/CheckoutPage"),
+        () => import("./pages/HomePage"),
+        () => import("./pages/RewardsPage"),
+        () => import("./pages/LuckySpinGalleryPage"),
+        () => import("./pages/GuessGamePage"),
+        () => import("./pages/AccountPage"),
+        () => import("./pages/RentPage"),
+        () => import("./pages/LeaderboardPage"),
+        () => import("./pages/ConfirmationPage"),
+      ].reduce((p, f) => p.then(() => f().catch(() => undefined)), Promise.resolve() as Promise<unknown>);
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const t = window.setTimeout(() => (ric ? ric(load, { timeout: 4000 }) : load()), 1500);
+    return () => window.clearTimeout(t);
+  }, []);
+}
+
 export default function App() {
+  usePreloadRoutes();
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalLoader />
@@ -50,7 +75,13 @@ export default function App() {
         duration: 4000,
       }} />
       <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+        <Suspense
+          fallback={
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <MoxicWave width={240} />
+            </div>
+          }
+        >
           <Routes>
             <Route element={<AppLayout />}>
               <Route path="/" element={<HomePage />} />

@@ -8,6 +8,7 @@ import PurchaseToast from "../shared/PurchaseToast";
 import { CompareBar } from "../games/Compare";
 import ReferralCapture from "../shared/ReferralCapture";
 import InstallAppPrompt from "../shared/InstallAppPrompt";
+import RouteProgress from "../shared/RouteProgress";
 
 
 export default function AppLayout() {
@@ -29,6 +30,7 @@ export default function AppLayout() {
       <CompareBar />
       <ReferralCapture />
       <InstallAppPrompt />
+      <RouteProgress />
     </div>
   );
 }

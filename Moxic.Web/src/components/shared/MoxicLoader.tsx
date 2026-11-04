@@ -1,3 +1,4 @@
+import MoxicWave from "./MoxicWave";
 import { useId } from "react";
 
 type LoaderSize = "sm" | "md" | "lg";
@@ -112,7 +113,7 @@ export function MoxicLoader({ size = "md", label, className = "" }: MoxicLoaderP
 export function PageLoader({ label = "Đang tải..." }: { label?: string }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <MoxicLoader size="lg" label={label} />
+      <MoxicWave width={240} label={label} />
     </div>
   );
 }
@@ -121,7 +122,7 @@ export function PageLoader({ label = "Đang tải..." }: { label?: string }) {
 export function SectionLoader({ label }: { label?: string }) {
   return (
     <div className="flex min-h-[280px] items-center justify-center">
-      <MoxicLoader size="md" label={label} />
+      <MoxicWave width={170} label={label} />
     </div>
   );
 }
