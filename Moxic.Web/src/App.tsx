@@ -41,24 +41,12 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
 });
 
-/** Warm the most visited pages while the browser is idle, so taps open them instantly. */
+/** Warm the home page and the game list while the browser is idle, so they open instantly. */
 function usePreloadRoutes() {
   useEffect(() => {
     const load = () =>
-      [
-        () => import("./pages/GamesPage"),
-        () => import("./pages/GameDetailPage"),
-        () => import("./pages/CartPage"),
-        () => import("./pages/CheckoutPage"),
-        () => import("./pages/HomePage"),
-        () => import("./pages/RewardsPage"),
-        () => import("./pages/LuckySpinGalleryPage"),
-        () => import("./pages/GuessGamePage"),
-        () => import("./pages/AccountPage"),
-        () => import("./pages/RentPage"),
-        () => import("./pages/LeaderboardPage"),
-        () => import("./pages/ConfirmationPage"),
-      ].reduce((p, f) => p.then(() => f().catch(() => undefined)), Promise.resolve() as Promise<unknown>);
+      [() => import("./pages/HomePage"), () => import("./pages/GamesPage")]
+        .reduce((p, f) => p.then(() => f().catch(() => undefined)), Promise.resolve() as Promise<unknown>);
     const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
     const t = window.setTimeout(() => (ric ? ric(load, { timeout: 4000 }) : load()), 1500);
     return () => window.clearTimeout(t);

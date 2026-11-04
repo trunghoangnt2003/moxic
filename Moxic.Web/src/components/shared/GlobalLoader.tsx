@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { MoxicLoader } from "./MoxicLoader";
+import MoxicWave from "./MoxicWave";
 
+/** First-visit splash: the MOXIC liquid wave (continues seamlessly from the static one in index.html). */
 export default function GlobalLoader() {
   const [isVisible, setIsVisible] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -25,7 +26,7 @@ export default function GlobalLoader() {
         isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      <MoxicLoader size="lg" label="moxic.co" />
+      <MoxicWave width={240} label="moxic.co" />
     </div>
   );
 }

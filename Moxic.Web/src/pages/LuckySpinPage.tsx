@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Clock, Coins, Gift, KeyRound, LogIn, Volume2, VolumeX } from "lucide-react";
 import Container from "../components/layout/Container";
 import { MoxicLoader } from "../components/shared/MoxicLoader";
+import MoxicWave from "../components/shared/MoxicWave";
 import CaseReel, { type CaseReelHandle } from "../components/lucky-spin/CaseReel";
 import PrizeCard, { RARITY_COLORS, RARITY_LABELS } from "../components/lucky-spin/PrizeCard";
 import LiveDropsBar from "../components/lucky-spin/LiveDropsBar";
@@ -321,7 +322,7 @@ export default function LuckySpinPage() {
       <div className="-mx-4 mt-5 sm:mx-0">
         {isLoading ? (
           <div className="flex h-[190px] items-center justify-center bg-[#1a0d33]/60 md:h-[258px]">
-            <MoxicLoader size="md" />
+            <MoxicWave width={170} />
           </div>
         ) : (
           <CaseReel ref={reelRef} idleItems={prizes} />
