@@ -198,4 +198,7 @@ export interface OrderConfirmationData {
   giftToken?: string | null;
   giftRecipientName?: string | null;
   giftClaimedAt?: string | null;
+  dynamicQrUrl?: string | null;
+  transferContent?: string;
+  autoConfirm?: boolean;
 }

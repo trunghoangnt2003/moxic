@@ -10,9 +10,11 @@ interface Props {
   amount?: number;
   /** Show the "Đã trừ mã giảm giá" hint. */
   discounted?: boolean;
+  /** Per-order QR + bank webhook: payment is confirmed automatically. */
+  autoConfirm?: boolean;
 }
 
-export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amount, discounted }: Props) {
+export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amount, discounted, autoConfirm }: Props) {
   const [mode, setMode] = useState<"bank" | "crypto">("bank");
   const [copied, setCopied] = useState(false);
   const [amountCopied, setAmountCopied] = useState(false);
@@ -72,6 +74,16 @@ export default function QRDisplay({ bankQrUrl, cryptoQrUrl, transferContent, amo
           </div>
         )}
       </div>
+
+      {autoConfirm && mode === "bank" && (
+        <p className="mb-4 flex items-center justify-center gap-2 text-xs text-emerald-300">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          QR đã điền sẵn số tiền & nội dung — tự xác nhận khi tiền về
+        </p>
+      )}
 
       {/* Amount */}
       {amount != null && (

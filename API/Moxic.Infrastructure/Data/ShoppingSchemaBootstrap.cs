@@ -148,6 +148,28 @@ public static class ShoppingSchemaBootstrap
         );
         CREATE INDEX IF NOT EXISTS "IX_TelegramOrderMessages_OrderId" ON "TelegramOrderMessages" ("OrderId");
 
+        ALTER TABLE "PaymentConfigs" ADD COLUMN IF NOT EXISTS "BankCode" character varying(20);
+        CREATE TABLE IF NOT EXISTS "BankTransactions" (
+            "Id" uuid NOT NULL,
+            "Provider" character varying(20) NOT NULL,
+            "ProviderTxnId" character varying(64) NOT NULL,
+            "Amount" numeric(18,2) NOT NULL,
+            "Content" character varying(500),
+            "Gateway" character varying(50),
+            "AccountNumber" character varying(50),
+            "ReferenceCode" character varying(100),
+            "TransactionDate" timestamp with time zone,
+            "Status" character varying(20) NOT NULL,
+            "OrderId" uuid,
+            "OrderCode" character varying(50),
+            "Note" character varying(300),
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_BankTransactions" PRIMARY KEY ("Id")
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_BankTransactions_Provider_ProviderTxnId" ON "BankTransactions" ("Provider", "ProviderTxnId");
+        CREATE INDEX IF NOT EXISTS "IX_BankTransactions_CreatedAt" ON "BankTransactions" ("CreatedAt");
+        CREATE INDEX IF NOT EXISTS "IX_BankTransactions_OrderId" ON "BankTransactions" ("OrderId");
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES

@@ -76,7 +76,7 @@ export default function DiscoverySection({ games }: Props) {
             to="/games"
             className="relative w-full lg:w-[320px] min-h-[300px] overflow-hidden group flex-shrink-0 cursor-pointer flex shadow-xl border border-white/5"
           >
-            <img
+            <img loading="lazy" decoding="async"
               src={
                 games[0]?.coverImageUrl ||
                 "https://picsum.photos/seed/discovery/560/920"

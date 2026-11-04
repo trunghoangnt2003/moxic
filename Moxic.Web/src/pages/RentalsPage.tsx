@@ -54,7 +54,7 @@ export default function RentalsPage() {
               <li key={r.code}>
                 <Link to={`/account/rentals/${r.code}`} className="group flex items-center gap-4 p-3 bg-bg-surface border border-white/10 hover:border-white/25 transition-colors">
                   <div className="w-14 h-18 sm:w-16 sm:h-20 shrink-0 bg-bg-elevated overflow-hidden">
-                    {r.coverUrl ? <img src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-6 h-6 m-auto mt-6 text-accent/40" />}
+                    {r.coverUrl ? <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-6 h-6 m-auto mt-6 text-accent/40" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

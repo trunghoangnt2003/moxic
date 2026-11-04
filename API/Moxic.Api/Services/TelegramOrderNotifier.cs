@@ -61,6 +61,25 @@ public class TelegramOrderNotifier
             catch (Exception ex) { log?.LogWarning(ex, "Telegram order refresh failed"); }
         });
 
+    public static void TextInBackground(IServiceScopeFactory scopes, string html, ILogger? log = null) =>
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopes.CreateScope();
+                await scope.ServiceProvider.GetRequiredService<TelegramOrderNotifier>().TextAsync(html);
+            }
+            catch (Exception ex) { log?.LogWarning(ex, "Telegram text notify failed"); }
+        });
+
+    /// <summary>Plain alert into every admin chat's "Đơn hàng" tab.</summary>
+    public async Task TextAsync(string html)
+    {
+        if (!_bot.Enabled) return;
+        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => new { a.ChatId, a.OrdersTopicId }).ToListAsync();
+        foreach (var a in admins) await _bot.SendAsync(a.ChatId, html, threadId: a.OrdersTopicId);
+    }
+
     public static string StatusLabel(OrderStatus s) => s switch
     {
         OrderStatus.Pending => "🟡 Chờ thanh toán",

@@ -51,7 +51,7 @@ export default function InstallAppPrompt() {
         </button>
         {!iosHelp ? (
           <div className="flex items-center gap-3 pr-5">
-            <img src="/icon-192.png" alt="" className="w-12 h-12 rounded-xl shrink-0" />
+            <img loading="lazy" decoding="async" src="/icon-192.png" alt="" className="w-12 h-12 rounded-xl shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-display font-bold leading-tight">Cài app Moxic</p>
               <p className="text-xs text-text-muted">Mở nhanh từ màn hình chính, nhận thông báo flash sale & đơn hàng.</p>

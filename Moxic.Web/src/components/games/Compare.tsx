@@ -54,7 +54,7 @@ export function CompareBar() {
             const g = games[i];
             return g ? (
               <div key={g.id} className="relative w-10 h-12 shrink-0 bg-bg-elevated overflow-hidden" title={g.name}>
-                {g.coverImageUrl && <img src={g.coverImageUrl} alt="" className="w-full h-full object-cover" />}
+                {g.coverImageUrl && <img loading="lazy" decoding="async" src={g.coverImageUrl} alt="" className="w-full h-full object-cover" />}
                 <button
                   type="button"
                   onClick={() => compareList.remove(g.id)}

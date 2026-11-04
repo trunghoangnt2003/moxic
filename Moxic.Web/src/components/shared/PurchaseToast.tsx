@@ -80,7 +80,7 @@ export default function PurchaseToast() {
       <div className="relative flex items-center gap-3 p-2.5 pr-8 bg-bg-surface/95 backdrop-blur-md border border-white/10 shadow-2xl shadow-black/60">
         <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-400 to-accent" />
         <Link to={`/games/${p.gameId}`} className="w-11 h-14 shrink-0 bg-bg-elevated overflow-hidden">
-          {p.coverUrl && <img src={p.coverUrl} alt="" className="w-full h-full object-cover" />}
+          {p.coverUrl && <img loading="lazy" decoding="async" src={p.coverUrl} alt="" className="w-full h-full object-cover" />}
         </Link>
         <div className="min-w-0 text-xs leading-snug">
           <p className="text-text-secondary">

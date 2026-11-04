@@ -14,6 +14,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
+    public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<GameReview> GameReviews => Set<GameReview>();
@@ -202,6 +203,24 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.CryptoBucketName).HasMaxLength(100);
             entity.Property(e => e.CryptoQrObjectKey).HasMaxLength(500);
             entity.Property(e => e.TransferSyntaxTemplate).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.BankCode).HasMaxLength(20);
+        });
+        modelBuilder.Entity<BankTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Provider).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ProviderTxnId).HasMaxLength(64).IsRequired();
+            entity.HasIndex(e => new { e.Provider, e.ProviderTxnId }).IsUnique();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Content).HasMaxLength(500);
+            entity.Property(e => e.Gateway).HasMaxLength(50);
+            entity.Property(e => e.AccountNumber).HasMaxLength(50);
+            entity.Property(e => e.ReferenceCode).HasMaxLength(100);
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.OrderCode).HasMaxLength(50);
+            entity.Property(e => e.Note).HasMaxLength(300);
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.OrderId);
         });
 
         // SpinPrize (lucky spin prize pool)

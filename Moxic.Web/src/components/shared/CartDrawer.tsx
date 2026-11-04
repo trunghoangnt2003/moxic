@@ -59,7 +59,7 @@ export default function CartDrawer() {
                 key={item.gameId}
                 className="flex gap-3 p-3  bg-bg-elevated border border-border/50"
               >
-                <img
+                <img loading="lazy" decoding="async"
                   src={item.coverImageUrl}
                   alt={item.name}
                   className="w-16 h-16 object-cover  flex-shrink-0"

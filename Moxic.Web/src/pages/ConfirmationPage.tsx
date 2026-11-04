@@ -22,6 +22,8 @@ export default function ConfirmationPage() {
     queryFn: () => getOrder(orderCode!),
     enabled: !!orderCode,
     retry: 1,
+    // While unpaid, poll so the page flips to "đã nhận tiền" as soon as the bank webhook confirms it.
+    refetchInterval: (q) => (q.state.data && ["Pending", "AwaitingConfirmation"].includes(q.state.data.status) ? 5000 : false),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,6 +83,7 @@ export default function ConfirmationPage() {
 
   const isPending = order.status === "Pending";
   const isAwaitingConfirmation = order.status === "AwaitingConfirmation";
+  const isPaid = ["Verifying", "Installing", "Completed"].includes(order.status);
   const paymentConfig = order.paymentConfig;
   const hasBankInfo = paymentConfig?.bankName && paymentConfig?.bankAccountNumber;
 
@@ -97,8 +100,12 @@ export default function ConfirmationPage() {
               Đặt hàng thành công!
             </h1>
             <p className="text-[#7a6f63] text-sm">
-              {isAwaitingConfirmation
+              {isPaid
+                ? "Moxic đã nhận được thanh toán của bạn 🎉"
+                : isAwaitingConfirmation
                 ? "Đã nhận được ảnh xác nhận, vui lòng chờ admin duyệt."
+                : order.autoConfirm
+                ? "Quét mã QR bên dưới để thanh toán — hệ thống tự xác nhận khi tiền về."
                 : "Vui lòng chuyển khoản và xác nhận thanh toán bên dưới."}
             </p>
           </div>
@@ -118,8 +125,18 @@ export default function ConfirmationPage() {
               couponCode={order.couponCode}
             />
 
+            {isPaid && (
+              <div className="flex items-start gap-3 bg-green-500/10 border border-green-500/30 px-4 py-4 animate-[popIn_0.4s_ease-out]">
+                <CheckCircle className="w-6 h-6 text-green-400 shrink-0" />
+                <div>
+                  <p className="font-semibold text-green-300">Đã nhận thanh toán</p>
+                  <p className="text-sm text-[#b5a898]">Moxic đang chuẩn bị cài game vào tài khoản Xbox của bạn — thường trong 15–30 phút. Bạn sẽ nhận thông báo khi xong.</p>
+                </div>
+              </div>
+            )}
+
             {/* Bank info + QR */}
-            {paymentConfig && (
+            {paymentConfig && !isPaid && order.status !== "Cancelled" && (
               <>
                 {/* Bank account info */}
                 {hasBankInfo && (
@@ -145,9 +162,10 @@ export default function ConfirmationPage() {
                 )}
 
                 <QRDisplay
-                  bankQrUrl={paymentConfig.bankQrUrl}
+                  bankQrUrl={order.dynamicQrUrl ?? paymentConfig.bankQrUrl}
                   cryptoQrUrl={paymentConfig.cryptoQrUrl}
-                  transferContent={order.orderCode}
+                  transferContent={order.transferContent || order.orderCode}
+                  autoConfirm={order.autoConfirm && !!order.dynamicQrUrl}
                   amount={order.totalAmount}
                   discounted={(order.discountAmount ?? 0) > 0}
                 />
@@ -157,7 +175,12 @@ export default function ConfirmationPage() {
             {/* Upload section — only when Pending */}
             {isPending && (
               <div className="bg-[#252019] border border-[#3d352a] p-5">
-                <h3 className="text-sm font-semibold text-[#ede6db] mb-3">Xác nhận thanh toán</h3>
+                <h3 className="text-sm font-semibold text-[#ede6db] mb-1">Xác nhận thanh toán</h3>
+                {order.autoConfirm && (
+                  <p className="text-xs text-[#7a6f63] mb-3">
+                    Chuyển đúng số tiền và nội dung thì <b className="text-[#b5a898]">không cần gửi ảnh</b> — trang này tự cập nhật trong khoảng 1 phút. Chỉ gửi ảnh nếu chuyển sai nội dung.
+                  </p>
+                )}
 
                 {!uploaded ? (
                   <>
@@ -166,7 +189,7 @@ export default function ConfirmationPage() {
                       onClick={() => document.getElementById("proof-upload")?.click()}>
                       {selectedFile ? (
                         <div className="relative inline-block">
-                          <img
+                          <img loading="lazy" decoding="async"
                             src={URL.createObjectURL(selectedFile)}
                             alt="Preview"
                             className="max-h-[200px] mx-auto rounded"
@@ -235,7 +258,7 @@ export default function ConfirmationPage() {
             {isAwaitingConfirmation && order.paymentProofUrl && (
               <div className="bg-[#252019] border border-[#3d352a] p-5">
                 <h3 className="text-sm font-semibold text-[#ede6db] mb-3">Ảnh chuyển khoản đã gửi</h3>
-                <img
+                <img loading="lazy" decoding="async"
                   src={order.paymentProofUrl}
                   alt="Payment proof"
                   className="max-h-[300px] mx-auto rounded border border-[#3d352a]"

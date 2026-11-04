@@ -140,7 +140,7 @@ export default function GiftPage() {
                   <Link key={i} to={`/games/${it.gameId}`} className="group block">
                     <div className="aspect-[3/4] bg-[#252019] overflow-hidden border border-[#3d352a] group-hover:border-[#c9a96e]/60 transition-colors">
                       {it.coverUrl ? (
-                        <img src={it.coverUrl} alt={it.gameName} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={it.coverUrl} alt={it.gameName} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Gift className="w-10 h-10 text-[#7a6f63]" /></div>
                       )}

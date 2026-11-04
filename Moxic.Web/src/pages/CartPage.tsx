@@ -56,7 +56,7 @@ export default function CartPage() {
                   >
                     {/* Cover - spans 2 rows on mobile */}
                     <Link to={`/games/${item.gameId}`} className="flex-shrink-0 row-span-2 lg:row-span-1 self-start lg:self-auto">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={item.coverImageUrl}
                         alt={item.name}
                         className="w-[120px] h-[45px] lg:w-[184px] lg:h-[69px] object-cover"

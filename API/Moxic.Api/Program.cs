@@ -86,6 +86,12 @@ builder.Services.AddScoped<CustomerOtpService>();
 
 // Lucky-spin cases + loyalty points
 builder.Services.AddMemoryCache();
+// Short-lived server cache for the public catalog (evicted on any admin/catalog write — see middleware below).
+builder.Services.AddOutputCache(o =>
+{
+    o.SizeLimit = 32 * 1024 * 1024;
+    o.AddPolicy("catalog", b => b.Expire(TimeSpan.FromSeconds(60)).SetVaryByQuery("*").Tag("games"));
+});
 builder.Services.AddScoped<PointsService>();
 builder.Services.AddScoped<RewardShopService>();
 // Live chat (web <-> Telegram)
@@ -94,6 +100,7 @@ builder.Services.AddSingleton<TelegramBot>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<TelegramOrderNotifier>();
 builder.Services.AddScoped<OrderStatusService>();
+builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddHostedService<TelegramChatCleanup>();
 builder.Services.AddScoped<CouponService>();
@@ -229,6 +236,19 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+// Any successful write by admins (or a new review) invalidates the cached catalog.
+app.Use(async (ctx, next) =>
+{
+    await next();
+    var m = ctx.Request.Method;
+    if (m != "GET" && m != "HEAD" && m != "OPTIONS" && ctx.Response.StatusCode < 400
+        && (ctx.Request.Path.StartsWithSegments("/api/admin") || ctx.Request.Path.StartsWithSegments("/api/games")))
+    {
+        var store = ctx.RequestServices.GetRequiredService<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>();
+        await store.EvictByTagAsync("games", CancellationToken.None);
+    }
+});
+app.UseOutputCache();
 app.MapControllers();
 app.MapRazorPages();
 

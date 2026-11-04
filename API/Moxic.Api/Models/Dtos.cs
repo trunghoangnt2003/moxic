@@ -67,6 +67,7 @@ public record UpdatePaymentConfigDto
     public string? BankName { get; init; }
     public string? BankAccountNumber { get; init; }
     public string? BankAccountHolder { get; init; }
+    public string? BankCode { get; init; }
 }
 
 public record OrderItemRequest
@@ -129,6 +130,12 @@ public record OrderConfirmationResponse
     public string? GiftToken { get; init; }
     public string? GiftRecipientName { get; init; }
     public DateTime? GiftClaimedAt { get; init; }
+    /// <summary>Per-order VietQR (amount + content prefilled). Null when the bank code isn't configured.</summary>
+    public string? DynamicQrUrl { get; init; }
+    /// <summary>Exact transfer content the bank matcher looks for.</summary>
+    public string TransferContent { get; init; } = string.Empty;
+    /// <summary>True when transfers are confirmed automatically (SePay webhook configured).</summary>
+    public bool AutoConfirm { get; init; }
 }
 
 public record PaymentConfigInfo

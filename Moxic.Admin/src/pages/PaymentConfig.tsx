@@ -14,6 +14,7 @@ interface PaymentConfigData {
   bankName: string;
   bankAccountNumber: string;
   bankAccountHolder: string;
+  bankCode?: string | null;
   updatedAt: string;
   bankQrPresignedUrl?: string | null;
   cryptoQrPresignedUrl?: string | null;
@@ -25,6 +26,7 @@ export default function PaymentConfig() {
   const [bankName, setBankName] = useState("");
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankAccountHolder, setBankAccountHolder] = useState("");
+  const [bankCode, setBankCode] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingBank, setUploadingBank] = useState(false);
@@ -40,6 +42,7 @@ export default function PaymentConfig() {
           setBankName(d.bankName || "");
           setBankAccountNumber(d.bankAccountNumber || "");
           setBankAccountHolder(d.bankAccountHolder || "");
+          setBankCode(d.bankCode || "");
         }
       });
   }, []);
@@ -55,6 +58,7 @@ export default function PaymentConfig() {
         bankName: bankName,
         bankAccountNumber: bankAccountNumber,
         bankAccountHolder: bankAccountHolder,
+        bankCode: bankCode,
       }),
     });
     setSaving(false);
@@ -199,8 +203,21 @@ export default function PaymentConfig() {
               placeholder="e.g. NGUYEN VAN A"
             />
           </div>
+          <div>
+            <label className="block text-xs text-steam-muted mb-1">Mã ngân hàng VietQR (để tạo QR riêng cho từng đơn)</label>
+            <select value={bankCode} onChange={(e) => setBankCode(e.target.value)} className="w-full steam-input">
+              <option value="">— Không dùng (hiện ảnh QR tĩnh) —</option>
+              {VIETQR_BANKS.map(([code, name]) => (
+                <option key={code} value={code}>{code} — {name}</option>
+              ))}
+              {bankCode && !VIETQR_BANKS.some(([c]) => c === bankCode) && <option value={bankCode}>{bankCode}</option>}
+            </select>
+            <p className="text-[11px] text-steam-muted mt-1">Khi chọn, mỗi đơn có QR điền sẵn số tiền + nội dung. Bấm <b>Save All</b> bên dưới để lưu.</p>
+          </div>
         </div>
       </div>
+
+      <BankTransactions />
 
       {/* Template */}
       <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5 max-w-xl">
@@ -230,6 +247,118 @@ export default function PaymentConfig() {
           {saved ? "Saved!" : saving ? "Saving..." : "Save All"}
         </button>
       </div>
+    </div>
+  );
+}
+
+const VIETQR_BANKS: [string, string][] = [
+  ["VCB", "Vietcombank"], ["MB", "MB Bank"], ["TCB", "Techcombank"], ["ACB", "ACB"], ["BIDV", "BIDV"], ["ICB", "VietinBank"],
+  ["VPB", "VPBank"], ["TPB", "TPBank"], ["STB", "Sacombank"], ["VIB", "VIB"], ["HDB", "HDBank"], ["MSB", "MSB"],
+  ["OCB", "OCB"], ["SHB", "SHB"], ["VBA", "Agribank"], ["SEAB", "SeABank"], ["LPB", "LPBank"], ["EIB", "Eximbank"],
+  ["NAB", "Nam A Bank"], ["BAB", "Bac A Bank"], ["CAKE", "CAKE by VPBank"], ["TIMO", "Timo"], ["VCCB", "Ban Viet"],
+];
+
+interface BankTxn {
+  id: string;
+  amount: number;
+  content: string | null;
+  gateway: string | null;
+  status: string;
+  orderCode: string | null;
+  note: string | null;
+  createdAt: string;
+}
+
+const TXN_STATUS: Record<string, { label: string; cls: string }> = {
+  Matched: { label: "Tự khớp", cls: "text-green-300 bg-green-500/10 border-green-500/30" },
+  Manual: { label: "Gán tay", cls: "text-sky-300 bg-sky-500/10 border-sky-500/30" },
+  Underpaid: { label: "Thiếu tiền", cls: "text-amber-300 bg-amber-500/10 border-amber-500/30" },
+  AlreadyPaid: { label: "Đơn đã xử lý", cls: "text-orange-300 bg-orange-500/10 border-orange-500/30" },
+  Unmatched: { label: "Không khớp", cls: "text-red-300 bg-red-500/10 border-red-500/30" },
+};
+
+/** Incoming transfers reported by SePay, with manual assignment for the ones that didn't match an order. */
+function BankTransactions() {
+  const [data, setData] = useState<{ autoConfirm: boolean; webhookUrl: string; total: number; items: BankTxn[] } | null>(null);
+  const [assign, setAssign] = useState<Record<string, string>>({});
+  const [msg, setMsg] = useState("");
+
+  const load = () =>
+    apiFetch(apiUrl("/api/admin/payments/transactions"))
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setData)
+      .catch(() => setData(null));
+  useEffect(() => {
+    load();
+    const t = window.setInterval(load, 15000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const doAssign = async (id: string) => {
+    const code = (assign[id] || "").trim();
+    if (!code) return;
+    const res = await apiFetch(apiUrl(`/api/admin/payments/transactions/${id}/assign`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderCode: code }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setMsg(j.error || "Gán thất bại");
+    } else {
+      setMsg("Đã gán giao dịch.");
+      load();
+    }
+  };
+
+  if (!data) return null;
+  return (
+    <div className="bg-steam-surface border border-steam-border rounded-sm p-4 md:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 className="text-xs font-semibold text-steam-muted uppercase tracking-widest">Tự đối soát chuyển khoản (SePay)</h2>
+        <span className={`text-[11px] px-2 py-0.5 rounded border ${data.autoConfirm ? "text-green-300 border-green-500/30" : "text-amber-300 border-amber-500/30"}`}>
+          {data.autoConfirm ? "● Đang bật" : "Chưa cấu hình Sepay__ApiKey"}
+        </span>
+      </div>
+      <p className="text-[11px] text-steam-muted mb-3">
+        Webhook URL: <code className="text-steam-blue select-all">{data.webhookUrl}</code> · Kiểu xác thực: API Key
+      </p>
+      {msg && <p className="text-xs text-steam-text mb-2">{msg}</p>}
+      {data.items.length === 0 ? (
+        <p className="text-sm text-steam-muted py-6 text-center">Chưa có giao dịch nào.</p>
+      ) : (
+        <div className="divide-y divide-steam-border/60">
+          {data.items.map((t) => {
+            const st = TXN_STATUS[t.status] ?? { label: t.status, cls: "text-steam-muted border-steam-border" };
+            return (
+              <div key={t.id} className="py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span className="font-mono font-semibold text-white w-28">{t.amount.toLocaleString("vi-VN")}₫</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${st.cls}`}>{st.label}</span>
+                <span className="text-xs text-steam-muted">{new Date(t.createdAt).toLocaleString("vi-VN")}</span>
+                {t.orderCode && <span className="font-mono text-xs text-steam-blue">{t.orderCode}</span>}
+                <span className="basis-full text-xs text-steam-text break-all">
+                  {t.gateway ? `${t.gateway} · ` : ""}
+                  {t.content}
+                  {t.note ? ` — ${t.note}` : ""}
+                </span>
+                {(t.status === "Unmatched" || t.status === "Underpaid") && (
+                  <div className="basis-full flex gap-2">
+                    <input
+                      value={assign[t.id] ?? ""}
+                      onChange={(e) => setAssign({ ...assign, [t.id]: e.target.value.toUpperCase() })}
+                      placeholder="MOXIC-20261104-ABCDE"
+                      className="steam-input flex-1 font-mono text-xs"
+                    />
+                    <button type="button" onClick={() => doAssign(t.id)} className="steam-btn bg-steam-blue text-black text-xs">
+                      Gán cho đơn
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

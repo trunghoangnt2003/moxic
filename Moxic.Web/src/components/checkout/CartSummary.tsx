@@ -21,7 +21,7 @@ export default function CartSummary({ items, total, quote, couponSlot }: Props) 
       <div className="space-y-3">
         {items.map((item) => (
           <div key={item.gameId} className="flex items-center gap-3 pb-3 border-b border-[#3d352a]/50 last:border-0">
-            <img
+            <img loading="lazy" decoding="async"
               src={item.coverImageUrl || ""}
               alt={item.name}
               className="w-16 h-9 object-cover flex-shrink-0"

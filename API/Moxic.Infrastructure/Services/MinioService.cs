@@ -62,6 +62,8 @@ public class MinioService : IMinioService
         return objectKey;
     }
 
+    private static readonly string[] PublicPrefixes = ["games/", "announcements/", "spin-cases/", "spin-music/"];
+
     public async Task<string> GetPresignedUrlAsync(string bucket, string objectKey, int expiryHours = 1)
 	{
 		if (string.IsNullOrEmpty(objectKey)) return string.Empty;
@@ -70,6 +72,15 @@ public class MinioService : IMinioService
 		if (objectKey.StartsWith("http://") || objectKey.StartsWith("https://")) 
 			return objectKey;
 		
+		// Public catalog media (unique, never-overwritten keys in the public-read games bucket) get a stable,
+		// unsigned URL so browsers and the CDN can cache it for a year. Payment proofs / config QR stay signed.
+		if (bucket == _settings.GamesBucket && PublicPrefixes.Any(p => objectKey.StartsWith(p, StringComparison.Ordinal)))
+		{
+			var host = _settings.PublicEndpoint.Trim().TrimEnd('/');
+			var path = string.Join('/', objectKey.Split('/').Select(Uri.EscapeDataString));
+			return host.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? $"{host}/{bucket}/{path}" : $"https://{host}/{bucket}/{path}";
+		}
+
 		var args = new PresignedGetObjectArgs()
 			.WithBucket(bucket)
 			.WithObject(objectKey)

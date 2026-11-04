@@ -65,7 +65,7 @@ function LibraryTab() {
           <div className="grid sm:grid-cols-2 gap-3">
             {data.rentals.map((r) => (
               <Link key={r.code} to={`/account/rentals/${r.code}`} className="flex items-center gap-3 p-3 bg-bg-surface border border-emerald-500/30 hover:border-emerald-400/60">
-                <div className="w-12 h-16 shrink-0 bg-bg-elevated overflow-hidden">{r.coverUrl && <img src={r.coverUrl} alt="" className="w-full h-full object-cover" />}</div>
+                <div className="w-12 h-16 shrink-0 bg-bg-elevated overflow-hidden">{r.coverUrl && <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" />}</div>
                 <div className="min-w-0">
                   <p className="font-semibold truncate">{r.gameName}</p>
                   <p className={`text-xs ${r.status === "Expired" ? "text-rose-300" : "text-text-muted"}`}>{r.status === "Expired" ? "Đã hết hạn — gia hạn ngay" : `Hết hạn ${day(r.endsAt)}`}</p>

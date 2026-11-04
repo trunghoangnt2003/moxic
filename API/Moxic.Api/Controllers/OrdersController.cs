@@ -240,7 +240,10 @@ public class OrdersController : ControllerBase
             IsGift = order.IsGift,
             GiftToken = order.GiftToken,
             GiftRecipientName = order.GiftRecipientName,
-            GiftClaimedAt = order.GiftClaimedAt
+            GiftClaimedAt = order.GiftClaimedAt,
+            TransferContent = BankPaymentService.TransferContent(order.OrderCode),
+            DynamicQrUrl = BankPaymentService.VietQrUrl(paymentConfig, order.TotalAmount, BankPaymentService.TransferContent(order.OrderCode)),
+            AutoConfirm = !string.IsNullOrWhiteSpace(_config["Sepay:ApiKey"])
         });
     }
 

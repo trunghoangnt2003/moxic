@@ -98,7 +98,7 @@ export default function ComparePage() {
                 <th key={g.id} className="p-2 align-top text-left font-normal">
                   <div className="relative">
                     <Link to={`/games/${g.id}`} className="block aspect-[3/4] max-w-[180px] bg-bg-elevated overflow-hidden">
-                      {g.media[0]?.presignedUrl && <img src={g.media[0].presignedUrl} alt="" className="w-full h-full object-cover" />}
+                      {g.media[0]?.presignedUrl && <img loading="lazy" decoding="async" src={g.media[0].presignedUrl} alt="" className="w-full h-full object-cover" />}
                     </Link>
                     <button
                       type="button"

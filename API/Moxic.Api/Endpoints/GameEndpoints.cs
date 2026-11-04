@@ -10,7 +10,8 @@ public static class GameEndpoints
 {
     public static void MapGameEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/games").WithTags("Games");
+        // GETs are output-cached for 60s (policy "catalog"); writes evict the "games" tag.
+        var group = app.MapGroup("/api/games").WithTags("Games").CacheOutput("catalog");
 
         group.MapGet("/", async (
             MoxicDbContext dbContext,

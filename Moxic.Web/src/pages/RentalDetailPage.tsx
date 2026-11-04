@@ -174,7 +174,7 @@ export default function RentalDetailPage() {
       {/* Header */}
       <div className="flex gap-4 items-start mb-6">
         <div className="w-20 h-24 sm:w-24 sm:h-32 shrink-0 bg-bg-elevated overflow-hidden">
-          {r.coverUrl ? <img src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-8 h-8 m-auto mt-8 text-accent/40" />}
+          {r.coverUrl ? <img loading="lazy" decoding="async" src={r.coverUrl} alt="" className="w-full h-full object-cover" /> : <Gamepad2 className="w-8 h-8 m-auto mt-8 text-accent/40" />}
         </div>
         <div className="min-w-0 flex-1">
           <span className={`inline-block px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider border ${st.cls}`}>{st.label}</span>

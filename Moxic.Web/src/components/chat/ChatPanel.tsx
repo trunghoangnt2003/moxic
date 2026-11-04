@@ -97,7 +97,7 @@ export default function ChatPanel() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 h-14 shrink-0 border-b border-white/10 bg-gradient-to-r from-accent/15 to-transparent">
         <div className="relative">
-          <img src="/icon-192.png" alt="" className="w-9 h-9 rounded-lg" />
+          <img loading="lazy" decoding="async" src="/icon-192.png" alt="" className="w-9 h-9 rounded-lg" />
           <span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-bg-surface" />
         </div>
         <div className="flex-1 min-w-0">

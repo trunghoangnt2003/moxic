@@ -55,6 +55,7 @@ public class AdminPaymentConfigController : ControllerBase
         if (dto.BankName != null) config.BankName = dto.BankName;
         if (dto.BankAccountNumber != null) config.BankAccountNumber = dto.BankAccountNumber;
         if (dto.BankAccountHolder != null) config.BankAccountHolder = dto.BankAccountHolder;
+        if (dto.BankCode != null) config.BankCode = string.IsNullOrWhiteSpace(dto.BankCode) ? null : dto.BankCode.Trim().ToUpperInvariant();
         config.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(config);

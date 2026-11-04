@@ -153,7 +153,7 @@ export default function AnnouncementModal() {
         {/* Banner */}
         <div className="relative aspect-[16/9] sm:aspect-[16/8] bg-bg-elevated overflow-hidden">
           {a.imageUrl ? (
-            <img src={a.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover scale-105 animate-[slowZoom_12s_ease-out_forwards]" />
+            <img loading="lazy" decoding="async" src={a.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover scale-105 animate-[slowZoom_12s_ease-out_forwards]" />
           ) : (
             <div className={`absolute inset-0 bg-gradient-to-br ${meta.accent} opacity-30`} />
           )}
