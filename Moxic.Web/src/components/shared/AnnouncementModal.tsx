@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronLeft, ChevronRight, Megaphone, PartyPopper, Rocket, X } from "lucide-react";
 import { getActiveAnnouncements, type Announcement } from "../../lib/api";
@@ -7,6 +7,8 @@ import { formatPrice } from "../../lib/utils";
 
 const SESSION_KEY = "moxic.announce.seen";
 const SNOOZE_KEY = "moxic.announce.snoozeDay";
+// Never interrupt buying, paying, signing in or opening a gift.
+const QUIET_PATHS = ["/cart", "/checkout", "/confirmation", "/account/orders", "/login", "/register", "/verify-email", "/forgot-password", "/gift/"];
 
 const KIND_META: Record<Announcement["kind"], { label: string; icon: typeof Rocket; badge: string; glow: string; accent: string }> = {
   GameLaunch: {
@@ -92,6 +94,8 @@ function Countdown({ target, offsetMs, accent }: { target: string; offsetMs: num
 
 export default function AnnouncementModal() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const quiet = QUIET_PATHS.some((p) => pathname.startsWith(p));
   const { data } = useQuery({ queryKey: ["announcements", "active"], queryFn: getActiveAnnouncements, staleTime: 5 * 60 * 1000 });
   const items = useMemo(() => data?.items ?? [], [data]);
   const offsetMs = useMemo(() => (data ? new Date(data.serverNow).getTime() - Date.now() : 0), [data]);
@@ -102,7 +106,7 @@ export default function AnnouncementModal() {
   );
   const [index, setIndex] = useState(0);
   const [snooze, setSnooze] = useState(false);
-  const open = !dismissed && items.length > 0;
+  const open = !dismissed && !quiet && items.length > 0;
 
   const close = () => {
     writeStorage(() => sessionStorage, SESSION_KEY, "1");
