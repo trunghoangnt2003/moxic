@@ -146,7 +146,12 @@ public class GuessController : ControllerBase
         var tok = _guess.ReadToken(t ?? "");
         if (tok == null) return NotFound();
         var bytes = await _guess.ImageAsync(tok.Value.Date, tok.Value.Level);
-        if (bytes == null) return NotFound();
+        if (bytes == null)
+        {
+            // Temporary (source fetch/render failed): never let the browser or CDN cache the failure.
+            Response.Headers.CacheControl = "no-store";
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
         Response.Headers.CacheControl = "private, max-age=86400";
         return File(bytes, "image/jpeg");
     }

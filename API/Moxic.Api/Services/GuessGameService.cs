@@ -117,18 +117,66 @@ public class GuessGameService
     }
 
     /// <summary>Pixelated JPEG for a level (PixelSizes.Length = clear). Cached per (date, level).</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> RenderLocks = new();
+
+    /// <summary>
+    /// Pixelated JPEG for a level (PixelSizes.Length = clear). Successful renders are cached per (date, level);
+    /// failures are never cached so the next request (or the web's retry) tries again. One render per key at a time.
+    /// </summary>
     public async Task<byte[]?> ImageAsync(string date, int level)
     {
-        return await _cache.GetOrCreateAsync($"guess-img:{date}:{level}", async e =>
+        var key = $"guess-img:{date}:{level}";
+        if (_cache.TryGetValue(key, out byte[]? hit) && hit != null) return hit;
+
+        var gate = RenderLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync();
+        try
         {
-            e.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(30);
-            var p = await _db.GuessPuzzles.AsNoTracking().FirstOrDefaultAsync(x => x.Date == date);
-            if (p == null) return null;
-            var url = await _minio.GetPresignedUrlAsync(LuckySpinRules.GameBucket, p.ObjectKey);
-            var client = _http.CreateClient(PriceTrackerService.HttpClientName);
-            var src = await client.GetByteArrayAsync(url);
-            return Render(src, level);
-        });
+            if (_cache.TryGetValue(key, out hit) && hit != null) return hit;
+            var src = await SourceAsync(date);
+            if (src == null) return null;
+            var bytes = Render(src, level);
+            if (bytes != null) _cache.Set(key, bytes, TimeSpan.FromHours(30));
+            return bytes;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Guess image render failed for {Date} level {Level}", date, level);
+            return null;
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    /// <summary>Original picture bytes for a day (cached; fetched with retries).</summary>
+    private async Task<byte[]?> SourceAsync(string date)
+    {
+        var key = $"guess-src:{date}";
+        if (_cache.TryGetValue(key, out byte[]? cached) && cached != null) return cached;
+        var p = await _db.GuessPuzzles.AsNoTracking().FirstOrDefaultAsync(x => x.Date == date);
+        if (p == null) return null;
+        var client = _http.CreateClient(PriceTrackerService.HttpClientName);
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            try
+            {
+                var url = await _minio.GetPresignedUrlAsync(LuckySpinRules.GameBucket, p.ObjectKey);
+                var bytes = await client.GetByteArrayAsync(url);
+                if (bytes.Length > 0)
+                {
+                    _cache.Set(key, bytes, TimeSpan.FromHours(30));
+                    return bytes;
+                }
+            }
+            catch (Exception ex) when (attempt < 3)
+            {
+                _logger.LogWarning(ex, "Guess source fetch attempt {Attempt} failed for {Date}", attempt, date);
+                await Task.Delay(400 * attempt);
+            }
+        }
+        return null;
     }
 
     /// <summary>Resize to 720px wide; pixelate (and blur the first two levels) unless it is the clear level.</summary>

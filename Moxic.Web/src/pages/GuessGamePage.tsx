@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Flame, HelpCircle, Lightbulb, Search, ShoppingCart, Timer, X } from "lucide-react";
+import { Flame, HelpCircle, Lightbulb, RefreshCw, Search, ShoppingCart, Timer, X } from "lucide-react";
 import Container from "../components/layout/Container";
 import ShareButton from "../components/shared/ShareButton";
 import { SectionLoader } from "../components/shared/MoxicLoader";
@@ -45,6 +45,10 @@ export default function GuessGamePage() {
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
+  // Image retry: auto-retry 3 times with backoff, then show a reload button. "attempt" busts the browser cache.
+  const [attempt, setAttempt] = useState(0);
+  const [imgFailed, setImgFailed] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -76,7 +80,21 @@ export default function GuessGamePage() {
     return options.filter((o) => !guessedIds.has(o.id) && norm(o.name).includes(nq)).slice(0, 8);
   }, [options, q, guessedIds]);
 
-  useEffect(() => setImgLoaded(false), [s?.imagePath]);
+  useEffect(() => {
+    setImgLoaded(false);
+    setImgFailed(false);
+    setAttempt(0);
+  }, [s?.imagePath]);
+  useEffect(() => {
+    if (imgLoaded || imgFailed) return setSlow(false);
+    const t = window.setTimeout(() => setSlow(true), 7000);
+    return () => window.clearTimeout(t);
+  }, [imgLoaded, imgFailed, attempt, s?.imagePath]);
+  const reloadImage = () => {
+    setImgFailed(false);
+    setImgLoaded(false);
+    setAttempt((a) => a + 1);
+  };
   useEffect(() => setHighlight(0), [q]);
 
   if (isLoading) return <SectionLoader />;
@@ -119,15 +137,32 @@ export default function GuessGamePage() {
 
       {/* Picture */}
       <div className={`relative overflow-hidden border border-white/10 bg-black aspect-video ${shake ? "animate-[gift-shake_0.45s_ease-in-out]" : ""}`}>
-        {!imgLoaded && <div className="absolute inset-0 skeleton" />}
+        {!imgLoaded && !imgFailed && <div className="absolute inset-0 skeleton" />}
         <img
-          key={s.imagePath}
-          src={imageUrl(s.imagePath)}
+          key={`${s.imagePath}-${attempt}`}
+          src={imageUrl(s.imagePath) + (attempt ? `&r=${attempt}` : "")}
           alt="Ảnh game cần đoán"
           onLoad={() => setImgLoaded(true)}
+          onError={() => {
+            if (attempt < 3) window.setTimeout(() => setAttempt((a) => a + 1), 800 * (attempt + 1));
+            else setImgFailed(true);
+          }}
           draggable={false}
           className={`w-full h-full object-cover select-none transition-[opacity,filter] duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
         />
+        {(imgFailed || slow) && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 text-center p-4">
+            <p className="text-sm text-text-secondary">{imgFailed ? "Không tải được ảnh." : "Ảnh đang tải hơi lâu…"}</p>
+            <button type="button" onClick={reloadImage} className="inline-flex items-center gap-2 h-10 px-4 bg-accent text-bg-base text-sm font-bold cursor-pointer">
+              <RefreshCw className="w-4 h-4" /> Tải lại ảnh
+            </button>
+          </div>
+        )}
+        {imgLoaded && (
+          <button type="button" onClick={reloadImage} aria-label="Tải lại ảnh" title="Tải lại ảnh" className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/60 text-white/80 hover:text-white cursor-pointer">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        )}
         {!s.finished && (
           <span className="absolute top-2 left-2 px-2 py-1 text-[11px] font-bold bg-black/70 text-white">
             Đoán đúng ngay: +{s.nextPoints} điểm
