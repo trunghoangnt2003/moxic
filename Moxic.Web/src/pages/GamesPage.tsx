@@ -12,6 +12,7 @@ const PAGE_SIZE = 24;
 
 const SORTS = [
   { value: "", label: "Nổi bật & mới nhất" },
+  { value: "bestseller", label: "Bán chạy nhất" },
   { value: "discount", label: "Giảm giá nhiều nhất" },
   { value: "price-asc", label: "Giá: thấp → cao" },
   { value: "price-desc", label: "Giá: cao → thấp" },
@@ -266,7 +267,7 @@ export default function GamesPage() {
 
       <div className="flex gap-8 items-start">
         {/* Desktop sidebar */}
-        <aside className="hidden md:block w-[260px] shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 [scrollbar-width:thin]">
+        <aside className="hidden md:block w-[272px] lg:w-[288px] shrink-0">
           <div className="bg-black/40 border border-white/5 backdrop-blur-md">
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
               <div className="flex items-center gap-2">
@@ -437,13 +438,13 @@ function FilterPanel({
           })}
         </div>
         <label className="mt-3 flex items-center justify-between gap-3 px-3 py-2.5 border border-white/10 cursor-pointer hover:border-white/20">
-          <span className="flex items-center gap-2 text-sm">
+          <span className="flex items-center gap-2 text-sm whitespace-nowrap min-w-0">
             <Percent className="w-4 h-4 text-discount" />
             Đang giảm giá
             {facets && <span className="text-text-muted text-xs">({facets.onSale})</span>}
           </span>
           <input type="checkbox" className="sr-only peer" checked={filters.sale} onChange={(e) => update({ sale: e.target.checked })} />
-          <span className="w-9 h-5 bg-white/10 relative transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+          <span className="shrink-0 w-9 h-5 bg-white/10 relative transition-colors peer-checked:bg-accent after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
         </label>
       </Section>
 

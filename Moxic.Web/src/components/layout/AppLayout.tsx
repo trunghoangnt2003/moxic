@@ -4,6 +4,7 @@ import DragonBorder from "./DragonBorder";
 import Footer from "./Footer";
 import FloatingContact from "./FloatingContact";
 import AnnouncementModal from "../shared/AnnouncementModal";
+import PurchaseToast from "../shared/PurchaseToast";
 
 
 export default function AppLayout() {
@@ -17,6 +18,7 @@ export default function AppLayout() {
       <Footer />
       <FloatingContact />
       <AnnouncementModal />
+      <PurchaseToast />
     </div>
   );
 }

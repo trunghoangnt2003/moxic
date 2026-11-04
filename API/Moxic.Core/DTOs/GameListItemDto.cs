@@ -11,4 +11,6 @@ public class GameListItemDto
     public string Status { get; set; } = string.Empty;
     public DateTime? ReleaseDate { get; set; }
     public string? CoverImageUrl { get; set; }
+    /// <summary>Copies sold in paid/fulfilled orders (social proof).</summary>
+    public int SoldCount { get; set; }
 }

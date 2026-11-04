@@ -1,4 +1,7 @@
 ﻿import { useState, useEffect } from "react";
+import WishlistButton from "../components/games/WishlistButton";
+import RecentlyViewed from "../components/games/RecentlyViewed";
+import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
 import { useGameDetail, useGames } from "../hooks/useGames";
 import Container from "../components/layout/Container";
@@ -112,6 +115,11 @@ export default function GameDetailPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // "Đã xem gần đây"
+  useEffect(() => {
+    if (game?.id) recentlyViewed.push(game.id);
+  }, [game?.id]);
 
   if (isLoading) return <PageLoader />;
 
@@ -430,8 +438,8 @@ export default function GameDetailPage() {
                     <><ShoppingCart className="w-4 h-4" /> Thêm vào giỏ hàng</>
                   )}
                 </button>
-              </div>
-            </div>
+                <WishlistButton gameId={game.id} gameName={game.name} variant="full" className="w-full !h-10" />
+              </div>            </div>
 
             {/* Game info */}
             <div className="bg-bg-surface border border-border p-5 space-y-3">
@@ -503,6 +511,10 @@ export default function GameDetailPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-12 mb-8">
+          <RecentlyViewed excludeId={game.id} />
+        </div>
 
         {/* ─── BACK LINK ─── */}
         <div className="pb-12">

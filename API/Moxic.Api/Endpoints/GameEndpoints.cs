@@ -19,6 +19,7 @@ public static class GameEndpoints
             string? status,
             string? genres,
             string? tags,
+            string? ids,
             decimal? minPrice,
             decimal? maxPrice,
             bool? onSale,
@@ -51,6 +52,10 @@ public static class GameEndpoints
             if (tagIds.Count > 0)
                 query = query.Where(g => g.Tags.Any(t => tagIds.Contains(t.Id)));
 
+            var idList = ParseIds(ids);
+            if (idList.Count > 0)
+                query = query.Where(g => idList.Contains(g.Id));
+
             if (minPrice.HasValue) query = query.Where(g => g.SalePrice >= minPrice.Value);
             if (maxPrice.HasValue) query = query.Where(g => g.SalePrice <= maxPrice.Value);
             if (onSale == true) query = query.Where(g => g.SalePrice < g.OriginalPrice);
@@ -64,6 +69,9 @@ public static class GameEndpoints
                 "discount" => query
                     .OrderByDescending(g => g.OriginalPrice > 0 ? (g.OriginalPrice - g.SalePrice) / g.OriginalPrice : 0)
                     .ThenBy(g => g.Name),
+                "bestseller" => query
+                    .OrderByDescending(g => dbContext.OrderDetails.Count(d => d.GameId == g.Id && SoldStatuses.Contains(d.Order.Status)))
+                    .ThenByDescending(g => g.IsFeatured).ThenBy(g => g.Name),
                 "release" => query.OrderBy(g => g.ReleaseDate == null).ThenByDescending(g => g.ReleaseDate).ThenBy(g => g.Name),
                 _ => query.OrderByDescending(g => g.IsFeatured).ThenByDescending(g => g.CreatedAt),
             };
@@ -78,6 +86,7 @@ public static class GameEndpoints
                 .Take(pageSize)
                 .ToListAsync();
 
+            var sold = await LoadSoldCountsAsync(dbContext, items.Select(g => g.Id).ToList());
             var dtos = new List<GameListItemDto>();
             foreach (var game in items)
             {
@@ -98,7 +107,8 @@ public static class GameEndpoints
                     Tags = game.Tags.Select(t => new TagDto(t.Id, t.Name)).ToList(),
                     Status = game.Status.ToString(),
                     ReleaseDate = game.ReleaseDate,
-                    CoverImageUrl = coverUrl
+                    CoverImageUrl = coverUrl,
+                    SoldCount = sold.GetValueOrDefault(game.Id)
                 });
             }
 
@@ -296,6 +306,25 @@ public static class GameEndpoints
                 CreatedAt = review.CreatedAt
             });
         });
+    }
+
+    /// <summary>Orders that are paid or being fulfilled count as sold.</summary>
+    private static readonly Moxic.Shared.Enums.OrderStatus[] SoldStatuses =
+    {
+        Moxic.Shared.Enums.OrderStatus.Verifying,
+        Moxic.Shared.Enums.OrderStatus.Installing,
+        Moxic.Shared.Enums.OrderStatus.ActionRequired,
+        Moxic.Shared.Enums.OrderStatus.Completed,
+    };
+
+    private static async Task<Dictionary<Guid, int>> LoadSoldCountsAsync(MoxicDbContext db, List<Guid> gameIds)
+    {
+        if (gameIds.Count == 0) return new Dictionary<Guid, int>();
+        return await db.OrderDetails.AsNoTracking()
+            .Where(d => gameIds.Contains(d.GameId) && SoldStatuses.Contains(d.Order.Status))
+            .GroupBy(d => d.GameId)
+            .Select(g => new { g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
     }
 
     private static List<Guid> ParseIds(string? csv) =>

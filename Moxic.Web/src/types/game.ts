@@ -21,6 +21,7 @@ export interface GameListItem {
   status: "Available" | "Preorder";
   releaseDate?: string;
   coverImageUrl?: string;
+  soldCount?: number;
 }
 
 export interface GameRating {

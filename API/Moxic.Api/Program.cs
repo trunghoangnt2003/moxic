@@ -259,6 +259,7 @@ using (var scope = app.Services.CreateScope())
         await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
         await CouponSchemaBootstrap.EnsureAsync(dbContext);
         await AnnouncementSchemaBootstrap.EnsureAsync(dbContext);
+        await WishlistSchemaBootstrap.EnsureAsync(dbContext);
         
         // Khá»Ÿi táº¡o Role Admin
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

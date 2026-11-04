@@ -30,6 +30,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -250,6 +251,14 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         });
 
         // SpinCase (lucky-spin case / "hòm")
+        modelBuilder.Entity<WishlistItem>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.GameId });
+            entity.HasOne(e => e.Game).WithMany().HasForeignKey(e => e.GameId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Microsoft.AspNetCore.Identity.IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.GameId);
+        });
+
         modelBuilder.Entity<Announcement>(entity =>
         {
             entity.HasKey(e => e.Id);

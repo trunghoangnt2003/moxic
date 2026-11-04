@@ -14,15 +14,18 @@ import {
   Coins,
   TicketPercent,
   Gift,
+  Heart,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
 import { useLogout, useMe } from "../../hooks/useAccount";
 import HeaderSearch from "./HeaderSearch";
+import { useWishlistIds } from "../../hooks/useWishlist";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const cartCount = useCartStore((s) => s.items.length);
+  const wishlistCount = useWishlistIds().ids.length;
   const { data: me, isLoading: meLoading } = useMe();
   const logout = useLogout();
   const navigate = useNavigate();
@@ -122,6 +125,21 @@ export default function Navbar() {
             <div className="hidden sm:block">
               <HeaderSearch variant="desktop" />
             </div>
+
+            {/* Wishlist */}
+            <Link
+              to="/wishlist"
+              aria-label="Yêu thích"
+              title="Yêu thích"
+              className="relative text-text-secondary hover:text-rose-400 transition-colors cursor-pointer"
+            >
+              <Heart className={`w-5 h-5 ${wishlistCount > 0 ? "text-rose-400" : ""}`} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center">
+                  {wishlistCount > 9 ? "9+" : wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart */}
             <Link

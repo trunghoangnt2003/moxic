@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GamesPage = lazy(() => import("./pages/GamesPage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const GameDetailPage = lazy(() => import("./pages/GameDetailPage"));
 const PreorderPage = lazy(() => import("./pages/PreorderPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
@@ -44,6 +45,7 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/games" element={<GamesPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/games/:id" element={<GameDetailPage />} />
               <Route path="/preorder" element={<PreorderPage />} />
               <Route path="/cart" element={<CartPage />} />

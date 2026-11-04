@@ -6,12 +6,16 @@ import GameGrid from "../components/games/GameGrid";
 import Container from "../components/layout/Container";
 import GameCard from "../components/games/GameCard";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
+import GameRail from "../components/games/GameRail";
+import RecentlyViewed from "../components/games/RecentlyViewed";
 import { PageLoader } from "../components/shared/MoxicLoader";
 
 export default function HomePage() {
   const { data, isLoading } = useGames({ pageSize: 50 });
   const { data: featured, isLoading: featuredLoading } = useFeaturedGames(5);
+  const { data: bestData } = useGames({ sort: "bestseller", pageSize: 10 });
+  const bestsellers = (bestData?.items ?? []).filter((g) => (g.soldCount ?? 0) > 0);
 
   if (isLoading || featuredLoading) {
     return <PageLoader />;
@@ -31,6 +35,31 @@ export default function HomePage() {
       {/* ═══ VONG QUAY MAY MAN ═══ */}
       <Container className="mt-14 empty:hidden">
         <LuckySpinBanner />
+      </Container>
+
+      {/* ═══ BAN CHAY NHAT ═══ */}
+      {bestsellers.length > 0 && (
+        <Container className="mt-14">
+          <GameRail
+            ranked
+            title={
+              <>
+                <Flame className="w-6 h-6 text-orange-500" /> Bán chạy nhất
+              </>
+            }
+            games={bestsellers}
+            action={
+              <Link to="/games?sort=bestseller" className="text-accent hover:text-accent-hover text-sm flex items-center gap-1 transition-colors">
+                Xem tất cả <ArrowRight className="w-4 h-4" />
+              </Link>
+            }
+          />
+        </Container>
+      )}
+
+      {/* ═══ DA XEM GAN DAY ═══ */}
+      <Container className="mt-14 empty:hidden">
+        <RecentlyViewed />
       </Container>
 
       {/* ═══ KHAM PHA NOI DUNG MOI ═══ */}

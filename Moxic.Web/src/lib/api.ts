@@ -12,6 +12,7 @@ export interface GameQuery {
   status?: string;
   genres?: string[];
   tags?: string[];
+  ids?: string[];
   minPrice?: number;
   maxPrice?: number;
   onSale?: boolean;
@@ -26,6 +27,7 @@ export async function getGames(query: GameQuery = {}) {
   if (query.status) params.status = query.status;
   if (query.genres?.length) params.genres = query.genres.join(",");
   if (query.tags?.length) params.tags = query.tags.join(",");
+  if (query.ids?.length) params.ids = query.ids.join(",");
   if (query.minPrice != null) params.minPrice = query.minPrice;
   if (query.maxPrice != null) params.maxPrice = query.maxPrice;
   if (query.onSale) params.onSale = true;
@@ -105,3 +107,39 @@ export async function createReview(gameId: string, data: { displayName?: string;
 }
 
 
+
+export interface WishlistResponse {
+  ids: string[];
+  items: GamesResponse["items"];
+}
+
+export async function getWishlist() {
+  const { data } = await api.get<WishlistResponse>("/account/wishlist");
+  return data;
+}
+
+export async function addToWishlist(gameId: string) {
+  await api.put(`/account/wishlist/${gameId}`);
+}
+
+export async function removeFromWishlist(gameId: string) {
+  await api.delete(`/account/wishlist/${gameId}`);
+}
+
+export async function mergeWishlist(gameIds: string[]) {
+  const { data } = await api.post<WishlistResponse>("/account/wishlist/merge", { gameIds });
+  return data;
+}
+
+export interface RecentPurchase {
+  buyer: string;
+  gameId: string;
+  gameName: string;
+  coverUrl: string | null;
+  at: string;
+}
+
+export async function getRecentPurchases() {
+  const { data } = await api.get<{ items: RecentPurchase[]; serverNow: string }>("/activity/recent-purchases");
+  return data;
+}
