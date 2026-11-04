@@ -121,6 +121,8 @@ public class ChatService
         return msg;
     }
 
+    public Task<string> HeaderPublicAsync(ChatThread t) => HeaderAsync(t);
+
     private async Task<string> HeaderAsync(ChatThread t)
     {
         var sb = new StringBuilder();
@@ -155,15 +157,20 @@ public class ChatService
         if (!_bot.Enabled) return;
         var t = await _db.ChatThreads.AsNoTracking().FirstOrDefaultAsync(x => x.Id == threadId);
         if (t == null) return;
-        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => a.ChatId).ToListAsync();
+        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => new { a.ChatId, a.ChatTopicId }).ToListAsync();
         if (admins.Count == 0) return;
 
         var html = $"{await HeaderAsync(t)}\n\n{TelegramBot.Html(text)}\n\n<i>↩️ Reply tin này để trả lời</i>";
-        foreach (var chatId in admins)
+        // Conversations moved to their own tab: short message there, no header; the customer writing again cancels a pending /exit.
+        var tabHtml = $"👤 {TelegramBot.Html(text)}";
+        if (t.TgTopicId != null && t.TgTopicCloseAt != null)
+            await _db.ChatThreads.Where(x => x.Id == t.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.TgTopicCloseAt, (DateTime?)null));
+        foreach (var a in admins)
         {
-            var id = await _bot.SendAsync(chatId, html);
+            var inTab = t.TgTopicId != null && t.TgTopicChatId == a.ChatId;
+            var id = await _bot.SendAsync(a.ChatId, inTab ? tabHtml : html, threadId: inTab ? t.TgTopicId : a.ChatTopicId);
             if (id != null)
-                _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+                _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = a.ChatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
         }
         await _db.SaveChangesAsync();
     }
@@ -172,12 +179,14 @@ public class ChatService
     public async Task EchoAdminReplyAsync(ChatThread t, string text, long? exceptChatId, string by)
     {
         if (!_bot.Enabled) return;
-        var admins = await _db.TelegramAdminChats.AsNoTracking().Where(a => a.ChatId != exceptChatId).Select(a => a.ChatId).ToListAsync();
-        foreach (var chatId in admins)
+        var admins = await _db.TelegramAdminChats.AsNoTracking().Where(a => a.ChatId != exceptChatId).Select(a => new { a.ChatId, a.ChatTopicId }).ToListAsync();
+        foreach (var a in admins)
         {
-            var id = await _bot.SendAsync(chatId, $"✅ <b>{TelegramBot.Html(by)}</b> đã trả lời <code>#{t.Code}</code>:\n{TelegramBot.Html(text)}");
+            var inTab = t.TgTopicId != null && t.TgTopicChatId == a.ChatId;
+            var id = await _bot.SendAsync(a.ChatId, $"✅ <b>{TelegramBot.Html(by)}</b> đã trả lời <code>#{t.Code}</code>:\n{TelegramBot.Html(text)}",
+                threadId: inTab ? t.TgTopicId : a.ChatTopicId);
             if (id != null)
-                _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+                _db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = a.ChatId, TelegramMessageId = id.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
         }
         await _db.SaveChangesAsync();
     }

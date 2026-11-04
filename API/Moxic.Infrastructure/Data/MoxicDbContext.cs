@@ -473,6 +473,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         modelBuilder.Entity<ChatTelegramRef>(entity =>
         {
             entity.HasKey(e => new { e.TelegramChatId, e.TelegramMessageId });
+            entity.HasIndex(e => e.CreatedAt);
             entity.HasOne<ChatThread>().WithMany().HasForeignKey(e => e.ThreadId).OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<TelegramOrderMessage>(entity =>

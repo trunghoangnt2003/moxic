@@ -145,7 +145,7 @@ public class TelegramOrderNotifier
     public async Task NotifyAsync(Guid orderId, string headline, bool withProof)
     {
         if (!_bot.Enabled) return;
-        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => a.ChatId).ToListAsync();
+        var admins = await _db.TelegramAdminChats.AsNoTracking().Select(a => new { a.ChatId, a.OrdersTopicId }).ToListAsync();
         if (admins.Count == 0) return;
         var o = await LoadAsync(orderId);
         if (o == null) return;
@@ -159,12 +159,13 @@ public class TelegramOrderNotifier
 
         var text = CardText(o, headline);
         var markup = Buttons(o);
-        foreach (var chatId in admins)
+        foreach (var a in admins)
         {
-            var mid = await _bot.SendAsync(chatId, text, markup: markup);
+            var mid = await _bot.SendAsync(a.ChatId, text, markup: markup, threadId: a.OrdersTopicId);
             if (mid == null) continue;
-            _db.TelegramOrderMessages.Add(new TelegramOrderMessage { ChatId = chatId, MessageId = mid.Value, OrderId = o.Id, CreatedAt = DateTime.UtcNow });
-            if (proofUrl != null) await _bot.SendPhotoAsync(chatId, proofUrl, $"📸 Ảnh chuyển khoản <code>{H(o.OrderCode)}</code>", mid);
+            _db.TelegramOrderMessages.Add(new TelegramOrderMessage { ChatId = a.ChatId, MessageId = mid.Value, OrderId = o.Id, CreatedAt = DateTime.UtcNow });
+            if (proofUrl != null)
+                await _bot.SendPhotoAsync(a.ChatId, proofUrl, $"📸 Ảnh chuyển khoản <code>{H(o.OrderCode)}</code>", mid, threadId: a.OrdersTopicId);
         }
         await _db.SaveChangesAsync();
     }
@@ -184,16 +185,20 @@ public class TelegramOrderNotifier
     }
 
     /// <summary>Sends the order card to one chat (for /don and /cho) and tracks it.</summary>
-    public async Task SendCardAsync(long chatId, Order o)
+    public async Task SendCardAsync(long chatId, Order o, long? threadId = null)
     {
-        var mid = await _bot.SendAsync(chatId, CardText(o, null), markup: Buttons(o));
+        var mid = await _bot.SendAsync(chatId, CardText(o, null), markup: Buttons(o), threadId: threadId);
         if (mid == null) return;
         _db.TelegramOrderMessages.Add(new TelegramOrderMessage { ChatId = chatId, MessageId = mid.Value, OrderId = o.Id, CreatedAt = DateTime.UtcNow });
         await _db.SaveChangesAsync();
     }
 
-    /// <summary>Xbox credentials as a spoiler message that deletes itself after 2 minutes.</summary>
-    public async Task SendCredentialsAsync(long chatId, Order o, long replyTo)
+    /// <summary>
+    /// Xbox credentials as a spoiler message that deletes itself after 2 minutes. Sent privately to the
+    /// admin who pressed the button when possible (they must have opened the bot once); otherwise in the group.
+    /// Returns true when it went out as a private message.
+    /// </summary>
+    public async Task<bool> SendCredentialsAsync(long chatId, Order o, long replyTo, long? userId = null, long? threadId = null)
     {
         string password;
         try
@@ -204,16 +209,28 @@ public class TelegramOrderNotifier
         {
             password = "*** lỗi giải mã ***";
         }
-        var mid = await _bot.SendAsync(chatId,
-            $"🔑 <code>{H(o.OrderCode)}</code>\nEmail: <code>{H(o.CustomerXboxEmail)}</code>\nMật khẩu: <tg-spoiler><code>{H(password)}</code></tg-spoiler>\n\n<i>Tin này tự xóa sau 2 phút.</i>",
-            replyTo);
-        _logger.LogInformation("Xbox credentials of {Order} revealed in Telegram chat {Chat}", o.OrderCode, chatId);
+        var html = $"🔑 <code>{H(o.OrderCode)}</code>\nEmail: <code>{H(o.CustomerXboxEmail)}</code>\nMật khẩu: <tg-spoiler><code>{H(password)}</code></tg-spoiler>\n\n<i>Tin này tự xóa sau 2 phút.</i>";
+        var target = chatId;
+        long? mid = null;
+        var privately = false;
+        if (userId != null && userId != chatId)
+        {
+            mid = await _bot.SendAsync(userId.Value, html);
+            if (mid != null)
+            {
+                target = userId.Value;
+                privately = true;
+            }
+        }
+        mid ??= await _bot.SendAsync(chatId, html, replyTo, threadId: threadId);
+        _logger.LogInformation("Xbox credentials of {Order} revealed in Telegram chat {Chat}", o.OrderCode, target);
         if (mid != null)
             _ = Task.Run(async () =>
             {
                 await Task.Delay(TimeSpan.FromMinutes(2));
-                await _bot.DeleteAsync(chatId, mid.Value);
+                await _bot.DeleteAsync(target, mid.Value);
             });
+        return privately;
     }
 
     public Task<Order?> FindAsync(Guid id) => LoadAsync(id);

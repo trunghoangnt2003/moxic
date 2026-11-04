@@ -132,6 +132,13 @@ public static class ShoppingSchemaBootstrap
             CONSTRAINT "PK_TelegramAdminChats" PRIMARY KEY ("ChatId")
         );
 
+        ALTER TABLE "TelegramAdminChats" ADD COLUMN IF NOT EXISTS "OrdersTopicId" bigint;
+        ALTER TABLE "TelegramAdminChats" ADD COLUMN IF NOT EXISTS "ChatTopicId" bigint;
+        ALTER TABLE "ChatThreads" ADD COLUMN IF NOT EXISTS "TgTopicChatId" bigint;
+        ALTER TABLE "ChatThreads" ADD COLUMN IF NOT EXISTS "TgTopicId" bigint;
+        ALTER TABLE "ChatThreads" ADD COLUMN IF NOT EXISTS "TgTopicCloseAt" timestamp with time zone;
+        CREATE INDEX IF NOT EXISTS "IX_ChatTelegramRefs_CreatedAt" ON "ChatTelegramRefs" ("CreatedAt");
+
         CREATE TABLE IF NOT EXISTS "TelegramOrderMessages" (
             "ChatId" bigint NOT NULL,
             "MessageId" bigint NOT NULL,

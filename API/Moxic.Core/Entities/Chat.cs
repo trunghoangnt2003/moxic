@@ -22,6 +22,11 @@ public class ChatThread
 
     public int AdminUnread { get; set; }
     public int CustomerUnread { get; set; }
+
+    // Dedicated Telegram forum topic for this conversation ("/tab"); deleted after /exit (+3h) or 24h idle.
+    public long? TgTopicChatId { get; set; }
+    public long? TgTopicId { get; set; }
+    public DateTime? TgTopicCloseAt { get; set; }
     public DateTime LastMessageAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }
@@ -56,6 +61,12 @@ public class TelegramAdminChat
     public long ChatId { get; set; }
     public string? Name { get; set; }
     public DateTime LinkedAt { get; set; }
+
+    /// <summary>Forum topic (message_thread_id) for order cards when the chat is a group with Topics.</summary>
+    public long? OrdersTopicId { get; set; }
+
+    /// <summary>Forum topic for customer chat messages.</summary>
+    public long? ChatTopicId { get; set; }
 }
 
 /// <summary>An order card posted to an admin Telegram chat (edited in place when the order changes).</summary>

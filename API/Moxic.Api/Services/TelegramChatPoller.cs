@@ -15,6 +15,9 @@ public class TelegramChatPoller : BackgroundService
 {
     public static string LinkCacheKey(string code) => $"tg-link:{code}";
 
+    /// <summary>How long a customer tab stays after /exit.</summary>
+    public static readonly TimeSpan TabCloseDelay = TimeSpan.FromHours(3);
+
     private static readonly System.Text.RegularExpressions.Regex OrderCodeRegex =
         new(@"MOXIC-\d{8}-[A-Z0-9]{5}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
@@ -74,16 +77,48 @@ public class TelegramChatPoller : BackgroundService
 
     private async Task HandleAsync(JsonNode msg, CancellationToken ct)
     {
-        var chatId = msg["chat"]!["id"]!.GetValue<long>();
+        var chatNode = msg["chat"]!;
+        var chatId = chatNode["id"]!.GetValue<long>();
+        var isPrivate = chatNode["type"]?.GetValue<string>() == "private";
+        var isForum = chatNode["is_forum"]?.GetValue<bool>() == true;
+        var chatTitle = chatNode["title"]?.GetValue<string>();
         var text = msg["text"]?.GetValue<string>()?.Trim();
         var from = msg["from"];
         var fromName = string.Join(" ", new[] { from?["first_name"]?.GetValue<string>(), from?["last_name"]?.GetValue<string>() }.Where(s => !string.IsNullOrEmpty(s)));
         if (string.IsNullOrEmpty(fromName)) fromName = "Admin";
 
+        // Topic the message was posted in (forum groups); bot answers land in the same topic.
+        long? topic = msg["is_topic_message"]?.GetValue<bool>() == true ? msg["message_thread_id"]?.GetValue<long>() : null;
+        Task<long?> Say(string html) => _bot.SendAsync(chatId, html, ct: ct, threadId: topic);
+
+        // In groups commands may arrive as "/cmd@BotName args".
+        if (text != null && text.StartsWith('/'))
+        {
+            var at = text.IndexOf('@');
+            var sp = text.IndexOf(' ');
+            if (at > 0 && (sp < 0 || at < sp)) text = text[..at] + (sp > 0 ? text[sp..] : "");
+        }
+
         using var scope = _scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
         var chat = scope.ServiceProvider.GetRequiredService<ChatService>();
-        var linked = await db.TelegramAdminChats.AnyAsync(a => a.ChatId == chatId, ct);
+
+        // A group upgraded to a supergroup (e.g. when Topics are turned on) gets a new id — follow it.
+        var migrateTo = msg["migrate_to_chat_id"]?.GetValue<long>();
+        if (migrateTo != null)
+        {
+            var old = await db.TelegramAdminChats.FirstOrDefaultAsync(a => a.ChatId == chatId, ct);
+            if (old != null && !await db.TelegramAdminChats.AnyAsync(a => a.ChatId == migrateTo, ct))
+            {
+                db.TelegramAdminChats.Remove(old);
+                db.TelegramAdminChats.Add(new TelegramAdminChat { ChatId = migrateTo.Value, Name = old.Name, LinkedAt = old.LinkedAt });
+                await db.SaveChangesAsync(ct);
+                _logger.LogInformation("Telegram admin chat migrated {Old} → {New}", chatId, migrateTo);
+            }
+            return;
+        }
+
+        var link = await db.TelegramAdminChats.FirstOrDefaultAsync(a => a.ChatId == chatId, ct);
 
         // /link CODE — code generated in the admin panel (10 min)
         if (text != null && text.StartsWith("/link", StringComparison.OrdinalIgnoreCase))
@@ -92,37 +127,53 @@ public class TelegramChatPoller : BackgroundService
             if (code.Length > 0 && _cache.TryGetValue(LinkCacheKey(code), out _))
             {
                 _cache.Remove(LinkCacheKey(code));
-                if (!linked)
+                if (link == null)
                 {
-                    db.TelegramAdminChats.Add(new TelegramAdminChat { ChatId = chatId, Name = ChatService.Clean(fromName, 100), LinkedAt = DateTime.UtcNow });
+                    link = new TelegramAdminChat { ChatId = chatId, Name = ChatService.Clean(isPrivate ? fromName : chatTitle ?? fromName, 100), LinkedAt = DateTime.UtcNow };
+                    db.TelegramAdminChats.Add(link);
                     await db.SaveChangesAsync(ct);
                 }
-                await _bot.SendAsync(chatId, "✅ Đã liên kết! Tin nhắn chat của khách trên moxic.co sẽ được gửi về đây.\nBấm <b>Reply</b> vào tin của khách để trả lời.", ct: ct);
+                if (isPrivate)
+                    await Say("✅ Đã liên kết! Tin nhắn khách và đơn hàng mới sẽ được gửi về đây.\nGõ /help để xem hướng dẫn.");
+                else
+                    await SetupTopicsAsync(db, link, isForum, ct);
             }
-            else await _bot.SendAsync(chatId, "❌ Mã liên kết không đúng hoặc đã hết hạn. Tạo mã mới trong trang admin → Chat.", ct: ct);
+            else await Say("❌ Mã liên kết không đúng hoặc đã hết hạn. Tạo mã mới trong trang admin → Chat → Telegram.");
             return;
         }
 
-        if (!linked)
+        if (link == null)
         {
-            await _bot.SendAsync(chatId, "👋 Đây là bot hỗ trợ của <b>Moxic GameStore</b>.\nCần hỗ trợ? Chat với shop tại https://moxic.co", ct: ct);
+            // Only answer strangers in private; stay quiet in random groups.
+            if (isPrivate)
+                await Say("👋 Đây là bot hỗ trợ của <b>Moxic GameStore</b>.\nCần hỗ trợ? Chat với shop tại https://moxic.co");
             return;
         }
 
         if (string.IsNullOrEmpty(text))
         {
-            await _bot.SendAsync(chatId, "Hiện chỉ hỗ trợ trả lời bằng chữ.", ct: ct);
+            if (isPrivate) await Say("Hiện chỉ hỗ trợ trả lời bằng chữ.");
+            return;
+        }
+        if (text.StartsWith("/setup", StringComparison.OrdinalIgnoreCase))
+        {
+            if (isPrivate) await Say("Lệnh /setup dùng trong nhóm để tạo các tab Đơn hàng / Tin nhắn.");
+            else await SetupTopicsAsync(db, link, isForum, ct);
             return;
         }
         if (text.StartsWith("/start") || text.StartsWith("/help"))
         {
-            await _bot.SendAsync(chatId,
-                "<b>Chat khách:</b> bấm <b>Reply</b> vào tin của khách để trả lời, hoặc <code>/r MÃ nội dung</code>.\n" +
-                "<b>Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn (hoặc gửi thẳng mã đơn)\nBấm nút dưới mỗi đơn để đổi trạng thái.", ct: ct);
+            await Say(
+                "<b>💬 Tin nhắn khách:</b> bấm <b>Reply</b> vào tin của khách để trả lời, hoặc <code>/r MÃ nội dung</code>.\n" +
+                "<b>🛒 Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn\nBấm nút dưới mỗi đơn để đổi trạng thái. 🔑 gửi TK Xbox riêng cho người bấm (cần mở chat riêng với bot và bấm Start 1 lần).\n" +
+                "<b>Nhóm:</b> /setup — tạo lại các tab Đơn hàng / Tin nhắn.");
             return;
         }
 
         var replyTo = msg["reply_to_message"]?["message_id"]?.GetValue<long>();
+        // In a topic, an ordinary message "replies" to the topic's root message — that's not a real reply.
+        if (replyTo != null && topic != null && replyTo == topic) replyTo = null;
+
         var orders = scope.ServiceProvider.GetRequiredService<TelegramOrderNotifier>();
         if (text.StartsWith("/cho", StringComparison.OrdinalIgnoreCase))
         {
@@ -131,8 +182,8 @@ public class TelegramChatPoller : BackgroundService
             var list = await db.Orders.AsNoTracking().Include(o => o.Details)
                 .Where(o => open.Contains(o.Status) && (o.Status != OrderStatus.Pending || o.CreatedAt >= since))
                 .OrderBy(o => o.Status == OrderStatus.Pending).ThenBy(o => o.CreatedAt).Take(10).ToListAsync(ct);
-            if (list.Count == 0) await _bot.SendAsync(chatId, "✨ Không có đơn nào cần xử lý.", ct: ct);
-            foreach (var o in list) await orders.SendCardAsync(chatId, o);
+            if (list.Count == 0) await Say("✨ Không có đơn nào cần xử lý.");
+            foreach (var o in list) await orders.SendCardAsync(chatId, o, topic);
             return;
         }
         var codeMatch = OrderCodeRegex.Match(text);
@@ -140,19 +191,62 @@ public class TelegramChatPoller : BackgroundService
         {
             if (!codeMatch.Success)
             {
-                await _bot.SendAsync(chatId, "Cú pháp: <code>/don MOXIC-20261104-ABCDE</code>", ct: ct);
+                await Say("Cú pháp: <code>/don MOXIC-20261104-ABCDE</code>");
                 return;
             }
             var oc = codeMatch.Value.ToUpperInvariant();
             var found = await db.Orders.AsNoTracking().Include(x => x.Details).FirstOrDefaultAsync(x => x.OrderCode == oc, ct);
-            if (found == null) await _bot.SendAsync(chatId, $"Không tìm thấy đơn {TelegramBot.Html(oc)}", ct: ct);
-            else await orders.SendCardAsync(chatId, found);
+            if (found == null) await Say($"Không tìm thấy đơn {TelegramBot.Html(oc)}");
+            else await orders.SendCardAsync(chatId, found, topic);
             return;
         }
 
-        ChatThread? thread = null;
+        // Inside a customer's own tab: every message goes to that customer; /exit closes the tab.
+        ChatThread? tabThread = topic == null ? null
+            : await db.ChatThreads.FirstOrDefaultAsync(t => t.TgTopicChatId == chatId && t.TgTopicId == topic, ct);
+        if (tabThread != null && text.StartsWith("/exit", StringComparison.OrdinalIgnoreCase))
+        {
+            tabThread.TgTopicCloseAt = DateTime.UtcNow.Add(TabCloseDelay);
+            await db.SaveChangesAsync(ct);
+            await Say($"👋 Đã kết thúc hỗ trợ. Tab này tự xóa sau {TabCloseDelay.TotalHours:0} tiếng. Nếu khách nhắn lại trước đó, tab sẽ mở lại.");
+            return;
+        }
+
+        // /tab — move a conversation into its own tab (reply to a customer message, or /tab CODE)
+        if (text.StartsWith("/tab", StringComparison.OrdinalIgnoreCase))
+        {
+            ChatThread? target = null;
+            var arg = text[4..].Trim().TrimStart('#').ToUpperInvariant();
+            if (arg.Length > 0) target = await db.ChatThreads.FirstOrDefaultAsync(t => t.Code == arg, ct);
+            else if (replyTo != null)
+            {
+                var tid = await db.ChatTelegramRefs.Where(r => r.TelegramChatId == chatId && r.TelegramMessageId == replyTo)
+                    .Select(r => (Guid?)r.ThreadId).FirstOrDefaultAsync(ct);
+                if (tid != null) target = await db.ChatThreads.FirstOrDefaultAsync(t => t.Id == tid, ct);
+            }
+            if (target == null)
+            {
+                await Say("Dùng: <b>Reply</b> vào tin của khách rồi gõ /tab — hoặc <code>/tab MÃ</code> (mã #XXXX trong tin).");
+                return;
+            }
+            if (!isForum)
+            {
+                await Say("Nhóm cần bật <b>Chủ đề (Topics)</b> để tách tab riêng.");
+                return;
+            }
+            await OpenTabAsync(db, chat, target, chatId, ct);
+            return;
+        }
+
+        ChatThread? thread = tabThread;
         var body = text;
-        if (replyTo != null)
+        if (thread != null && text.StartsWith('/') && !text.StartsWith("/r ", StringComparison.OrdinalIgnoreCase))
+        {
+            await Say("Lệnh không hỗ trợ trong tab khách. Gõ nội dung để trả lời khách, /exit để kết thúc.");
+            return;
+        }
+        if (thread != null) { /* typed directly in the customer's tab */ }
+        else if (replyTo != null)
         {
             var threadId = await db.ChatTelegramRefs.Where(r => r.TelegramChatId == chatId && r.TelegramMessageId == replyTo)
                 .Select(r => (Guid?)r.ThreadId).FirstOrDefaultAsync(ct);
@@ -171,17 +265,105 @@ public class TelegramChatPoller : BackgroundService
 
         if (thread == null)
         {
-            await _bot.SendAsync(chatId, "⚠️ Không biết gửi cho khách nào. Hãy <b>Reply</b> đúng tin nhắn của khách, hoặc dùng <code>/r MÃ nội dung</code>.", ct: ct);
+            // Staff talk freely in group topics; only complain when it looked like an answer to a customer.
+            if (isPrivate || text.StartsWith("/r", StringComparison.OrdinalIgnoreCase))
+                await Say("⚠️ Không biết gửi cho khách nào. Hãy <b>Reply</b> đúng tin nhắn của khách, hoặc dùng <code>/r MÃ nội dung</code>.");
             return;
         }
 
         body = body.Length > ChatService.MaxText ? body[..ChatService.MaxText] : body;
         await chat.AddAdminMessageAsync(thread, body, "telegram");
         var mid = msg["message_id"]!.GetValue<long>();
+        await _bot.ReactAsync(chatId, mid, "👍", ct); // "sent to the customer"
         // Map the admin's own message too, so replying to it keeps the conversation going.
         db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = mid, ThreadId = thread.Id, CreatedAt = DateTime.UtcNow });
         await db.SaveChangesAsync(ct);
         await chat.EchoAdminReplyAsync(thread, body, chatId, fromName);
+    }
+
+    /// <summary>
+    /// In a group with Topics: creates "🛒 Đơn hàng" and "💬 Tin nhắn khách" tabs and routes messages there.
+    /// Without Topics (or without the "Manage topics" right) everything goes to the main chat.
+    /// </summary>
+    private async Task SetupTopicsAsync(MoxicDbContext db, TelegramAdminChat link, bool isForum, CancellationToken ct)
+    {
+        if (!isForum)
+        {
+            link.OrdersTopicId = null;
+            link.ChatTopicId = null;
+            await db.SaveChangesAsync(ct);
+            await _bot.SendAsync(link.ChatId,
+                "✅ Đã liên kết nhóm! Đơn hàng và tin nhắn khách sẽ gửi vào đây.\n\n" +
+                "💡 Muốn chia thành tab riêng (Đơn hàng / Tin nhắn): vào <b>Cài đặt nhóm → bật Chủ đề (Topics)</b>, " +
+                "cho bot làm <b>Quản trị viên</b> với quyền <b>Quản lý chủ đề</b>, rồi gõ /setup.", ct: ct);
+            return;
+        }
+
+        var orders = await _bot.CreateTopicAsync(link.ChatId, "🛒 Đơn hàng", 16766590, ct);
+        var chats = await _bot.CreateTopicAsync(link.ChatId, "💬 Tin nhắn khách", 7322096, ct);
+        if (orders == null || chats == null)
+        {
+            await _bot.SendAsync(link.ChatId,
+                "⚠️ Bot chưa tạo được tab. Hãy cho bot làm <b>Quản trị viên</b> với quyền <b>Quản lý chủ đề</b>, rồi gõ /setup.", ct: ct);
+            return;
+        }
+        link.OrdersTopicId = orders;
+        link.ChatTopicId = chats;
+        await db.SaveChangesAsync(ct);
+        await _bot.SendAsync(link.ChatId, "✅ Đơn hàng mới, ảnh chuyển khoản và các nút xử lý sẽ vào tab này.\nGõ /cho để xem các đơn đang cần xử lý.", ct: ct, threadId: orders);
+        await _bot.SendAsync(link.ChatId, "✅ Tin nhắn của khách trên moxic.co sẽ vào tab này.\nBấm <b>Reply</b> vào tin của khách để trả lời — bot thả 👍 khi đã gửi tới khách.", ct: ct, threadId: chats);
+    }
+
+    /// <summary>Creates "💬 Name #CODE" tab for one conversation and replays its recent history there.</summary>
+    private async Task OpenTabAsync(MoxicDbContext db, ChatService chat, ChatThread t, long chatId, CancellationToken ct)
+    {
+        if (t.TgTopicId != null && t.TgTopicChatId == chatId)
+        {
+            t.TgTopicCloseAt = null;
+            await db.SaveChangesAsync(ct);
+            await _bot.SendAsync(chatId, "📌 Khách này đã có tab riêng — tiếp tục hỗ trợ ở đó nhé.", ct: ct, threadId: t.TgTopicId);
+            return;
+        }
+
+        string? who = t.Name;
+        if (string.IsNullOrWhiteSpace(who) && t.UserId != null)
+            who = await db.CustomerProfiles.AsNoTracking().Where(p => p.UserId == t.UserId).Select(p => p.DisplayName).FirstOrDefaultAsync(ct);
+        if (string.IsNullOrWhiteSpace(who)) who = t.Contact ?? "Khách";
+        var name = $"💬 {who} #{t.Code}";
+        if (name.Length > 120) name = name[..120];
+
+        var topicId = await _bot.CreateTopicAsync(chatId, name, 9367192, ct);
+        if (topicId == null)
+        {
+            await _bot.SendAsync(chatId, "⚠️ Không tạo được tab. Bot cần quyền <b>Quản lý chủ đề</b>.", ct: ct);
+            return;
+        }
+        t.TgTopicChatId = chatId;
+        t.TgTopicId = topicId;
+        t.TgTopicCloseAt = null;
+        await db.SaveChangesAsync(ct);
+
+        var history = await db.ChatMessages.AsNoTracking().Where(m => m.ThreadId == t.Id)
+            .OrderByDescending(m => m.CreatedAt).Take(15).ToListAsync(ct);
+        history.Reverse();
+        var sb = new System.Text.StringBuilder($"{await chat.HeaderPublicAsync(t)}\n\n<b>15 tin gần nhất:</b>\n");
+        foreach (var m in history)
+            sb.Append($"{(m.FromAdmin ? "🛡" : "👤")} {(m.CreatedAt + TimeSpan.FromHours(7)):dd/MM HH:mm} — {TelegramBot.Html(m.Text.Length > 300 ? m.Text[..300] + "…" : m.Text)}\n");
+        sb.Append("\n✍️ Gõ thẳng trong tab này để trả lời khách (không cần Reply). /exit khi xong — tab tự xóa sau 3 tiếng; không hoạt động 24h cũng tự xóa.");
+        var mid = await _bot.SendAsync(chatId, sb.ToString(), ct: ct, threadId: topicId);
+        if (mid != null)
+        {
+            db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = mid.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+            await db.SaveChangesAsync(ct);
+        }
+        var link = await db.TelegramAdminChats.AsNoTracking().FirstOrDefaultAsync(a => a.ChatId == chatId, ct);
+        var note = await _bot.SendAsync(chatId, $"➡️ Đã chuyển <code>#{t.Code}</code> ({TelegramBot.Html(who)}) sang tab riêng.", ct: ct, threadId: link?.ChatTopicId);
+        if (note != null)
+        {
+            // Tracked so the 24h cleanup removes it too.
+            db.ChatTelegramRefs.Add(new ChatTelegramRef { TelegramChatId = chatId, TelegramMessageId = note.Value, ThreadId = t.Id, CreatedAt = DateTime.UtcNow });
+            await db.SaveChangesAsync(ct);
+        }
     }
 
     /// <summary>Order card buttons. Only linked admin chats may act.</summary>
@@ -227,9 +409,15 @@ public class TelegramChatPoller : BackgroundService
                 await _bot.AnswerCallbackAsync(cbId, "Bấm xác nhận để hủy đơn", ct: ct);
                 return;
             case 'k':
-                await cards.SendCredentialsAsync(chatId.Value, order, messageId.Value);
-                await _bot.AnswerCallbackAsync(cbId, null, ct: ct);
+            {
+                var userId = cb["from"]?["id"]?.GetValue<long>();
+                var cardTopic = message?["is_topic_message"]?.GetValue<bool>() == true ? message?["message_thread_id"]?.GetValue<long>() : null;
+                var dm = await cards.SendCredentialsAsync(chatId.Value, order, messageId.Value, userId, cardTopic);
+                await _bot.AnswerCallbackAsync(cbId,
+                    dm || userId == chatId ? "Đã gửi TK Xbox (tự xóa sau 2 phút)" : "Đã gửi trong nhóm. Mở chat riêng với bot, bấm Start để lần sau nhận riêng.",
+                    ct: ct);
                 return;
+            }
         }
 
         OrderStatus? target = op switch

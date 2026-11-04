@@ -87,7 +87,7 @@ function TelegramPanel({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <p className="text-xs text-steam-muted">
-              Tin nhắn của khách sẽ gửi về các Telegram đã liên kết. Trả lời bằng cách <b>Reply</b> tin nhắn đó.
+              Nên dùng <b>nhóm Telegram có Chủ đề</b> để nhiều người cùng xử lý: bot tự tạo tab <b>🛒 Đơn hàng</b> và <b>💬 Tin nhắn khách</b>. Trong nhóm: Reply tin khách để trả lời, <code>/tab</code> tách khách ra tab riêng, <code>/exit</code> để đóng tab.
             </p>
             <div className="space-y-2">
               {info.chats.length === 0 && <p className="text-xs text-amber-300">Chưa liên kết Telegram nào — khách chưa thấy nút chat.</p>}
@@ -104,8 +104,12 @@ function TelegramPanel({ onClose }: { onClose: () => void }) {
             </div>
             {code ? (
               <div className="p-3 border border-steam-blue/40 bg-steam-blue/5 rounded-sm space-y-2 text-sm">
+                <p className="text-[11px] text-steam-muted">
+                  Dùng nhóm: tạo nhóm → Cài đặt → bật <b>Chủ đề (Topics)</b> → thêm{" "}
+                  {code.botUsername ? "@" + code.botUsername : "bot"} và đặt làm <b>Quản trị viên</b> (quyền Quản lý chủ đề + Xóa tin nhắn) → gửi lệnh bên dưới <b>trong nhóm</b>.
+                </p>
                 <p className="text-steam-text">
-                  1. Mở{" "}
+                  1. Hoặc chat riêng: mở{" "}
                   {code.botUsername ? (
                     <a href={`https://t.me/${code.botUsername}`} target="_blank" rel="noreferrer" className="text-steam-blue underline">
                       @{code.botUsername}
@@ -115,7 +119,7 @@ function TelegramPanel({ onClose }: { onClose: () => void }) {
                   )}{" "}
                   trên Telegram
                 </p>
-                <p className="text-steam-text">2. Gửi tin nhắn:</p>
+                <p className="text-steam-text">2. Gửi tin nhắn (trong nhóm hoặc chat riêng):</p>
                 <p className="font-mono text-lg text-white bg-black/30 px-3 py-2 rounded-sm select-all">/link {code.code}</p>
                 <p className="text-[11px] text-steam-muted">Mã hết hạn sau 10 phút. Danh sách bên trên sẽ tự cập nhật.</p>
               </div>

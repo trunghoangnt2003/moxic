@@ -43,7 +43,7 @@ public class TelegramBot
     }
 
     /// <summary>Sends an HTML message; returns its message_id, or null on failure.</summary>
-    public async Task<long?> SendAsync(long chatId, string html, long? replyTo = null, CancellationToken ct = default, object? markup = null)
+    public async Task<long?> SendAsync(long chatId, string html, long? replyTo = null, CancellationToken ct = default, object? markup = null, long? threadId = null)
     {
         try
         {
@@ -56,6 +56,7 @@ public class TelegramBot
             };
             if (replyTo != null) body["reply_parameters"] = new { message_id = replyTo, allow_sending_without_reply = true };
             if (markup != null) body["reply_markup"] = markup;
+            if (threadId != null) body["message_thread_id"] = threadId;
             var r = await CallAsync("sendMessage", body, ct);
             return r?["message_id"]?.GetValue<long>();
         }
@@ -114,12 +115,13 @@ public class TelegramBot
         catch (Exception ex) { _logger.LogWarning(ex, "Telegram answerCallbackQuery failed"); }
     }
 
-    public async Task SendPhotoAsync(long chatId, string url, string? captionHtml, long? replyTo = null, CancellationToken ct = default)
+    public async Task SendPhotoAsync(long chatId, string url, string? captionHtml, long? replyTo = null, CancellationToken ct = default, long? threadId = null)
     {
         try
         {
             var body = new Dictionary<string, object?> { ["chat_id"] = chatId, ["photo"] = url, ["parse_mode"] = "HTML" };
             if (captionHtml != null) body["caption"] = captionHtml;
+            if (threadId != null) body["message_thread_id"] = threadId;
             if (replyTo != null) body["reply_parameters"] = new { message_id = replyTo, allow_sending_without_reply = true };
             await CallAsync("sendPhoto", body, ct, TimeSpan.FromSeconds(30));
         }
@@ -131,6 +133,38 @@ public class TelegramBot
         var r = await CallAsync("getUpdates", new { offset, timeout = timeoutSeconds, allowed_updates = new[] { "message", "callback_query" } }, ct,
             TimeSpan.FromSeconds(timeoutSeconds + 15));
         return r as JsonArray;
+    }
+
+    /// <summary>Creates a forum topic in a group with Topics enabled (bot needs "Manage topics"). Returns message_thread_id.</summary>
+    public async Task<long?> CreateTopicAsync(long chatId, string name, int iconColor, CancellationToken ct = default)
+    {
+        try
+        {
+            var r = await CallAsync("createForumTopic", new { chat_id = chatId, name, icon_color = iconColor }, ct);
+            return r?["message_thread_id"]?.GetValue<long>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Telegram createForumTopic failed");
+            return null;
+        }
+    }
+
+    /// <summary>Deletes a forum topic with all its messages. True on success.</summary>
+    public async Task<bool> DeleteTopicAsync(long chatId, long topicId, CancellationToken ct = default)
+    {
+        try { return await CallAsync("deleteForumTopic", new { chat_id = chatId, message_thread_id = topicId }, ct) != null; }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Telegram deleteForumTopic failed");
+            return false;
+        }
+    }
+
+    public async Task ReactAsync(long chatId, long messageId, string emoji, CancellationToken ct = default)
+    {
+        try { await CallAsync("setMessageReaction", new { chat_id = chatId, message_id = messageId, reaction = new[] { new { type = "emoji", emoji } } }, ct); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Telegram setMessageReaction failed"); }
     }
 
     public async Task DeleteWebhookAsync(CancellationToken ct) => await CallAsync("deleteWebhook", new { drop_pending_updates = false }, ct);
