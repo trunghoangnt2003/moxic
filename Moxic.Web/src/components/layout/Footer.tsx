@@ -14,6 +14,12 @@ export default function Footer() {
             </span>
           </div>
           <div className="flex items-center gap-6 text-xs text-text-secondary">
+            <Link to="/bang-gia-xbox" className="hover:text-text-primary transition-colors">
+              Bảng giá Xbox
+            </Link>
+            <Link to="/hoi-dap" className="hover:text-text-primary transition-colors">
+              Hỏi đáp
+            </Link>
             <Link to="/leaderboard" className="hover:text-text-primary transition-colors">
               Bảng xếp hạng
             </Link>

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { CalendarDays, ChevronDown, Puzzle, Trophy } from "lucide-react";
+import { CalendarDays, ChevronDown, CircleHelp, Puzzle, Tags, Trophy } from "lucide-react";
 
 const ITEMS = [
   { to: "/doan-game", label: "Đoán game", desc: "Mỗi ngày một câu, nhận điểm", icon: Puzzle, tone: "text-sky-300" },
   { to: "/leaderboard", label: "Xếp hạng", desc: "Đua top tháng, nhận thưởng", icon: Trophy, tone: "text-amber-300" },
   { to: "/release-calendar", label: "Sắp ra mắt", desc: "Lịch phát hành game", icon: CalendarDays, tone: "text-fuchsia-300" },
+  { to: "/bang-gia-xbox", label: "Bảng giá Xbox", desc: "So giá Xbox Store hôm nay", icon: Tags, tone: "text-emerald-300" },
+  { to: "/hoi-dap", label: "Hỏi đáp", desc: "Cách mua, cài, thanh toán", icon: CircleHelp, tone: "text-text-secondary" },
 ];
 
 /** Desktop "Khám phá ▾" menu — keeps the header on one line as features grow. */

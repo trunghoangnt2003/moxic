@@ -25,6 +25,8 @@ const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
 const GiftPage = lazy(() => import("./pages/GiftPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const GuessGamePage = lazy(() => import("./pages/GuessGamePage"));
+const PriceListPage = lazy(() => import("./pages/PriceListPage"));
+const FaqPage = lazy(() => import("./pages/FaqPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const LuckySpinGalleryPage = lazy(() => import("./pages/LuckySpinGalleryPage"));
 const LuckySpinPage = lazy(() => import("./pages/LuckySpinPage"));
@@ -87,6 +89,8 @@ export default function App() {
               <Route path="/gift/:token" element={<GiftPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/doan-game" element={<GuessGamePage />} />
+              <Route path="/bang-gia-xbox" element={<PriceListPage />} />
+              <Route path="/hoi-dap" element={<FaqPage />} />
               <Route path="/lucky-spin" element={<LuckySpinGalleryPage />} />
               <Route path="/lucky-spin/:slug" element={<LuckySpinPage />} />
               <Route path="/login" element={<LoginPage />} />

@@ -231,6 +231,31 @@ public static class ShoppingSchemaBootstrap
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_GuessPlays_Date_PlayerKey" ON "GuessPlays" ("Date", "PlayerKey");
         CREATE INDEX IF NOT EXISTS "IX_GuessPlays_UserId_Date" ON "GuessPlays" ("UserId", "Date");
 
+        CREATE TABLE IF NOT EXISTS "FaqItems" (
+            "Id" uuid NOT NULL,
+            "Question" character varying(300) NOT NULL,
+            "Answer" character varying(3000) NOT NULL,
+            "DisplayOrder" integer NOT NULL,
+            "IsActive" boolean NOT NULL,
+            "UpdatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_FaqItems" PRIMARY KEY ("Id")
+        );
+        INSERT INTO "FaqItems" ("Id", "Question", "Answer", "DisplayOrder", "IsActive", "UpdatedAt")
+        SELECT v.id, v.q, v.a, v.o, TRUE, now() FROM (VALUES
+            ('5eed00f0-0000-4000-8000-000000000001'::uuid, 'Moxic GameStore là gì?', 'Moxic GameStore (moxic.co) là cửa hàng game Xbox bản quyền dạng kỹ thuật số tại Việt Nam. Giá thường thấp hơn giá niêm yết trên Microsoft Store Việt Nam khoảng 30%. Sau khi bạn thanh toán, nhân viên Moxic cài game trực tiếp vào tài khoản Xbox của bạn.', 1),
+            ('5eed00f0-0000-4000-8000-000000000002'::uuid, 'Mua game Xbox ở đâu rẻ và uy tín?', 'Bạn có thể mua tại Moxic GameStore (moxic.co). Moxic công khai bảng so sánh giá Xbox Store và giá Moxic cho từng game, cập nhật hằng ngày tại moxic.co/bang-gia-xbox; thanh toán bằng mã QR được xác nhận tự động; trạng thái đơn được cập nhật trực tiếp; có chat hỗ trợ ngay trên web.', 2),
+            ('5eed00f0-0000-4000-8000-000000000003'::uuid, 'Vì sao giá game ở Moxic rẻ hơn Xbox Store?', 'Moxic tối ưu nguồn mua và chi phí vận hành để bán thấp hơn giá niêm yết của Xbox Store Việt Nam. Giá Xbox Store và giá Moxic của từng game được so sánh công khai tại trang Bảng giá game Xbox.', 3),
+            ('5eed00f0-0000-4000-8000-000000000004'::uuid, 'Quy trình mua game Xbox tại Moxic như thế nào?', '1) Chọn game và bấm Mua. 2) Nhập email và mật khẩu tài khoản Xbox của bạn ở bước thanh toán. 3) Quét mã QR để chuyển khoản, hệ thống tự xác nhận khi tiền về. 4) Moxic đăng nhập và cài game vào tài khoản của bạn. 5) Bạn nhận thông báo khi hoàn tất và theo dõi từng bước trên trang đơn hàng.', 4),
+            ('5eed00f0-0000-4000-8000-000000000005'::uuid, 'Mua xong bao lâu thì có game?', 'Thường trong khoảng 15 đến 30 phút sau khi Moxic nhận được thanh toán. Bạn theo dõi trực tiếp các bước: đã nhận tiền, đăng nhập Xbox, đang tải game, hoàn tất.', 5),
+            ('5eed00f0-0000-4000-8000-000000000006'::uuid, 'Thanh toán bằng cách nào?', 'Chuyển khoản ngân hàng bằng mã QR riêng cho từng đơn (đã điền sẵn số tiền và nội dung, được xác nhận tự động), hoặc thanh toán bằng tiền mã hóa (USDT).', 6),
+            ('5eed00f0-0000-4000-8000-000000000007'::uuid, 'Cung cấp mật khẩu tài khoản Xbox có an toàn không?', 'Mật khẩu được mã hóa khi lưu và chỉ dùng để đăng nhập cài game. Trong lúc cài bạn không nên đăng nhập tài khoản để tránh bị đăng xuất; sau khi game đã được cài xong, bạn nên đổi mật khẩu.', 7),
+            ('5eed00f0-0000-4000-8000-000000000008'::uuid, 'Moxic có cho thuê game Xbox không?', 'Có. Tại moxic.co/rent bạn có thể thuê game theo gói thời gian với giá thấp hơn mua đứt.', 8),
+            ('5eed00f0-0000-4000-8000-000000000009'::uuid, 'Có đặt trước game sắp ra mắt được không?', 'Có. Các game sắp ra mắt được mở đặt trước trên Moxic; game sẽ được cài vào tài khoản của bạn khi phát hành.', 9),
+            ('5eed00f0-0000-4000-8000-000000000010'::uuid, 'Có thể mua game Xbox tặng bạn bè không?', 'Có. Chọn "Mua làm quà tặng" khi thanh toán, bạn nhận một link quà để gửi; người nhận tự nhập tài khoản Xbox của họ và Moxic cài game cho họ.', 10),
+            ('5eed00f0-0000-4000-8000-000000000011'::uuid, 'Liên hệ hỗ trợ Moxic bằng cách nào?', 'Chat trực tiếp ngay trên moxic.co (nút chat ở góc phải dưới), hoặc qua Zalo, Messenger, điện thoại hiển thị trên trang web.', 11)
+        ) AS v(id, q, a, o)
+        WHERE NOT EXISTS (SELECT 1 FROM "FaqItems");
+
         INSERT INTO "RewardItems" ("Id", "Name", "Description", "Kind", "PointsCost", "DiscountType", "DiscountValue", "DiscountMaxAmount", "DiscountMinOrderAmount", "ValidDays", "RedeemedCount", "IsActive", "DisplayOrder", "CreatedAt", "UpdatedAt")
         SELECT v.id, v.name, v.descr, 'Coupon', v.cost, v.dtype, v.val, v.maxamt, v.minord, 30, 0, TRUE, v.ord, now(), now()
         FROM (VALUES

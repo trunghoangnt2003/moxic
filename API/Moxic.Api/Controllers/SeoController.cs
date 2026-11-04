@@ -39,7 +39,8 @@ public class SeoController : ControllerBase
         _apiBase = (config["Site:ApiBaseUrl"] ?? "https://api.moxic.co").TrimEnd('/');
     }
 
-    private static string H(string? s) => WebUtility.HtmlEncode(s ?? string.Empty);
+    // Escape only HTML-significant characters; keep Vietnamese as readable UTF-8 for crawlers/AI.
+    private static string H(string? s) => (s ?? string.Empty).Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&#39;");
     private static string Vnd(decimal v) => v.ToString("#,0", CultureInfo.GetCultureInfo("vi-VN")) + "đ";
 
     private static string PlainText(string? html, int max)
@@ -82,7 +83,7 @@ public class SeoController : ControllerBase
             ["name"] = g.Name,
             ["image"] = image,
             ["description"] = PlainText(g.Description, 500),
-            ["brand"] = new { @type = "Brand", name = g.Publisher ?? "Xbox" },
+            ["brand"] = new Dictionary<string, object?> { ["@type"] = "Brand", ["name"] = g.Publisher ?? "Xbox" },
             ["category"] = string.Join(", ", g.Genres),
             ["offers"] = new Dictionary<string, object?>
             {
@@ -91,11 +92,11 @@ public class SeoController : ControllerBase
                 ["priceCurrency"] = "VND",
                 ["price"] = g.SalePrice,
                 ["availability"] = g.Status == GameStatus.Preorder ? "https://schema.org/PreOrder" : "https://schema.org/InStock",
-                ["seller"] = new { @type = "Organization", name = "Moxic GameStore" },
+                ["seller"] = new Dictionary<string, object?> { ["@type"] = "Organization", ["name"] = "Moxic GameStore" },
             },
         };
         if (g.Reviews > 0 && g.Rating != null)
-            jsonLd["aggregateRating"] = new { @type = "AggregateRating", ratingValue = Math.Round(g.Rating.Value, 1), reviewCount = g.Reviews };
+            jsonLd["aggregateRating"] = new Dictionary<string, object?> { ["@type"] = "AggregateRating", ["ratingValue"] = Math.Round(g.Rating.Value, 1), ["reviewCount"] = g.Reviews };
 
         var html = new StringBuilder();
         html.Append("<!doctype html><html lang=\"vi\"><head><meta charset=\"utf-8\">");
@@ -152,13 +153,51 @@ public class SeoController : ControllerBase
 
     private record CachedImage(byte[] Data, string ContentType);
 
+    // GET /api/seo/page?path=/bang-gia-xbox — text-first HTML (+ JSON-LD) for search engines and AI assistants
+    [HttpGet("page")]
+    public async Task<IActionResult> Page([FromQuery] string? path, [FromServices] SeoContentService content)
+    {
+        var (html, found) = await content.PageAsync(path ?? "/");
+        if (!found) return NotFound();
+        Response.Headers.CacheControl = "public, max-age=900";
+        return Content(html, "text/html; charset=utf-8");
+    }
+
+    // GET /api/seo/prices — the same price comparison for the web page
+    [HttpGet("prices")]
+    public async Task<IActionResult> Prices([FromServices] SeoContentService content)
+    {
+        var rows = await content.PricesAsync();
+        var saving = rows.Where(r => r.SavePercent > 0).ToList();
+        Response.Headers.CacheControl = "public, max-age=600";
+        return Ok(new
+        {
+            updatedAt = DateTime.UtcNow,
+            storeCheckedAt = rows.Max(r => r.StoreCheckedAt),
+            avgSave = saving.Count > 0 ? (int)Math.Round(saving.Average(r => r.SavePercent)) : 0,
+            items = rows,
+        });
+    }
+
+    // GET /api/seo/llms.txt — served at moxic.co/llms.txt
+    [HttpGet("llms.txt")]
+    public async Task<IActionResult> Llms([FromServices] SeoContentService content)
+    {
+        Response.Headers.CacheControl = "public, max-age=1800";
+        return Content(await content.LlmsTxtAsync(), "text/plain; charset=utf-8");
+    }
+
+    // GET /api/seo/faq — public FAQ for the /hoi-dap page
+    [HttpGet("faq")]
+    public async Task<IActionResult> Faq([FromServices] SeoContentService content) => Ok(await content.FaqAsync());
+
     // GET /api/seo/sitemap.xml
     [HttpGet("sitemap.xml")]
     public async Task<IActionResult> Sitemap()
     {
         var games = await _db.Games.AsNoTracking().OrderByDescending(g => g.UpdatedAt).Select(g => new { g.Id, g.UpdatedAt }).ToListAsync();
         var sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
-        foreach (var (path, freq, prio) in new[] { ("/", "daily", "1.0"), ("/games", "daily", "0.9"), ("/rent", "daily", "0.8"), ("/release-calendar", "weekly", "0.7"), ("/lucky-spin", "weekly", "0.6"), ("/rewards", "monthly", "0.5"), ("/leaderboard", "daily", "0.5"), ("/doan-game", "daily", "0.6") })
+        foreach (var (path, freq, prio) in new[] { ("/", "daily", "1.0"), ("/games", "daily", "0.9"), ("/bang-gia-xbox", "daily", "0.9"), ("/hoi-dap", "weekly", "0.8"), ("/rent", "daily", "0.8"), ("/release-calendar", "weekly", "0.7"), ("/lucky-spin", "weekly", "0.6"), ("/rewards", "monthly", "0.5"), ("/leaderboard", "daily", "0.5"), ("/doan-game", "daily", "0.6") })
             sb.Append($"<url><loc>{_site}{path}</loc><changefreq>{freq}</changefreq><priority>{prio}</priority></url>");
         foreach (var g in games)
             sb.Append($"<url><loc>{_site}/games/{g.Id}</loc><lastmod>{g.UpdatedAt:yyyy-MM-dd}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>");

@@ -103,6 +103,10 @@ builder.Services.AddScoped<OrderStatusService>();
 builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<LeaderboardService>();
 builder.Services.AddScoped<GuessGameService>();
+// SEO for search engines + AI assistants
+builder.Services.AddScoped<SeoContentService>();
+builder.Services.AddSingleton<IndexNowService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<IndexNowService>());
 builder.Services.AddHostedService<LeaderboardAwardJob>();
 builder.Services.AddHostedService<TelegramChatPoller>();
 builder.Services.AddHostedService<TelegramChatCleanup>();
@@ -249,6 +253,15 @@ app.Use(async (ctx, next) =>
     {
         var store = ctx.RequestServices.GetRequiredService<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>();
         await store.EvictByTagAsync("games", CancellationToken.None);
+        // Fresh SEO pages, and tell Bing/IndexNow about changed games right away.
+        if (ctx.Request.Path.StartsWithSegments("/api/admin/games"))
+        {
+            ctx.RequestServices.GetRequiredService<SeoContentService>().Invalidate();
+            var indexNow = ctx.RequestServices.GetRequiredService<IndexNowService>();
+            var seg = ctx.Request.Path.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (seg.Length >= 4 && Guid.TryParse(seg[3], out var gid)) indexNow.Enqueue($"/games/{gid}");
+            indexNow.Enqueue("/bang-gia-xbox", "/games");
+        }
     }
 });
 app.UseOutputCache();
