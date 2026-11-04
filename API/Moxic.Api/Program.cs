@@ -90,7 +90,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddOutputCache(o =>
 {
     o.SizeLimit = 32 * 1024 * 1024;
-    o.AddPolicy("catalog", b => b.Expire(TimeSpan.FromSeconds(60)).SetVaryByQuery("*").Tag("games"));
+    o.AddPolicy("catalog", b => b.Expire(TimeSpan.FromSeconds(60)).SetVaryByQuery("*").SetVaryByHeader("Accept-Language").Tag("games"));
 });
 builder.Services.AddScoped<PointsService>();
 builder.Services.AddScoped<RewardShopService>();
@@ -239,6 +239,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Request language (vi/en) for localized catalog fields; set before anything reads it.
+app.Use(async (ctx, next) => { Moxic.Api.Services.RequestLanguage.Set(ctx); await next(); });
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

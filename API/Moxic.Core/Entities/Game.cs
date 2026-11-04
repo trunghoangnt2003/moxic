@@ -7,6 +7,9 @@ public class Game
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    /// <summary>English name/description for the /en site; empty = use the Vietnamese ones.</summary>
+    public string? NameEn { get; set; }
+    public string? DescriptionEn { get; set; }
     public decimal OriginalPrice { get; set; }
     public decimal SalePrice { get; set; }
     public GameStatus Status { get; set; } = GameStatus.Available;

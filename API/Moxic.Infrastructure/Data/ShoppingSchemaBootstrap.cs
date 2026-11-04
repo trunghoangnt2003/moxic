@@ -24,6 +24,8 @@ public static class ShoppingSchemaBootstrap
         CREATE INDEX IF NOT EXISTS "IX_Notifications_UserId_CreatedAt" ON "Notifications" ("UserId", "CreatedAt");
 
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "SaleEndsAt" timestamp with time zone;
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "NameEn" text;
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "DescriptionEn" text;
 
         CREATE TABLE IF NOT EXISTS "WebPushSubscriptions" (
             "Id" uuid NOT NULL,

@@ -131,6 +131,8 @@ export default function GameForm() {
   const [gameId, setGameId] = useState<string | null>(id || null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
   const [originalPrice, setOriginalPrice] = useState(0);
   const [salePrice, setSalePrice] = useState(0);
   const [genreIds, setGenreIds] = useState<string[]>([]);
@@ -167,6 +169,8 @@ export default function GameForm() {
         .then((g) => {
           setName(g.name);
           setDescription(g.description);
+          setNameEn(g.nameEn ?? "");
+          setDescriptionEn(g.descriptionEn ?? "");
           setOriginalPrice(g.originalPrice);
           setSalePrice(g.salePrice);
           setGenreIds(g.genres?.map((ge: any) => ge.id) || []);
@@ -188,7 +192,7 @@ export default function GameForm() {
   }, [id]);
 
   const buildBody = () => ({
-    name, description, originalPrice, salePrice,
+    name, description, nameEn, descriptionEn, originalPrice, salePrice,
     genreIds, tagIds, status,
     releaseDate: releaseDate || null,
     isFeatured,
@@ -345,6 +349,17 @@ export default function GameForm() {
             <div>
               <label className="block text-xs text-steam-muted mb-1.5 font-medium">Description</label>
               <textarea placeholder="Game description..." value={description} onChange={(e) => setDescription(e.target.value)} className="w-full steam-input h-28 resize-none" required />
+            </div>
+            <div className="pt-3 border-t border-steam-border space-y-4">
+              <p className="text-xs text-steam-muted">English (moxic.co/en). Leave empty to show the Vietnamese text.</p>
+              <div>
+                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Game Name (English)</label>
+                <input placeholder="Same as above if the name is already English" value={nameEn} onChange={(e) => setNameEn(e.target.value)} className="w-full steam-input" />
+              </div>
+              <div>
+                <label className="block text-xs text-steam-muted mb-1.5 font-medium">Description (English)</label>
+                <textarea placeholder="English description..." value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} className="w-full steam-input h-28 resize-none" />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="isFeatured" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="rounded border-steam-border bg-steam-surface-3" />

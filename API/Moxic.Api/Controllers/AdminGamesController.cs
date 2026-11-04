@@ -80,6 +80,8 @@ public class AdminGamesController : ControllerBase
             Id = Guid.NewGuid(),
             Name = dto.Name,
             Description = dto.Description,
+            NameEn = string.IsNullOrWhiteSpace(dto.NameEn) ? null : dto.NameEn.Trim(),
+            DescriptionEn = string.IsNullOrWhiteSpace(dto.DescriptionEn) ? null : dto.DescriptionEn.Trim(),
             OriginalPrice = dto.OriginalPrice,
             SalePrice = dto.SalePrice,
             Status = dto.Status,
@@ -183,6 +185,8 @@ public class AdminGamesController : ControllerBase
             Id = game.Id,
             Name = game.Name,
             Description = game.Description,
+            NameEn = game.NameEn,
+            DescriptionEn = game.DescriptionEn,
             OriginalPrice = game.OriginalPrice,
             SalePrice = game.SalePrice,
             Genres = game.Genres.Select(ge => new GenreAdminDto(ge.Id, ge.Name)).ToList(),
@@ -239,6 +243,8 @@ public class AdminGamesController : ControllerBase
 
         game.Name = dto.Name;
         game.Description = dto.Description;
+        game.NameEn = string.IsNullOrWhiteSpace(dto.NameEn) ? null : dto.NameEn.Trim();
+        game.DescriptionEn = string.IsNullOrWhiteSpace(dto.DescriptionEn) ? null : dto.DescriptionEn.Trim();
         game.OriginalPrice = dto.OriginalPrice;
         game.SalePrice = dto.SalePrice;
         game.Status = dto.Status;

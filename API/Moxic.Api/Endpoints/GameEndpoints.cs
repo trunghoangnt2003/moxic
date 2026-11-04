@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moxic.Api.Services;
 using Moxic.Core.DTOs;
 using Moxic.Core.Entities;
 using Moxic.Core.Interfaces;
@@ -46,6 +47,7 @@ public static class GameEndpoints
             {
                 var pattern = $"%{EscapeLike(term)}%";
                 query = query.Where(g => EF.Functions.ILike(g.Name, pattern, "\\")
+                    || (g.NameEn != null && EF.Functions.ILike(g.NameEn, pattern, "\\"))
                     || g.Tags.Any(t => EF.Functions.ILike(t.Name, pattern, "\\"))
                     || g.Genres.Any(x => EF.Functions.ILike(x.Name, pattern, "\\")));
             }
@@ -153,7 +155,7 @@ public static class GameEndpoints
                 dtos.Add(new GameListItemDto
                 {
                     Id = game.Id,
-                    Name = game.Name,
+                    Name = RequestLanguage.Pick(game.Name, game.NameEn),
                     OriginalPrice = game.OriginalPrice,
                     SalePrice = game.SalePrice,
                     Genres = game.Genres.Select(g => new GenreDto(g.Id, g.Name)).ToList(),
@@ -251,7 +253,7 @@ public static class GameEndpoints
                 dtos.Add(new GameListItemDto
                 {
                     Id = game.Id,
-                    Name = game.Name,
+                    Name = RequestLanguage.Pick(game.Name, game.NameEn),
                     OriginalPrice = game.OriginalPrice,
                     SalePrice = game.SalePrice,
                     Genres = game.Genres.Select(g => new GenreDto(g.Id, g.Name)).ToList(),
@@ -305,8 +307,8 @@ public static class GameEndpoints
             var dto = new GameDetailDto
             {
                 Id = game.Id,
-                Name = game.Name,
-                Description = game.Description,
+                Name = RequestLanguage.Pick(game.Name, game.NameEn),
+                Description = RequestLanguage.Pick(game.Description, game.DescriptionEn),
                 OriginalPrice = game.OriginalPrice,
                 SalePrice = game.SalePrice,
                 Genres = game.Genres.Select(g => new GenreDto(g.Id, g.Name)).ToList(),

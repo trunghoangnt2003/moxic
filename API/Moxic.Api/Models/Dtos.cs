@@ -7,6 +7,8 @@ public record CreateGameDto
     public int RewardPoints { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+    public string? NameEn { get; init; }
+    public string? DescriptionEn { get; init; }
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
     public List<Guid> GenreIds { get; init; } = new();
@@ -23,6 +25,8 @@ public record UpdateGameDto
     public int RewardPoints { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+    public string? NameEn { get; init; }
+    public string? DescriptionEn { get; init; }
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
     public List<Guid> GenreIds { get; init; } = new();
@@ -195,6 +199,8 @@ public record AdminGameDetailResponse
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+    public string? NameEn { get; init; }
+    public string? DescriptionEn { get; init; }
     public decimal OriginalPrice { get; init; }
     public decimal SalePrice { get; init; }
     public List<GenreAdminDto> Genres { get; init; } = new();

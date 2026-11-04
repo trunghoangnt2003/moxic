@@ -54,7 +54,7 @@ export default function EditionCompare({
           <tbody>
             {rows.map((item, i) => (
               <tr key={item} className={i % 2 === 0 ? "bg-white/[0.02]" : ""}>
-                <td className="px-3 py-2.5 text-text-secondary">{item}</td>
+                <td className="px-3 py-2.5 text-text-secondary">{t(item)}</td>
                 {editions.map((e) => (
                   <td key={e.id} className={`px-3 py-2.5 text-center ${e.id === selectedId ? "bg-accent/5" : ""}`}>
                     {has(e, item) ? (
