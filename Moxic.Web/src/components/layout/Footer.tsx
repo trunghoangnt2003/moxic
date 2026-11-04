@@ -13,7 +13,7 @@ export default function Footer() {
               MOXIC
             </span>
           </div>
-          <div className="flex items-center gap-6 text-xs text-text-secondary">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-text-secondary">
             <Link to="/bang-gia-xbox" className="hover:text-text-primary transition-colors">
               Bảng giá Xbox
             </Link>
