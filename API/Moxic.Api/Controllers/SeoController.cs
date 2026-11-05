@@ -23,16 +23,14 @@ public class SeoController : ControllerBase
 {
     private readonly MoxicDbContext _db;
     private readonly IMinioService _minio;
-    private readonly IHttpClientFactory _http;
     private readonly IMemoryCache _cache;
     private readonly string _site;
     private readonly string _apiBase;
 
-    public SeoController(MoxicDbContext db, IMinioService minio, IHttpClientFactory http, IMemoryCache cache, IConfiguration config)
+    public SeoController(MoxicDbContext db, IMinioService minio, IMemoryCache cache, IConfiguration config)
     {
         _db = db;
         _minio = minio;
-        _http = http;
         _cache = cache;
         _site = (config["Site:BaseUrl"] ?? "https://moxic.co").TrimEnd('/');
         // Public API origin for absolute links (bot requests arrive via the internal web→api hop).
@@ -133,37 +131,25 @@ public class SeoController : ControllerBase
         return Content(html.ToString(), "text/html; charset=utf-8");
     }
 
-    // GET /api/seo/games/{id}/image — stable image URL for og:image (covers are short-lived presigned URLs)
+    // GET /api/seo/games/{id}/image — stable og:image URL; redirects to the media URL so the API never holds image bytes
     [HttpGet("games/{id:guid}/image")]
     public async Task<IActionResult> GameImage(Guid id)
     {
-        var bytes = await _cache.GetOrCreateAsync($"seo-img:{id}", async entry =>
+        var url = await _cache.GetOrCreateAsync($"seo-img-url:{id}", async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6);
-            entry.Size = 1;
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
             var key = await _db.GameMedias.AsNoTracking()
                 .Where(m => m.GameId == id && !m.ObjectKey.EndsWith(".mp4") && !m.ObjectKey.EndsWith(".webm") && !m.ObjectKey.EndsWith(".mov"))
                 .OrderByDescending(m => m.IsPrimary).ThenBy(m => m.DisplayOrder)
                 .Select(m => m.ObjectKey).FirstOrDefaultAsync();
             if (key == null) return null;
-            try
-            {
-                var url = await _minio.GetPresignedUrlAsync(LuckySpinRules.GameBucket, key);
-                var client = _http.CreateClient(PriceTrackerService.HttpClientName);
-                using var res = await client.GetAsync(url);
-                if (!res.IsSuccessStatusCode) return null;
-                var data = await res.Content.ReadAsByteArrayAsync();
-                if (data.Length > 8 * 1024 * 1024) return null;
-                return new CachedImage(data, res.Content.Headers.ContentType?.MediaType ?? "image/jpeg");
-            }
+            try { return await _minio.GetPresignedUrlAsync(LuckySpinRules.GameBucket, key); }
             catch { return null; }
         });
-        if (bytes == null) return Redirect($"{_site}/icon-512.png");
-        Response.Headers.CacheControl = "public, max-age=21600";
-        return File(bytes.Data, bytes.ContentType);
+        if (string.IsNullOrEmpty(url)) return Redirect($"{_site}/icon-512.png");
+        Response.Headers.CacheControl = "public, max-age=600";
+        return Redirect(url);
     }
-
-    private record CachedImage(byte[] Data, string ContentType);
 
     // GET /api/seo/page?path=/bang-gia-xbox — text-first HTML (+ JSON-LD) for search engines and AI assistants
     [HttpGet("page")]

@@ -25,6 +25,10 @@ public class GuessGameService
     public const int StreakBonusCap = 50;
     private const int NoRepeatDays = 60;
     private static readonly TimeSpan Vn = TimeSpan.FromHours(7);
+    private const int RenderWidth = 720;
+    private const long MaxDecodePixels = 40_000_000;
+    private static readonly TimeSpan ImageCacheTtl = TimeSpan.FromHours(1);
+    private static readonly SemaphoreSlim RenderGate = new(1, 1);
 
     private readonly MoxicDbContext _db;
     private readonly IMinioService _minio;
@@ -119,11 +123,10 @@ public class GuessGameService
         }
     }
 
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> RenderLocks = new();
 
     /// <summary>
-    /// Pixelated JPEG for a level (PixelSizes.Length = clear). Successful renders are cached per (date, level);
-    /// failures are never cached so the next request (or the web's retry) tries again. One render per key at a time.
+    /// Pixelated JPEG for a level (PixelSizes.Length = clear). A miss renders and stores every level from one decode;
+    /// failures are never cached so the next request (or the web's retry) tries again. One render at a time.
     /// </summary>
     public async Task<byte[]?> ImageAsync(string date, int level)
     {
@@ -131,28 +134,35 @@ public class GuessGameService
         var key = $"guess-img:{date}:{level}";
         if (_cache.TryGetValue(key, out byte[]? hit) && hit != null) return hit;
 
-        var gate = RenderLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync();
+        await RenderGate.WaitAsync();
         try
         {
             if (_cache.TryGetValue(key, out hit) && hit != null) return hit;
 
-            // Rendered once per day and stored — survives restarts.
+            // Rendered once per day and stored — survives restarts. Postgres keeps them, so RAM only holds the busy hour.
             var stored = await _db.GuessImages.AsNoTracking().Where(x => x.Date == date && x.Level == level).Select(x => x.Data).FirstOrDefaultAsync();
             if (stored != null)
             {
-                _cache.Set(key, stored, TimeSpan.FromHours(30));
+                _cache.Set(key, stored, ImageCacheTtl);
                 return stored;
             }
 
             var src = await SourceAsync(date);
             if (src == null) return null;
-            var bytes = Render(src, level);
-            if (bytes == null) return null;
-            _db.GuessImages.Add(new GuessImage { Date = date, Level = level, Data = bytes, CreatedAt = DateTime.UtcNow });
+            var rendered = RenderAll(src);
+            if (rendered == null) return null;
+
+            var existing = await _db.GuessImages.AsNoTracking().Where(x => x.Date == date).Select(x => x.Level).ToListAsync();
+            for (var i = 0; i < rendered.Length; i++)
+            {
+                if (rendered[i] is { } data && !existing.Contains(i))
+                    _db.GuessImages.Add(new GuessImage { Date = date, Level = i, Data = data, CreatedAt = DateTime.UtcNow });
+            }
             try { await _db.SaveChangesAsync(); }
             catch (DbUpdateException) { _db.ChangeTracker.Clear(); } // saved concurrently elsewhere — fine
-            _cache.Set(key, bytes, TimeSpan.FromHours(30));
+
+            var bytes = rendered[level];
+            if (bytes != null) _cache.Set(key, bytes, ImageCacheTtl);
             return bytes;
         }
         catch (Exception ex)
@@ -162,7 +172,7 @@ public class GuessGameService
         }
         finally
         {
-            gate.Release();
+            RenderGate.Release();
         }
     }
 
@@ -177,7 +187,7 @@ public class GuessGameService
             {
                 using var scope = _scopes.CreateScope();
                 var svc = scope.ServiceProvider.GetRequiredService<GuessGameService>();
-                for (var level = 0; level <= ClearLevel; level++) await svc.ImageAsync(date, level);
+                await svc.ImageAsync(date, 0); // a miss renders and stores every level
                 var cutoff = (DateTime.UtcNow + Vn).AddDays(-7).ToString("yyyy-MM-dd");
                 var db = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
                 await db.GuessImages.Where(x => string.Compare(x.Date, cutoff) < 0).ExecuteDeleteAsync();
@@ -185,11 +195,9 @@ public class GuessGameService
             catch (Exception ex) { _logger.LogWarning(ex, "Guess prerender failed for {Date}", date); }
         });
 
-    /// <summary>Original picture bytes for a day (cached; fetched with retries).</summary>
+    /// <summary>Original picture bytes for a day (fetched with retries; only needed while rendering, so never cached).</summary>
     private async Task<byte[]?> SourceAsync(string date)
     {
-        var key = $"guess-src:{date}";
-        if (_cache.TryGetValue(key, out byte[]? cached) && cached != null) return cached;
         var p = await _db.GuessPuzzles.AsNoTracking().FirstOrDefaultAsync(x => x.Date == date);
         if (p == null) return null;
         var client = _http.CreateClient(PriceTrackerService.HttpClientName);
@@ -199,11 +207,7 @@ public class GuessGameService
             {
                 var url = await _minio.GetPresignedUrlAsync(LuckySpinRules.GameBucket, p.ObjectKey);
                 var bytes = await client.GetByteArrayAsync(url);
-                if (bytes.Length > 0)
-                {
-                    _cache.Set(key, bytes, TimeSpan.FromHours(30));
-                    return bytes;
-                }
+                if (bytes.Length > 0) return bytes;
             }
             catch (Exception ex) when (attempt < 3)
             {
@@ -214,14 +218,42 @@ public class GuessGameService
         return null;
     }
 
-    /// <summary>Resize to 720px wide; pixelate (and blur the first two levels) unless it is the clear level.</summary>
-    private static byte[]? Render(byte[] src, int level)
+    /// <summary>Every level from a single decode, indexed by level; null if the picture can't be decoded.</summary>
+    private static byte[]?[]? RenderAll(byte[] src)
     {
-        using var original = SKBitmap.Decode(src);
-        if (original == null) return null;
-        var w = Math.Min(720, original.Width);
-        var h = Math.Max(1, (int)Math.Round(original.Height * (w / (double)original.Width)));
-        using var sized = original.Resize(new SKImageInfo(w, h), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear)) ?? original.Copy();
+        using var sized = DecodeSized(src);
+        if (sized == null) return null;
+        var levels = new byte[]?[ClearLevel + 1];
+        for (var level = 0; level <= ClearLevel; level++) levels[level] = Render(sized, level);
+        return levels;
+    }
+
+    /// <summary>
+    /// Decodes at (or close to) 720px wide, resized to exactly that. Pixel buffers are native memory outside the GC
+    /// heap limit, so formats that can decode scaled never hold the full-size picture, and oversized ones are refused.
+    /// </summary>
+    private static SKBitmap? DecodeSized(byte[] src)
+    {
+        using var encoded = SKData.CreateCopy(src);
+        using var codec = SKCodec.Create(encoded);
+        if (codec == null) return null;
+        var dim = codec.GetScaledDimensions(Math.Min(1f, RenderWidth / (float)codec.Info.Width));
+        if ((long)dim.Width * dim.Height > MaxDecodePixels) return null;
+
+        using var decoded = new SKBitmap(new SKImageInfo(dim.Width, dim.Height));
+        var result = codec.GetPixels(decoded.Info, decoded.GetPixels());
+        if (result != SKCodecResult.Success && result != SKCodecResult.IncompleteInput) return null;
+
+        var w = Math.Min(RenderWidth, dim.Width);
+        var h = Math.Max(1, (int)Math.Round(dim.Height * (w / (double)dim.Width)));
+        return decoded.Resize(new SKImageInfo(w, h), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear)) ?? decoded.Copy();
+    }
+
+    /// <summary>Pixelate (and blur the first two levels) unless it is the clear level.</summary>
+    private static byte[]? Render(SKBitmap sized, int level)
+    {
+        var w = sized.Width;
+        var h = sized.Height;
         SKBitmap output = sized;
         SKBitmap? temp = null;
         if (level < PixelSizes.Length)
