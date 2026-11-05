@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Coins, Heart, KeyRound, LayoutGrid, LogOut, Package, TicketPercent, Trophy } from "lucide-react";
+import { Coins, Gift, Heart, KeyRound, LayoutGrid, LogOut, Package, TicketPercent, Trophy } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
 
 import { t } from "../../lib/i18n";
@@ -15,6 +15,7 @@ const LINKS = [
   { to: "/account/rentals", label: t("Game đang thuê"), icon: KeyRound },
   { to: "/wishlist", label: t("Yêu thích"), icon: Heart },
   { to: "/rewards", label: t("Thành tựu"), icon: Trophy },
+  { to: "/account/prizes", label: t("Phần quà đã mở"), icon: Gift },
   { to: "/account/points", label: t("Điểm thưởng"), icon: Coins },
   { to: "/account/coupons", label: t("Mã giảm giá"), icon: TicketPercent },
 ];

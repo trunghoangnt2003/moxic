@@ -365,6 +365,16 @@ public class LuckySpinController : ControllerBase
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
 
+        // A game, or a discount with no coupon set up, is handed over by staff: tell them now.
+        if (winner.Type != SpinPrizeType.Luck && coupon == null)
+        {
+            var scopes = HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
+            TelegramOrderNotifier.TextInBackground(scopes,
+                $"🎁 <b>Có giải cần trao</b>: {TelegramBot.Html(winner.Name)}\nHòm: {TelegramBot.Html(spinCase.Name)}\n" +
+                $"Khách: {TelegramBot.Html(email ?? "chưa đăng nhập")}\nMã thưởng: <code>{TelegramBot.Html(rewardCode)}</code>\n" +
+                "Trao xong: admin → Lucky Spin → Lịch sử → Đánh dấu đã trao.");
+        }
+
         // (9) cosmetic reel built server-side AFTER the draw
         var layout = LuckySpinRules.BuildReel(prizes, winner);
         var images = await ResolveImagesAsync(prizes);

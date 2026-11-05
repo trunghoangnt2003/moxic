@@ -249,6 +249,15 @@ export default function Navbar() {
                       {t("Điểm thưởng")}
                     </Link>
                     <Link
+                      to="/account/prizes"
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-surface-hover hover:text-text-primary transition-colors"
+                    >
+                      <Gift className="w-4 h-4" />
+                      {t("Phần quà đã mở")}
+                    </Link>
+                    <Link
                       to="/account/coupons"
                       role="menuitem"
                       onClick={() => setAccountOpen(false)}
@@ -380,6 +389,14 @@ export default function Navbar() {
                   >
                     <Coins className="w-4 h-4" />
                     {t("Điểm thưởng")}
+                  </Link>
+                  <Link
+                    to="/account/prizes"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary"
+                  >
+                    <Gift className="w-4 h-4" />
+                    {t("Phần quà đã mở")}
                   </Link>
                   <Link
                     to="/account/coupons"

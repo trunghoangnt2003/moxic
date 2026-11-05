@@ -177,6 +177,26 @@ export async function getSpinCodeOrder(id: string) {
   return data;
 }
 
+/** One opening of a case and where its prize stands now (the customer's own only). */
+export interface SpinReward {
+  id: string;
+  caseName: string;
+  prizeName: string;
+  prizeType: "Luck" | "Discount" | "Game";
+  rarity: string | null;
+  imageUrl: string | null;
+  gameId: string | null;
+  rewardCode: string | null;
+  status: "NoPrize" | "Processing" | "Delivered" | "ClaimCoupon" | "Usable" | "Upcoming" | "Used" | "Expired" | "Inactive";
+  claimedAt: string | null;
+  createdAt: string;
+}
+
+export async function getMySpinRewards(page: number, all: boolean) {
+  const { data } = await api.get<{ items: SpinReward[]; total: number; page: number; pageSize: number; pending: number }>("/account/spin-rewards", { params: { page, all } });
+  return data;
+}
+
 export async function lookupSpinCode(code: string) {
   const { data } = await api.get<{ slug: string }>("/lucky-spin/code-lookup", { params: { code } });
   return data;

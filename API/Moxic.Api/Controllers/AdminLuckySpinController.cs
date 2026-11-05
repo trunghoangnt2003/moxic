@@ -19,11 +19,13 @@ public class AdminLuckySpinController : ControllerBase
 
     private readonly MoxicDbContext _db;
     private readonly IMinioService _minio;
+    private readonly NotificationService _notifications;
 
-    public AdminLuckySpinController(MoxicDbContext db, IMinioService minio)
+    public AdminLuckySpinController(MoxicDbContext db, IMinioService minio, NotificationService notifications)
     {
         _db = db;
         _minio = minio;
+        _notifications = notifications;
     }
 
     // ───────────────────────── Prizes ─────────────────────────
@@ -415,9 +417,22 @@ public class AdminLuckySpinController : ControllerBase
         if (spin.PrizeType == SpinPrizeType.Luck)
             return BadRequest(new { error = "Giải 'Chúc may mắn' không có phần thưởng để trao." });
 
+        var newlyDelivered = request.IsClaimed && !spin.IsClaimed;
         spin.IsClaimed = request.IsClaimed;
         spin.ClaimedAt = request.IsClaimed ? DateTime.UtcNow : null;
         await _db.SaveChangesAsync();
+
+        // Coupons reach the wallet by themselves; a prize staff hand over is news to the customer.
+        if (newlyDelivered && !string.IsNullOrEmpty(spin.UserId) && !await _db.Coupons.AnyAsync(c => c.SpinHistoryId == spin.Id))
+        {
+            var en = await _notifications.IsEnglishAsync(spin.UserId);
+            var nameEn = !en || spin.GameId == null ? null : await _db.Games.AsNoTracking().Where(g => g.Id == spin.GameId).Select(g => g.NameEn).FirstOrDefaultAsync();
+            var name = string.IsNullOrWhiteSpace(nameEn) ? spin.PrizeName : nameEn;
+            await _notifications.AddAsync(spin.UserId, "spin",
+                en ? $"🎁 Your prize has been delivered: {name}" : $"🎁 Moxic đã trao phần quà: {name}",
+                en ? "See it under Opened prizes." : "Xem trong mục Phần quà đã mở.",
+                "/account/prizes");
+        }
         return Ok(ToAdminSpin(spin));
     }
 

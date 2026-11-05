@@ -5,6 +5,7 @@ import { Check, Copy, TicketPercent, X } from "lucide-react";
 import { formatDate } from "../../lib/utils";
 import PrizeCard, { RARITY_COLORS, RARITY_LABELS } from "./PrizeCard";
 import { useContactSettings } from "../../hooks/useLuckySpin";
+import { useMe } from "../../hooks/useAccount";
 import { formatPoints, type CaseSummary, type OpenCaseResult } from "../../lib/luckySpinApi";
 
 import { t, locale } from "../../lib/i18n";
@@ -17,6 +18,7 @@ interface ResultModalProps {
 
 export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }: ResultModalProps) {
   const { data: contact } = useContactSettings();
+  const { data: me } = useMe();
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -154,6 +156,11 @@ export default function ResultModal({ result, caseInfo, onClose, canOpenAgain }:
             <p className="mt-4 text-sm text-white/70">
               {t("Lưu lại mã thưởng và liên hệ Moxic qua Zalo hoặc Messenger để nhận quà.")}
             </p>
+            {me && (
+              <Link to="/account/prizes" onClick={onClose} className="mt-2 inline-block text-sm font-semibold text-caution hover:underline">
+                {t("Theo dõi trong Phần quà đã mở")}
+              </Link>
+            )}
 
             {(contact?.messengerUrl || contact?.zaloUrl) && (
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
