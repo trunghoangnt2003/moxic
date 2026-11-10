@@ -38,7 +38,7 @@ export default function Login({ onLogin }: { onLogin: (email: string) => void })
         {/* Logo */}
         <div className="text-center mb-8">
           <Gamepad2 size={36} className="text-steam-blue mx-auto mb-3" />
-          <h1 className="text-xl font-mono font-bold tracking-widest text-white">MOXIC</h1>
+          <h1 className="text-xl font-mono font-bold tracking-widest text-white">MOXIC.CO</h1>
           <p className="text-xs text-steam-muted mt-1.5 tracking-wide">ADMIN PANEL</p>
         </div>
 

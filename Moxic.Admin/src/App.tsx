@@ -111,7 +111,7 @@ function App() {
               <Gamepad2 size={20} className="text-steam-blue flex-shrink-0" />
               {!collapsed && (
                 <span className="font-mono font-bold text-sm tracking-wider text-white">
-                  MOXIC
+                  MOXIC.CO
                 </span>
               )}
             </div>
@@ -184,7 +184,7 @@ function App() {
             <div className="flex items-center gap-2">
               <Gamepad2 size={20} className="text-steam-blue flex-shrink-0" />
               <span className="font-mono font-bold text-sm tracking-wider text-white">
-                MOXIC
+                MOXIC.CO
               </span>
             </div>
             <button

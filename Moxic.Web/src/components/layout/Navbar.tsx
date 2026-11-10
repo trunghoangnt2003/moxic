@@ -90,8 +90,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo + Primary Nav */}
           <div className="flex items-center gap-6 lg:gap-8 min-w-0">
-            <Link to="/" className="text-accent font-display text-xl shrink-0">
-              MOXIC
+            <Link to="/" className="text-accent font-display text-xl shrink-0 whitespace-nowrap">
+              MOXIC.CO
             </Link>
             <div className="hidden md:flex items-center gap-5 lg:gap-6">
               <NavLink

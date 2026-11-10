@@ -32,7 +32,7 @@ export default function AuthShell({ title, subtitle, children, footer }: AuthShe
         <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/70 to-bg-base/20" />
         <div className="absolute inset-x-0 bottom-0 p-10">
           <Link to="/" className="font-display text-2xl text-accent">
-            Moxic
+            MOXIC.CO
           </Link>
           <p className="mt-3 font-display text-3xl font-bold text-text-primary max-w-sm leading-tight">{t("Game Xbox chính hãng, rẻ hơn Store")}</p>
         </div>

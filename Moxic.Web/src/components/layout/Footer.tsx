@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <Gamepad2 className="w-6 h-6 text-accent" />
             <span className="text-accent font-display text-xl">
-              MOXIC
+              MOXIC.CO
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-text-secondary">
