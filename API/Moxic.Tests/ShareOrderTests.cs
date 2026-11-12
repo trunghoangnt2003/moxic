@@ -115,4 +115,18 @@ public class ShareOrderTests
             Assert.Equal(60, await points.GetBalanceAsync(A.UserId));
         }
     }
+
+    [Fact]
+    public async Task Cancelling_a_share_order_queues_both_members_for_refund()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var sp = TestServices.Build(db);
+        var order = await FundedOrderAsync(sp);
+        using var scope = sp.CreateScope();
+        var r = await scope.ServiceProvider.GetRequiredService<OrderStatusService>().ChangeAsync(order.Id, OrderStatus.Cancelled, "Hết hàng");
+        Assert.True(r.Ok, r.Error);
+        var ctx = scope.ServiceProvider.GetRequiredService<MoxicDbContext>();
+        var seats = await ctx.ShareSeats.AsNoTracking().Where(s => s.RoomId == order.ShareRoomId).ToListAsync();
+        Assert.Equal(2, seats.Count(s => s.NeedsRefund && s.RefundedAt == null));
+    }
 }

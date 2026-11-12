@@ -126,6 +126,11 @@ public class OrderStatusService
                 // Coupon usage is returned exactly once, in the same transaction as the cancel.
                 if (await _coupons.ReleaseForOrderAsync(order.Id))
                     _logger.LogInformation("Released coupon redemption for cancelled order {OrderCode}", order.OrderCode);
+                // A cancelled share-room order was paid by both members: queue each paid seat for a manual refund.
+                if (order.ShareRoomId != null)
+                    await _db.ShareSeats
+                        .Where(s => s.RoomId == order.ShareRoomId && s.LeftAt == null && s.PaidAt != null && s.RefundedAt == null)
+                        .ExecuteUpdateAsync(s => s.SetProperty(x => x.NeedsRefund, true));
             }
             await tx.CommitAsync();
         }
