@@ -630,6 +630,85 @@ public class ShareRoomService
         return changed;
     }
 
+    // ───────────────────────── read models ─────────────────────────
+
+    /// <summary>Completed share purchases per user (paid seat in a room whose order is Completed).</summary>
+    public async Task<Dictionary<string, int>> ShareCountsAsync(IEnumerable<string> userIds)
+    {
+        var ids = userIds.Distinct().ToList();
+        if (ids.Count == 0) return new();
+        return await _db.ShareSeats.AsNoTracking()
+            .Where(s => ids.Contains(s.UserId) && s.PaidAt != null && s.LeftAt == null && s.Room!.Status == "Funded"
+                        && _db.Orders.Any(o => o.Id == s.Room.OrderId && o.Status == OrderStatus.Completed))
+            .GroupBy(s => s.UserId).Select(g => new { g.Key, N = g.Count() })
+            .ToDictionaryAsync(x => x.Key, x => x.N);
+    }
+
+    /// <summary>
+    /// The room as a viewer sees it. Strangers get names, split and who paid; only members get the order code;
+    /// a member's coupon and the owner's Xbox email are shown to that person only. Never exposes passwords or contacts.
+    /// </summary>
+    public async Task<Moxic.Api.Models.ShareRoomDto> ViewAsync(ShareRoom room, string? viewerId)
+    {
+        var active = Active(room).OrderByDescending(s => s.IsOwner).ThenBy(s => s.JoinedAt).ToList();
+        var me = viewerId == null ? null : active.FirstOrDefault(s => s.UserId == viewerId);
+        var former = me == null && viewerId != null ? room.Seats.Where(s => s.UserId == viewerId).OrderByDescending(s => s.JoinedAt).FirstOrDefault() : null;
+        var counts = await ShareCountsAsync(active.Select(s => s.UserId));
+        OrderStatus? orderStatus = room.OrderId == null ? null
+            : await _db.Orders.AsNoTracking().Where(o => o.Id == room.OrderId).Select(o => (OrderStatus?)o.Status).FirstOrDefaultAsync();
+        string? orderCode = me == null || room.OrderId == null ? null
+            : await _db.Orders.AsNoTracking().Where(o => o.Id == room.OrderId).Select(o => o.OrderCode).FirstOrDefaultAsync();
+        var owner = active.FirstOrDefault(s => s.IsOwner);
+
+        return new Moxic.Api.Models.ShareRoomDto
+        {
+            Code = room.Code, GameId = room.GameId, GameName = room.GameName, TotalPrice = room.TotalPrice, AccountType = room.AccountType,
+            OwnerPercent = room.OwnerPercent, IsPublic = room.IsPublic, Status = room.Status,
+            DisplayStatus = ShareRules.DisplayStatus(room.Status, orderStatus), Locked = room.Locked,
+            IsMember = me != null, IsOwner = me?.IsOwner == true, CreatedAt = room.CreatedAt, FullAt = room.FullAt,
+            ExpiresAt = ShareRules.RoomExpiry(room.CreatedAt), OrderCode = orderCode,
+            OwnerXboxSet = owner?.XboxEmail != null, MyXboxEmail = me?.IsOwner == true ? me.XboxEmail : null,
+            CancelReason = room.CancelReason,
+            MyLeftReason = former?.LeftReason, MyNeedsRefund = (me ?? former)?.NeedsRefund == true, MyRefundedAt = (me ?? former)?.RefundedAt,
+            Seats = active.Select(s => new Moxic.Api.Models.ShareSeatDto(
+                s.Id, s.DisplayName, s.IsOwner, s.UserId == viewerId, s.Percent, s.ShareAmount, s.DiscountAmount,
+                s.UserId == viewerId ? s.CouponCode : null, s.AmountDue, s.PaidAt != null, s.PaidAt,
+                room.Status == "Full" && s.PaidAt == null && room.FullAt != null ? ShareRules.PayDeadline(room.FullAt.Value) : null,
+                counts.GetValueOrDefault(s.UserId))).ToList(),
+        };
+    }
+
+    public async Task<List<ShareRoom>> ListOpenAsync(Guid? gameId, string? accountType, int? ownerPercent, string? sort, int page, int pageSize)
+    {
+        var q = _db.ShareRooms.AsNoTracking().Include(r => r.Seats).Where(r => r.Status == "Open" && r.IsPublic);
+        if (gameId != null) q = q.Where(r => r.GameId == gameId);
+        if (accountType is "Owner" or "Moxic") q = q.Where(r => r.AccountType == accountType);
+        if (ownerPercent != null) q = q.Where(r => r.OwnerPercent == ownerPercent);
+        q = sort == "ending" ? q.OrderBy(r => r.CreatedAt) : q.OrderByDescending(r => r.CreatedAt);
+        return await q.Skip((Math.Max(1, page) - 1) * pageSize).Take(pageSize).ToListAsync();
+    }
+
+    /// <summary>Rooms the user is in or was in (newest first).</summary>
+    public Task<List<ShareRoom>> MyRoomsAsync(string userId) =>
+        _db.ShareRooms.AsNoTracking().Include(r => r.Seats)
+            .Where(r => r.Seats.Any(s => s.UserId == userId))
+            .OrderByDescending(r => r.UpdatedAt).Take(50).ToListAsync();
+
+    /// <summary>Messages for a current member (null when not a member). "after" = only newer ones (polling).</summary>
+    public async Task<List<Moxic.Api.Models.ShareMessageDto>?> MessagesAsync(string code, string userId, DateTime? after, bool en)
+    {
+        var room = await LoadAsync(code);
+        if (room == null || !Active(room).Any(s => s.UserId == userId)) return null;
+        var names = room.Seats.GroupBy(s => s.UserId).ToDictionary(g => g.Key, g => g.First().DisplayName);
+        var q = _db.ShareMessages.AsNoTracking().Where(m => m.RoomId == room.Id);
+        if (after != null) q = q.Where(m => m.CreatedAt > after);
+        var rows = await q.OrderByDescending(m => m.CreatedAt).Take(200).ToListAsync();
+        rows.Reverse();
+        return rows.Select(m => new Moxic.Api.Models.ShareMessageDto(
+            m.Id, m.UserId == null ? null : names.GetValueOrDefault(m.UserId), m.UserId == userId, m.UserId == null,
+            m.UserId == null && en && !string.IsNullOrEmpty(m.TextEn) ? m.TextEn! : m.Text, m.Reported, m.CreatedAt)).ToList();
+    }
+
     // ───────────────────────── orders ─────────────────────────
 
     /// <summary>

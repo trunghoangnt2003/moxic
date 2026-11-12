@@ -265,3 +265,37 @@ public class ShareRoomServiceTests
         Assert.NotNull((await svc.PostMessageAsync(room.Code, B.UserId, "Còn đây")).Error);
     }
 }
+
+public class ShareRoomViewTests
+{
+    [Fact]
+    public async Task Get_room_as_stranger_hides_seat_private_fields()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var svc = Service(ctx);
+        var room = await FullRoomAsync(ctx, svc);
+        var loaded = await svc.LoadAsync(room.Code);
+
+        var stranger = await svc.ViewAsync(loaded!, C.UserId);
+        Assert.False(stranger.IsMember);
+        Assert.Null(stranger.MyXboxEmail);
+        Assert.Null(stranger.OrderCode);
+        Assert.Equal(2, stranger.Seats.Count);
+        Assert.All(stranger.Seats, s => { Assert.False(s.IsMe); Assert.Null(s.CouponCode); });
+        Assert.Equal("paying", stranger.DisplayStatus);
+
+        var partner = await svc.ViewAsync(loaded!, B.UserId);
+        Assert.True(partner.IsMember);
+        Assert.Null(partner.MyXboxEmail); // the owner's Xbox stays with the owner
+        Assert.True(partner.OwnerXboxSet);
+        Assert.NotNull(partner.Seats.Single(s => s.IsMe).PayDeadline);
+
+        var owner = await svc.ViewAsync(loaded!, A.UserId);
+        Assert.Equal("xbox@a.vn", owner.MyXboxEmail);
+
+        Assert.Null(await svc.MessagesAsync(room.Code, C.UserId, null, false));
+        var msgs = await svc.MessagesAsync(room.Code, B.UserId, null, true);
+        Assert.Contains(msgs!, m => m.System && m.Text.Contains("joined"));
+    }
+}
