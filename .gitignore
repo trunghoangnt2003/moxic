@@ -55,3 +55,4 @@ _temp*.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+.superpowers/

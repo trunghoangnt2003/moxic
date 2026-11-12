@@ -8,3 +8,5 @@
 *.md
 .env
 .env.local
+API/Moxic.Tests/
+.superpowers/
