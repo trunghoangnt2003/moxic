@@ -14,6 +14,7 @@ import {
   Gift,
   Heart,
   KeyRound,
+  Users,
   Crown,
 } from "lucide-react";
 import { useCartStore } from "../../lib/cartStore";
@@ -110,6 +111,15 @@ export default function Navbar() {
               >
                 <KeyRound className="w-4 h-4" />
                 {t("Thuê game")}
+              </NavLink>
+              <NavLink
+                to="/share"
+                className={({ isActive }) =>
+                  `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-info" : "text-info/90 hover:text-info"}`
+                }
+              >
+                <Users className="w-4 h-4" />
+                {t("Share game")}
               </NavLink>
               <NavLink
                 to="/lucky-spin"
@@ -322,6 +332,13 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               <KeyRound className="w-4 h-4" /> {t("Thuê game")}
+            </Link>
+            <Link
+              to="/share"
+              className="flex items-center gap-2 text-info py-2 text-sm font-semibold"
+              onClick={() => setMenuOpen(false)}
+            >
+              <Users className="w-4 h-4" /> {t("Share mua game chung")}
             </Link>
             <Link
               to="/lucky-spin"

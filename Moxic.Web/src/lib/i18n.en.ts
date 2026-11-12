@@ -1258,6 +1258,8 @@ export const EN: Record<string, string> = {
   "Bạn chưa có phần quà nào.": "You don't have any prizes yet.",
   "Theo dõi trong Phần quà đã mở": "Track it in Opened prizes",
   // Share rooms
+  "Share game": "Share a game",
+  "Share mua game chung": "Share-buy a game",
   "Báo cáo tin nhắn": "Report message",
   "Bạn chưa tham gia phòng share nào": "You haven't joined any share room yet",
   "Bạn trả {0}": "You pay {0}",
