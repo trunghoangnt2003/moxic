@@ -131,6 +131,50 @@ public class SeoController : ControllerBase
         return Content(html.ToString(), "text/html; charset=utf-8");
     }
 
+    /// <summary>
+    /// GET /api/seo/share/{code} — link preview for a share room posted on Facebook/Zalo: game image, the open part's price
+    /// and the room code. Private, closed or unknown rooms get a generic page that reveals nothing about the room.
+    /// </summary>
+    [HttpGet("share/{code}")]
+    public async Task<IActionResult> SharePage(string code, [FromQuery] string? lang = null)
+    {
+        var en = string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
+        var c = (code ?? string.Empty).Trim().ToUpperInvariant();
+        var room = await _db.ShareRooms.AsNoTracking().Include(r => r.Seats).FirstOrDefaultAsync(r => r.Code == c);
+        var url = $"{_site}{(en ? "/en" : "")}/share/{H(c)}";
+        string title, desc, image;
+        if (room != null && room.IsPublic && room.Status is "Open" or "Full")
+        {
+            var owner = room.Seats.First(s => s.IsOwner && s.LeftAt == null);
+            var open = room.TotalPrice - owner.ShareAmount;
+            var name = room.GameName;
+            title = room.Status == "Open"
+                ? (en ? $"Share {name} · 1 spot left · {Vnd(open)} · code {room.Code}" : $"Share {name} · thiếu 1 người · phần {Vnd(open)} · mã {room.Code}")
+                : (en ? $"Share {name} · room full · code {room.Code}" : $"Share {name} · phòng đã đủ người · mã {room.Code}");
+            desc = en
+                ? $"Buy {name} for Xbox together: {Vnd(room.TotalPrice)} total, split {owner.Percent}/{100 - owner.Percent}. Join the room on Moxic GameStore, each pays their own part."
+                : $"Cùng mua {name} cho Xbox: tổng {Vnd(room.TotalPrice)}, chia {owner.Percent}/{100 - owner.Percent}. Vào phòng trên Moxic GameStore, mỗi người tự trả phần của mình.";
+            image = $"{_apiBase}/api/seo/games/{room.GameId}/image";
+        }
+        else
+        {
+            title = en ? "Share-buy Xbox games on Moxic GameStore" : "Share mua game Xbox cùng nhau trên Moxic GameStore";
+            desc = en ? "Find a partner, split the price, each pays their own part." : "Tìm người share, chia tiền, mỗi người tự trả phần của mình.";
+            image = $"{_site}/og-default.png";
+        }
+
+        var html = new StringBuilder();
+        html.Append($"<!doctype html><html lang=\"{(en ? "en" : "vi")}\"><head><meta charset=\"utf-8\">");
+        html.Append($"<title>{H(title)}</title><meta name=\"description\" content=\"{H(desc)}\"><meta name=\"robots\" content=\"noindex\">");
+        html.Append($"<meta property=\"og:type\" content=\"website\"><meta property=\"og:site_name\" content=\"Moxic GameStore\"><meta property=\"og:locale\" content=\"{(en ? "en_US" : "vi_VN")}\">");
+        html.Append($"<meta property=\"og:title\" content=\"{H(title)}\"><meta property=\"og:description\" content=\"{H(desc)}\">");
+        html.Append($"<meta property=\"og:url\" content=\"{url}\"><meta property=\"og:image\" content=\"{H(image)}\">");
+        html.Append($"<meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"twitter:title\" content=\"{H(title)}\"><meta name=\"twitter:image\" content=\"{H(image)}\">");
+        html.Append($"</head><body><h1>{H(title)}</h1><p>{H(desc)}</p><p><a href=\"{url}\">{(en ? "Open the room" : "Mở phòng")}</a></p></body></html>");
+        Response.Headers.CacheControl = "public, max-age=120";
+        return Content(html.ToString(), "text/html; charset=utf-8");
+    }
+
     // GET /api/seo/games/{id}/image — stable og:image URL; redirects to the media URL so the API never holds image bytes
     [HttpGet("games/{id:guid}/image")]
     public async Task<IActionResult> GameImage(Guid id)

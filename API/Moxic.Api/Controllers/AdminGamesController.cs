@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
@@ -90,6 +90,7 @@ public class AdminGamesController : ControllerBase
                 : null,
             IsFeatured = dto.IsFeatured,
             RewardPoints = dto.RewardPoints,
+            AllowShare = dto.AllowShare,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -195,6 +196,7 @@ public class AdminGamesController : ControllerBase
             ReleaseDate = game.ReleaseDate,
             IsFeatured = game.IsFeatured,
             RewardPoints = game.RewardPoints,
+            AllowShare = game.AllowShare,
             SystemRequirements = game.SystemRequirements != null
                 ? new SystemRequirementDataDto
                 {
@@ -253,6 +255,7 @@ public class AdminGamesController : ControllerBase
             : null;
         game.IsFeatured = dto.IsFeatured;
         game.RewardPoints = dto.RewardPoints;
+        game.AllowShare = dto.AllowShare;
         game.UpdatedAt = DateTime.UtcNow;
 
         // Update genres

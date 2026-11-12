@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Moxic.Api.Services;
 using Moxic.Core.DTOs;
 using Moxic.Core.Entities;
@@ -325,6 +325,7 @@ public static class GameEndpoints
                 Publisher = game.Publisher,
                 Developer = game.Developer,
                 XboxProductId = game.XboxProductId,
+                AllowShare = game.AllowShare,
                 SaleEndsAt = game.SaleEndsAt > DateTime.UtcNow && game.SalePrice < game.OriginalPrice ? game.SaleEndsAt : null,
                 Editions = game.Editions
                     .Where(e => e.IsActive)
