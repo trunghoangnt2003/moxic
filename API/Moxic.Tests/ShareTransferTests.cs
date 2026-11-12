@@ -271,3 +271,26 @@ public class ShareXboxFormatTests
         Assert.Equal("secret", plain);
     }
 }
+
+public class ShareOptionalPasswordTests
+{
+    [Fact]
+    public async Task Owner_can_save_xbox_email_without_password_and_order_has_empty_password()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var svc = Service(ctx);
+        var g = await SeedGameAsync(ctx);
+        var room = (await svc.CreateAsync(A, Req(g))).Room!;
+        Assert.Null((await svc.SetOwnerXboxAsync(room.Code, A.UserId, "xbox@a.vn", "")).Error);
+        await svc.JoinAsync(room.Code, B);
+        foreach (var u in new[] { A.UserId, B.UserId })
+        {
+            var s = (await svc.StartPaymentAsync(room.Code, u)).Seat!;
+            await svc.HandleTransferAsync(Tx(s.AmountDue, s.PaymentCode!), s.PaymentCode!);
+        }
+        var order = await ctx.Orders.AsNoTracking().SingleAsync();
+        Assert.Equal("xbox@a.vn", order.CustomerXboxEmail);
+        Assert.Equal("", order.CustomerXboxPasswordEncrypted);
+    }
+}

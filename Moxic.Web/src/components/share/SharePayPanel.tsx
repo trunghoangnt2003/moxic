@@ -31,9 +31,10 @@ function XboxForm({ room }: { room: ShareRoom }) {
         save.mutate(undefined, { onSuccess: () => { setOpen(false); setPassword(""); } });
       }}
     >
-      <p className="text-sm text-text-secondary">{t("Game sẽ được cài vào tài khoản Xbox của bạn. Mật khẩu được mã hoá, chỉ Moxic xem khi cài.")}</p>
+      <p className="text-sm text-text-secondary">{t("Game sẽ được cài vào tài khoản Xbox của bạn. Người share không thấy thông tin tài khoản này; mật khẩu được mã hoá, chỉ Moxic xem khi cài.")}</p>
       <input className={input} type="email" required autoComplete="off" placeholder={t("Email tài khoản Xbox")} value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className={input} type="password" required autoComplete="new-password" placeholder={t("Mật khẩu Xbox")} value={password} onChange={(e) => setPassword(e.target.value)} />
+      <input className={input} type="password" autoComplete="new-password" placeholder={t("Mật khẩu Xbox (không bắt buộc)")} value={password} onChange={(e) => setPassword(e.target.value)} />
+      <p className="text-xs text-text-muted">{t("Có thể để trống, Moxic sẽ liên hệ bạn để lấy mật khẩu khi cài game.")}</p>
       <button type="submit" disabled={save.isPending} className="inline-flex h-10 items-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover disabled:opacity-60">
         {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />} {t("Lưu tài khoản Xbox")}
       </button>

@@ -358,10 +358,11 @@ public class ShareRoomService
         email = email?.Trim();
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Length > 200)
             return (null, T("Email Xbox không hợp lệ.", "Invalid Xbox email."));
-        if (string.IsNullOrWhiteSpace(password) || password.Length > 200)
-            return (null, T("Mật khẩu Xbox không được để trống.", "The Xbox password is required."));
+        if (password != null && password.Length > 200)
+            return (null, T("Mật khẩu Xbox quá dài.", "The Xbox password is too long."));
+        // The password is optional: without it Moxic contacts the owner when installing.
         seat.XboxEmail = email;
-        seat.XboxPasswordEncrypted = Encrypt(password);
+        seat.XboxPasswordEncrypted = string.IsNullOrEmpty(password) ? null : Encrypt(password);
         room.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return (room, null);

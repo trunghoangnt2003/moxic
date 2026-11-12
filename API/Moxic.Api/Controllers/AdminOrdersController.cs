@@ -130,6 +130,8 @@ public class AdminOrdersController : ControllerBase
         string decryptedPassword;
         if (order.IsGift && string.IsNullOrEmpty(order.CustomerXboxPasswordEncrypted))
             decryptedPassword = "(chờ người nhận quà nhập)";
+        else if (string.IsNullOrEmpty(order.CustomerXboxPasswordEncrypted))
+            decryptedPassword = "(khách chưa nhập, liên hệ khách để lấy)";
         else try
         {
             decryptedPassword = System.Text.Encoding.UTF8.GetString(

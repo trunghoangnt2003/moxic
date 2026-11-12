@@ -56,8 +56,6 @@ public class OrdersController : ControllerBase
             return BadRequest(new { error = "Số điện thoại không được để trống" });
         if (!request.IsGift && string.IsNullOrWhiteSpace(request.CustomerXboxEmail))
             return BadRequest(new { error = "Email Xbox không được để trống" });
-        if (!request.IsGift && string.IsNullOrWhiteSpace(request.CustomerXboxPassword))
-            return BadRequest(new { error = "Mật khẩu Xbox không được để trống" });
         if (request.IsGift && string.IsNullOrWhiteSpace(request.GiftRecipientName))
             return BadRequest(new { error = "Nhập tên người nhận quà" });
 
@@ -67,8 +65,9 @@ public class OrdersController : ControllerBase
 
         var protector = _dataProtection.CreateProtector("XboxPassword");
         // Gift orders carry no Xbox credentials until the recipient claims the gift.
-        var encryptedPassword = request.IsGift ? string.Empty : Convert.ToBase64String(protector.Protect(
-            System.Text.Encoding.UTF8.GetBytes(request.CustomerXboxPassword)));
+        // The password is optional: when it's left empty Moxic contacts the customer before installing.
+        var encryptedPassword = request.IsGift || string.IsNullOrEmpty(request.CustomerXboxPassword) ? string.Empty
+            : Convert.ToBase64String(protector.Protect(System.Text.Encoding.UTF8.GetBytes(request.CustomerXboxPassword)));
 
         // Link the order to the logged-in customer (separate MoxicCustomer scheme); guests stay unlinked.
         string? customerId = null;

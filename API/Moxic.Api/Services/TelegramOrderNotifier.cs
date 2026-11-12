@@ -236,7 +236,8 @@ public class TelegramOrderNotifier
     public async Task<bool> SendCredentialsAsync(long chatId, Order o, long replyTo, long? userId = null, long? threadId = null)
     {
         string password;
-        try
+        if (string.IsNullOrEmpty(o.CustomerXboxPasswordEncrypted)) password = "(khách chưa nhập, liên hệ khách để lấy)";
+        else try
         {
             password = System.Text.Encoding.UTF8.GetString(_dp.CreateProtector("XboxPassword").Unprotect(Convert.FromBase64String(o.CustomerXboxPasswordEncrypted)));
         }

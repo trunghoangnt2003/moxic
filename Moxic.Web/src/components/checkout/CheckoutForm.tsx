@@ -112,7 +112,6 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
     if (!isGift) {
       if (!email.trim()) errors.email = t("Email Xbox không được để trống");
       else if (!email.includes("@")) errors.email = t("Email không hợp lệ");
-      if (!password.trim()) errors.password = t("Mật khẩu tài khoản Xbox không được để trống");
     }
     setFieldErrors(errors);
     // Take the customer to the first field that needs attention (the phone submit bar can be far below it).
@@ -291,7 +290,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
               className={inputClass}
             />
           </Field>
-          <Field id="checkout-password" label={t("Mật khẩu tài khoản Xbox")} required error={fieldErrors.password}>
+          <Field id="checkout-password" label={t("Mật khẩu tài khoản Xbox (không bắt buộc)")} error={fieldErrors.password}>
             <input
               id="checkout-password"
               type="password"
@@ -302,6 +301,7 @@ export default function CheckoutForm({ onSuccess, couponCode, onCouponRejected, 
               aria-invalid={invalid("password")}
               className={inputClass}
             />
+            <p className="mt-1.5 text-xs text-text-muted">{t("Có thể để trống, Moxic sẽ liên hệ bạn để lấy mật khẩu khi cài game.")}</p>
           </Field>
           <PrivacyNotice />
         </Section>
