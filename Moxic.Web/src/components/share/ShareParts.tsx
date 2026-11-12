@@ -177,11 +177,17 @@ export function RoomCard({ room }: { room: ShareRoomCard }) {
   const body = (
     <>
       <div className="relative h-32">
-        <GameCover url={room.coverUrl} className={`h-full w-full ${room.joinable ? "" : "grayscale-[60%]"}`} />
+        <GameCover url={room.coverUrl} className={`h-full w-full ${room.joinable || room.isMine ? "" : "grayscale-[60%]"}`} />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-surface via-transparent to-transparent" />
         <div className="absolute inset-x-2.5 top-2.5 flex justify-between gap-2">
           <Chip gold>{t("Chia {0}/{1}", [room.ownerPercent, room.openPercent])}</Chip>
-          {room.joinable ? <Chip>{t("còn {0} ngày", [daysLeft])}</Chip> : <ShareStatusBadge status={room.displayStatus} paid={room.paidCount} />}
+          {room.isMine ? (
+            <span className="rounded-full border border-accent bg-accent px-2.5 py-0.5 text-xs font-semibold text-on-accent">{t("Phòng của bạn")}</span>
+          ) : room.joinable ? (
+            <Chip>{t("còn {0} ngày", [daysLeft])}</Chip>
+          ) : (
+            <ShareStatusBadge status={room.displayStatus} paid={room.paidCount} />
+          )}
         </div>
       </div>
       <div className="flex-1 px-3.5 pb-3">
@@ -216,7 +222,7 @@ export function RoomCard({ room }: { room: ShareRoomCard }) {
             <p className="text-[11px] text-text-muted">{t("đã đủ 2 người")}</p>
           </div>
         )}
-        {room.joinable ? (
+        {room.joinable || room.isMine ? (
           <span className="rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-on-accent transition-colors group-hover:bg-accent-hover">{t("Vào phòng")}</span>
         ) : (
           <span className="rounded-md bg-bg-elevated px-3.5 py-2 text-sm font-semibold text-text-muted">
@@ -226,7 +232,7 @@ export function RoomCard({ room }: { room: ShareRoomCard }) {
       </div>
     </>
   );
-  return room.joinable ? (
+  return room.joinable || room.isMine ? (
     <Link
       to={`/share/${room.code}`}
       className="group flex flex-col overflow-hidden rounded-md border border-border bg-bg-surface transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-accent-muted motion-reduce:hover:translate-y-0"

@@ -85,6 +85,8 @@ export interface ShareRoomCard {
   joinable: boolean;
   paidCount: number;
   partnerName: string | null;
+  /** The viewer is in this room: always enterable from the list. */
+  isMine: boolean;
 }
 
 export interface ShareMessage {

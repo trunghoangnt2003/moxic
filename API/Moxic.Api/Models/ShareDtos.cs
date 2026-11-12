@@ -85,7 +85,9 @@ public record ShareRoomCardDto(
     /// <summary>Only Open rooms can be joined; full and paid ones are listed for show.</summary>
     bool Joinable,
     int PaidCount,
-    string? PartnerName);
+    string? PartnerName,
+    /// <summary>The viewer is in this room (always enterable from the list).</summary>
+    bool IsMine);
 
 public record ShareMessageDto(Guid Id, string? AuthorName, bool Mine, bool System, string Text, bool Reported, DateTime CreatedAt);
 

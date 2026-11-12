@@ -82,6 +82,7 @@ public class ShareRoomsController : ControllerBase
         [FromQuery] string? sort, [FromQuery] bool open = false, [FromQuery] int page = 1)
     {
         var rooms = await _shares.ListPublicAsync(gameId, accountType, percent, sort, open, page, 24);
+        var me = (await MeAsync())?.UserId;
         var covers = await CoversAsync(rooms.Select(r => r.GameId));
         var owners = rooms.Select(r => r.Seats.First(s => s.IsOwner && s.LeftAt == null)).ToList();
         var counts = await _shares.ShareCountsAsync(owners.Select(o => o.UserId));
@@ -95,7 +96,8 @@ public class ShareRoomsController : ControllerBase
             return new ShareRoomCardDto(r.Code, r.GameId, r.GameName, covers.GetValueOrDefault(r.GameId), r.AccountType, owner.Percent,
                 100 - owner.Percent, r.TotalPrice - owner.ShareAmount, r.TotalPrice, ShareRules.RoomExpiry(r.CreatedAt), owner.DisplayName,
                 counts.GetValueOrDefault(owner.UserId), r.CreatedAt, r.Status, status, r.Status == "Open",
-                r.Seats.Count(s => s.LeftAt == null && s.PaidAt != null), partner?.DisplayName);
+                r.Seats.Count(s => s.LeftAt == null && s.PaidAt != null), partner?.DisplayName,
+                me != null && r.Seats.Any(s => s.LeftAt == null && s.UserId == me));
         }));
     }
 

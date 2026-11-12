@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Users } from "lucide-react";
 import Container from "../components/layout/Container";
 import { SectionLoader } from "../components/shared/MoxicLoader";
 import { RoomCard } from "../components/share/ShareParts";
 import CreateRoomDialog from "../components/share/CreateRoomDialog";
+import MyShareRooms from "../components/share/MyShareRooms";
 import { useShareRooms } from "../hooks/useShare";
 import { useMe } from "../hooks/useAccount";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -25,6 +26,7 @@ export default function ShareListPage() {
   const [sort, setSort] = useState<"new" | "ending">("new");
   const [code, setCode] = useState("");
   const [creating, setCreating] = useState(params.get("create") === "1");
+  const tab = params.get("tab") === "mine" ? "mine" : "all";
   const navigate = useNavigate();
   const { data: me } = useMe();
   const { data: rooms, isLoading } = useShareRooms({ gameId, accountType, percent: even ? 50 : undefined, sort, open: onlyOpen || undefined });
@@ -70,32 +72,68 @@ export default function ShareListPage() {
         {t("Một bản quyền Xbox chơi được cho 2 người. Vào phòng, thoả thuận trong khu thảo luận, mỗi người tự quét QR trả phần của mình. Đủ 2 phần Moxic mới mua và cài game.")}
       </p>
 
-      <div className="mb-5 flex flex-wrap gap-2">
-        {gameId && (
-          <button type="button" className={chip(true)} onClick={() => { params.delete("game"); params.delete("gameName"); setParams(params); }}>
-            {presetName ?? t("Game đã chọn")} ✕
+      <div role="tablist" aria-label={t("Phòng share")} className="mb-5 flex gap-6 border-b border-border">
+        {([["all", t("Tất cả phòng")], ["mine", t("Phòng của tôi")]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => {
+              if (key === "mine") params.set("tab", "mine");
+              else params.delete("tab");
+              setParams(params, { replace: true });
+            }}
+            className={`-mb-px border-b-2 pb-2.5 text-sm font-semibold transition-colors ${
+              tab === key ? "border-accent text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"
+            }`}
+          >
+            {label}
           </button>
-        )}
-        <button type="button" className={chip(onlyOpen)} onClick={() => setOnlyOpen((v) => !v)}>{t("Đang thiếu người")}</button>
-        <button type="button" className={chip(accountType === "Owner")} onClick={() => setAccountType(accountType === "Owner" ? undefined : "Owner")}>{t("Tài khoản chủ phòng")}</button>
-        <button type="button" className={chip(accountType === "Moxic")} onClick={() => setAccountType(accountType === "Moxic" ? undefined : "Moxic")}>{t("Tài khoản Moxic cấp")}</button>
-        <button type="button" className={chip(even)} onClick={() => setEven((v) => !v)}>{t("Chia 50/50")}</button>
-        <button type="button" className={chip(false)} onClick={() => setSort(sort === "new" ? "ending" : "new")}>{sort === "new" ? t("Mới nhất") : t("Sắp hết hạn")} ▾</button>
+        ))}
       </div>
 
-      {isLoading ? (
-        <SectionLoader />
-      ) : !rooms || rooms.length === 0 ? (
-        <div className="rounded-lg border border-border bg-bg-surface py-16 text-center">
-          <Users className="mx-auto mb-3 h-10 w-10 text-accent/60" />
-          <p className="font-semibold text-text-primary">{t("Chưa có phòng nào đang tìm người")}</p>
-          <p className="mb-5 mt-1 text-sm text-text-muted">{t("Tạo phòng rồi đăng link lên Facebook để rủ người share cùng.")}</p>
-          <button type="button" onClick={openCreate} className="h-11 rounded-md bg-accent px-6 text-sm font-bold text-on-accent hover:bg-accent-hover">{t("Tạo phòng share")}</button>
-        </div>
+      {tab === "mine" ? (
+        me ? (
+          <MyShareRooms />
+        ) : (
+          <div className="rounded-lg border border-border bg-bg-surface py-16 text-center">
+            <p className="font-semibold text-text-primary">{t("Đăng nhập để xem phòng của bạn")}</p>
+            <Link to={`/login?redirect=${encodeURIComponent("/share?tab=mine")}`} className="mt-4 inline-flex h-11 items-center rounded-md bg-accent px-6 text-sm font-bold text-on-accent">
+              {t("Đăng nhập")}
+            </Link>
+          </div>
+        )
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {rooms.map((r) => <RoomCard key={r.code} room={r} />)}
-        </div>
+        <>
+          <div className="mb-5 flex flex-wrap gap-2">
+            {gameId && (
+              <button type="button" className={chip(true)} onClick={() => { params.delete("game"); params.delete("gameName"); setParams(params); }}>
+                {presetName ?? t("Game đã chọn")} ✕
+              </button>
+            )}
+            <button type="button" className={chip(onlyOpen)} onClick={() => setOnlyOpen((v) => !v)}>{t("Đang thiếu người")}</button>
+            <button type="button" className={chip(accountType === "Owner")} onClick={() => setAccountType(accountType === "Owner" ? undefined : "Owner")}>{t("Tài khoản chủ phòng")}</button>
+            <button type="button" className={chip(accountType === "Moxic")} onClick={() => setAccountType(accountType === "Moxic" ? undefined : "Moxic")}>{t("Tài khoản Moxic cấp")}</button>
+            <button type="button" className={chip(even)} onClick={() => setEven((v) => !v)}>{t("Chia 50/50")}</button>
+            <button type="button" className={chip(false)} onClick={() => setSort(sort === "new" ? "ending" : "new")}>{sort === "new" ? t("Mới nhất") : t("Sắp hết hạn")} ▾</button>
+          </div>
+
+          {isLoading ? (
+            <SectionLoader />
+          ) : !rooms || rooms.length === 0 ? (
+            <div className="rounded-lg border border-border bg-bg-surface py-16 text-center">
+              <Users className="mx-auto mb-3 h-10 w-10 text-accent/60" />
+              <p className="font-semibold text-text-primary">{t("Chưa có phòng nào đang tìm người")}</p>
+              <p className="mb-5 mt-1 text-sm text-text-muted">{t("Tạo phòng rồi đăng link lên Facebook để rủ người share cùng.")}</p>
+              <button type="button" onClick={openCreate} className="h-11 rounded-md bg-accent px-6 text-sm font-bold text-on-accent hover:bg-accent-hover">{t("Tạo phòng share")}</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {rooms.map((r) => <RoomCard key={r.code} room={r} />)}
+            </div>
+          )}
+        </>
       )}
 
       <CreateRoomDialog open={creating} onClose={() => setCreating(false)} preset={preset} />
