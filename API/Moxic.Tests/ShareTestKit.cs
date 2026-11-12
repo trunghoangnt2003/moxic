@@ -36,8 +36,22 @@ public static class ShareTestKit
         new(ctx, new CouponService(ctx, NullLogger<CouponService>.Instance), Protection, events ?? new RecordingShareEvents(),
             NullLogger<ShareRoomService>.Instance);
 
+    /// <summary>Identity rows for A/B/C (notifications and emails reference AspNetUsers).</summary>
+    public static async Task SeedUsersAsync(MoxicDbContext ctx)
+    {
+        if (await ctx.Users.AnyAsync()) return;
+        foreach (var u in new[] { A, B, C })
+            ctx.Users.Add(new Microsoft.AspNetCore.Identity.IdentityUser
+            {
+                Id = u.UserId, UserName = u.Email, NormalizedUserName = u.Email.ToUpperInvariant(), Email = u.Email,
+                NormalizedEmail = u.Email.ToUpperInvariant(), EmailConfirmed = true, SecurityStamp = Guid.NewGuid().ToString(),
+            });
+        await ctx.SaveChangesAsync();
+    }
+
     public static async Task<Game> SeedGameAsync(MoxicDbContext ctx, decimal price = 900000, bool allowShare = true, int rewardPoints = 100)
     {
+        await SeedUsersAsync(ctx);
         var now = DateTime.UtcNow;
         var g = new Game
         {

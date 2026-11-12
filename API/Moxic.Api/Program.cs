@@ -102,6 +102,9 @@ builder.Services.AddScoped<TelegramOrderNotifier>();
 builder.Services.AddScoped<OrderStatusService>();
 builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<SpinCodeShopService>();
+builder.Services.AddScoped<IShareEvents, ShareNotifier>();
+builder.Services.AddScoped<ShareRoomService>();
+builder.Services.AddHostedService<ShareMaintenanceService>();
 builder.Services.AddScoped<LeaderboardService>();
 builder.Services.AddScoped<GuessGameService>();
 // SEO for search engines + AI assistants
