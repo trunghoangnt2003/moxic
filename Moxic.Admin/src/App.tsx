@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import {
   Gamepad2,
@@ -19,6 +19,7 @@ import {
   Megaphone,
   LayoutDashboard,
   KeyRound,
+  Handshake,
   ShieldAlert,
   TicketPercent,
   ShoppingBag,
@@ -44,6 +45,7 @@ const Coupons = lazy(() => import("./pages/Coupons"));
 const Announcements = lazy(() => import("./pages/Announcements"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
+const ShareRooms = lazy(() => import("./pages/ShareRooms"));
 const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -58,6 +60,7 @@ const navItems = [
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/chat", label: "Chat", icon: MessagesSquare },
   { to: "/rentals", label: "Thuê game", icon: KeyRound },
+  { to: "/share-rooms", label: "Phòng share", icon: Handshake },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
   { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
@@ -262,6 +265,7 @@ function App() {
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/rentals" element={<Rentals />} />
+                  <Route path="/share-rooms" element={<ShareRooms />} />
                   <Route path="/moderation" element={<Moderation />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />

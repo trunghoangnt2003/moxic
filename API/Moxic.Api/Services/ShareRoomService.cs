@@ -56,6 +56,10 @@ public class ShareRoomService
     }
 
     public static string Vnd(decimal v) => v.ToString("N0", Vi) + "đ";
+
+    // Same format as order checkout (OrdersController): base64(Protect(utf8 bytes)) — admin and Telegram decode it that way.
+    private string Encrypt(string plain) => Convert.ToBase64String(_protector.Protect(global::System.Text.Encoding.UTF8.GetBytes(plain)));
+    private string Decrypt(string cipher) => global::System.Text.Encoding.UTF8.GetString(_protector.Unprotect(Convert.FromBase64String(cipher)));
     private static string T(string vi, string en) => RequestLanguage.T(vi, en);
     private static IEnumerable<ShareSeat> Active(ShareRoom r) => r.Seats.Where(s => s.LeftAt == null);
 
@@ -357,7 +361,7 @@ public class ShareRoomService
         if (string.IsNullOrWhiteSpace(password) || password.Length > 200)
             return (null, T("Mật khẩu Xbox không được để trống.", "The Xbox password is required."));
         seat.XboxEmail = email;
-        seat.XboxPasswordEncrypted = _protector.Protect(password);
+        seat.XboxPasswordEncrypted = Encrypt(password);
         room.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return (room, null);
@@ -739,7 +743,7 @@ public class ShareRoomService
             if (!string.IsNullOrEmpty(o?.ProvidedAccountEmail))
             {
                 string? pw = null;
-                try { pw = o.ProvidedAccountPasswordEncrypted == null ? null : _protector.Unprotect(o.ProvidedAccountPasswordEncrypted); }
+                try { pw = o.ProvidedAccountPasswordEncrypted == null ? null : Decrypt(o.ProvidedAccountPasswordEncrypted); }
                 catch (Exception e) { _logger.LogWarning(e, "Could not decrypt provided account of room {Room}", room.Code); }
                 account = new ProvidedAccountView(o.ProvidedAccountEmail, pw ?? "");
             }
@@ -759,7 +763,7 @@ public class ShareRoomService
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Length > 200) return "Email không hợp lệ";
         if (string.IsNullOrWhiteSpace(password) || password.Length > 200) return "Mật khẩu không được để trống";
         order.ProvidedAccountEmail = email;
-        order.ProvidedAccountPasswordEncrypted = _protector.Protect(password);
+        order.ProvidedAccountPasswordEncrypted = Encrypt(password);
         order.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return null;

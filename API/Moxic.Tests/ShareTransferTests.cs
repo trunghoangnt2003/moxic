@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Api.Services;
 using Moxic.Core.Entities;
@@ -246,5 +247,27 @@ public class ShareTransferTests
         await using var check = db.NewContext();
         Assert.Equal("Matched", (await check.BankTransactions.SingleAsync()).Status);
         Assert.NotNull((await SeatAsync(check, room.Code, A.UserId)).PaidAt);
+    }
+}
+
+public class ShareXboxFormatTests
+{
+    [Fact]
+    public async Task Owner_xbox_password_uses_the_order_format_admin_and_telegram_decrypt()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var svc = Service(ctx);
+        var room = await FullRoomAsync(ctx, svc);
+        foreach (var u in new[] { A.UserId, B.UserId })
+        {
+            var s = (await svc.StartPaymentAsync(room.Code, u)).Seat!;
+            await svc.HandleTransferAsync(Tx(s.AmountDue, s.PaymentCode!), s.PaymentCode!);
+        }
+        var order = await ctx.Orders.AsNoTracking().SingleAsync();
+        // Same decoding as AdminOrdersController / TelegramOrderNotifier.
+        var protector = Protection.CreateProtector("XboxPassword");
+        var plain = System.Text.Encoding.UTF8.GetString(protector.Unprotect(Convert.FromBase64String(order.CustomerXboxPasswordEncrypted)));
+        Assert.Equal("secret", plain);
     }
 }
