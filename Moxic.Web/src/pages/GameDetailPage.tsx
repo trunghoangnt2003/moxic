@@ -543,7 +543,7 @@ export default function GameDetailPage() {
                     className="inline-flex h-11 items-center justify-center gap-2 border border-info/40 bg-info/10 px-3 text-sm font-semibold text-info transition-colors hover:bg-info/15"
                   >
                     <Users className="h-4 w-4" /> {t("Tìm người share game này")}
-                    <span className="font-normal text-text-muted">· {t("từ {0}", [formatPrice(Math.floor(price / 2 / 1000) * 1000)])}</span>
+                    <span className="font-normal text-text-muted">· {t("từ {0}", [formatPrice(Math.floor((price + (game.shareSurcharge ?? 0)) / 2 / 1000) * 1000)])}</span>
                   </Link>
                 )}
                 {game.xboxProductId && (

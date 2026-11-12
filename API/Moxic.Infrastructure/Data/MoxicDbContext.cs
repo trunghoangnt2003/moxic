@@ -89,6 +89,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         modelBuilder.Entity<Game>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.ShareSurcharge).HasColumnType("numeric(18,2)");
             entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Description).HasColumnType("text").IsRequired();
             entity.Property(e => e.ProductType).HasMaxLength(20).IsRequired().HasDefaultValue("Game");

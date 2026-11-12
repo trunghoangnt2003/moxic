@@ -326,6 +326,7 @@ public static class GameEndpoints
                 Developer = game.Developer,
                 XboxProductId = game.XboxProductId,
                 AllowShare = game.AllowShare,
+                ShareSurcharge = game.AllowShare ? game.ShareSurcharge : 0,
                 SaleEndsAt = game.SaleEndsAt > DateTime.UtcNow && game.SalePrice < game.OriginalPrice ? game.SaleEndsAt : null,
                 Editions = game.Editions
                     .Where(e => e.IsActive)

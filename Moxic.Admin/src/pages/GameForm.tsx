@@ -141,7 +141,6 @@ export default function GameForm() {
   const [releaseDate, setReleaseDate] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [rewardPoints, setRewardPoints] = useState(0);
-  const [allowShare, setAllowShare] = useState(false);
   const [minReq, setMinReq] = useState<SysReq>(emptyReq());
   const [recReq, setRecReq] = useState<SysReq>(emptyReq());
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -180,7 +179,6 @@ export default function GameForm() {
           setReleaseDate(g.releaseDate?.split("T")[0] || "");
           setIsFeatured(g.isFeatured || false);
           setRewardPoints(g.rewardPoints ?? 0);
-          setAllowShare(g.allowShare ?? false);
           setMedia(g.media || []);
           if (g.systemRequirements) {
             setMinReq(g.systemRequirements.minimum || emptyReq());
@@ -199,7 +197,6 @@ export default function GameForm() {
     releaseDate: releaseDate || null,
     isFeatured,
     rewardPoints: Math.min(1000000, Math.max(0, Math.trunc(rewardPoints) || 0)),
-    allowShare,
     systemRequirements: { minimum: minReq, recommended: recReq },
     ratings,
   });
@@ -381,13 +378,6 @@ export default function GameForm() {
               <label htmlFor="rewardPoints" className="block text-xs text-steam-muted mb-1.5 font-medium">Điểm thưởng (khi đơn hoàn tất)</label>
               <input id="rewardPoints" type="number" min={0} max={1000000} step={1} placeholder="0" value={rewardPoints} onChange={(e) => setRewardPoints(Number(e.target.value))} className="w-full sm:max-w-[calc(50%-0.5rem)] steam-input font-mono" />
               <p className="text-[11px] text-steam-muted mt-1">Khách đăng nhập nhận số điểm này khi đơn có game này hoàn tất.</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <input type="checkbox" id="allowShare" checked={allowShare} onChange={(e) => setAllowShare(e.target.checked)} className="mt-0.5 rounded border-steam-border bg-steam-surface-3" />
-              <label htmlFor="allowShare" className="text-sm text-steam-text cursor-pointer">
-                Cho phép share (2 người cùng mua)
-                <span className="block text-[11px] text-steam-muted">Khách tạo được phòng share cho game này: mỗi người trả phần của mình, đủ 2 phần mới tạo đơn.</span>
-              </label>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>

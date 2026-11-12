@@ -24,6 +24,8 @@ public class GameDetailDto
     public string? XboxProductId { get; set; }
     /// <summary>Customers can open share rooms for this game.</summary>
     public bool AllowShare { get; set; }
+    /// <summary>Added to the price when bought through a share room.</summary>
+    public decimal ShareSurcharge { get; set; }
     public DateTime? SaleEndsAt { get; set; }
     public List<GameEditionDto> Editions { get; set; } = new();
 

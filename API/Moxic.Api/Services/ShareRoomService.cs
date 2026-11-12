@@ -90,13 +90,13 @@ public class ShareRoomService
             return (null, T("Tỷ lệ phải từ 10% đến 90%, bước 5%.", "The split must be 10–90% in steps of 5%."));
         if (req.AccountType is not ("Owner" or "Moxic"))
             return (null, T("Kiểu tài khoản không hợp lệ.", "Invalid account type."));
-        var allow = await _db.Games.AsNoTracking().Where(g => g.Id == req.GameId).Select(g => (bool?)g.AllowShare).FirstOrDefaultAsync();
-        if (allow != true) return (null, T("Game này chưa mở share.", "This game can't be shared."));
+        var cfg = await _db.Games.AsNoTracking().Where(g => g.Id == req.GameId).Select(g => new { g.AllowShare, g.ShareSurcharge }).FirstOrDefaultAsync();
+        if (cfg?.AllowShare != true) return (null, T("Game này chưa mở share.", "This game can't be shared."));
         if (await OpenRoomCountAsync(who.UserId) >= ShareRules.MaxOpenRoomsPerUser) return (null, TooMany());
 
         var (lines, priceErr) = await _coupons.PriceLinesAsync(new[] { (req.GameId, req.EditionId) });
         if (lines == null || lines.Count != 1) return (null, priceErr ?? NotFound());
-        var line = lines[0];
+        var line = lines[0] with { Price = lines[0].Price + Math.Max(0, cfg.ShareSurcharge) };
 
         string code;
         do code = ShareRules.NewRoomCode();

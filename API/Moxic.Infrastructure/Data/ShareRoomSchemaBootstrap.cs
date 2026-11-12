@@ -73,6 +73,7 @@ public static class ShareRoomSchemaBootstrap
             CONSTRAINT "FK_ShareSeats_ShareRooms_RoomId" FOREIGN KEY ("RoomId") REFERENCES "ShareRooms" ("Id") ON DELETE CASCADE
         );
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "AllowShare" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "ShareSurcharge" numeric(18,2) NOT NULL DEFAULT 0;
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "ShareRoomId" uuid;
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "ProvidedAccountEmail" character varying(200);
         ALTER TABLE "Orders" ADD COLUMN IF NOT EXISTS "ProvidedAccountPasswordEncrypted" character varying(500);

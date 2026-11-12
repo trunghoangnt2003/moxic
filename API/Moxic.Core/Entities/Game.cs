@@ -1,4 +1,4 @@
-﻿namespace Moxic.Core.Entities;
+namespace Moxic.Core.Entities;
 
 using Moxic.Shared.Enums;
 
@@ -21,6 +21,9 @@ public class Game
 
     /// <summary>Customers may open share rooms (2 people buy it together) for this game.</summary>
     public bool AllowShare { get; set; }
+
+    /// <summary>Extra amount (VND) added to the game price for a share room (buying together costs Moxic more work).</summary>
+    public decimal ShareSurcharge { get; set; }
 
     /// <summary>"Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle".</summary>
     public string ProductType { get; set; } = "Game";

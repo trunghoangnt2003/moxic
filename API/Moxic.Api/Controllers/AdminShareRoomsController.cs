@@ -103,6 +103,40 @@ public class AdminShareRoomsController : ControllerBase
         return error == null ? Ok(new { ok = true }) : BadRequest(new { error });
     }
 
+    // GET /api/admin/share/games?q=&onlyShared=true — the "Game share" screen: which games can be shared and their surcharge
+    [HttpGet("api/admin/share/games")]
+    public async Task<IActionResult> Games([FromQuery] string? q, [FromQuery] bool onlyShared = false)
+    {
+        var query = _db.Games.AsNoTracking().AsQueryable();
+        if (onlyShared) query = query.Where(g => g.AllowShare);
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim().ToLower();
+            query = query.Where(g => g.Name.ToLower().Contains(term));
+        }
+        var games = await query.OrderByDescending(g => g.AllowShare).ThenBy(g => g.Name).Take(300)
+            .Select(g => new { g.Id, g.Name, g.SalePrice, g.Status, g.AllowShare, g.ShareSurcharge,
+                Rooms = _db.ShareRooms.Count(r => r.GameId == g.Id && (r.Status == "Open" || r.Status == "Full")) })
+            .ToListAsync();
+        return Ok(games.Select(g => new { g.Id, g.Name, g.SalePrice, Status = g.Status.ToString(), g.AllowShare, g.ShareSurcharge, OpenRooms = g.Rooms }));
+    }
+
+    public record ShareGameBody(bool AllowShare, decimal ShareSurcharge);
+
+    // PUT /api/admin/share/games/{id} — tick a game shareable and set the extra amount added to its price for share rooms
+    [HttpPut("api/admin/share/games/{id:guid}")]
+    public async Task<IActionResult> SetGame(Guid id, [FromBody] ShareGameBody body)
+    {
+        if (body.ShareSurcharge < 0 || body.ShareSurcharge > 100_000_000) return BadRequest(new { error = "Tiền chênh không hợp lệ" });
+        var game = await _db.Games.FirstOrDefaultAsync(g => g.Id == id);
+        if (game == null) return NotFound(new { error = "Không tìm thấy game" });
+        game.AllowShare = body.AllowShare;
+        game.ShareSurcharge = Math.Round(body.ShareSurcharge, 0);
+        game.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return Ok(new { game.Id, game.AllowShare, game.ShareSurcharge });
+    }
+
     // PUT /api/admin/orders/{id}/provided-account — Xbox account Moxic provided for a "Moxic" share room
     [HttpPut("api/admin/orders/{id:guid}/provided-account")]
     public async Task<IActionResult> ProvidedAccount(Guid id, [FromBody] ProvidedAccountBody body)

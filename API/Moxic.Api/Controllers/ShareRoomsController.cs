@@ -114,9 +114,10 @@ public class ShareRoomsController : ControllerBase
         var games = await query.OrderBy(g => g.Name).Take(30)
             .Select(g => new
             {
-                g.Id, g.Name, g.NameEn, g.SalePrice,
+                g.Id, g.Name, g.NameEn, SalePrice = g.SalePrice + g.ShareSurcharge,
+                // Share price = game/edition price + the game's share surcharge.
                 Editions = g.Editions.Where(e => e.IsActive).OrderBy(e => e.DisplayOrder).ThenBy(e => e.SalePrice)
-                    .Select(e => new { e.Id, e.Name, e.SalePrice, e.IsDefault }).ToList(),
+                    .Select(e => new { e.Id, e.Name, SalePrice = e.SalePrice + g.ShareSurcharge, e.IsDefault }).ToList(),
             }).ToListAsync();
         var covers = await CoversAsync(games.Select(g => g.Id));
         return Ok(games.Select(g => new

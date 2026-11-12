@@ -335,3 +335,20 @@ public class ShareListTests
         Assert.Equal("Funded", after[1].Status);
     }
 }
+
+public class ShareSurchargeTests
+{
+    [Fact]
+    public async Task Room_total_is_game_price_plus_share_surcharge()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var g = await SeedGameAsync(ctx, 900000);
+        g.ShareSurcharge = 100000;
+        await ctx.SaveChangesAsync();
+        var (room, err) = await Service(ctx).CreateAsync(A, Req(g, 50));
+        Assert.Null(err);
+        Assert.Equal(1000000, room!.TotalPrice);
+        Assert.Equal(500000, room.Seats.Single().ShareAmount);
+    }
+}

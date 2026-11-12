@@ -46,6 +46,7 @@ const Announcements = lazy(() => import("./pages/Announcements"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
 const ShareRooms = lazy(() => import("./pages/ShareRooms"));
+const ShareGames = lazy(() => import("./pages/ShareGames"));
 const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -61,6 +62,7 @@ const navItems = [
   { to: "/chat", label: "Chat", icon: MessagesSquare },
   { to: "/rentals", label: "Thuê game", icon: KeyRound },
   { to: "/share-rooms", label: "Phòng share", icon: Handshake },
+  { to: "/share-games", label: "Game share", icon: Handshake },
   { to: "/payment-config", label: "Payment", icon: CreditCard },
   { to: "/lucky-spin", label: "Lucky Spin", icon: Gift },
   { to: "/coupons", label: "Mã giảm giá", icon: TicketPercent },
@@ -266,6 +268,7 @@ function App() {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/rentals" element={<Rentals />} />
                   <Route path="/share-rooms" element={<ShareRooms />} />
+                  <Route path="/share-games" element={<ShareGames />} />
                   <Route path="/moderation" element={<Moderation />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />
