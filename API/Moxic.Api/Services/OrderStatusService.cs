@@ -130,11 +130,11 @@ public class OrderStatusService
             await tx.CommitAsync();
         }
 
-        // In-app notification for the customer's bell.
-        var customerId = await _notifications.ResolveOrderCustomerAsync(order);
-        var en = order.Lang == "en";
-        if (customerId != null)
+        // In-app notification for the customer's bell — for a share-room order, every member who paid.
+        var targets = await NotifyTargetsAsync(order);
+        foreach (var target in targets.Where(t => t.UserId != null))
         {
+            var en = target.En;
             var (title, body) = en ? newStatus switch
             {
                 OrderStatus.Verifying => ($"Payment received for order {order.OrderCode}", "Moxic is verifying it and getting ready to install your game."),
@@ -153,16 +153,18 @@ public class OrderStatusService
                 _ => (null as string, null as string),
             };
             if (title != null)
-                await _notifications.AddAsync(customerId, "order", title, body, $"/account/orders/{order.OrderCode}");
+                await _notifications.AddAsync(target.UserId!, "order", title, body, $"/account/orders/{order.OrderCode}");
         }
 
         // Email notification — sent in background
         var _newStatus = newStatus;
-        var _customerEmail = order.CustomerXboxEmail;
         var _orderCode = order.OrderCode;
         var _gameName = order.Details.FirstOrDefault()?.GameName ?? "Game";
         var _reason = reason;
-        var _en = en;
+        var mails = newStatus is OrderStatus.Verifying or OrderStatus.Completed or OrderStatus.Cancelled or OrderStatus.ActionRequired
+            ? targets.Where(t => !string.IsNullOrWhiteSpace(t.Email)).ToList()
+            : new();
+        foreach (var (_, _customerEmail, _en) in mails)
         _emailQueue.Enqueue(async (sf, ct) =>
         {
             using var scope = sf.CreateScope();
@@ -194,5 +196,20 @@ public class OrderStatusService
 
         TelegramOrderNotifier.RefreshInBackground(_scopes, order.Id, _logger);
         return new(true, null);
+    }
+
+    /// <summary>
+    /// Who is told about a status change: the order's customer (bell) at the order email, or — for a share-room order —
+    /// every member who paid, at their account email, each in their own language.
+    /// </summary>
+    private async Task<List<(string? UserId, string Email, bool En)>> NotifyTargetsAsync(Order order)
+    {
+        if (order.ShareRoomId == null)
+            return new() { (await _notifications.ResolveOrderCustomerAsync(order), order.CustomerXboxEmail, order.Lang == "en") };
+        var members = await _db.ShareSeats.AsNoTracking()
+            .Where(s => s.RoomId == order.ShareRoomId && s.LeftAt == null && s.PaidAt != null)
+            .Join(_db.Users, s => s.UserId, u => u.Id, (s, u) => new { s.UserId, u.Email, s.Lang })
+            .ToListAsync();
+        return members.Select(m => ((string?)m.UserId, m.Email ?? string.Empty, m.Lang == "en")).ToList();
     }
 }

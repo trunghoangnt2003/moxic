@@ -28,9 +28,11 @@ public class AccountOrdersController : ControllerBase
     private readonly MoxicDbContext _db;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IMinioService _minio;
+    private readonly ShareRoomService _shares;
 
-    public AccountOrdersController(MoxicDbContext db, UserManager<IdentityUser> userManager, IMinioService minio)
+    public AccountOrdersController(MoxicDbContext db, UserManager<IdentityUser> userManager, IMinioService minio, ShareRoomService shares)
     {
+        _shares = shares;
         _db = db;
         _userManager = userManager;
         _minio = minio;
@@ -46,7 +48,7 @@ public class AccountOrdersController : ControllerBase
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
-        var query = _db.Orders.AsNoTracking().Where(OwnedBy(owner.Value.UserId, owner.Value.EmailLower));
+        var query = _db.Orders.AsNoTracking().Where(_shares.OwnedBy(owner.Value.UserId, owner.Value.EmailLower));
         var total = await query.CountAsync();
 
         var rows = await query
@@ -62,13 +64,19 @@ public class AccountOrdersController : ControllerBase
                 o.CouponCode,
                 o.CreatedAt,
                 o.UpdatedAt,
-                o.Details.Select(d => new ItemRow(d.GameId, d.GameName, d.Price)).ToList()))
+                o.Details.Select(d => new ItemRow(d.GameId, d.GameName, d.Price)).ToList(),
+                o.ShareRoomId))
             .ToListAsync();
 
         var covers = await ResolveCoversAsync(rows.SelectMany(r => r.Items).Select(i => i.GameId));
 
+        var shares = new Dictionary<string, ShareOrderView?>();
+        foreach (var r in rows.Where(r => r.ShareRoomId != null))
+            shares[r.OrderCode] = await _shares.OrderShareViewAsync(r.ShareRoomId!.Value, owner.Value.UserId, Enum.Parse<Moxic.Shared.Enums.OrderStatus>(r.Status));
+
         var items = rows.Select(r => new AccountOrderSummaryDto
         {
+            Share = shares.GetValueOrDefault(r.OrderCode),
             OrderCode = r.OrderCode,
             Status = r.Status,
             PaymentMethod = r.PaymentMethod,
@@ -93,7 +101,7 @@ public class AccountOrdersController : ControllerBase
 
         var code = (orderCode ?? string.Empty).Trim();
         var row = await _db.Orders.AsNoTracking()
-            .Where(OwnedBy(owner.Value.UserId, owner.Value.EmailLower))
+            .Where(_shares.OwnedBy(owner.Value.UserId, owner.Value.EmailLower))
             .Where(o => o.OrderCode == code)
             .Select(o => new
             {
@@ -117,6 +125,8 @@ public class AccountOrdersController : ControllerBase
                 o.InstallStartedAt,
                 o.DownloadingAt,
                 o.CompletedAt,
+                o.ShareRoomId,
+                StatusEnum = o.Status,
                 Lines = o.Details.Select(d => new { d.Price, d.ListPrice }).ToList(),
                 HasPaymentProof = o.PaymentProofObjectKey != null,
                 Items = o.Details.Select(d => new ItemRow(d.GameId, d.GameName, d.Price)).ToList()
@@ -127,9 +137,13 @@ public class AccountOrdersController : ControllerBase
             return NotFound(new { error = "Không tìm thấy đơn hàng" });
 
         var covers = await ResolveCoversAsync(row.Items.Select(i => i.GameId));
+        var share = row.ShareRoomId == null ? null : await _shares.OrderShareViewAsync(row.ShareRoomId.Value, owner.Value.UserId, row.StatusEnum);
+        // A share partner never sees the owner's Xbox account.
+        var hideXbox = (row.IsGift && row.CustomerId == owner.Value.UserId) || (row.ShareRoomId != null && row.CustomerId != owner.Value.UserId);
 
         return Ok(new AccountOrderDetailDto
         {
+            Share = share,
             OrderCode = row.OrderCode,
             Status = row.Status,
             PaymentMethod = row.PaymentMethod,
@@ -141,7 +155,7 @@ public class AccountOrdersController : ControllerBase
             UpdatedAt = row.UpdatedAt,
             Items = MapItems(row.Items, covers),
             // The buyer of a gift never sees the recipient's account; the recipient (matched by email) never sees the gift link.
-            XboxEmail = row.IsGift && row.CustomerId == owner.Value.UserId ? string.Empty : row.CustomerXboxEmail,
+            XboxEmail = hideXbox ? string.Empty : row.CustomerXboxEmail,
             IsGift = row.IsGift,
             GiftToken = row.IsGift && row.CustomerId == owner.Value.UserId ? row.GiftToken : null,
             GiftRecipientName = row.GiftRecipientName,
@@ -170,7 +184,8 @@ public class AccountOrdersController : ControllerBase
         string? CouponCode,
         DateTime CreatedAt,
         DateTime UpdatedAt,
-        List<ItemRow> Items);
+        List<ItemRow> Items,
+        Guid? ShareRoomId);
 
     /// <summary>The caller's user id + lowercased verified email, or null when unverified / missing.</summary>
     private async Task<(string UserId, string EmailLower)?> ResolveOwnerAsync()
@@ -182,8 +197,6 @@ public class AccountOrdersController : ControllerBase
         return (userId, user.Email.Trim().ToLowerInvariant());
     }
 
-    private static Expression<Func<Order, bool>> OwnedBy(string userId, string emailLower) =>
-        o => o.CustomerId == userId || o.CustomerXboxEmail.ToLower() == emailLower;
 
     private static List<AccountOrderItemDto> MapItems(IEnumerable<ItemRow> items, IReadOnlyDictionary<Guid, string?> covers) =>
         items.Select(i => new AccountOrderItemDto(i.GameId, i.GameName, i.Price, covers.GetValueOrDefault(i.GameId))).ToList();

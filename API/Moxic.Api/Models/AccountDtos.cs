@@ -61,6 +61,8 @@ public record AccountOrderSummaryDto
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public List<AccountOrderItemDto> Items { get; init; } = new();
+    /// <summary>Set for share-room orders: this member's part (both members see the order).</summary>
+    public Moxic.Api.Services.ShareOrderView? Share { get; init; }
 }
 
 public record AccountOrderDetailDto : AccountOrderSummaryDto

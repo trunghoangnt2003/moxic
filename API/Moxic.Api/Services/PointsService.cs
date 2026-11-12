@@ -35,6 +35,8 @@ public class PointsService
     /// </summary>
     public async Task<int> AwardForCompletedOrderAsync(Order order)
     {
+        if (order.ShareRoomId != null) return await AwardForShareOrderAsync(order);
+
         var user = await ResolveOrderCustomerAsync(order);
         if (user == null) return 0;
 
@@ -84,6 +86,42 @@ public class PointsService
         await _db.SaveChangesAsync();
         await _notifications.AddAsync(user.Id, "points", $"+{points} điểm thưởng", $"Từ đơn {order.OrderCode}" + (tier.PointsMultiplier > 1 ? $" (hạng {tier.Name} x{tier.PointsMultiplier:0.##})" : ""), "/rewards");
         return points;
+    }
+
+    /// <summary>
+    /// Share-room order: each member who paid gets the game's RewardPoints × their percent × their own tier multiplier.
+    /// Same once-per-order claim; ledger RefId "share:{seatId}" keeps the (Reason, RefId) index unique per member.
+    /// Returns the total credited.
+    /// </summary>
+    private async Task<int> AwardForShareOrderAsync(Order order)
+    {
+        var basePoints = await _db.OrderDetails.AsNoTracking().Where(d => d.OrderId == order.Id)
+            .Join(_db.Games, d => d.GameId, g => g.Id, (d, g) => g.RewardPoints).SumAsync();
+        var seats = await _db.ShareSeats.AsNoTracking()
+            .Where(s => s.RoomId == order.ShareRoomId && s.LeftAt == null && s.PaidAt != null)
+            .Select(s => new { s.Id, s.UserId, s.Percent }).ToListAsync();
+
+        var now = DateTime.UtcNow;
+        var claimed = await _db.Orders
+            .Where(o => o.Id == order.Id && o.PointsAwardedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(o => o.PointsAwardedAt, now));
+        if (claimed == 0) return 0;
+
+        var total = 0;
+        foreach (var seat in seats)
+        {
+            var user = await _userManager.FindByIdAsync(seat.UserId);
+            if (!await IsVerifiedCustomerAsync(user)) continue;
+            await PayReferralIfDueAsync(user!.Id, order.OrderCode);
+            var tier = LoyaltyRules.TierFor(await LifetimeSpentAsync(user));
+            var points = (int)Math.Round(basePoints * seat.Percent / 100m * tier.PointsMultiplier, MidpointRounding.AwayFromZero);
+            if (points <= 0) continue;
+            var note = $"{order.OrderCode} · share {seat.Percent}%" + (tier.PointsMultiplier > 1 ? $" · hạng {tier.Name} x{tier.PointsMultiplier:0.##}" : "");
+            if (await CreditOnceAsync(user.Id, points, PointsReason.OrderCompleted, $"share:{seat.Id}", note) == null) continue;
+            await _notifications.AddAsync(user.Id, "points", $"+{points} điểm thưởng", $"Từ đơn share {order.OrderCode}", "/rewards");
+            total += points;
+        }
+        return total;
     }
 
     /// <summary>

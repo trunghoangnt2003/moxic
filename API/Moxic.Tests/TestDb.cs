@@ -27,6 +27,8 @@ public sealed class TestDb : IAsyncDisposable
         var db = new TestDb("moxic_t_" + Guid.NewGuid().ToString("N")[..12]);
         await using var ctx = db.NewContext();
         await ctx.Database.EnsureCreatedAsync();
+        // Production databases got this default from ShoppingSchemaBootstrap (raw INSERTs rely on it); EnsureCreated doesn't set it.
+        await ctx.Database.ExecuteSqlRawAsync("""ALTER TABLE "CustomerProfiles" ALTER COLUMN "Lang" SET DEFAULT 'vi'""");
         return db;
     }
 

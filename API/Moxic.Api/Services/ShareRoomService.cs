@@ -9,6 +9,9 @@ using static Moxic.Api.Services.CouponRules;
 namespace Moxic.Api.Services;
 
 public record CreateShareRoomRequest(Guid GameId, Guid? EditionId, string AccountType, int OwnerPercent, bool IsPublic);
+public record ProvidedAccountView(string Email, string Password);
+public record ShareOrderView(string RoomCode, string AccountType, bool IsOwner, int YourPercent, decimal YourAmount, decimal TotalAmount,
+    string? PartnerName, ProvidedAccountView? ProvidedAccount);
 
 /// <summary>Side effects of room changes (bell, email, Telegram). Called after the change is saved; must not throw.</summary>
 public interface IShareEvents
@@ -625,6 +628,62 @@ public class ShareRoomService
         }
         _db.ChangeTracker.Clear();
         return changed;
+    }
+
+    // ───────────────────────── orders ─────────────────────────
+
+    /// <summary>
+    /// Orders a customer sees in "Đơn hàng": placed by them, at their verified email, or a share-room order
+    /// where they paid a seat.
+    /// </summary>
+    public System.Linq.Expressions.Expression<Func<Order, bool>> OwnedBy(string userId, string emailLower) =>
+        o => o.CustomerId == userId || o.CustomerXboxEmail.ToLower() == emailLower
+             || (o.ShareRoomId != null && _db.ShareSeats.Any(s => s.RoomId == o.ShareRoomId && s.UserId == userId && s.PaidAt != null));
+
+    /// <summary>
+    /// The share part of an order for one member: their amount, the partner, and — for a Moxic-provided account,
+    /// once the order is Completed — the account to sign in with. Null when the viewer didn't pay a seat.
+    /// </summary>
+    public async Task<ShareOrderView?> OrderShareViewAsync(Guid roomId, string viewerId, OrderStatus status)
+    {
+        var room = await _db.ShareRooms.AsNoTracking().Include(r => r.Seats).FirstOrDefaultAsync(r => r.Id == roomId);
+        if (room == null) return null;
+        var me = Active(room).FirstOrDefault(s => s.UserId == viewerId && s.PaidAt != null);
+        if (me == null) return null;
+        var partner = Active(room).FirstOrDefault(s => s.Id != me.Id);
+
+        ProvidedAccountView? account = null;
+        if (room.AccountType == "Moxic" && status == OrderStatus.Completed && room.OrderId != null)
+        {
+            var o = await _db.Orders.AsNoTracking().Where(x => x.Id == room.OrderId)
+                .Select(x => new { x.ProvidedAccountEmail, x.ProvidedAccountPasswordEncrypted }).FirstOrDefaultAsync();
+            if (!string.IsNullOrEmpty(o?.ProvidedAccountEmail))
+            {
+                string? pw = null;
+                try { pw = o.ProvidedAccountPasswordEncrypted == null ? null : _protector.Unprotect(o.ProvidedAccountPasswordEncrypted); }
+                catch (Exception e) { _logger.LogWarning(e, "Could not decrypt provided account of room {Room}", room.Code); }
+                account = new ProvidedAccountView(o.ProvidedAccountEmail, pw ?? "");
+            }
+        }
+        return new ShareOrderView(room.Code, room.AccountType, me.IsOwner, me.Percent, me.AmountDue, room.TotalPrice,
+            partner?.DisplayName, account);
+    }
+
+    /// <summary>Admin: the Xbox account Moxic provided for a "Moxic" share-room order (password data-protected).</summary>
+    public async Task<string?> SetProvidedAccountAsync(Guid orderId, string? email, string? password)
+    {
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order?.ShareRoomId == null) return "Không phải đơn share";
+        var type = await _db.ShareRooms.AsNoTracking().Where(r => r.Id == order.ShareRoomId).Select(r => r.AccountType).FirstOrDefaultAsync();
+        if (type != "Moxic") return "Đơn này dùng tài khoản của chủ phòng";
+        email = email?.Trim();
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Length > 200) return "Email không hợp lệ";
+        if (string.IsNullOrWhiteSpace(password) || password.Length > 200) return "Mật khẩu không được để trống";
+        order.ProvidedAccountEmail = email;
+        order.ProvidedAccountPasswordEncrypted = _protector.Protect(password);
+        order.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return null;
     }
 
     // ───────────────────────── admin ─────────────────────────
