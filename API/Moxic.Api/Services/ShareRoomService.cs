@@ -576,6 +576,57 @@ public class ShareRoomService
         return order;
     }
 
+    // ───────────────────────── expiry job ─────────────────────────
+
+    /// <summary>
+    /// Deadlines (run every few minutes): rooms older than 7 days that never got both payments close (paid seats → refund
+    /// queue); in a full room, members who haven't paid 48h after it filled leave (both unpaid → only the partner leaves);
+    /// unpaid members get one reminder 12h before that. Returns how many rooms changed (reminders not counted).
+    /// </summary>
+    public async Task<int> RunMaintenanceAsync(DateTime now)
+    {
+        var changed = 0;
+        var expiredBefore = now - ShareRules.RoomLifetime;
+        var expired = await _db.ShareRooms.AsNoTracking()
+            .Where(r => (r.Status == "Open" || r.Status == "Full") && r.CreatedAt <= expiredBefore).Select(r => r.Id).ToListAsync();
+        foreach (var id in expired)
+        {
+            _db.ChangeTracker.Clear();
+            var room = await _db.ShareRooms.Include(r => r.Seats).FirstAsync(r => r.Id == id);
+            if (room.Status is not ("Open" or "Full")) continue;
+            await CloseAsync(room, "expired");
+            changed++;
+        }
+
+        var remindBefore = now - ShareRules.ReminderAfter;
+        var full = await _db.ShareRooms.AsNoTracking()
+            .Where(r => r.Status == "Full" && r.FullAt != null && r.FullAt <= remindBefore).Select(r => r.Id).ToListAsync();
+        foreach (var id in full)
+        {
+            _db.ChangeTracker.Clear();
+            var room = await _db.ShareRooms.Include(r => r.Seats).FirstAsync(r => r.Id == id);
+            if (room.Status != "Full" || room.FullAt == null) continue;
+            var unpaid = Active(room).Where(s => s.PaidAt == null).ToList();
+            if (unpaid.Count == 0) continue;
+
+            if (now >= ShareRules.PayDeadline(room.FullAt.Value))
+            {
+                var leaving = unpaid.Count == 1 ? unpaid[0] : unpaid.First(s => !s.IsOwner);
+                await RemoveSeatAsync(room, leaving, "timeout");
+                changed++;
+                continue;
+            }
+            foreach (var s in unpaid.Where(s => s.ReminderSentAt == null || s.ReminderSentAt < room.FullAt))
+            {
+                s.ReminderSentAt = now;
+                await _db.SaveChangesAsync();
+                await _events.PayReminder(room, s);
+            }
+        }
+        _db.ChangeTracker.Clear();
+        return changed;
+    }
+
     // ───────────────────────── admin ─────────────────────────
 
     /// <summary>A stored transaction tracked by this service's context (for manual assignment).</summary>
