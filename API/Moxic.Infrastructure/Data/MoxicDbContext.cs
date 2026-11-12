@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
 using Moxic.Shared.Enums;
@@ -16,6 +16,9 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<PaymentConfig> PaymentConfigs => Set<PaymentConfig>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<SpinCodeOrder> SpinCodeOrders => Set<SpinCodeOrder>();
+    public DbSet<ShareRoom> ShareRooms => Set<ShareRoom>();
+    public DbSet<ShareSeat> ShareSeats => Set<ShareSeat>();
+    public DbSet<ShareMessage> ShareMessages => Set<ShareMessage>();
     public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
     public DbSet<GuessPuzzle> GuessPuzzles => Set<GuessPuzzle>();
     public DbSet<GuessPlay> GuessPlays => Set<GuessPlay>();
@@ -160,6 +163,9 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .HasForeignKey(e => e.CouponId)
                 .OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.CouponId);
+            entity.HasIndex(e => e.ShareRoomId);
+            entity.Property(e => e.ProvidedAccountEmail).HasMaxLength(200);
+            entity.Property(e => e.ProvidedAccountPasswordEncrypted).HasMaxLength(500);
             entity.Property(e => e.GiftToken).HasMaxLength(32);
             entity.HasIndex(e => e.GiftToken).IsUnique();
             entity.Property(e => e.GiftFromName).HasMaxLength(60);
@@ -249,6 +255,47 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
             entity.HasIndex(e => new { e.Month, e.Board, e.Rank }).IsUnique();
             entity.HasIndex(e => e.UserId);
+        });
+        modelBuilder.Entity<ShareRoom>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(12).IsRequired();
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.GameName).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.AccountType).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.OwnerUserId).HasMaxLength(450).IsRequired();
+            entity.Property(e => e.CancelReason).HasMaxLength(300);
+            entity.HasIndex(e => new { e.Status, e.IsPublic, e.GameId });
+            entity.HasMany(e => e.Seats).WithOne(s => s.Room).HasForeignKey(s => s.RoomId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<ShareSeat>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).HasMaxLength(450).IsRequired();
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ShareAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.AmountDue).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.PaidAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.CouponCode).HasMaxLength(32);
+            entity.Property(e => e.PaymentCode).HasMaxLength(20);
+            entity.HasIndex(e => e.PaymentCode).IsUnique();
+            entity.Property(e => e.XboxEmail).HasMaxLength(200);
+            entity.Property(e => e.XboxPasswordEncrypted).HasMaxLength(500);
+            entity.Property(e => e.Lang).HasMaxLength(5).IsRequired();
+            entity.Property(e => e.LeftReason).HasMaxLength(20);
+        });
+        modelBuilder.Entity<ShareMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).HasMaxLength(450);
+            entity.Property(e => e.Text).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.TextEn).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.RoomId, e.CreatedAt });
+            entity.HasOne<ShareRoom>().WithMany().HasForeignKey(e => e.RoomId).OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<SpinCodeOrder>(entity =>
         {

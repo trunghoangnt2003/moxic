@@ -19,6 +19,9 @@ public class Game
     /// <summary>Loyalty points credited when an order containing this game is Completed.</summary>
     public int RewardPoints { get; set; }
 
+    /// <summary>Customers may open share rooms (2 people buy it together) for this game.</summary>
+    public bool AllowShare { get; set; }
+
     /// <summary>"Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle".</summary>
     public string ProductType { get; set; } = "Game";
     /// <summary>Store region the product is bought in (e.g. "Global", "US", "AR", "TR").</summary>

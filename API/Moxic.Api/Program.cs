@@ -336,6 +336,7 @@ using (var scope = app.Services.CreateScope())
         await CustomerAccountSchemaBootstrap.EnsureAsync(dbContext);
         await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
         await CouponSchemaBootstrap.EnsureAsync(dbContext);
+        await ShareRoomSchemaBootstrap.EnsureAsync(dbContext);
         await AnnouncementSchemaBootstrap.EnsureAsync(dbContext);
         await WishlistSchemaBootstrap.EnsureAsync(dbContext);
         await RentalSchemaBootstrap.EnsureAsync(dbContext);

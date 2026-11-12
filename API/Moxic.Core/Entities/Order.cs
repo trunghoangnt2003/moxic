@@ -51,6 +51,12 @@ public class Order
     public DateTime? DownloadingAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 
+    /// <summary>Share room this order was created from (both members see it). Null for normal orders.</summary>
+    public Guid? ShareRoomId { get; set; }
+    /// <summary>Share rooms of type "Moxic": the Xbox account Moxic provided (password data-protected, purpose "XboxPassword").</summary>
+    public string? ProvidedAccountEmail { get; set; }
+    public string? ProvidedAccountPasswordEncrypted { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
