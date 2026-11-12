@@ -165,7 +165,7 @@ public class TelegramChatPoller : BackgroundService
         {
             await Say(
                 "<b>💬 Tin nhắn khách:</b> mỗi khách có tab riêng (bot tự tạo khi khách nhắn) — gõ thẳng trong tab để trả lời, /exit khi xong. Ngoài tab: Reply tin của khách hoặc <code>/r MÃ nội dung</code>.\n" +
-                "<b>🛒 Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn\nBấm nút dưới mỗi đơn để đổi trạng thái. 🔑 gửi TK Xbox riêng cho người bấm (cần mở chat riêng với bot và bấm Start 1 lần).\n" +
+                "<b>🛒 Đơn hàng:</b>\n/cho — các đơn đang cần xử lý\n/don MOXIC-… — xem 1 đơn\n/tk MOXIC-… email mật_khẩu — lưu tài khoản Moxic cấp cho đơn share (tin tự xoá)\nBấm nút dưới mỗi đơn để đổi trạng thái. 🔑 gửi TK Xbox riêng cho người bấm (cần mở chat riêng với bot và bấm Start 1 lần).\n" +
                 "<b>Nhóm:</b> /setup — tạo lại các tab Đơn hàng / Tin nhắn.");
             return;
         }
@@ -175,6 +175,26 @@ public class TelegramChatPoller : BackgroundService
         if (replyTo != null && topic != null && replyTo == topic) replyTo = null;
 
         var orders = scope.ServiceProvider.GetRequiredService<TelegramOrderNotifier>();
+
+        // /tk MOXIC-… email mật_khẩu — the Xbox account Moxic provided for a "Moxic" share room (both members see it
+        // once the order is completed). The admin's message holds a password, so it is deleted right away.
+        if (text.StartsWith("/tk", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var messageId = msg["message_id"]?.GetValue<long>();
+            if (messageId != null && parts.Length > 1) await _bot.DeleteAsync(chatId, messageId.Value, ct);
+            if (parts.Length != 4)
+            {
+                await Say("Cú pháp: <code>/tk MOXIC-20261104-ABCDE email@xbox.com matkhau</code>\n(dùng cho đơn share \"tài khoản Moxic cấp\"; tin của bạn sẽ được xoá ngay)");
+                return;
+            }
+            var shares = scope.ServiceProvider.GetRequiredService<ShareRoomService>();
+            var error = await shares.SetProvidedAccountByCodeAsync(parts[1], parts[2], parts[3]);
+            await Say(error == null
+                ? $"✅ Đã lưu tài khoản Moxic cấp cho đơn <code>{TelegramBot.Html(parts[1].ToUpperInvariant())}</code> ({TelegramBot.Html(parts[2])}). Cả 2 thành viên sẽ thấy khi đơn hoàn tất."
+                : $"❌ {TelegramBot.Html(error)}");
+            return;
+        }
         if (text.StartsWith("/cho", StringComparison.OrdinalIgnoreCase))
         {
             var open = new[] { OrderStatus.AwaitingConfirmation, OrderStatus.Verifying, OrderStatus.ActionRequired, OrderStatus.Installing, OrderStatus.Pending };

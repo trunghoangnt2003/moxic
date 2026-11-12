@@ -129,4 +129,19 @@ public class ShareOrderTests
         var seats = await ctx.ShareSeats.AsNoTracking().Where(s => s.RoomId == order.ShareRoomId).ToListAsync();
         Assert.Equal(2, seats.Count(s => s.NeedsRefund && s.RefundedAt == null));
     }
+
+    [Fact]
+    public async Task Provided_account_can_be_set_by_order_code_for_telegram()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var sp = TestServices.Build(db);
+        var order = await FundedOrderAsync(sp, "Moxic");
+        using var scope = sp.CreateScope();
+        var svc = scope.ServiceProvider.GetRequiredService<ShareRoomService>();
+        Assert.Null(await svc.SetProvidedAccountByCodeAsync(order.OrderCode.ToLowerInvariant(), "tg@moxic.co", "Tg-Pass1"));
+        Assert.NotNull(await svc.SetProvidedAccountByCodeAsync("MOXIC-20990101-ZZZZZ", "tg@moxic.co", "x"));
+        var view = await svc.OrderShareViewAsync(order.ShareRoomId!.Value, A.UserId, OrderStatus.Completed);
+        Assert.Equal("tg@moxic.co", view!.ProvidedAccount!.Email);
+        Assert.Equal("Tg-Pass1", view.ProvidedAccount.Password);
+    }
 }

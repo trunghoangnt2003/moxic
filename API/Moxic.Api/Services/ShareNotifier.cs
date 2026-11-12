@@ -96,7 +96,8 @@ public class ShareNotifier : IShareEvents
                 ($"Moxic đang xác minh và chuẩn bị cài {room.GameName}. Bạn theo dõi tiến trình trong Tài khoản → Đơn hàng.",
                  $"Moxic is verifying and getting ready to install {room.GameName}. Follow it in Account → Orders."));
         TelegramOrderNotifier.NotifyInBackground(_scopes, order.Id,
-            $"🤝 Phòng share {room.Code} đã đủ tiền ({Vnd(order.TotalAmount)}) — cần cài game · {(room.AccountType == "Owner" ? "tài khoản chủ phòng" : "TÀI KHOẢN MOXIC CẤP")}",
+            $"🤝 Phòng share {room.Code} đã đủ tiền ({Vnd(order.TotalAmount)}) — cần cài game · " +
+            (room.AccountType == "Owner" ? "tài khoản chủ phòng" : $"TÀI KHOẢN MOXIC CẤP — gửi /tk {order.OrderCode} email mật_khẩu"),
             log: _logger);
     }
 

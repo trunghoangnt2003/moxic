@@ -779,6 +779,14 @@ public class ShareRoomService
         return null;
     }
 
+    /// <summary>Telegram "/tk MÃ_ĐƠN email mật_khẩu": same as <see cref="SetProvidedAccountAsync"/>, by order code.</summary>
+    public async Task<string?> SetProvidedAccountByCodeAsync(string orderCode, string? email, string? password)
+    {
+        var code = (orderCode ?? "").Trim().ToUpperInvariant();
+        var id = await _db.Orders.AsNoTracking().Where(o => o.OrderCode == code).Select(o => (Guid?)o.Id).FirstOrDefaultAsync();
+        return id == null ? $"Không tìm thấy đơn {code}" : await SetProvidedAccountAsync(id.Value, email, password);
+    }
+
     // ───────────────────────── admin ─────────────────────────
 
     /// <summary>A stored transaction tracked by this service's context (for manual assignment).</summary>
