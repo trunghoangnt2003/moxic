@@ -1,3 +1,6 @@
+import { useState } from "react";
+import toast from "react-hot-toast";
+import type { AccountOrderShare } from "../lib/accountApi";
 import { Link, useParams } from "react-router-dom";
 import { OrderSkeleton } from "../components/shared/Skeleton";
 import { AlertTriangle, Clock, Gamepad2, MessageCircleMore, PackageX } from "lucide-react";
@@ -79,6 +82,8 @@ export default function OrderHistoryDetailPage() {
               </div>
             )}
 
+            {order.share && <ShareOrderBlock share={order.share} />}
+
             {order.status === "Cancelled" && order.cancellationReason && (
               <p className="mt-4 bg-negative/10 border border-negative/30 px-4 py-3 text-sm text-negative">
                 {t("Lý do hủy: {0}", [order.cancellationReason])}
@@ -103,9 +108,9 @@ export default function OrderHistoryDetailPage() {
               <InfoRow label={t("Thanh toán")} value={PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod} />
               {order.isGift ? (
                 <InfoRow label={t("Quà tặng cho")} value={`${order.giftRecipientName ?? "—"}${order.giftClaimedAt ? t(", đã nhận") : t(", chưa nhận")}`} />
-              ) : (
+              ) : order.xboxEmail ? (
                 <InfoRow label="Email Xbox" value={order.xboxEmail} />
-              )}
+              ) : null}
             </dl>
           </div>
 
@@ -182,6 +187,37 @@ export default function OrderHistoryDetailPage() {
           )}
         </div>
       </Container>
+    </div>
+  );
+}
+
+/** Share-room order: this member's part, the partner, and (Moxic-provided account, once installed) how to sign in. */
+function ShareOrderBlock({ share }: { share: AccountOrderShare }) {
+  const [show, setShow] = useState(false);
+  const copy = (v: string) => navigator.clipboard?.writeText(v).then(() => toast.success(t("Đã sao chép")));
+  return (
+    <div className="mt-4 border border-info/30 bg-info/[0.06] px-4 py-3 text-sm">
+      <p className="flex flex-wrap items-center gap-2 text-text-primary">
+        <span className="rounded-full border border-info/40 bg-info/10 px-2 py-0.5 text-xs font-semibold text-info">Share</span>
+        {t("Phần của bạn: {0} / tổng {1}", [formatPrice(share.yourAmount), formatPrice(share.totalAmount)])}
+        {share.partnerName && <span className="text-text-muted">· {t("share cùng {0}", [share.partnerName])}</span>}
+        <Link to={`/share/${share.roomCode}`} className="ml-auto text-accent hover:underline">{t("Mở phòng {0}", [share.roomCode])}</Link>
+      </p>
+      {share.providedAccount && (
+        <div className="mt-3 border-t border-info/20 pt-3">
+          <p className="mb-1.5 font-semibold text-text-primary">{t("Tài khoản Xbox Moxic cấp")}</p>
+          <p className="flex items-center gap-2 font-mono text-text-secondary">
+            {share.providedAccount.email}
+            <button type="button" onClick={() => copy(share.providedAccount!.email)} className="text-xs text-accent hover:underline">{t("Sao chép")}</button>
+          </p>
+          <p className="mt-1 flex items-center gap-2 font-mono text-text-secondary">
+            {show ? share.providedAccount.password : "••••••••"}
+            <button type="button" onClick={() => setShow((v) => !v)} className="text-xs text-accent hover:underline">{show ? t("Ẩn mật khẩu") : t("Hiện mật khẩu")}</button>
+            <button type="button" onClick={() => copy(share.providedAccount!.password)} className="text-xs text-accent hover:underline">{t("Sao chép")}</button>
+          </p>
+          <p className="mt-1.5 text-xs text-text-muted">{t("Không đổi mật khẩu hay email của tài khoản này, nếu không người share cùng sẽ mất quyền chơi.")}</p>
+        </div>
+      )}
     </div>
   );
 }

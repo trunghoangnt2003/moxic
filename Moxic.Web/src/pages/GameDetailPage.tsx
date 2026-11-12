@@ -12,7 +12,7 @@ import ReportButton from "../components/community/ReportButton";
 import { PRODUCT_TYPE_LABELS } from "../lib/productTypes";
 import RecentlyViewed from "../components/games/RecentlyViewed";
 import ShareButton from "../components/shared/ShareButton";
-import { ExternalLink, Play as PlayIcon, Zap as ZapIcon } from "lucide-react";
+import { ExternalLink, Play as PlayIcon, Zap as ZapIcon, Users } from "lucide-react";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { recentlyViewed } from "../lib/localIds";
 import { useParams, Link } from "react-router-dom";
@@ -537,6 +537,15 @@ export default function GameDetailPage() {
                   </button>
                   <ShareButton path={`/games/${game.id}`} title={t("{0}, giá rẻ tại Moxic GameStore", [game.name])} text={t("Mua {0} cho Xbox giá rẻ hơn Store", [game.name])} />
                 </div>
+                {game.allowShare && (
+                  <Link
+                    to={`/share?${new URLSearchParams({ game: game.id, gameName: game.name })}`}
+                    className="inline-flex h-11 items-center justify-center gap-2 border border-info/40 bg-info/10 px-3 text-sm font-semibold text-info transition-colors hover:bg-info/15"
+                  >
+                    <Users className="h-4 w-4" /> {t("Tìm người share game này")}
+                    <span className="font-normal text-text-muted">· {t("từ {0}", [formatPrice(Math.floor(price / 2 / 1000) * 1000)])}</span>
+                  </Link>
+                )}
                 {game.xboxProductId && (
                   <a
                     href={`https://www.xbox.com/vi-VN/games/store/x/${game.xboxProductId}`}

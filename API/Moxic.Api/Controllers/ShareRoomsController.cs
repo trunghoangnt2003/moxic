@@ -93,6 +93,30 @@ public class ShareRoomsController : ControllerBase
         }));
     }
 
+    // GET /api/share/games?q= — games that can be shared (for "Tạo phòng share"), with their active editions
+    [HttpGet("api/share/games")]
+    public async Task<IActionResult> Games([FromQuery] string? q)
+    {
+        var query = _db.Games.AsNoTracking().Where(g => g.AllowShare && g.SalePrice > 0);
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim().ToLower();
+            query = query.Where(g => g.Name.ToLower().Contains(term) || (g.NameEn != null && g.NameEn.ToLower().Contains(term)));
+        }
+        var games = await query.OrderBy(g => g.Name).Take(30)
+            .Select(g => new
+            {
+                g.Id, g.Name, g.NameEn, g.SalePrice,
+                Editions = g.Editions.Where(e => e.IsActive).OrderBy(e => e.DisplayOrder).ThenBy(e => e.SalePrice)
+                    .Select(e => new { e.Id, e.Name, e.SalePrice, e.IsDefault }).ToList(),
+            }).ToListAsync();
+        var covers = await CoversAsync(games.Select(g => g.Id));
+        return Ok(games.Select(g => new
+        {
+            g.Id, Name = RequestLanguage.Pick(g.Name, g.NameEn), g.SalePrice, CoverUrl = covers.GetValueOrDefault(g.Id), g.Editions,
+        }));
+    }
+
     // GET /api/share/{code}
     [HttpGet("api/share/{code}")]
     public async Task<IActionResult> Get(string code) => await RoomResult(code, (await MeAsync())?.UserId);

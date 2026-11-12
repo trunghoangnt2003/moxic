@@ -46,6 +46,12 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
         <p className="mt-1 text-sm text-text-muted">
           <span className="font-mono">{order.orderCode}</span>, {formatDate(order.createdAt)}
         </p>
+        {order.share && (
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+            <span className="rounded-full border border-info/40 bg-info/10 px-2 py-0.5 font-semibold text-info">Share</span>
+            {t("Phần của bạn: {0} / tổng {1}", [formatPrice(order.share.yourAmount), formatPrice(order.share.totalAmount)])}
+          </p>
+        )}
         <div className="mt-2 sm:hidden">
           <OrderStatusBadge status={order.status} />
         </div>
@@ -55,7 +61,7 @@ function OrderCard({ order }: { order: AccountOrderSummary }) {
         <div className="hidden sm:block">
           <OrderStatusBadge status={order.status} />
         </div>
-        <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(order.totalAmount)}</p>
+        <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(order.share ? order.share.yourAmount : order.totalAmount)}</p>
         <span className="sm:hidden inline-flex items-center gap-1 text-sm text-accent">
           {t("Chi tiết")} <ChevronRight className="w-4 h-4" />
         </span>

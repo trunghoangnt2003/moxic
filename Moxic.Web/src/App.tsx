@@ -43,6 +43,9 @@ const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const OrderHistoryPage = lazy(() => import("./pages/OrderHistoryPage"));
 const OrderHistoryDetailPage = lazy(() => import("./pages/OrderHistoryDetailPage"));
+const ShareListPage = lazy(() => import("./pages/ShareListPage"));
+const ShareRoomPage = lazy(() => import("./pages/ShareRoomPage"));
+const AccountSharesPage = lazy(() => import("./pages/AccountSharesPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
@@ -92,6 +95,8 @@ export default function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/confirmation/:orderCode" element={<ConfirmationPage />} />
               <Route path="/gift/:token" element={<GiftPage />} />
+              <Route path="/share" element={<ShareListPage />} />
+              <Route path="/share/:code" element={<ShareRoomPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/doan-game" element={<GuessGamePage />} />
               <Route path="/bang-gia-xbox" element={<PriceListPage />} />
@@ -108,6 +113,7 @@ export default function App() {
                 <Route element={<RequireCustomer />}>
                   <Route path="/account/orders" element={<OrderHistoryPage />} />
                   <Route path="/account/orders/:orderCode" element={<OrderHistoryDetailPage />} />
+                  <Route path="/account/share" element={<AccountSharesPage />} />
                   <Route path="/account/points" element={<PointsHistoryPage />} />
                   <Route path="/account/prizes" element={<SpinRewardsPage />} />
                   <Route path="/account/coupons" element={<CouponWalletPage />} />

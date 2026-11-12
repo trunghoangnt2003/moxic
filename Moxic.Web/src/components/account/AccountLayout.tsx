@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Coins, Gift, Heart, KeyRound, LayoutGrid, LogOut, Package, TicketPercent, Trophy } from "lucide-react";
+import { Coins, Gift, Heart, KeyRound, LayoutGrid, LogOut, Package, TicketPercent, Trophy, Users } from "lucide-react";
 import { useLogout, useMe } from "../../hooks/useAccount";
 
 import { t } from "../../lib/i18n";
@@ -12,6 +12,7 @@ export const useInAccountFrame = () => useContext(AccountFrameContext);
 const LINKS = [
   { to: "/account", label: t("Tổng quan"), icon: LayoutGrid, end: true },
   { to: "/account/orders", label: t("Đơn hàng"), icon: Package },
+  { to: "/account/share", label: t("Phòng share"), icon: Users },
   { to: "/account/rentals", label: t("Game đang thuê"), icon: KeyRound },
   { to: "/wishlist", label: t("Yêu thích"), icon: Heart },
   { to: "/rewards", label: t("Thành tựu"), icon: Trophy },

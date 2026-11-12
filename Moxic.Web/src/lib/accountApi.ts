@@ -45,6 +45,20 @@ export interface AccountOrderSummary {
   createdAt: string;
   updatedAt: string;
   items: AccountOrderItem[];
+  /** Share-room order: this member's part (both members see the order). */
+  share?: AccountOrderShare | null;
+}
+
+export interface AccountOrderShare {
+  roomCode: string;
+  accountType: "Owner" | "Moxic";
+  isOwner: boolean;
+  yourPercent: number;
+  yourAmount: number;
+  totalAmount: number;
+  partnerName: string | null;
+  /** Moxic-provided Xbox account, once the order is Completed. */
+  providedAccount: { email: string; password: string } | null;
 }
 
 export interface AccountOrderDetail extends AccountOrderSummary {

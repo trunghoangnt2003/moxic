@@ -83,6 +83,8 @@ export interface GameReview {
 
 export interface GameDetail {
   id: string;
+  /** Customers can open share rooms (2 people buy it together). */
+  allowShare?: boolean;
   name: string;
   description: string;
   originalPrice: number;
