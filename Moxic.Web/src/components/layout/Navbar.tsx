@@ -104,15 +104,6 @@ export default function Navbar() {
                 Store
               </NavLink>
               <NavLink
-                to="/rent"
-                className={({ isActive }) =>
-                  `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-positive" : "text-positive/90 hover:text-positive"}`
-                }
-              >
-                <KeyRound className="w-4 h-4" />
-                {t("Thuê game")}
-              </NavLink>
-              <NavLink
                 to="/share"
                 className={({ isActive }) =>
                   `inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold transition-colors ${isActive ? "text-info" : "text-info/90 hover:text-info"}`
