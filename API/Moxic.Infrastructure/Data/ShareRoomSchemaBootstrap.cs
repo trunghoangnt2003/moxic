@@ -4,7 +4,8 @@ namespace Moxic.Infrastructure.Data;
 
 /// <summary>
 /// Idempotent DDL for share rooms (2 customers buy one game together): ShareRooms, ShareSeats, ShareMessages,
-/// Games.AllowShare and Orders.ShareRoomId/ProvidedAccount*. Copied from the EF create script.
+/// Games.AllowShare and Orders.ShareRoomId/ProvidedAccount*;
+/// CouponRedemptions: one per member per order (OrderId no longer unique). Copied from the EF create script.
 /// Program.cs uses EnsureCreated (a no-op on existing databases), so existing databases are upgraded here.
 /// NOTE: no curly braces in the SQL — ExecuteSqlRaw treats them as format placeholders.
 /// </summary>
@@ -82,6 +83,15 @@ public static class ShareRoomSchemaBootstrap
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_ShareSeats_PaymentCode" ON "ShareSeats" ("PaymentCode");
         CREATE INDEX IF NOT EXISTS "IX_ShareSeats_RoomId" ON "ShareSeats" ("RoomId");
         CREATE INDEX IF NOT EXISTS "IX_ShareSeats_UserId" ON "ShareSeats" ("UserId");
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM pg_indexes i JOIN pg_class c ON c.relname = i.indexname JOIN pg_index x ON x.indexrelid = c.oid
+                       WHERE i.indexname = 'IX_CouponRedemptions_OrderId' AND x.indisunique) THEN
+                DROP INDEX "IX_CouponRedemptions_OrderId";
+            END IF;
+        END $$;
+        CREATE INDEX IF NOT EXISTS "IX_CouponRedemptions_OrderId" ON "CouponRedemptions" ("OrderId");
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_CouponRedemptions_OrderId_UserId" ON "CouponRedemptions" ("OrderId", "UserId");
         """;
 
     public static Task EnsureAsync(MoxicDbContext db) => db.Database.ExecuteSqlRawAsync(Sql);

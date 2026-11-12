@@ -19,6 +19,8 @@ public class ShareSchemaTests
                 ALTER TABLE "Orders" DROP COLUMN "ShareRoomId";
                 ALTER TABLE "Orders" DROP COLUMN "ProvidedAccountEmail";
                 ALTER TABLE "Orders" DROP COLUMN "ProvidedAccountPasswordEncrypted";
+                DROP INDEX "IX_CouponRedemptions_OrderId"; DROP INDEX "IX_CouponRedemptions_OrderId_UserId";
+                CREATE UNIQUE INDEX "IX_CouponRedemptions_OrderId" ON "CouponRedemptions" ("OrderId");
                 """);
             await ShareRoomSchemaBootstrap.EnsureAsync(ctx);
             await ShareRoomSchemaBootstrap.EnsureAsync(ctx); // idempotent
@@ -48,6 +50,8 @@ public class ShareSchemaTests
             Assert.Equal(1, await ctx.ShareMessages.CountAsync(m => m.RoomId == roomId));
             Assert.False(await ctx.Games.AnyAsync(g => g.AllowShare));
             Assert.False(await ctx.Orders.AnyAsync(o => o.ShareRoomId != null));
+            var unique = await ctx.Database.SqlQueryRaw<bool>("""SELECT x.indisunique AS "Value" FROM pg_class c JOIN pg_index x ON x.indexrelid = c.oid WHERE c.relname = 'IX_CouponRedemptions_OrderId'""").SingleAsync();
+            Assert.False(unique);
         }
     }
 }

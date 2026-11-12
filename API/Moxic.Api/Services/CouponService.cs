@@ -201,24 +201,28 @@ public class CouponService
     /// </summary>
     public async Task<bool> ReleaseForOrderAsync(Guid orderId, CancellationToken ct = default)
     {
-        var redemption = await _db.CouponRedemptions.AsNoTracking()
+        // Share-room orders carry one redemption per member, so release every active one.
+        var redemptions = await _db.CouponRedemptions.AsNoTracking()
             .Where(r => r.OrderId == orderId && r.ReleasedAt == null)
             .Select(r => new { r.Id, r.CouponId })
-            .FirstOrDefaultAsync(ct);
-        if (redemption == null) return false;
-
+            .ToListAsync(ct);
+        var any = false;
         var now = DateTime.UtcNow;
-        var released = await _db.CouponRedemptions
-            .Where(r => r.Id == redemption.Id && r.ReleasedAt == null)
-            .ExecuteUpdateAsync(s => s.SetProperty(r => r.ReleasedAt, now), ct);
-        if (released != 1) return false;
+        foreach (var redemption in redemptions)
+        {
+            var released = await _db.CouponRedemptions
+                .Where(r => r.Id == redemption.Id && r.ReleasedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.ReleasedAt, now), ct);
+            if (released != 1) continue;
 
-        await _db.Coupons
-            .Where(c => c.Id == redemption.CouponId && c.UsedCount > 0)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(c => c.UsedCount, c => c.UsedCount - 1)
-                .SetProperty(c => c.UpdatedAt, now), ct);
-        return true;
+            await _db.Coupons
+                .Where(c => c.Id == redemption.CouponId && c.UsedCount > 0)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.UsedCount, c => c.UsedCount - 1)
+                    .SetProperty(c => c.UpdatedAt, now), ct);
+            any = true;
+        }
+        return any;
     }
 
     /// <summary>Binds an unowned coupon to a customer (and marks its spin history claimed).</summary>

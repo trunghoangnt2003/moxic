@@ -78,6 +78,12 @@ public class BankPaymentService
             return await _scopes.CreateScope().ServiceProvider.GetRequiredService<SpinCodeShopService>()
                 .HandleTransferAsync(tx, spinOrderCode);
 
+        // Share-room seats (content MXR…) are settled per member by the share service.
+        var sharePaymentCode = ShareRules.FindPaymentCode(content);
+        if (sharePaymentCode != null)
+            return await _scopes.CreateScope().ServiceProvider.GetRequiredService<ShareRoomService>()
+                .HandleTransferAsync(tx, sharePaymentCode);
+
         var code = FindOrderCode(content);
         var order = code == null ? null : await _db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderCode == code);
         string? alert = null;
@@ -146,6 +152,16 @@ public class BankPaymentService
         var tx = await _db.BankTransactions.FirstOrDefaultAsync(t => t.Id == txId);
         if (tx == null) return (false, "Không tìm thấy giao dịch");
         var code = orderCode.Trim().ToUpperInvariant();
+        if (code.StartsWith(ShareRules.PaymentPrefix))
+        {
+            var shares = _scopes.CreateScope().ServiceProvider.GetRequiredService<ShareRoomService>();
+            var seatExists = await _db.ShareSeats.AnyAsync(s => s.PaymentCode == code);
+            if (!seatExists) return (false, "Không tìm thấy mã share");
+            _db.Entry(tx).State = EntityState.Detached;
+            var stored = await shares.LoadTransactionAsync(txId);
+            await shares.HandleTransferAsync(stored!, code, skipDuplicateCheck: true);
+            return (true, null);
+        }
         var order = await _db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderCode == code);
         if (order == null) return (false, "Không tìm thấy đơn hàng");
 

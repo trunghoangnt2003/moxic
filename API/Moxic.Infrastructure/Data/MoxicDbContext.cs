@@ -688,7 +688,9 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
                 .WithMany()
                 .HasForeignKey(e => e.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.OrderId).IsUnique();
+            // One redemption per member per order (share-room orders carry one voucher per member).
+            entity.HasIndex(e => e.OrderId);
+            entity.HasIndex(e => new { e.OrderId, e.UserId }).IsUnique();
             entity.HasIndex(e => new { e.CouponId, e.UserId });
         });
 

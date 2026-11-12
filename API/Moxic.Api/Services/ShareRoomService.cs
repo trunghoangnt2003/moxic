@@ -423,6 +423,7 @@ public class ShareRoomService
     /// Records a transfer whose content carries a seat payment code and settles the seat; when both seats are paid
     /// the order is created. Returns false when this transaction was already processed (duplicate webhook).
     /// </summary>
+    /// <param name="skipDuplicateCheck">true when an admin assigns an already stored transaction by hand.</param>
     public async Task<bool> HandleTransferAsync(BankTransaction tx, string paymentCode, bool skipDuplicateCheck = false)
     {
         if (!skipDuplicateCheck && await _db.BankTransactions.AnyAsync(t => t.Provider == tx.Provider && t.ProviderTxnId == tx.ProviderTxnId)) return false;
@@ -473,7 +474,7 @@ public class ShareRoomService
             }
         }
 
-        _db.BankTransactions.Add(tx);
+        if (_db.Entry(tx).State == EntityState.Detached) _db.BankTransactions.Add(tx); // manual assign passes a stored row
         try { await _db.SaveChangesAsync(); }
         catch (DbUpdateException)
         {
@@ -576,6 +577,9 @@ public class ShareRoomService
     }
 
     // ───────────────────────── admin ─────────────────────────
+
+    /// <summary>A stored transaction tracked by this service's context (for manual assignment).</summary>
+    public Task<BankTransaction?> LoadTransactionAsync(Guid id) => _db.BankTransactions.FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<string?> MarkRefundedAsync(Guid seatId)
     {
