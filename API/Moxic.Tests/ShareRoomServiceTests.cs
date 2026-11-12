@@ -1,3 +1,4 @@
+using Moxic.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
 using Moxic.Shared.Enums;
@@ -297,5 +298,40 @@ public class ShareRoomViewTests
         Assert.Null(await svc.MessagesAsync(room.Code, C.UserId, null, false));
         var msgs = await svc.MessagesAsync(room.Code, B.UserId, null, true);
         Assert.Contains(msgs!, m => m.System && m.Text.Contains("joined"));
+    }
+}
+
+public class ShareListTests
+{
+    [Fact]
+    public async Task Public_list_shows_open_full_and_paid_rooms_open_first_private_and_cancelled_hidden()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var svc = Service(ctx);
+        var full = await FullRoomAsync(ctx, svc);                               // A + B, Full
+        var g = full.GameId;
+        var open = (await svc.CreateAsync(C, new CreateShareRoomRequest(g, null, "Moxic", 50, true))).Room!;     // C, Open
+        var priv = (await svc.CreateAsync(C, new CreateShareRoomRequest(g, null, "Moxic", 50, false))).Room!;    // private
+        var gone = (await svc.CreateAsync(C, new CreateShareRoomRequest(g, null, "Moxic", 50, true))).Room!;
+        await svc.CancelAsync(gone.Code, C.UserId);
+
+        var all = await svc.ListPublicAsync(null, null, null, "new", onlyOpen: false, 1, 24);
+        Assert.Equal(new[] { open.Code, full.Code }, all.Select(r => r.Code));
+        Assert.DoesNotContain(all, r => r.Code == priv.Code || r.Code == gone.Code);
+
+        var onlyOpen = await svc.ListPublicAsync(null, null, null, "new", onlyOpen: true, 1, 24);
+        Assert.Equal(new[] { open.Code }, onlyOpen.Select(r => r.Code));
+
+        // Paid rooms stay listed (after the open and full ones).
+        foreach (var u in new[] { A.UserId, B.UserId })
+        {
+            var s = (await svc.StartPaymentAsync(full.Code, u)).Seat!;
+            await svc.HandleTransferAsync(Tx(s.AmountDue, s.PaymentCode!), s.PaymentCode!);
+        }
+        ctx.ChangeTracker.Clear();
+        var after = await svc.ListPublicAsync(null, null, null, "new", onlyOpen: false, 1, 24);
+        Assert.Equal(new[] { open.Code, full.Code }, after.Select(r => r.Code));
+        Assert.Equal("Funded", after[1].Status);
     }
 }

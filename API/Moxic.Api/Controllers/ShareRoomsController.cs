@@ -75,21 +75,27 @@ public class ShareRoomsController : ControllerBase
         return room == null ? NotFound(new { error = T("Không tìm thấy phòng share.", "Share room not found.") }) : Ok(await DtoAsync(room, viewerId));
     }
 
-    // GET /api/share?gameId=&accountType=Owner|Moxic&percent=50&sort=new|ending&page=1
+    // GET /api/share?gameId=&accountType=Owner|Moxic&percent=50&sort=new|ending&open=true&page=1
+    // Open rooms first, then full and paid ones (listed, not joinable).
     [HttpGet("api/share")]
     public async Task<IActionResult> List([FromQuery] Guid? gameId, [FromQuery] string? accountType, [FromQuery] int? percent,
-        [FromQuery] string? sort, [FromQuery] int page = 1)
+        [FromQuery] string? sort, [FromQuery] bool open = false, [FromQuery] int page = 1)
     {
-        var rooms = await _shares.ListOpenAsync(gameId, accountType, percent, sort, page, 24);
+        var rooms = await _shares.ListPublicAsync(gameId, accountType, percent, sort, open, page, 24);
         var covers = await CoversAsync(rooms.Select(r => r.GameId));
         var owners = rooms.Select(r => r.Seats.First(s => s.IsOwner && s.LeftAt == null)).ToList();
         var counts = await _shares.ShareCountsAsync(owners.Select(o => o.UserId));
+        var orderIds = rooms.Where(r => r.OrderId != null).Select(r => r.OrderId!.Value).ToList();
+        var orderStatus = await _db.Orders.AsNoTracking().Where(o => orderIds.Contains(o.Id)).ToDictionaryAsync(o => o.Id, o => o.Status);
         return Ok(rooms.Select(r =>
         {
             var owner = r.Seats.First(s => s.IsOwner && s.LeftAt == null);
+            var partner = r.Seats.FirstOrDefault(s => !s.IsOwner && s.LeftAt == null);
+            var status = ShareRules.DisplayStatus(r.Status, r.OrderId != null && orderStatus.TryGetValue(r.OrderId.Value, out var os) ? os : null);
             return new ShareRoomCardDto(r.Code, r.GameId, r.GameName, covers.GetValueOrDefault(r.GameId), r.AccountType, owner.Percent,
                 100 - owner.Percent, r.TotalPrice - owner.ShareAmount, r.TotalPrice, ShareRules.RoomExpiry(r.CreatedAt), owner.DisplayName,
-                counts.GetValueOrDefault(owner.UserId), r.CreatedAt);
+                counts.GetValueOrDefault(owner.UserId), r.CreatedAt, r.Status, status, r.Status == "Open",
+                r.Seats.Count(s => s.LeftAt == null && s.PaidAt != null), partner?.DisplayName);
         }));
     }
 

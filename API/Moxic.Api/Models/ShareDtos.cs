@@ -77,7 +77,15 @@ public record ShareRoomCardDto(
     DateTime ExpiresAt,
     string OwnerName,
     int OwnerShareCount,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    /// <summary>Open | Full | Funded.</summary>
+    string Status,
+    /// <summary>waiting | paying | full | installing | done.</summary>
+    string DisplayStatus,
+    /// <summary>Only Open rooms can be joined; full and paid ones are listed for show.</summary>
+    bool Joinable,
+    int PaidCount,
+    string? PartnerName);
 
 public record ShareMessageDto(Guid Id, string? AuthorName, bool Mine, bool System, string Text, bool Reported, DateTime CreatedAt);
 

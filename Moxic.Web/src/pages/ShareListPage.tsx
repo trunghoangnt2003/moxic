@@ -21,12 +21,13 @@ export default function ShareListPage() {
   const gameId = params.get("game") ?? undefined;
   const [accountType, setAccountType] = useState<ShareAccountType | undefined>();
   const [even, setEven] = useState(false);
+  const [onlyOpen, setOnlyOpen] = useState(false);
   const [sort, setSort] = useState<"new" | "ending">("new");
   const [code, setCode] = useState("");
   const [creating, setCreating] = useState(params.get("create") === "1");
   const navigate = useNavigate();
   const { data: me } = useMe();
-  const { data: rooms, isLoading } = useShareRooms({ gameId, accountType, percent: even ? 50 : undefined, sort });
+  const { data: rooms, isLoading } = useShareRooms({ gameId, accountType, percent: even ? 50 : undefined, sort, open: onlyOpen || undefined });
 
   const presetName = params.get("gameName");
   const preset = gameId && presetName ? { id: gameId, name: presetName } : undefined;
@@ -75,7 +76,7 @@ export default function ShareListPage() {
             {presetName ?? t("Game đã chọn")} ✕
           </button>
         )}
-        <button type="button" className={chip(accountType === undefined && !even)} onClick={() => { setAccountType(undefined); setEven(false); }}>{t("Đang thiếu người")}</button>
+        <button type="button" className={chip(onlyOpen)} onClick={() => setOnlyOpen((v) => !v)}>{t("Đang thiếu người")}</button>
         <button type="button" className={chip(accountType === "Owner")} onClick={() => setAccountType(accountType === "Owner" ? undefined : "Owner")}>{t("Tài khoản chủ phòng")}</button>
         <button type="button" className={chip(accountType === "Moxic")} onClick={() => setAccountType(accountType === "Moxic" ? undefined : "Moxic")}>{t("Tài khoản Moxic cấp")}</button>
         <button type="button" className={chip(even)} onClick={() => setEven((v) => !v)}>{t("Chia 50/50")}</button>

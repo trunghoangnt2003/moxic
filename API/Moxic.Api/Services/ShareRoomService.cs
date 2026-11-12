@@ -682,13 +682,22 @@ public class ShareRoomService
         };
     }
 
-    public async Task<List<ShareRoom>> ListOpenAsync(Guid? gameId, string? accountType, int? ownerPercent, string? sort, int page, int pageSize)
+    /// <summary>
+    /// Public rooms for /share: waiting for a partner first, then full (paying) and paid ones (shown but not joinable;
+    /// paid rooms for 30 days after they were funded). Private and closed rooms never appear.
+    /// </summary>
+    public async Task<List<ShareRoom>> ListPublicAsync(Guid? gameId, string? accountType, int? ownerPercent, string? sort, bool onlyOpen, int page, int pageSize)
     {
-        var q = _db.ShareRooms.AsNoTracking().Include(r => r.Seats).Where(r => r.Status == "Open" && r.IsPublic);
+        var fundedSince = DateTime.UtcNow.AddDays(-30);
+        var q = _db.ShareRooms.AsNoTracking().Include(r => r.Seats).Where(r => r.IsPublic);
+        q = onlyOpen
+            ? q.Where(r => r.Status == "Open")
+            : q.Where(r => r.Status == "Open" || r.Status == "Full" || (r.Status == "Funded" && r.FundedAt > fundedSince));
         if (gameId != null) q = q.Where(r => r.GameId == gameId);
         if (accountType is "Owner" or "Moxic") q = q.Where(r => r.AccountType == accountType);
         if (ownerPercent != null) q = q.Where(r => r.OwnerPercent == ownerPercent);
-        q = sort == "ending" ? q.OrderBy(r => r.CreatedAt) : q.OrderByDescending(r => r.CreatedAt);
+        var ranked = q.OrderBy(r => r.Status == "Open" ? 0 : r.Status == "Full" ? 1 : 2);
+        q = sort == "ending" ? ranked.ThenBy(r => r.CreatedAt) : ranked.ThenByDescending(r => r.CreatedAt);
         return await q.Skip((Math.Max(1, page) - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 

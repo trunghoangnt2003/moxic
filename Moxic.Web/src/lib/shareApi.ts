@@ -79,6 +79,12 @@ export interface ShareRoomCard {
   ownerName: string;
   ownerShareCount: number;
   createdAt: string;
+  status: ShareRoomStatus;
+  displayStatus: ShareDisplayStatus;
+  /** Only rooms waiting for a partner can be joined; full and paid ones are listed for show. */
+  joinable: boolean;
+  paidCount: number;
+  partnerName: string | null;
 }
 
 export interface ShareMessage {
@@ -96,6 +102,8 @@ export interface ShareListQuery {
   accountType?: ShareAccountType;
   percent?: number;
   sort?: "new" | "ending";
+  /** true = only rooms still looking for a partner. */
+  open?: boolean;
 }
 
 export interface CreateShareRoomInput {

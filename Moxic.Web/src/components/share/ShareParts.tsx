@@ -174,17 +174,14 @@ export function GameCover({ url, className = "" }: { url: string | null; classNa
 
 export function RoomCard({ room }: { room: ShareRoomCard }) {
   const daysLeft = Math.max(0, Math.ceil((new Date(room.expiresAt).getTime() - Date.now()) / 86_400_000));
-  return (
-    <Link
-      to={`/share/${room.code}`}
-      className="group flex flex-col overflow-hidden rounded-md border border-border bg-bg-surface transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-accent-muted motion-reduce:hover:translate-y-0"
-    >
+  const body = (
+    <>
       <div className="relative h-32">
-        <GameCover url={room.coverUrl} className="h-full w-full" />
+        <GameCover url={room.coverUrl} className={`h-full w-full ${room.joinable ? "" : "grayscale-[60%]"}`} />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-surface via-transparent to-transparent" />
         <div className="absolute inset-x-2.5 top-2.5 flex justify-between gap-2">
           <Chip gold>{t("Chia {0}/{1}", [room.ownerPercent, room.openPercent])}</Chip>
-          <Chip>{t("còn {0} ngày", [daysLeft])}</Chip>
+          {room.joinable ? <Chip>{t("còn {0} ngày", [daysLeft])}</Chip> : <ShareStatusBadge status={room.displayStatus} paid={room.paidCount} />}
         </div>
       </div>
       <div className="flex-1 px-3.5 pb-3">
@@ -194,20 +191,51 @@ export function RoomCard({ room }: { room: ShareRoomCard }) {
           <span className="grid h-7 w-7 place-items-center rounded-full bg-accent-deep font-display text-[11px] font-semibold text-on-solid">
             {room.ownerName.charAt(0).toUpperCase()}
           </span>
-          <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-dashed border-accent-muted text-[11px] text-accent">+</span>
-          <span className="text-xs text-text-muted">
-            {t("Thiếu 1 người")}
-            {room.ownerShareCount > 0 ? ` · ${room.ownerName}: ${t("{0} lần share", [room.ownerShareCount])}` : ""}
+          {room.partnerName ? (
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#2c5d7c] font-display text-[11px] font-semibold text-on-solid">
+              {room.partnerName.charAt(0).toUpperCase()}
+            </span>
+          ) : (
+            <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-dashed border-accent-muted text-[11px] text-accent">+</span>
+          )}
+          <span className="truncate text-xs text-text-muted">
+            {room.joinable ? t("Thiếu 1 người") : `${room.ownerName} & ${room.partnerName ?? ""}`}
+            {room.joinable && room.ownerShareCount > 0 ? ` · ${room.ownerName}: ${t("{0} lần share", [room.ownerShareCount])}` : ""}
           </span>
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-border px-3.5 py-3">
-        <div>
-          <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(room.openAmount)}</p>
-          <p className="text-[11px] text-text-muted">{t("phần của bạn / tổng {0}", [formatPrice(room.totalPrice)])}</p>
-        </div>
-        <span className="rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-on-accent transition-colors group-hover:bg-accent-hover">{t("Vào phòng")}</span>
+        {room.joinable ? (
+          <div>
+            <p className="font-display text-lg font-bold text-text-primary num">{formatPrice(room.openAmount)}</p>
+            <p className="text-[11px] text-text-muted">{t("phần của bạn / tổng {0}", [formatPrice(room.totalPrice)])}</p>
+          </div>
+        ) : (
+          <div>
+            <p className="font-display text-lg font-bold text-text-muted num">{formatPrice(room.totalPrice)}</p>
+            <p className="text-[11px] text-text-muted">{t("đã đủ 2 người")}</p>
+          </div>
+        )}
+        {room.joinable ? (
+          <span className="rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-on-accent transition-colors group-hover:bg-accent-hover">{t("Vào phòng")}</span>
+        ) : (
+          <span className="rounded-md bg-bg-elevated px-3.5 py-2 text-sm font-semibold text-text-muted">
+            {room.status === "Full" ? t("Đã đủ người") : t("Đã thanh toán")}
+          </span>
+        )}
       </div>
+    </>
+  );
+  return room.joinable ? (
+    <Link
+      to={`/share/${room.code}`}
+      className="group flex flex-col overflow-hidden rounded-md border border-border bg-bg-surface transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-accent-muted motion-reduce:hover:translate-y-0"
+    >
+      {body}
     </Link>
+  ) : (
+    <div aria-disabled="true" className="flex cursor-not-allowed flex-col overflow-hidden rounded-md border border-border bg-bg-surface opacity-70">
+      {body}
+    </div>
   );
 }
