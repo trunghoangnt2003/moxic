@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { CalendarDays, ChevronDown, CircleHelp, Puzzle, Tags, Trophy } from "lucide-react";
+import { CalendarDays, ChevronDown, CircleHelp, KeyRound, Puzzle, Tags, Trophy } from "lucide-react";
 
 import { t } from "../../lib/i18n";
 const ITEMS = [
+  { to: "/rent", label: t("Thuê game"), desc: t("Chơi game bom tấn giá thuê theo ngày"), icon: KeyRound, tone: "text-positive" },
   { to: "/doan-game", label: t("Đoán game"), desc: t("Mỗi ngày một câu, nhận điểm"), icon: Puzzle, tone: "text-info" },
   { to: "/leaderboard", label: t("Xếp hạng"), desc: t("Đua top tháng, nhận thưởng"), icon: Trophy, tone: "text-caution" },
   { to: "/release-calendar", label: t("Sắp ra mắt"), desc: t("Lịch phát hành game"), icon: CalendarDays, tone: "text-highlight" },
