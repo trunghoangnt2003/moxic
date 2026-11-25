@@ -14,9 +14,11 @@ public class AdminCatalogController : ControllerBase
     private readonly CatalogImportService _import;
     private readonly CatalogCrawlJob _job;
     private readonly XboxBrowseClient _xbox;
+    private readonly CatalogPublishJob _publisher;
 
-    public AdminCatalogController(CatalogImportService import, CatalogCrawlJob job, XboxBrowseClient xbox)
+    public AdminCatalogController(CatalogImportService import, CatalogCrawlJob job, XboxBrowseClient xbox, CatalogPublishJob publisher)
     {
+        _publisher = publisher;
         _import = import;
         _job = job;
         _xbox = xbox;
@@ -51,7 +53,7 @@ public class AdminCatalogController : ControllerBase
     public async Task<IActionResult> Pending([FromQuery] string? q, [FromQuery] bool hot = false, [FromQuery] string? sort = null,
         [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var (items, total) = await _import.PendingAsync(q, hot, sort, page, pageSize);
+        var (items, total) = await _import.PendingAsync(q, hot, sort, page, pageSize, _publisher.QueuedIds);
         return Ok(new { items, total, page, hotRank = CatalogImportService.HotRank });
     }
 
@@ -62,13 +64,16 @@ public class AdminCatalogController : ControllerBase
         return error == null ? Ok(new { ok = true }) : BadRequest(new { error });
     }
 
+    // POST /api/admin/catalog/publish {ids} — queued and published in the background; poll GET publish for progress
     [HttpPost("publish")]
-    public async Task<IActionResult> Publish([FromBody] IdsBody body, CancellationToken ct)
+    public IActionResult Publish([FromBody] IdsBody body)
     {
-        if (body.Ids.Count is 0 or > 200) return BadRequest(new { error = "Chọn từ 1 đến 200 game mỗi lần đăng" });
-        var errors = await _import.PublishAsync(body.Ids, ct);
-        return Ok(new { published = body.Ids.Count - errors.Count, errors = errors.Select(e => new { e.Id, e.Error }) });
+        if (body.Ids.Count is 0 or > 5000) return BadRequest(new { error = "Chọn game cần đăng" });
+        return Ok(_publisher.Enqueue(body.Ids));
     }
+
+    [HttpGet("publish")]
+    public IActionResult PublishStatus() => Ok(_publisher.Status);
 
     [HttpPost("delete")]
     public async Task<IActionResult> Delete([FromBody] IdsBody body)

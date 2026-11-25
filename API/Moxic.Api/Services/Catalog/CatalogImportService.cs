@@ -168,9 +168,14 @@ public class CatalogImportService
 
     // ───────── review queue ─────────
 
-    public async Task<(List<PendingGameDto> Items, int Total)> PendingAsync(string? q, bool hot, string? sort, int page, int pageSize)
+    /// <summary>Game name for progress messages (synchronous: called inside a lock).</summary>
+    public string? NameOf(Guid id) => AllGames.AsNoTracking().Where(g => g.Id == id).Select(g => g.Name).FirstOrDefault();
+
+    public async Task<(List<PendingGameDto> Items, int Total)> PendingAsync(string? q, bool hot, string? sort, int page, int pageSize,
+        IReadOnlyCollection<Guid>? beingPublished = null)
     {
         var query = AllGames.AsNoTracking().Where(g => !g.IsPublished);
+        if (beingPublished is { Count: > 0 }) query = query.Where(g => !beingPublished.Contains(g.Id));
         if (!string.IsNullOrWhiteSpace(q))
         {
             var term = q.Trim().ToLower();
@@ -237,7 +242,8 @@ public class CatalogImportService
                 {
                     var key = await CopyImageAsync(g.Id, url, width, ct);
                     if (key == null) continue;
-                    g.Media.Add(new GameMedia { Id = Guid.NewGuid(), GameId = g.Id, ObjectKey = key, IsPrimary = order == 0, DisplayOrder = order, CreatedAt = DateTime.UtcNow });
+                    // Added through the DbSet: a new GameMedia with a preset key reached via the navigation is taken for an existing row (UPDATE → concurrency error).
+                    _db.GameMedias.Add(new GameMedia { Id = Guid.NewGuid(), GameId = g.Id, ObjectKey = key, IsPrimary = order == 0, DisplayOrder = order, CreatedAt = DateTime.UtcNow });
                     order++;
                 }
             }

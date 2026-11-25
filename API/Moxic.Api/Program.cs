@@ -128,6 +128,7 @@ builder.Services.AddHttpClient(Moxic.Api.Services.Catalog.XboxBrowseClient.HttpC
 });
 builder.Services.AddSingleton<Moxic.Api.Services.Catalog.XboxBrowseClient>();
 builder.Services.AddSingleton<Moxic.Api.Services.Catalog.CatalogCrawlJob>();
+builder.Services.AddSingleton<Moxic.Api.Services.Catalog.CatalogPublishJob>();
 builder.Services.AddScoped<Moxic.Api.Services.Catalog.CatalogImportService>();
 builder.Services.AddHostedService<PriceTrackerJob>();
 builder.Services.AddHostedService<RentalMaintenanceService>();

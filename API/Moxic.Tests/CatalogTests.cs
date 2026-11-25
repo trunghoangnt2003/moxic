@@ -345,3 +345,82 @@ public class CatalogLiveTests
         Console.WriteLine(string.Join("\n", items.Take(8).Select(g => $"{g.PopularityRank} {g.Name} {g.OriginalPrice} -> {g.SalePrice} {g.Status}")));
     }
 }
+
+public class CatalogPublishImageTests
+{
+    /// <summary>Serves a tiny PNG for every request, like the Xbox image CDN.</summary>
+    private class ImageHttp : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new Png());
+        private class Png : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c)
+            {
+                var res = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 137, 80, 78, 71, 1, 2, 3 }) };
+                res.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+                return Task.FromResult(res);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Publish_with_images_inserts_media_and_goes_live()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var g = CatalogSchemaTests.NewGame("Minecraft", published: false, sale: 500000);
+        g.XboxPosterUrl = "https://store-images.s-microsoft.com/p";
+        g.XboxHeroUrl = "https://store-images.s-microsoft.com/h";
+        ctx.Games.Add(g);
+        await ctx.SaveChangesAsync();
+        ctx.ChangeTracker.Clear();
+        var minio = new FakeMinio();
+        var svc = new Moxic.Api.Services.Catalog.CatalogImportService(ctx, minio, new ImageHttp(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Moxic.Api.Services.Catalog.CatalogImportService>.Instance);
+        Assert.Empty(await svc.PublishAsync(new[] { g.Id }, CancellationToken.None));
+        ctx.ChangeTracker.Clear();
+        var live = await ctx.Games.Include(x => x.Media).SingleAsync();
+        Assert.Equal(2, live.Media.Count);
+        Assert.Single(live.Media, m => m.IsPrimary);
+        Assert.Equal(2, minio.Uploaded.Count);
+    }
+}
+
+public class CatalogPublishJobTests
+{
+    [Fact]
+    public async Task Publish_job_publishes_queued_games_in_background_and_reports_progress()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using (var ctx = db.NewContext())
+        {
+            ctx.Games.AddRange(CatalogSchemaTests.NewGame("A", published: false, sale: 100000), CatalogSchemaTests.NewGame("Zero", published: false, sale: 0));
+            await ctx.SaveChangesAsync();
+        }
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDbContext<MoxicDbContext>(o => o.UseNpgsql(db.ConnectionString));
+        services.AddSingleton<Moxic.Core.Interfaces.IMinioService, FakeMinio>();
+        services.AddSingleton<IHttpClientFactory, CatalogImportTests.NoHttp>();
+        services.AddScoped<Moxic.Api.Services.Catalog.CatalogImportService>();
+        await using var sp = services.BuildServiceProvider();
+        var job = new Moxic.Api.Services.Catalog.CatalogPublishJob(sp.GetRequiredService<IServiceScopeFactory>(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Moxic.Api.Services.Catalog.CatalogPublishJob>.Instance);
+
+        List<Guid> ids;
+        await using (var ctx = db.NewContext()) ids = await ctx.Games.IgnoreQueryFilters().Select(g => g.Id).ToListAsync();
+        var first = job.Enqueue(ids);
+        Assert.True(first.Running);
+        Assert.Equal(2, first.Total);
+        Assert.True(job.IsQueued(ids[0]) || job.Status.Done > 0);
+        for (var i = 0; i < 100 && job.Status.Running; i++) await Task.Delay(50);
+
+        var s = job.Status;
+        Assert.False(s.Running);
+        Assert.Equal(2, s.Done);
+        Assert.Equal(1, s.Published);
+        Assert.Single(s.Errors);
+        await using var check = db.NewContext();
+        Assert.Equal("A", (await check.Games.SingleAsync()).Name);
+    }
+}
