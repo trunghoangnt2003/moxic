@@ -158,8 +158,8 @@ export default function GameDetailPage() {
   const backgroundHeroImage = game.media[0]?.presignedUrl;
   const days = game.releaseDate ? daysUntil(game.releaseDate) : 0;
   const req = game.systemRequirements;
-  const activeReq = showMinReq ? req.minimum : req.recommended;
-  const hasReq = [req.minimum, req.recommended].some((r) => r && Object.values(r).some((v) => typeof v === "string" && v.trim()));
+  const activeReq = showMinReq ? req?.minimum : req?.recommended;
+  const hasReq = [req?.minimum, req?.recommended].some((r) => r && Object.values(r).some((v) => typeof v === "string" && v.trim()));
   const genreText = game.genres?.map((g) => g.name).join(", ");
 
   const handleAddToCart = () => {
@@ -345,11 +345,11 @@ export default function GameDetailPage() {
                   >{t("Tối thiểu")}</button>
                 </div>
                 <div className="p-5">
-                  <SpecRow label={t("Hệ điều hành")} value={activeReq.os} />
-                  <SpecRow label="CPU" value={activeReq.processor} />
-                  <SpecRow label="RAM" value={activeReq.memory} />
-                  <SpecRow label="GPU" value={activeReq.graphics} />
-                  <SpecRow label={t("Lưu trữ")} value={activeReq.storage} />
+                  <SpecRow label={t("Hệ điều hành")} value={activeReq?.os ?? ""} />
+                  <SpecRow label="CPU" value={activeReq?.processor ?? ""} />
+                  <SpecRow label="RAM" value={activeReq?.memory ?? ""} />
+                  <SpecRow label="GPU" value={activeReq?.graphics ?? ""} />
+                  <SpecRow label={t("Lưu trữ")} value={activeReq?.storage ?? ""} />
                 </div>
               </div>
             </div>}

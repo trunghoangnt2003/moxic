@@ -97,10 +97,11 @@ export interface GameDetail {
   releaseDate?: string;
   media: GameMedia[];
   ratings: GameRating[];
+  /** Null for games imported from the Xbox Store (no requirements entered). */
   systemRequirements: {
-    minimum: SystemRequirement;
-    recommended: SystemRequirement;
-  };
+    minimum?: SystemRequirement | null;
+    recommended?: SystemRequirement | null;
+  } | null;
   relatedGameIds: string[];
   purchaseCount: number;
   storeRating: number;
