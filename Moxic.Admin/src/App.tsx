@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   KeyRound,
   Handshake,
+  CloudDownload,
   ShieldAlert,
   TicketPercent,
   ShoppingBag,
@@ -47,6 +48,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Rentals = lazy(() => import("./pages/Rentals"));
 const ShareRooms = lazy(() => import("./pages/ShareRooms"));
 const ShareGames = lazy(() => import("./pages/ShareGames"));
+const XboxCatalog = lazy(() => import("./pages/XboxCatalog"));
 const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -56,6 +58,7 @@ const Translations = lazy(() => import("./pages/Translations"));
 const navItems = [
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
   { to: "/games", label: "Games", icon: Gamepad2 },
+  { to: "/xbox-catalog", label: "Kho game Xbox", icon: CloudDownload },
   { to: "/genres", label: "Genres", icon: BookMarked },
   { to: "/tags", label: "Tags", icon: Tags },
   { to: "/orders", label: "Orders", icon: Package },
@@ -269,6 +272,7 @@ function App() {
                   <Route path="/rentals" element={<Rentals />} />
                   <Route path="/share-rooms" element={<ShareRooms />} />
                   <Route path="/share-games" element={<ShareGames />} />
+                  <Route path="/xbox-catalog" element={<XboxCatalog />} />
                   <Route path="/moderation" element={<Moderation />} />
                   <Route path="/games" element={<GameList />} />
                   <Route path="/games/new" element={<GameForm />} />
