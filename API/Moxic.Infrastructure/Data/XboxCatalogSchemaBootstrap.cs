@@ -13,6 +13,10 @@ public static class XboxCatalogSchemaBootstrap
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "IsPublished" boolean NOT NULL DEFAULT TRUE;
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "PriceMode" character varying(10) NOT NULL DEFAULT 'Manual';
         ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "ImportSource" character varying(20);
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "PopularityRank" integer;
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "XboxPosterUrl" character varying(500);
+        ALTER TABLE "Games" ADD COLUMN IF NOT EXISTS "XboxHeroUrl" character varying(500);
+        CREATE INDEX IF NOT EXISTS "IX_Games_IsPublished_PopularityRank" ON "Games" ("IsPublished", "PopularityRank");
         CREATE TABLE IF NOT EXISTS "CatalogSettings" (
             "Id" integer NOT NULL,
             "PricePercent" numeric(18,2) NOT NULL,

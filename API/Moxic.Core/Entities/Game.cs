@@ -31,8 +31,15 @@ public class Game
     /// <summary>"Formula" (selling price follows the catalog price formula) | "Manual" (set by hand, never overwritten).</summary>
     public string PriceMode { get; set; } = "Manual";
 
-    /// <summary>Where a crawled/imported game came from: popular | new | discount | wishlist | csv (null = added by hand). "popular" = Game hot.</summary>
+    /// <summary>Where a crawled/imported game came from: "xbox" | "csv" (null = added by hand).</summary>
     public string? ImportSource { get; set; }
+
+    /// <summary>Position in the Xbox Store "most popular" order at the last crawl (1 = hottest). Drives the "Game hot" filter.</summary>
+    public int? PopularityRank { get; set; }
+
+    /// <summary>Xbox image links kept while the game waits for review; downloaded into MinIO only when it is published.</summary>
+    public string? XboxPosterUrl { get; set; }
+    public string? XboxHeroUrl { get; set; }
 
     /// <summary>"Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle".</summary>
     public string ProductType { get; set; } = "Game";

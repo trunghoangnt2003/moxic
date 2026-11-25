@@ -94,6 +94,9 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.IsPublished).HasDefaultValue(true);
             entity.Property(e => e.PriceMode).HasMaxLength(10).IsRequired().HasDefaultValue("Manual");
             entity.Property(e => e.ImportSource).HasMaxLength(20);
+            entity.Property(e => e.XboxPosterUrl).HasMaxLength(500);
+            entity.Property(e => e.XboxHeroUrl).HasMaxLength(500);
+            entity.HasIndex(e => new { e.IsPublished, e.PopularityRank });
             // Crawled/imported games wait for review: customers never see them. Admin screens use IgnoreQueryFilters().
             entity.HasQueryFilter(e => e.IsPublished);
             entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
