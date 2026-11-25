@@ -50,3 +50,61 @@ public class CatalogSchemaTests
         await ctx.SaveChangesAsync();
     }
 }
+
+public class PriceFormulaTests
+{
+    private static CatalogSettings S(decimal pct, decimal add, decimal round) => new() { Id = 1, PricePercent = pct, PriceAdd = add, PriceRoundTo = round };
+
+    [Fact]
+    public void Formula_rounds_up_and_never_goes_negative()
+    {
+        Assert.Equal(1050000m, Moxic.Api.Services.Catalog.PriceFormula.Compute(1499000, S(70, 0, 1000)));
+        Assert.Equal(1000000m, Moxic.Api.Services.Catalog.PriceFormula.Compute(1499000, S(70, -50000, 10000)));
+        Assert.Equal(0m, Moxic.Api.Services.Catalog.PriceFormula.Compute(1499000, null));
+        Assert.Equal(0m, Moxic.Api.Services.Catalog.PriceFormula.Compute(10000, S(10, -50000, 1000)));
+        Assert.False(Moxic.Api.Services.Catalog.PriceFormula.IsSet(null));
+        Assert.True(Moxic.Api.Services.Catalog.PriceFormula.IsSet(S(70, 0, 1000)));
+    }
+}
+
+public class XboxBrowseParseTests
+{
+    private const string Page = """
+        {"channels":{"BROWSE":{"encodedCT":"eyJIYXNNb3JlIjp0cnVlfQ==","totalItems":2}},
+         "productSummaries":[
+          {"productId":"9N431PX143P8","productKind":"Game","title":"Forza Horizon 6","shortDescription":"Drive","publisherName":"Xbox Game Studios",
+           "releaseDate":"2026-05-19T00:00:00.0000000Z","categories":["Đua xe"],
+           "images":{"poster":{"url":"https://store-images.s-microsoft.com/p"},"superHeroArt":{"url":"https://store-images.s-microsoft.com/h"}},
+           "specificPrices":{"purchaseable":[{"listPrice":1124250.0,"msrp":1499000.0,"currency":"VND"}]}},
+          {"productId":"9N201KQXS5BM","productKind":"Game","title":"Call of Duty","specificPrices":{"purchaseable":[]}}
+         ]}
+        """;
+
+    [Fact]
+    public void ParsePage_reads_products_prices_and_next_token()
+    {
+        var (items, next) = Moxic.Api.Services.Catalog.XboxBrowseClient.ParsePage(Page);
+        Assert.Equal(2, items.Count);
+        var f = items[0];
+        Assert.Equal("9N431PX143P8", f.ProductId);
+        Assert.Equal(1499000m, f.Msrp);
+        Assert.Equal("Xbox Game Studios", f.Publisher);
+        Assert.Equal(new DateTime(2026, 5, 19), f.ReleaseDate!.Value.Date);
+        Assert.Equal(new[] { "Đua xe" }, f.Categories);
+        Assert.Equal("https://store-images.s-microsoft.com/p", f.PosterUrl);
+        Assert.Equal("https://store-images.s-microsoft.com/h", f.HeroUrl);
+        Assert.Null(items[1].Msrp);
+        Assert.Equal("eyJIYXNNb3JlIjp0cnVlfQ==", next);
+
+        var (_, none) = Moxic.Api.Services.Catalog.XboxBrowseClient.ParsePage(Page.Replace("eyJIYXNNb3JlIjp0cnVlfQ==", "eyJIYXNNb3JlIjpmYWxzZX0="));
+        Assert.Null(none); // {"HasMore":false}
+    }
+
+    [Fact]
+    public void SortFor_maps_lists()
+    {
+        Assert.Equal("MostPopular desc", Moxic.Api.Services.Catalog.XboxBrowseClient.SortFor("popular"));
+        Assert.Equal("ReleaseDate desc", Moxic.Api.Services.Catalog.XboxBrowseClient.SortFor("new"));
+        Assert.Throws<ArgumentException>(() => Moxic.Api.Services.Catalog.XboxBrowseClient.SortFor("x"));
+    }
+}
