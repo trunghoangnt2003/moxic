@@ -313,3 +313,35 @@ public class CatalogCrawlJobTests
         Assert.True(job.TryStart(100));
     }
 }
+
+public class CatalogLiveTests
+{
+    private class RealHttp : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new() { Timeout = TimeSpan.FromSeconds(30) };
+    }
+
+    /// <summary>Hits the real Xbox Store VN (run with MOXIC_LIVE=1): two pages land in the review queue, hidden from customers.</summary>
+    [Fact]
+    public async Task Live_crawl_two_pages_into_review_queue()
+    {
+        if (Environment.GetEnvironmentVariable("MOXIC_LIVE") != "1") return;
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        var xbox = new Moxic.Api.Services.Catalog.XboxBrowseClient(new RealHttp());
+        var svc = CatalogImportTests.Svc(ctx);
+        await svc.SaveSettingsAsync(70, 0, 1000);
+        var (p1, next) = await xbox.FetchPageAsync("popular", null, CancellationToken.None);
+        var r1 = await svc.ImportPageAsync(p1, 1, CancellationToken.None);
+        var (p2, _) = await xbox.FetchPageAsync("popular", next, CancellationToken.None);
+        var r2 = await svc.ImportPageAsync(p2, 26, CancellationToken.None);
+        Assert.Equal(25, p1.Count);
+        Assert.NotNull(next);
+        Assert.True(r1.Added + r2.Added > 10, $"added {r1.Added}+{r2.Added}");
+        Assert.Equal(0, await ctx.Games.CountAsync());
+        var (items, total) = await svc.PendingAsync(null, true, "popular", 1, 50);
+        Assert.Equal(r1.Added + r2.Added, total);
+        Assert.All(items, g => { Assert.True(g.OriginalPrice > 0); Assert.True(g.SalePrice > 0); Assert.NotNull(g.PosterUrl); });
+        Console.WriteLine(string.Join("\n", items.Take(8).Select(g => $"{g.PopularityRank} {g.Name} {g.OriginalPrice} -> {g.SalePrice} {g.Status}")));
+    }
+}
