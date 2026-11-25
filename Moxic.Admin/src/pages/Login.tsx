@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Gamepad2, Eye, EyeOff } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
 
@@ -49,7 +49,7 @@ export default function Login({ onLogin }: { onLogin: (email: string) => void })
               <label className="block text-xs text-steam-muted mb-1.5 font-medium">Email</label>
               <input
                 type="email"
-                placeholder="admin@moxic.com"
+                placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full steam-input"
@@ -92,11 +92,6 @@ export default function Login({ onLogin }: { onLogin: (email: string) => void })
             </button>
           </form>
 
-          <div className="mt-5 pt-4 border-t border-steam-border">
-            <p className="text-[11px] text-steam-muted/50 text-center">
-              Dev: admin@moxic.com / Admin@123
-            </p>
-          </div>
         </div>
       </div>
     </div>
