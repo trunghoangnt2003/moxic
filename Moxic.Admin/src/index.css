@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @theme {
   --color-steam-bg: #0d0d0d;
@@ -90,4 +90,10 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+/* GlobalActivity: a segment sliding across the top bar while requests are in flight */
+@keyframes activity {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
 }

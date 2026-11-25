@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CloudDownload, Download, Flame, Loader2, Search, Upload } from "lucide-react";
 import { apiFetch, apiUrl } from "../lib/api";
 import { readApiError } from "../lib/luckySpinAdmin";
+import { PUBLISH_STARTED } from "../components/PublishWidget";
 
 interface CrawlStatus {
   running: boolean;
@@ -180,27 +181,23 @@ function PendingTab({ formula }: { formula: Formula | null }) {
     if (kind === "delete" && !confirm(`Xoá ${ids.length} game khỏi hàng chờ?`)) return;
     setBusy(true);
     setNotice(null);
-    let ok = 0;
-    const errors: string[] = [];
-    for (let i = 0; i < ids.length; i += 50) {
-      const res = await apiFetch(apiUrl(`/api/admin/catalog/${kind}`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: ids.slice(i, i + 50) }),
-      });
-      if (!res.ok) {
-        errors.push(await readApiError(res, "Lỗi"));
-        continue;
-      }
-      const r = await res.json();
-      if (kind === "publish") {
-        ok += r.published;
-        errors.push(...(r.errors as { error: string }[]).map((e) => e.error));
-      } else ok += r.deleted;
-    }
+    const res = await apiFetch(apiUrl(`/api/admin/catalog/${kind}`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
     setBusy(false);
+    if (!res.ok) {
+      setNotice(await readApiError(res, "Có lỗi xảy ra"));
+      return;
+    }
+    // Gone from the queue right away; publishing continues in the background (see the widget, bottom-right).
+    setData((d) => (d ? { ...d, items: d.items.filter((g) => !selected.has(g.id)), total: Math.max(0, d.total - ids.length) } : d));
     setSelected(new Set());
-    setNotice(`${kind === "publish" ? "Đã đăng" : "Đã xoá"} ${ok} game.${errors.length ? ` Không đăng được: ${errors.join("; ")}` : ""}`);
+    if (kind === "publish") {
+      window.dispatchEvent(new Event(PUBLISH_STARTED));
+      setNotice(`Đang đăng ${ids.length} game ở chế độ nền. Xem tiến trình ở góc dưới bên phải.`);
+    } else setNotice(`Đã xoá ${(await res.json()).deleted} game.`);
     load();
   };
 
@@ -416,15 +413,18 @@ function FormulaTab({ formula, onSaved }: { formula: Formula | null; onSaved: (f
   const [round, setRound] = useState(String(formula?.priceRoundTo ?? 1000));
   const [includePublished, setIncludePublished] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState<"save" | "apply" | null>(null);
   const draft: Formula = { pricePercent: Number(pct) || 0, priceAdd: Number(add) || 0, priceRoundTo: Number(round) || 1000 };
 
   const save = async () => {
     setMsg(null);
+    setSaving("save");
     const res = await apiFetch(apiUrl("/api/admin/catalog/formula"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(draft),
     });
+    setSaving(null);
     if (res.ok) {
       onSaved(await res.json());
       setMsg("Đã lưu công thức. Bấm \"Áp dụng\" để tính lại giá các game theo công thức.");
@@ -434,11 +434,13 @@ function FormulaTab({ formula, onSaved }: { formula: Formula | null; onSaved: (f
     const pre = await apiFetch(apiUrl(`/api/admin/catalog/formula/preview?includePublished=${includePublished}`));
     const { count } = await pre.json();
     if (!confirm(`Tính lại giá cho ${count} game đang dùng công thức${includePublished ? " (gồm cả game đã đăng)" : " trong hàng chờ"}? Game tự chỉnh giá không bị đổi.`)) return;
+    setSaving("apply");
     const res = await apiFetch(apiUrl("/api/admin/catalog/formula/apply"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ includePublished }),
     });
+    setSaving(null);
     const r = await res.json();
     setMsg(`Đã cập nhật giá ${r.changed} game.`);
   };
@@ -460,8 +462,12 @@ function FormulaTab({ formula, onSaved }: { formula: Formula | null; onSaved: (f
       </div>
       <p className="text-sm text-steam-text">Ví dụ: giá gốc 1.499.000đ → giá bán <b className="text-steam-green">{vnd(computeFormula(1499000, draft))}</b></p>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={save} className="steam-btn bg-steam-blue text-black text-xs">Lưu công thức</button>
-        <button type="button" onClick={apply} disabled={!formula} className="steam-btn border border-steam-border text-xs disabled:opacity-40">Áp dụng công thức</button>
+        <button type="button" onClick={save} disabled={saving !== null} className="steam-btn bg-steam-blue text-black text-xs inline-flex items-center gap-1.5 disabled:opacity-60">
+          {saving === "save" && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Lưu công thức
+        </button>
+        <button type="button" onClick={apply} disabled={!formula || saving !== null} className="steam-btn border border-steam-border text-xs inline-flex items-center gap-1.5 disabled:opacity-40">
+          {saving === "apply" && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Áp dụng công thức
+        </button>
         <label className="flex items-center gap-1.5 text-xs text-steam-text">
           <input type="checkbox" checked={includePublished} onChange={(e) => setIncludePublished(e.target.checked)} /> Gồm cả game đã đăng
         </label>

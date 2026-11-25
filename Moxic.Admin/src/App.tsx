@@ -49,6 +49,8 @@ const Rentals = lazy(() => import("./pages/Rentals"));
 const ShareRooms = lazy(() => import("./pages/ShareRooms"));
 const ShareGames = lazy(() => import("./pages/ShareGames"));
 const XboxCatalog = lazy(() => import("./pages/XboxCatalog"));
+import GlobalActivity from "./components/GlobalActivity";
+import PublishWidget from "./components/PublishWidget";
 const Moderation = lazy(() => import("./pages/Moderation"));
 const RewardShop = lazy(() => import("./pages/RewardShop"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -263,6 +265,8 @@ function App() {
           </header>
 
           {/* Content */}
+          <GlobalActivity />
+          <PublishWidget />
           <main className="flex-1 overflow-auto">
             <div className="p-3 md:p-5 max-w-7xl mx-auto">
               <Suspense fallback={<div className="text-steam-muted p-6 md:p-8 text-sm">Loading...</div>}>
