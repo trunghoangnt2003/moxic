@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Moxic.Core.Entities;
 using Moxic.Infrastructure.Data;
@@ -279,5 +280,36 @@ public class CatalogCsvTests
         Assert.Equal("Formula", a.PriceMode);
         Assert.Equal("Global", a.Region);
         Assert.Equal("csv", a.ImportSource);
+    }
+}
+
+public class CatalogCrawlJobTests
+{
+    /// <summary>Blocks on the first page until released, so the job stays "running".</summary>
+    private class SlowXbox : Moxic.Api.Services.Catalog.XboxBrowseClient
+    {
+        public readonly TaskCompletionSource Release = new();
+        public SlowXbox() : base(new CatalogImportTests.NoHttp()) { }
+        public override async Task<(List<Moxic.Api.Services.Catalog.XboxProduct> Items, string? NextToken)> FetchPageAsync(string list, string? token, CancellationToken ct)
+        {
+            await Release.Task;
+            return (new(), null);
+        }
+    }
+
+    [Fact]
+    public async Task Crawl_job_refuses_second_start_while_running()
+    {
+        var xbox = new SlowXbox();
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection().BuildServiceProvider();
+        var job = new Moxic.Api.Services.Catalog.CatalogCrawlJob(services.GetRequiredService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>(), xbox,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Moxic.Api.Services.Catalog.CatalogCrawlJob>.Instance);
+        Assert.True(job.TryStart(100));
+        Assert.False(job.TryStart(100));
+        Assert.True(job.Status.Running);
+        xbox.Release.SetResult();
+        for (var i = 0; i < 50 && job.Status.Running; i++) await Task.Delay(50);
+        Assert.False(job.Status.Running);
+        Assert.True(job.TryStart(100));
     }
 }

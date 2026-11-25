@@ -121,6 +121,14 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<PushService>();
 builder.Services.AddHttpClient(PriceTrackerService.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddScoped<PriceTrackerService>();
+builder.Services.AddHttpClient(Moxic.Api.Services.Catalog.XboxBrowseClient.HttpClientName, c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(30);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; MoxicCatalog/1.0)");
+});
+builder.Services.AddSingleton<Moxic.Api.Services.Catalog.XboxBrowseClient>();
+builder.Services.AddSingleton<Moxic.Api.Services.Catalog.CatalogCrawlJob>();
+builder.Services.AddScoped<Moxic.Api.Services.Catalog.CatalogImportService>();
 builder.Services.AddHostedService<PriceTrackerJob>();
 builder.Services.AddHostedService<RentalMaintenanceService>();
 builder.Services.AddSingleton<SpinUserRateLimiter>();

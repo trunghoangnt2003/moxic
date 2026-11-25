@@ -29,7 +29,7 @@ public class AdminGamesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetGames([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var query = _db.Games.IgnoreQueryFilters().AsQueryable();
+        var query = _db.Games.AsQueryable(); // published only; the review queue lives in "Kho game Xbox"
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(g => g.Name.Contains(search));
 
