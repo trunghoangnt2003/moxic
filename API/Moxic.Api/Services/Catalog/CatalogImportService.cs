@@ -302,5 +302,79 @@ public class CatalogImportService
         return games.Count;
     }
 
+    // ───────── CSV ─────────
+
+    public record CsvRowResult(int Row, string Status, string? Message);
+    public const int MaxCsvRows = 1000;
+
+    /// <summary>
+    /// Imports CSV rows into the review queue (columns: <see cref="CatalogCsv.Columns"/>). A row with an Xbox id fills what it
+    /// lacks from Microsoft; without one it needs a name and an original price. A selling price makes the game "Manual".
+    /// Bad rows are reported and never stop the rest.
+    /// </summary>
+    public async Task<List<CsvRowResult>> ImportCsvAsync(string text, CancellationToken ct, XboxBrowseClient? xbox = null)
+    {
+        var rows = CatalogCsv.Parse(text);
+        var results = new List<CsvRowResult>();
+        if (rows.Count < 2) return results;
+        var header = rows[0].Select(h => h.Trim().ToLowerInvariant()).ToArray();
+        int Col(string name) => Array.IndexOf(header, name);
+        var settings = await GetSettingsAsync();
+        var genres = await GenresByNameAsync(ct);
+        var vi = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+
+        foreach (var (cells, index) in rows.Skip(1).Take(MaxCsvRows).Select((r, i) => (r, i + 2)))
+        {
+            string V(string name) { var i = Col(name); return i >= 0 && i < cells.Length ? cells[i].Trim() : ""; }
+            if (cells.All(string.IsNullOrWhiteSpace) && cells.Length <= 1) continue;
+            static decimal? Money(string s) =>
+                decimal.TryParse(s.Replace(".", "").Replace(",", "").Replace("đ", "").Replace(" ", ""), out var v) && v >= 0 ? v : null;
+            try
+            {
+                var id = V("xbox_product_id").ToUpperInvariant();
+                if (id != "" && await AllGames.AnyAsync(g => g.XboxProductId != null && g.XboxProductId.ToUpper() == id, ct))
+                {
+                    results.Add(new(index, "skipped", $"Đã có game {id}"));
+                    continue;
+                }
+                XboxProduct? fromXbox = id != "" && xbox != null ? await xbox.FetchByIdAsync(id, ct) : null;
+                var name = V("ten_game") is { Length: > 0 } n ? n : fromXbox?.Title ?? "";
+                var original = Money(V("gia_goc")) ?? fromXbox?.Msrp;
+                if (name == "" || original is not > 0)
+                {
+                    results.Add(new(index, "error", id != "" && fromXbox == null ? $"Không lấy được thông tin {id} từ Xbox" : "Thiếu tên game hoặc giá gốc"));
+                    continue;
+                }
+                DateTime? release = DateTime.TryParse(V("ngay_ra_mat"), System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var rd) ? rd
+                    : DateTime.TryParse(V("ngay_ra_mat"), vi, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var rd2) ? rd2
+                    : fromXbox?.ReleaseDate;
+                var image = V("link_anh");
+                var p = new XboxProduct(id, "Game", name, V("mo_ta") is { Length: > 0 } d ? d : fromXbox?.Description,
+                    V("nha_phat_hanh") is { Length: > 0 } pub ? pub : fromXbox?.Publisher, release, new(),
+                    image.StartsWith("https://") ? image : fromXbox?.PosterUrl, fromXbox?.HeroUrl, original);
+                var game = NewPendingGame(p, settings, DateTime.UtcNow, "csv");
+                if (id == "") game.XboxProductId = null;
+                if (Money(V("gia_ban")) is { } sale) { game.SalePrice = sale; game.PriceMode = "Manual"; }
+                if (V("trang_thai").Equals("Preorder", StringComparison.OrdinalIgnoreCase)) game.Status = GameStatus.Preorder;
+                else if (V("trang_thai").Equals("Available", StringComparison.OrdinalIgnoreCase)) game.Status = GameStatus.Available;
+                if (V("vung") is { Length: > 0 } region) game.Region = Cut(region, 30);
+                foreach (var g in V("the_loai").Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    if (genres.TryGetValue(g.ToLowerInvariant(), out var genre)) game.Genres.Add(genre);
+                _db.Games.Add(game);
+                await _db.SaveChangesAsync(ct);
+                _db.ChangeTracker.Clear();
+                genres = await GenresByNameAsync(ct);
+                results.Add(new(index, "added", game.Name));
+            }
+            catch (Exception e) when (e is DbUpdateException or HttpRequestException or System.Text.Json.JsonException)
+            {
+                _db.ChangeTracker.Clear();
+                results.Add(new(index, "error", e.Message));
+            }
+        }
+        return results;
+    }
+
     private static string Cut(string s, int max) => s.Length > max ? s[..max] : s;
 }

@@ -242,3 +242,42 @@ public class CatalogImportTests
         Assert.Equal(777000m, f.SalePrice);
     }
 }
+
+public class CatalogCsvTests
+{
+    [Fact]
+    public void Csv_parse_handles_quotes_semicolons_and_bom()
+    {
+        var rows = Moxic.Api.Services.Catalog.CatalogCsv.Parse("﻿a,b,c\r\n1,\"x, \"\"y\"\"\",3\n");
+        Assert.Equal(new[] { "a", "b", "c" }, rows[0]);
+        Assert.Equal(new[] { "1", "x, \"y\"", "3" }, rows[1]);
+        var semi = Moxic.Api.Services.Catalog.CatalogCsv.Parse("a;b\n1;2,5\n");
+        Assert.Equal(new[] { "1", "2,5" }, semi[1]);
+        Assert.StartsWith("﻿xbox_product_id,ten_game", Moxic.Api.Services.Catalog.CatalogCsv.Template());
+    }
+
+    [Fact]
+    public async Task ImportCsv_creates_pending_games_and_reports_errors()
+    {
+        await using var db = await TestDb.CreateAsync();
+        await using var ctx = db.NewContext();
+        ctx.Games.Add(CatalogSchemaTests.NewGame("Old", xboxId: "9DUP"));
+        await ctx.SaveChangesAsync();
+        var csv = "xbox_product_id,ten_game,mo_ta,gia_goc,gia_ban,trang_thai,ngay_ra_mat,nha_phat_hanh,the_loai,vung,link_anh\n" +
+                  ",Game A,Mo ta,1200000,,,2025-03-01,Pub,,Global,\n" +
+                  ",Game B,,900000,650000,,,,,,\n" +
+                  ",,,,,,,,,,\n" +
+                  "9DUP,Dup,,100,,,,,,,\n";
+        var res = await CatalogImportTests.Svc(ctx).ImportCsvAsync(csv, CancellationToken.None);
+        Assert.Equal(new[] { "added", "added", "error", "skipped" }, res.Select(r => r.Status));
+        ctx.ChangeTracker.Clear();
+        var b = await ctx.Games.IgnoreQueryFilters().SingleAsync(g => g.Name == "Game B");
+        Assert.False(b.IsPublished);
+        Assert.Equal("Manual", b.PriceMode);
+        Assert.Equal(650000m, b.SalePrice);
+        var a = await ctx.Games.IgnoreQueryFilters().SingleAsync(g => g.Name == "Game A");
+        Assert.Equal("Formula", a.PriceMode);
+        Assert.Equal("Global", a.Region);
+        Assert.Equal("csv", a.ImportSource);
+    }
+}
