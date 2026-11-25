@@ -17,6 +17,7 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<SpinCodeOrder> SpinCodeOrders => Set<SpinCodeOrder>();
     public DbSet<ShareRoom> ShareRooms => Set<ShareRoom>();
+    public DbSet<CatalogSettings> CatalogSettings => Set<CatalogSettings>();
     public DbSet<ShareSeat> ShareSeats => Set<ShareSeat>();
     public DbSet<ShareMessage> ShareMessages => Set<ShareMessage>();
     public DbSet<LeaderboardAward> LeaderboardAwards => Set<LeaderboardAward>();
@@ -90,6 +91,11 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ShareSurcharge).HasColumnType("numeric(18,2)");
+            entity.Property(e => e.IsPublished).HasDefaultValue(true);
+            entity.Property(e => e.PriceMode).HasMaxLength(10).IsRequired().HasDefaultValue("Manual");
+            entity.Property(e => e.ImportSource).HasMaxLength(20);
+            // Crawled/imported games wait for review: customers never see them. Admin screens use IgnoreQueryFilters().
+            entity.HasQueryFilter(e => e.IsPublished);
             entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Description).HasColumnType("text").IsRequired();
             entity.Property(e => e.ProductType).HasMaxLength(20).IsRequired().HasDefaultValue("Game");
@@ -256,6 +262,14 @@ public class MoxicDbContext : Microsoft.AspNetCore.Identity.EntityFrameworkCore.
             entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
             entity.HasIndex(e => new { e.Month, e.Board, e.Rank }).IsUnique();
             entity.HasIndex(e => e.UserId);
+        });
+        modelBuilder.Entity<CatalogSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.PricePercent).HasColumnType("numeric(18,2)");
+            entity.Property(e => e.PriceAdd).HasColumnType("numeric(18,2)");
+            entity.Property(e => e.PriceRoundTo).HasColumnType("numeric(18,2)");
         });
         modelBuilder.Entity<ShareRoom>(entity =>
         {

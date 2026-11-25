@@ -25,6 +25,15 @@ public class Game
     /// <summary>Extra amount (VND) added to the game price for a share room (buying together costs Moxic more work).</summary>
     public decimal ShareSurcharge { get; set; }
 
+    /// <summary>False = waiting in the admin review queue (crawled/imported); hidden from every customer query by a global filter.</summary>
+    public bool IsPublished { get; set; } = true;
+
+    /// <summary>"Formula" (selling price follows the catalog price formula) | "Manual" (set by hand, never overwritten).</summary>
+    public string PriceMode { get; set; } = "Manual";
+
+    /// <summary>Where a crawled/imported game came from: popular | new | discount | wishlist | csv (null = added by hand). "popular" = Game hot.</summary>
+    public string? ImportSource { get; set; }
+
     /// <summary>"Game" | "GamePass" | "GiftCard" | "DLC" | "Bundle".</summary>
     public string ProductType { get; set; } = "Game";
     /// <summary>Store region the product is bought in (e.g. "Global", "US", "AR", "TR").</summary>

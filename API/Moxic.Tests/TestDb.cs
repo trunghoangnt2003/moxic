@@ -5,13 +5,13 @@ namespace Moxic.Tests;
 
 /// <summary>
 /// A fresh PostgreSQL database per test (real Npgsql semantics: ExecuteUpdate, unique indexes, concurrency).
-/// Needs a local server: docker run -d --name moxic-testpg -e POSTGRES_PASSWORD=test -p 55432:5432 postgres:16-alpine
+/// Needs a local server: docker run -d --name moxic-testpg -e POSTGRES_PASSWORD=test -p 127.0.0.1:25432:5432 postgres:16-alpine
 /// Override with env MOXIC_TEST_PG (a connection string without Database).
 /// </summary>
 public sealed class TestDb : IAsyncDisposable
 {
     private static readonly string Server =
-        Environment.GetEnvironmentVariable("MOXIC_TEST_PG") ?? "Host=localhost;Port=55432;Username=postgres;Password=test";
+        Environment.GetEnvironmentVariable("MOXIC_TEST_PG") ?? "Host=127.0.0.1;Port=25432;Username=postgres;Password=test";
 
     public string ConnectionString { get; }
     private readonly string _name;

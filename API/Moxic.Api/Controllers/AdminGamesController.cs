@@ -29,7 +29,7 @@ public class AdminGamesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetGames([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var query = _db.Games.AsQueryable();
+        var query = _db.Games.IgnoreQueryFilters().AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(g => g.Name.Contains(search));
 
@@ -150,7 +150,7 @@ public class AdminGamesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetGame(Guid id)
     {
-        var game = await _db.Games
+        var game = await _db.Games.IgnoreQueryFilters()
             .Include(g => g.Media.OrderBy(m => m.DisplayOrder))
             .Include(g => g.Genres)
             .Include(g => g.Tags)
@@ -235,7 +235,7 @@ public class AdminGamesController : ControllerBase
         if (dto.RewardPoints < 0 || dto.RewardPoints > 1_000_000)
             return BadRequest(new { error = "Điểm thưởng phải từ 0 đến 1.000.000." });
 
-        var game = await _db.Games
+        var game = await _db.Games.IgnoreQueryFilters()
             .Include(g => g.Genres)
             .Include(g => g.Tags)
             .FirstOrDefaultAsync(g => g.Id == id);
@@ -313,7 +313,7 @@ public class AdminGamesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteGame(Guid id)
     {
-        var game = await _db.Games.Include(g => g.Media).FirstOrDefaultAsync(g => g.Id == id);
+        var game = await _db.Games.IgnoreQueryFilters().Include(g => g.Media).FirstOrDefaultAsync(g => g.Id == id);
         if (game == null) return NotFound();
 
         var gamesBucket = _config.GetValue<string>("Minio:GamesBucket")!;
@@ -331,7 +331,7 @@ public class AdminGamesController : ControllerBase
     [RequestFormLimits(MultipartBodyLengthLimit = 500 * 1024 * 1024)]
     public async Task<IActionResult> UploadMedia(Guid id, IFormFile file)
     {
-        var game = await _db.Games.FindAsync(id);
+        var game = await _db.Games.IgnoreQueryFilters().FirstOrDefaultAsync(g => g.Id == id);
         if (game == null) return NotFound();
         if (file.Length == 0) return BadRequest("File is empty");
         if (file.Length > 500 * 1024 * 1024) return BadRequest("File too large (max 500MB)");

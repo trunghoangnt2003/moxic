@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
@@ -340,6 +340,7 @@ using (var scope = app.Services.CreateScope())
         await LuckySpinCasesSchemaBootstrap.EnsureAsync(dbContext);
         await CouponSchemaBootstrap.EnsureAsync(dbContext);
         await ShareRoomSchemaBootstrap.EnsureAsync(dbContext);
+        await XboxCatalogSchemaBootstrap.EnsureAsync(dbContext);
         await AnnouncementSchemaBootstrap.EnsureAsync(dbContext);
         await WishlistSchemaBootstrap.EnsureAsync(dbContext);
         await RentalSchemaBootstrap.EnsureAsync(dbContext);

@@ -25,7 +25,7 @@ public class AdminGameCatalogController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get(Guid id)
     {
-        var game = await _db.Games.AsNoTracking().Include(g => g.Editions).FirstOrDefaultAsync(g => g.Id == id);
+        var game = await _db.Games.IgnoreQueryFilters().AsNoTracking().Include(g => g.Editions).FirstOrDefaultAsync(g => g.Id == id);
         if (game == null) return NotFound(new { error = "Không tìm thấy game." });
         return Ok(ToDto(game));
     }
@@ -33,7 +33,7 @@ public class AdminGameCatalogController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Put(Guid id, [FromBody] AdminGameCatalogDto dto)
     {
-        var game = await _db.Games.Include(g => g.Editions).FirstOrDefaultAsync(g => g.Id == id);
+        var game = await _db.Games.IgnoreQueryFilters().Include(g => g.Editions).FirstOrDefaultAsync(g => g.Id == id);
         if (game == null) return NotFound(new { error = "Không tìm thấy game." });
 
         var type = ProductTypes.FirstOrDefault(t => string.Equals(t, dto.ProductType, StringComparison.OrdinalIgnoreCase));
@@ -99,7 +99,7 @@ public class AdminGameCatalogController : ControllerBase
         game.UpdatedAt = now;
 
         await _db.SaveChangesAsync();
-        var fresh = await _db.Games.AsNoTracking().Include(g => g.Editions).FirstAsync(g => g.Id == id);
+        var fresh = await _db.Games.IgnoreQueryFilters().AsNoTracking().Include(g => g.Editions).FirstAsync(g => g.Id == id);
         return Ok(ToDto(fresh));
     }
 
